@@ -1,0 +1,19 @@
+# Read about `build.yaml` at https://pub.dev/packages/build_config
+
+targets:
+  $default:
+    builders:
+      reflection_factory:
+        generate_for:
+          - example/*
+          - lib/**
+          - test/**
+
+builders:
+  reflection_factory:
+    import: "package:reflection_factory/builder.dart"
+    builder_factories: ["reflectionFactory"]
+    build_extensions: {".dart": [".reflection.g.dart"]}
+    auto_apply: dependents
+    build_to: source
+
