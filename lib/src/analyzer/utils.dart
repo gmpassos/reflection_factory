@@ -10,7 +10,6 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:path/path.dart' as p;
-import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart';
 
 /// Returns a non-null name for the provided [type].
@@ -95,12 +94,6 @@ Uri normalizeUrl(Uri url) {
     default:
       return url;
   }
-}
-
-Version asdasdasd(LibraryElement libraryElement) {
-  var uri = libraryElement.source.uri;
-
-  return Version.none;
 }
 
 /// Make `dart:`-type URLs look like a user-knowable path.
