@@ -160,13 +160,6 @@ To generate the reflection code just run `build_runner` in your Dart project:
 $> dart run build_runner build
 ```
 
-## Test Coverage
-
-[![Codecov](https://img.shields.io/codecov/c/github/gmpassos/reflection_factory)](https://app.codecov.io/gh/gmpassos/reflection_factory)
-
-This package aims to always have a high test coverage percentage, over 95%.
-With that the package can be a reliable tool to support your important projects.
-
 ## Source
 
 The official source code is [hosted @ GitHub][github_reflection_factory]:
