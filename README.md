@@ -11,7 +11,8 @@
 [![Code size](https://img.shields.io/github/languages/code-size/gmpassos/reflection_factory?logo=github&logoColor=white)](https://github.com/gmpassos/reflection_factory)
 [![License](https://img.shields.io/github/license/gmpassos/reflection_factory?logo=open-source-initiative&logoColor=green)](https://github.com/gmpassos/reflection_factory/blob/master/LICENSE)
 
-`reflection_factory` allows Dart reflection using code generation/builder.
+`reflection_factory` allows Dart reflection with an easy approach, even for third-party classes,
+using code generation portable for all Dart platforms.
 
 ## Usage
 
