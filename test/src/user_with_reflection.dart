@@ -7,6 +7,8 @@ class TestUserWithReflection {
   static final double version = 1.1;
   static final bool withReflection = true;
 
+  static bool isVersion(double ver) => version == ver;
+
   final String name;
 
   String? email;

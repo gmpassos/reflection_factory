@@ -4,7 +4,11 @@
   - Added `reflectionClassName`, `reflectionExtensionName`.
 - @ReflectionBridge:
   - Added `bridgeExtensionName`, `reflectionClassNames`, `reflectionExtensionNames`.
-- Builder: improved console output and verbose mode. 
+- Builder:
+  - `MethodReflection`:
+    - Added method parameters names to normal and optional parameters. 
+  - Optimize generated code.
+  - Improved console output and verbose mode. 
 - Improved tests.
 
 ## 1.0.0

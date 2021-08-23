@@ -422,6 +422,15 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write(
         '  $reflectionClass([$className? object]) : super($className, object);\n\n');
 
+    str.write('  bool _registered = false;\n');
+    str.write('  @override');
+    str.write('  void register() {\n');
+    str.write('    if (!_registered) {\n');
+    str.write('      _registered = true;\n');
+    str.write('      super.register();\n');
+    str.write('    }\n');
+    str.write('  }\n\n');
+
     str.write('  @override');
     str.write(
         '  $reflectionClass withObject([$className? obj]) => $reflectionClass(obj);\n\n');
@@ -443,10 +452,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   void _buildField(StringBuffer str) {
     var entries = _toFieldEntries(fields);
-    var names = _buildStringList(entries.keys, sorted: true);
+    var names = _buildStringListCode(entries.keys, sorted: true);
 
     str.write('  @override\n');
-    str.write('  List<String> get fieldsNames => const $names;\n\n');
+    str.write('  List<String> get fieldsNames => $names;\n\n');
 
     str.write('  @override\n');
     str.write(
@@ -476,10 +485,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   void _buildStaticField(StringBuffer str) {
     var entries = _toFieldEntries(staticFields);
-    var names = _buildStringList(entries.keys, sorted: true);
+    var names = _buildStringListCode(entries.keys, sorted: true);
 
     str.write('  @override\n');
-    str.write('  List<String> get staticFieldsNames => const $names;\n\n');
+    str.write('  List<String> get staticFieldsNames => $names;\n\n');
 
     str.write('  @override\n');
     str.write(
@@ -512,10 +521,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   void _buildMethod(StringBuffer str) {
     var entries = _toMethodsEntries(methods);
-    var names = _buildStringList(entries.keys, sorted: true);
+    var names = _buildStringListCode(entries.keys, sorted: true);
 
     str.write('  @override\n');
-    str.write('  List<String> get methodsNames => const $names;\n\n');
+    str.write('  List<String> get methodsNames => $names;\n\n');
 
     str.write('  @override\n');
     str.write(
@@ -530,7 +539,14 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
       var type = method.returnTypeName;
       var nullable = method.returnNullable ? 'true' : 'false';
-      return "MethodReflection<$className>(this, '$name', $type, $nullable, obj.$name , obj , false, const ${method.normalParametersAsString} , const ${method.optionalParametersAsString}, const ${method.namedParametersAsString} )";
+      return "MethodReflection<$className>("
+          "this, '$name', $type, $nullable, obj.$name , obj , false, "
+          "${method.normalParametersAsCode} , "
+          "${method.normalParametersNamesAsCode} , "
+          "${method.optionalParametersAsCode}, "
+          "${method.optionalParametersNamesAsCode}, "
+          "${method.namedParametersAsCode}"
+          ")";
     });
 
     str.write('  }\n\n');
@@ -538,10 +554,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   void _buildStaticMethod(StringBuffer str) {
     var entries = _toMethodsEntries(staticMethods);
-    var names = _buildStringList(entries.keys, sorted: true);
+    var names = _buildStringListCode(entries.keys, sorted: true);
 
     str.write('  @override\n');
-    str.write('  List<String> get staticMethodsNames => const $names;\n\n');
+    str.write('  List<String> get staticMethodsNames => $names;\n\n');
 
     str.write('  @override\n');
     str.write(
@@ -555,7 +571,14 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
       var type = method.returnTypeName;
       var nullable = method.returnNullable ? 'true' : 'false';
-      return "MethodReflection<$className>(this, '$name', $type, $nullable, $className.$name , null , true, const ${method.normalParametersAsString} , const ${method.optionalParametersAsString}, const ${method.namedParametersAsString} )";
+      return "MethodReflection<$className>("
+          "this, '$name', $type, $nullable, $className.$name , null , true, "
+          "${method.normalParametersAsCode} , "
+          "${method.normalParametersNamesAsCode} , "
+          "${method.optionalParametersAsCode}, "
+          "${method.optionalParametersNamesAsCode}, "
+          "${method.namedParametersAsCode}"
+          ")";
     });
 
     str.write('  }\n\n');
@@ -690,17 +713,20 @@ class _Method {
       methodElement.type.namedParameterTypes
           .map((k, v) => MapEntry(k, v.element!.name!));
 
-  String get normalParametersAsString => _buildTypeList(normalParameters);
+  String get normalParametersAsCode =>
+      _buildTypeList(normalParameters, nullOnEmpty: true);
 
-  String get normalParametersNamesAsString =>
-      _buildStringList(normalParametersNames);
+  String get normalParametersNamesAsCode =>
+      _buildStringListCode(normalParametersNames, nullOnEmpty: true);
 
-  String get optionalParametersAsString => _buildTypeList(optionalParameters);
+  String get optionalParametersAsCode =>
+      _buildTypeList(optionalParameters, nullOnEmpty: true);
 
-  String get optionalParametersNamesAsString =>
-      _buildStringList(optionalParametersNames);
+  String get optionalParametersNamesAsCode =>
+      _buildStringListCode(optionalParametersNames, nullOnEmpty: true);
 
-  String get namedParametersAsString => _buildTypeMap(namedParameters);
+  String get namedParametersAsCode =>
+      _buildTypeMap(namedParameters, nullOnEmpty: true);
 
   @override
   String toString() {
@@ -750,32 +776,33 @@ class _Field {
   }
 }
 
-String _buildStringList(Iterable? o, {bool sorted = false}) {
-  if (o == null) {
-    return '<String>[]';
+String _buildStringListCode(Iterable? o,
+    {bool sorted = false, bool nullOnEmpty = false}) {
+  if (o == null || o.isEmpty) {
+    return nullOnEmpty ? 'null' : 'const <String>[]';
   } else {
     if (sorted) {
       var l = o.toList();
       l.sort();
       o = l;
     }
-    return '<String>[' + o.map((e) => "'$e'").join(', ') + ']';
+    return 'const <String>[' + o.map((e) => "'$e'").join(', ') + ']';
   }
 }
 
-String _buildTypeList(Iterable? o) {
-  if (o == null) {
-    return '<Type>[]';
+String _buildTypeList(Iterable? o, {bool nullOnEmpty = false}) {
+  if (o == null || o.isEmpty) {
+    return nullOnEmpty ? 'null' : '<Type>[]';
   } else {
-    return '<Type>[' + o.map((e) => '$e').join(', ') + ']';
+    return 'const <Type>[' + o.map((e) => '$e').join(', ') + ']';
   }
 }
 
-String _buildTypeMap(Map? o) {
-  if (o == null) {
-    return '<String,Type>{}}';
+String _buildTypeMap(Map? o, {bool nullOnEmpty = false}) {
+  if (o == null || o.isEmpty) {
+    return nullOnEmpty ? 'null' : 'const <String,Type>{}}';
   } else {
-    return '<String,Type>{' +
+    return 'const <String,Type>{' +
         o.entries.map((e) => "'${e.key}': ${e.value}").join(', ') +
         '}';
   }

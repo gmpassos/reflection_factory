@@ -9,6 +9,15 @@ part of 'reflection_factory_example.dart';
 class User$reflection extends ClassReflection<User> {
   User$reflection([User? object]) : super(User, object);
 
+  bool _registered = false;
+  @override
+  void register() {
+    if (!_registered) {
+      _registered = true;
+      super.register();
+    }
+  }
+
   @override
   User$reflection withObject([User? obj]) => User$reflection(obj);
 
@@ -83,8 +92,10 @@ class User$reflection extends ClassReflection<User> {
             obj,
             false,
             const <Type>[String],
-            const <Type>[],
-            const <String, Type>{});
+            const <String>['pass'],
+            null,
+            null,
+            null);
       default:
         return null;
     }

@@ -2,6 +2,7 @@ import 'dart:convert' as dart_convert;
 
 import 'package:pub_semver/pub_semver.dart';
 
+/// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -12,12 +13,15 @@ class ReflectionFactory {
   final Map<Type, ClassReflection> _registeredClassReflection =
       <Type, ClassReflection>{};
 
+  /// Returns `true` if a [ClassReflection] is registered for [classType].
   bool hasRegisterClassReflection<O>([Type? classType]) =>
       _registeredClassReflection.containsKey(classType ?? O);
 
-  ClassReflection<O> getRegisterClassReflection<O>([Type? classType]) =>
-      _registeredClassReflection[classType ?? O] as ClassReflection<O>;
+  /// Returns the registered [ClassReflection] for [classType].
+  ClassReflection<O>? getRegisterClassReflection<O>([Type? classType]) =>
+      _registeredClassReflection[classType ?? O] as ClassReflection<O>?;
 
+  /// Called by [ClassReflection] when instantiated for the 1st time.
   void registerClassReflection<O>(ClassReflection<O> classReflection) {
     var classType = classReflection.classType;
     var prev = _registeredClassReflection[classType];
@@ -34,7 +38,7 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   final O? object;
 
   ClassReflection(this.classType, [this.object]) {
-    _register();
+    register();
   }
 
   /// Returns `true` if this instances has an associated object ([O]).
@@ -43,7 +47,9 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   /// Returns a new instances with [obj] as the associated object ([O]).
   ClassReflection<O> withObject([O? obj]);
 
-  void _register() {
+  /// Called automatically when instantiated.
+  /// Registers this reflection into [ReflectionFactory].
+  void register() {
     if (!ReflectionFactory().hasRegisterClassReflection(classType)) {
       var cr = hasObject ? withObject() : this;
       ReflectionFactory().registerClassReflection(cr);
@@ -243,28 +249,34 @@ class FieldReflection<O, T> extends ElementReflection<O> {
 
 /// A class method reflection.
 class MethodReflection<O> extends ElementReflection<O> {
-  /// Returns the named of this method.
+  /// The name of this method.
   final String name;
 
-  /// Returns the return [Type] of this method.
+  /// The return [Type] of this method.
   final Type returnType;
 
-  /// Returns `true` if the returned value of this method can be `null`.
+  /// `true` if the returned value of this method can be `null`.
   final bool returnNullable;
 
   final Function _method;
 
-  /// Returns the associated object ([O]) of this method.
-  /// Returns `null` for static methods.
+  /// The associated object ([O]) of this method.
+  /// `null` for static methods.
   final O? object;
 
-  /// Returns the normal parameters [Type]s of this method.
+  /// The normal parameters [Type]s of this method.
   final List<Type> normalParameters;
 
-  /// Returns the optional parameters [Type]s of this method.
+  /// The normal parameters names of this method.
+  final List<String> normalParametersNames;
+
+  /// The optional parameters [Type]s of this method.
   final List<Type> optionalParameters;
 
-  /// Returns the named parameters [Type]s of this method.
+  /// The optional parameters names of this method.
+  final List<String> optionalParametersNames;
+
+  /// The named parameters [Type]s of this method.
   final Map<String, Type> namedParameters;
 
   MethodReflection(
@@ -276,12 +288,18 @@ class MethodReflection<O> extends ElementReflection<O> {
       this.object,
       bool isStatic,
       List<Type>? normalParameters,
+      List<String>? normalParametersNames,
       List<Type>? optionalParameters,
+      List<String>? optionalParametersNames,
       Map<String, Type>? namedParameters)
       : normalParameters =
             List<Type>.unmodifiable(normalParameters ?? <Type>[]),
+        normalParametersNames =
+            List<String>.unmodifiable(normalParametersNames ?? <String>[]),
         optionalParameters =
             List<Type>.unmodifiable(optionalParameters ?? <Type>[]),
+        optionalParametersNames =
+            List<String>.unmodifiable(optionalParametersNames ?? <String>[]),
         namedParameters =
             Map<String, Type>.unmodifiable(namedParameters ?? <String, Type>{}),
         super(classReflection, isStatic);

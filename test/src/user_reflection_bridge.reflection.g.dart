@@ -10,6 +10,15 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   TestUserSimple$reflection([TestUserSimple? object])
       : super(TestUserSimple, object);
 
+  bool _registered = false;
+  @override
+  void register() {
+    if (!_registered) {
+      _registered = true;
+      super.register();
+    }
+  }
+
   @override
   TestUserSimple$reflection withObject([TestUserSimple? obj]) =>
       TestUserSimple$reflection(obj);
@@ -107,8 +116,10 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
             obj,
             false,
             const <Type>[String],
-            const <Type>[],
-            const <String, Type>{});
+            const <String>['password'],
+            null,
+            null,
+            null);
       default:
         return null;
     }

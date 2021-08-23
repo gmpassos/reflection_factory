@@ -11,6 +11,15 @@ class TestUserWithReflection$reflection
   TestUserWithReflection$reflection([TestUserWithReflection? object])
       : super(TestUserWithReflection, object);
 
+  bool _registered = false;
+  @override
+  void register() {
+    if (!_registered) {
+      _registered = true;
+      super.register();
+    }
+  }
+
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
       TestUserWithReflection$reflection(obj);
@@ -116,19 +125,40 @@ class TestUserWithReflection$reflection
             obj,
             false,
             const <Type>[String],
-            const <Type>[],
-            const <String, Type>{});
+            const <String>['password'],
+            null,
+            null,
+            null);
       default:
         return null;
     }
   }
 
   @override
-  List<String> get staticMethodsNames => const <String>[];
+  List<String> get staticMethodsNames => const <String>['isVersion'];
 
   @override
   MethodReflection<TestUserWithReflection>? staticMethod(String methodName) {
-    return null;
+    var lc = methodName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'isversion':
+        return MethodReflection<TestUserWithReflection>(
+            this,
+            'isVersion',
+            bool,
+            false,
+            TestUserWithReflection.isVersion,
+            null,
+            true,
+            const <Type>[double],
+            const <String>['ver'],
+            null,
+            null,
+            null);
+      default:
+        return null;
+    }
   }
 }
 
