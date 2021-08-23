@@ -1,122 +1,68 @@
-import 'package:build_test/build_test.dart';
-import 'package:reflection_factory/src/reflection_factory_builder.dart';
 import 'package:test/test.dart';
 
-void main() {
-  tearDown(() {
-    // Increment this after each test so the next test has it's own package
-    _pkgCacheCount++;
-  });
+import 'src/user_reflection_bridge.dart';
+import 'src/user_simple.dart';
+import 'src/user_with_reflection.dart';
 
-  group('ReflectionBuilder', () {
+void main() {
+  group('Reflection', () {
     setUp(() {});
 
     test('EnableReflection', () async {
-      var builder = ReflectionBuilder(verbose: true);
+      var user = TestUserWithReflection('Joe', 'joe@mail.com', '123');
 
-      var sourceAssets = {
-        '$_pkgName|lib/foo.dart': '''
-        
-          import 'package:reflection_factory/reflection_factory.dart';
-        
-          part 'foo.reflection.g.dart';
-          
-          @EnableReflection()
-          class User {
-            static final double version = 1.0; 
-            
-            static bool isVersion(double ver) => version == ver;
-            
-            String? email ;
-            String pass ;
-            
-            User(this.email, this.pass);
-            
-            String? get eMail => email;
-            
-            bool get hasEmail => email != null;
-            
-            bool checkPassword(String pass) {
-              return this.pass == pass;
-            }
-          }
-        
-        '''
-      };
+      var userReflection = user.reflection;
 
-      await testBuilder(
-        builder,
-        sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
-        generateFor: {'$_pkgName|lib/foo.dart'},
-        outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
-            contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-            contains("part of 'foo.dart'"),
-            contains('ReflectionClass\$User'),
-            contains('ReflectionExtension\$User'),
-          ))
-        },
-        onLog: (msg) {
-          print(msg);
-        },
-        //packageConfig: packageConfig,
-      );
+      expect(userReflection.classType, equals(TestUserWithReflection));
+
+      expect(userReflection.fieldsNames, equals(['email', 'name', 'password']));
+      expect(userReflection.staticFieldsNames,
+          equals(['version', 'withReflection']));
+
+      expect(userReflection.getField('name'), equals('Joe'));
+      expect(userReflection.getField('email'), equals('joe@mail.com'));
+
+      expect(userReflection.getStaticField('version'), equals(1.1));
+      expect(userReflection.getStaticField('withReflection'), isTrue);
+
+      expect(userReflection.invokeMethod('checkPassword', ['abc']), isFalse);
+      expect(userReflection.invokeMethod('checkPassword', ['123']), isTrue);
+
+      var userStaticReflection = TestUserWithReflection$reflection();
+
+      expect(userStaticReflection.classType, equals(TestUserWithReflection));
+
+      expect(userStaticReflection.getStaticField('version'), equals(1.1));
+      expect(userStaticReflection.getStaticField('withReflection'), isTrue);
     });
 
     test('ReflectionBridge', () async {
-      var builder = ReflectionBuilder(verbose: true);
+      var user = TestUserSimple('Joe', 'joe@mail.com', '123');
 
-      var sourceAssets = {
-        '$_pkgName|lib/foo.dart': '''
-        
-          import 'package:reflection_factory/reflection_factory.dart';
-        
-          part 'foo.reflection.g.dart';
-          
-          @ReflectionBridge([User])
-          class UserReflection {}
-          
-          class User {
-            String? email ;
-            String pass ;
-            
-            User(this.email, this.pass);
-            
-            bool get hasEmail => email != null;
-            
-            bool checkPassword(String pass) {
-              return this.pass == pass;
-            }
-          }
-        
-        '''
-      };
+      var userReflection = TestUserReflectionBridge().reflection(user);
 
-      await testBuilder(
-        builder,
-        sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
-        generateFor: {'$_pkgName|lib/foo.dart'},
-        outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
-            contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-            contains("part of 'foo.dart'"),
-            contains('ReflectionClass\$User'),
-            contains('ReflectionExtension\$User'),
-            contains('ReflectionBridgeExtension\$UserReflection'),
-          ))
-        },
-        onLog: (msg) {
-          print(msg);
-        },
-        //packageConfig: packageConfig,
-      );
+      expect(userReflection.classType, equals(TestUserSimple));
+
+      expect(userReflection.fieldsNames, equals(['email', 'name', 'password']));
+      expect(userReflection.staticFieldsNames,
+          equals(['version', 'withReflection']));
+
+      expect(userReflection.getField('name'), equals('Joe'));
+      expect(userReflection.getField('email'), equals('joe@mail.com'));
+
+      expect(userReflection.getStaticField('version'), equals(1.0));
+      expect(userReflection.getStaticField('withReflection'), isFalse);
+
+      expect(userReflection.invokeMethod('checkThePassword', ['abc']), isFalse);
+      expect(userReflection.invokeMethod('checkThePassword', ['123']), isTrue);
+
+      var userStaticReflection =
+          TestUserReflectionBridge().reflection<TestUserSimple>();
+
+      expect(userStaticReflection.classType, equals(TestUserSimple));
+
+      expect(userStaticReflection.getStaticField('version'), equals(1.0));
+      expect(userStaticReflection.getStaticField('withReflection'), isFalse);
     });
   });
 }
-
-int _pkgCacheCount = 1;
-
-// Ensure every test gets its own unique package name
-String get _pkgName => 'pkg$_pkgCacheCount';

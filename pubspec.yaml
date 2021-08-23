@@ -1,6 +1,6 @@
 name: reflection_factory
 description: Allows Dart reflection using code generation/builder.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/gmpassos/reflection_factory
 
 environment:

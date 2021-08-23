@@ -6,26 +6,17 @@
 
 part of 'reflection_factory_example.dart';
 
-// ignore: camel_case_extensions
-extension ReflectionExtension$User on User {
-  ClassReflection<User> get reflection => _ReflectionClass$User(this);
-
-  Map<String, dynamic> toJson() => reflection.toJson();
-
-  String toJsonEncoded() => reflection.toJsonEncoded();
-}
-
-class _ReflectionClass$User extends ClassReflection<User> {
-  _ReflectionClass$User([User? object]) : super(User, object);
+class User$reflection extends ClassReflection<User> {
+  User$reflection([User? object]) : super(User, object);
 
   @override
-  _ReflectionClass$User withObject([User? obj]) => _ReflectionClass$User(obj);
+  User$reflection withObject([User? obj]) => User$reflection(obj);
 
   @override
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  List<String> get fieldsNames => const <String>['email', 'pass', 'hasEmail'];
+  List<String> get fieldsNames => const <String>['email', 'hasEmail', 'pass'];
 
   @override
   FieldReflection<User, T>? field<T>(String fieldName, [User? obj]) {
@@ -106,4 +97,12 @@ class _ReflectionClass$User extends ClassReflection<User> {
   MethodReflection<User>? staticMethod(String methodName) {
     return null;
   }
+}
+
+extension User$reflectionExtension on User {
+  ClassReflection<User> get reflection => User$reflection(this);
+
+  Map<String, dynamic> toJson() => reflection.toJson();
+
+  String toJsonEncoded() => reflection.toJsonEncoded();
 }

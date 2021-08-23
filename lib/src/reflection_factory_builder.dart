@@ -34,7 +34,8 @@ class ReflectionBuilder implements Builder {
     var inputId = buildStep.inputId;
 
     if (inputId.package == 'reflection_factory') {
-      if (!inputId.path.startsWith('example/')) {
+      if (!inputId.path.startsWith('example/') &&
+          !inputId.path.startsWith('test/')) {
         return;
       }
     } else if (inputLib.name == 'reflection_factory' ||
@@ -67,7 +68,6 @@ class ReflectionBuilder implements Builder {
       var code = codeTable[key]!;
       if (code.trim().isNotEmpty) {
         fullCode.write(code);
-        print('** Generated Element: $key');
       }
     }
 
@@ -80,7 +80,9 @@ class ReflectionBuilder implements Builder {
 
     await buildStep.writeAsString(genId, formattedCode);
 
-    print('GENERATED: $genId');
+    print('** GENERATED:\n'
+        '  -- Elements: $codeKeys\n'
+        '  -- Code file: $genId\n');
 
     if (verbose) {
       print('<<<\n$formattedCode\n>>>');
@@ -107,7 +109,20 @@ class ReflectionBuilder implements Builder {
     for (var annotated in annotatedEnableReflection) {
       if (annotated.element.kind == ElementKind.CLASS) {
         var classElement = annotated.element as ClassElement;
-        var codes = await _enableReflection(buildStep, classElement);
+
+        var annotation = annotated.annotation;
+        var reflectionClassName =
+            annotation.peek('reflectionClassName')!.stringValue;
+        var reflectionExtensionName =
+            annotated.annotation.peek('reflectionExtensionName')!.stringValue;
+
+        var codes = await _enableReflection(
+          buildStep,
+          classElement,
+          reflectionClassName,
+          reflectionExtensionName,
+        );
+
         codeTable.addAll(codes);
       }
     }
@@ -143,7 +158,22 @@ class ReflectionBuilder implements Builder {
         .map((e) => e.toTypeValue()!)
         .toList();
 
-    print('-- ReflectionBridge.classesTypes: $classesTypes');
+    var bridgeExtensionName =
+        annotation.peek('bridgeExtensionName')!.stringValue;
+    var reflectionClassNames = annotation
+        .peek('reflectionClassNames')!
+        .mapValue
+        .map((k, v) => MapEntry(k!.toTypeValue()!, v!.toStringValue()!));
+    var reflectionExtensionNames = annotation
+        .peek('reflectionExtensionNames')!
+        .mapValue
+        .map((k, v) => MapEntry(k!.toTypeValue()!, v!.toStringValue()!));
+
+    print('** ReflectionBridge:\n'
+        '  -- classesTypes: $classesTypes\n'
+        '  -- bridgeExtensionName: $bridgeExtensionName\n'
+        '  -- reflectionClassNames: $reflectionClassNames\n'
+        '  -- reflectionExtensionNames: $reflectionExtensionNames\n');
 
     var codeTable = <String, String>{};
 
@@ -155,12 +185,20 @@ class ReflectionBuilder implements Builder {
 
       var classLibrary = await _getClassLibrary(buildStep, classElement);
 
+      var reflectionClassName = reflectionExtensionNames[classType] ?? '';
+      var reflectionExtensionName = reflectionExtensionNames[classType] ?? '';
+
       var classTree = _ClassTree(
         classElement,
+        reflectionClassName,
+        reflectionExtensionName,
         classLibrary.languageVersion.effective,
+        verbose: verbose,
       );
 
-      print('-- $classTree');
+      if (verbose) {
+        print(classTree);
+      }
 
       codeTable.putIfAbsent(
           classTree.reflectionClass, () => classTree.buildReflectionClass());
@@ -168,16 +206,21 @@ class ReflectionBuilder implements Builder {
           () => classTree.buildReflectionExtension());
     }
 
-    codeTable.addAll(_reflectionBridgeExtension(annotatedClass, classesTypes));
+    codeTable.addAll(_reflectionBridgeExtension(annotatedClass, classesTypes,
+        bridgeExtensionName, reflectionClassNames));
 
     return codeTable;
   }
 
   Map<String, String> _reflectionBridgeExtension(
-      ClassElement annotatedClass, List<DartType> classesTypes) {
+      ClassElement annotatedClass,
+      List<DartType> classesTypes,
+      String reflectionBridgeExtensionName,
+      Map<DartType, String> reflectionClassNames) {
     var bridgeClassName = annotatedClass.name;
 
-    var bridgeExtensionName = 'ReflectionBridgeExtension\$$bridgeClassName';
+    var bridgeExtensionName = _buildReflectionExtensionName(
+        bridgeClassName, reflectionBridgeExtensionName);
 
     var str = StringBuffer();
 
@@ -188,8 +231,11 @@ class ReflectionBuilder implements Builder {
     str.write('    switch (T) {\n');
 
     for (var classType in classesTypes) {
+      var bridgeReflectionClassName = reflectionClassNames[classType] ?? '';
       var className = classType.element!.name!;
-      var reflectionClassName = _buildReflectionClassName(className);
+
+      var reflectionClassName =
+          _buildReflectionClassName(className, bridgeReflectionClassName);
       str.write(
           '      case $className: return $reflectionClassName(obj as $className?) as ClassReflection<T>;\n');
     }
@@ -208,15 +254,23 @@ class ReflectionBuilder implements Builder {
   }
 
   Future<Map<String, String>> _enableReflection(
-      BuildStep buildStep, ClassElement classElement) async {
+      BuildStep buildStep,
+      ClassElement classElement,
+      String reflectionClassName,
+      String reflectionExtensionName) async {
     var classLibrary = await _getClassLibrary(buildStep, classElement);
 
     var classTree = _ClassTree(
       classElement,
+      reflectionClassName,
+      reflectionExtensionName,
       classLibrary.languageVersion.effective,
+      verbose: verbose,
     );
 
-    print('-- $classTree');
+    if (verbose) {
+      print(classTree);
+    }
 
     var reflectionClassCode = classTree.buildReflectionClass();
     var reflectionExtensionCode = classTree.buildReflectionExtension();
@@ -237,20 +291,40 @@ class ReflectionBuilder implements Builder {
   }
 }
 
-String _buildReflectionClassName(String className) =>
-    '_ReflectionClass\$$className';
+String _buildReflectionClassName(String className, String reflectionClassName) {
+  reflectionClassName = reflectionClassName.trim();
+  if (reflectionClassName.isNotEmpty) {
+    return reflectionClassName;
+  }
 
-String _buildReflectionExtensionName(String className) =>
-    'ReflectionExtension\$$className';
+  return '$className\$reflection';
+}
+
+String _buildReflectionExtensionName(
+    String className, String reflectionExtensionName) {
+  reflectionExtensionName = reflectionExtensionName.trim();
+  if (reflectionExtensionName.isNotEmpty) {
+    return reflectionExtensionName;
+  }
+
+  return '$className\$reflectionExtension';
+}
 
 class _ClassTree<T> extends RecursiveElementVisitor<T> {
   final ClassElement _classElement;
 
+  final String reflectionClassName;
+  final String reflectionExtensionName;
+
   final Version languageVersion;
+
+  final bool verbose;
 
   final String className;
 
-  _ClassTree(this._classElement, this.languageVersion)
+  _ClassTree(this._classElement, this.reflectionClassName,
+      this.reflectionExtensionName, this.languageVersion,
+      {this.verbose = false})
       : className = _classElement.name {
     _classElement.visitChildren(this);
   }
@@ -267,9 +341,11 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         '}';
   }
 
-  String get reflectionClass => _buildReflectionClassName(className);
+  String get reflectionClass =>
+      _buildReflectionClassName(className, reflectionClassName);
 
-  String get reflectionExtension => _buildReflectionExtensionName(className);
+  String get reflectionExtension =>
+      _buildReflectionExtensionName(className, reflectionExtensionName);
 
   final Set<MethodElement> staticMethods = <MethodElement>{};
 
@@ -367,7 +443,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   void _buildField(StringBuffer str) {
     var entries = _toFieldEntries(fields);
-    var names = _buildStringList(entries.keys);
+    var names = _buildStringList(entries.keys, sorted: true);
 
     str.write('  @override\n');
     str.write('  List<String> get fieldsNames => const $names;\n\n');
@@ -379,7 +455,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     _buildSwitches(str, 'fieldName', entries.keys, (name) {
       var field = entries[name]!;
-      print(field);
+
+      if (verbose) {
+        print(field);
+      }
 
       var type = field.typeName;
       var fullType = field.fullTypeName;
@@ -397,7 +476,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   void _buildStaticField(StringBuffer str) {
     var entries = _toFieldEntries(staticFields);
-    var names = _buildStringList(entries.keys);
+    var names = _buildStringList(entries.keys, sorted: true);
 
     str.write('  @override\n');
     str.write('  List<String> get staticFieldsNames => const $names;\n\n');
@@ -408,7 +487,9 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     _buildSwitches(str, 'fieldName', entries.keys, (name) {
       var field = entries[name]!;
-      print(field);
+      if (verbose) {
+        print(field);
+      }
 
       var type = field.typeName;
       var fullType = field.fullTypeName;
@@ -431,7 +512,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   void _buildMethod(StringBuffer str) {
     var entries = _toMethodsEntries(methods);
-    var names = _buildStringList(entries.keys);
+    var names = _buildStringList(entries.keys, sorted: true);
 
     str.write('  @override\n');
     str.write('  List<String> get methodsNames => const $names;\n\n');
@@ -443,6 +524,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     _buildSwitches(str, 'methodName', entries.keys, (name) {
       var method = entries[name]!;
+      if (verbose) {
+        print(method);
+      }
+
       var type = method.returnTypeName;
       var nullable = method.returnNullable ? 'true' : 'false';
       return "MethodReflection<$className>(this, '$name', $type, $nullable, obj.$name , obj , false, const ${method.normalParametersAsString} , const ${method.optionalParametersAsString}, const ${method.namedParametersAsString} )";
@@ -453,7 +538,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   void _buildStaticMethod(StringBuffer str) {
     var entries = _toMethodsEntries(staticMethods);
-    var names = _buildStringList(entries.keys);
+    var names = _buildStringList(entries.keys, sorted: true);
 
     str.write('  @override\n');
     str.write('  List<String> get staticMethodsNames => const $names;\n\n');
@@ -464,6 +549,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     _buildSwitches(str, 'methodName', entries.keys, (name) {
       var method = entries[name]!;
+      if (verbose) {
+        print(method);
+      }
+
       var type = method.returnTypeName;
       var nullable = method.returnNullable ? 'true' : 'false';
       return "MethodReflection<$className>(this, '$name', $type, $nullable, $className.$name , null , true, const ${method.normalParametersAsString} , const ${method.optionalParametersAsString}, const ${method.namedParametersAsString} )";
@@ -537,7 +626,6 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
   void _buildExtension(StringBuffer codeBuffer) {
     var str = StringBuffer();
 
-    str.write('// ignore: camel_case_extensions\n');
     str.write('extension $reflectionExtension on $className {\n');
 
     var entriesCount = 0;
@@ -571,6 +659,8 @@ class _Method {
 
   _Method(this.methodElement);
 
+  String get name => methodElement.name;
+
   bool get returnNullable =>
       methodElement.returnType.nullabilitySuffix == NullabilitySuffix.question;
 
@@ -585,10 +675,16 @@ class _Method {
       .map((e) => e.element!.name!)
       .toList();
 
+  List<String> get normalParametersNames =>
+      methodElement.type.normalParameterNames;
+
   List<String> get optionalParameters =>
       methodElement.type.optionalParameterTypes
           .map((e) => e.element!.name!)
           .toList();
+
+  List<String> get optionalParametersNames =>
+      methodElement.type.optionalParameterNames;
 
   Map<String, String> get namedParameters =>
       methodElement.type.namedParameterTypes
@@ -596,9 +692,28 @@ class _Method {
 
   String get normalParametersAsString => _buildTypeList(normalParameters);
 
+  String get normalParametersNamesAsString =>
+      _buildStringList(normalParametersNames);
+
   String get optionalParametersAsString => _buildTypeList(optionalParameters);
 
+  String get optionalParametersNamesAsString =>
+      _buildStringList(optionalParametersNames);
+
   String get namedParametersAsString => _buildTypeMap(namedParameters);
+
+  @override
+  String toString() {
+    return '_Method{ '
+        'name: $name, '
+        'static: $isStatic, '
+        'return: $returnTypeName '
+        '}( '
+        'normal: $normalParameters, '
+        'optional: $optionalParameters, '
+        'named: $namedParameters '
+        ')<$methodElement>';
+  }
 }
 
 class _Field {
@@ -625,14 +740,25 @@ class _Field {
 
   @override
   String toString() {
-    return '_Field{ name: $name, isFinal: $isFinal, isConst: $isConst, allowSetter: $allowSetter }<$fieldElement>';
+    return '_Field{ '
+        'name: $name, '
+        'static: $isStatic, '
+        'final: $isFinal, '
+        'const: $isConst, '
+        'allowSetter: $allowSetter '
+        '}<$fieldElement>';
   }
 }
 
-String _buildStringList(Iterable? o) {
+String _buildStringList(Iterable? o, {bool sorted = false}) {
   if (o == null) {
     return '<String>[]';
   } else {
+    if (sorted) {
+      var l = o.toList();
+      l.sort();
+      o = l;
+    }
     return '<String>[' + o.map((e) => "'$e'").join(', ') + ']';
   }
 }
