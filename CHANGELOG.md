@@ -16,6 +16,7 @@
     - Now knows if a parameter is `required`. 
 - Improved API documentation.
 - Improved tests.
+- collection: ^1.15.0
 
 ## 1.0.1
 
