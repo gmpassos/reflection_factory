@@ -65,7 +65,7 @@ void main() {
   print(user.toJsonEncoded());
 }
 
-// Indicated that reflection for class `User` will be generated/enabled:
+// Indicates that reflection for class `User` will be generated/enabled:
 @EnableReflection()
 class User {
   String? email;
@@ -112,7 +112,7 @@ import 'package:some_api/user.dart';
 // $> dart run build_runner build
 part 'some_source_file.reflection.g.dart';
 
-// Indicated that reflection for class `User` will be generated/enabled
+// Indicates that reflection for class `User` will be generated/enabled
 // through a bridge class:
 @ReflectionBridge([User])
 class UserReflectionBridge {}

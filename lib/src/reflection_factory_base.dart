@@ -1,5 +1,6 @@
 import 'dart:convert' as dart_convert;
 
+import 'package:collection/collection.dart' show ListEquality, MapEquality;
 import 'package:pub_semver/pub_semver.dart';
 
 /// Class with all registered reflections ([ClassReflection]).
@@ -83,8 +84,16 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   /// Returns a `const` [List] of methods names.
   List<String> get methodsNames;
 
+  /// Returns a [List] with all methods [MethodReflection].
+  List<MethodReflection<O>> allMethods([O? obj]) =>
+      methodsNames.map((e) => method(e, obj)!).toList();
+
   /// Returns a `const` [List] of static methods names.
   List<String> get staticMethodsNames;
+
+  /// Returns a [List] with all static methods [MethodReflection].
+  List<MethodReflection<O>> allStaticMethods() =>
+      staticMethodsNames.map((e) => staticMethod(e)!).toList();
 
   /// Returns a [MethodReflection] for [methodName], with the optional associated [obj].
   MethodReflection<O>? method(String methodName, [O? obj]);
@@ -188,16 +197,65 @@ abstract class ElementReflection<O> {
   String get className => classReflection.className;
 }
 
-/// A class field reflection.
-class FieldReflection<O, T> extends ElementReflection<O> {
-  /// Returns name of this field.
-  final String name;
-
-  /// Returns [Type] of this field.
+/// A parameter reflection, used method arguments or class fields.
+class ParameterReflection {
+  /// The [Type] of the parameter.
   final Type type;
 
-  /// Returns `true` if this field is nullable.
+  /// The name of the parameter.
+  final String name;
+
+  /// `true` if this parameter can be `null`.
   final bool nullable;
+
+  /// `true` if this parameter is required.
+  /// - Normal parameters: `true`.
+  /// - Optional parameters: `false`.
+  /// - Named parameters: `true` if declared as `required`.
+  /// - Fields: `true` if is NOT [nullable].
+  final bool required;
+
+  const ParameterReflection(this.type, this.name, this.nullable,
+      [this.required = false]);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ParameterReflection &&
+          runtimeType == other.runtimeType &&
+          type == other.type &&
+          name == other.name &&
+          nullable == other.nullable &&
+          required == other.required;
+
+  @override
+  int get hashCode =>
+      type.hashCode ^ name.hashCode ^ nullable.hashCode ^ required.hashCode;
+
+  @override
+  String toString() {
+    return 'ParameterReflection{type: $type${nullable ? '?' : ''}, name: $name${required ? ', required' : ''}';
+  }
+}
+
+/// A class field reflection.
+class FieldReflection<O, T> extends ElementReflection<O>
+    implements ParameterReflection {
+  /// Returns [Type] of this field.
+  @override
+  final Type type;
+
+  /// Returns name of this field.
+  @override
+  final String name;
+
+  /// Returns `true` if this field is nullable.
+  @override
+  final bool nullable;
+
+  /// Returns `true` if this field is NOT [nullable].
+  @override
+  bool get required => !nullable;
 
   final T Function() _getter;
   final void Function(T v)? _setter;
@@ -211,8 +269,8 @@ class FieldReflection<O, T> extends ElementReflection<O> {
 
   FieldReflection(
     ClassReflection<O> classReflection,
-    this.name,
     this.type,
+    this.name,
     this.nullable,
     this._getter,
     this._setter,
@@ -252,69 +310,125 @@ class MethodReflection<O> extends ElementReflection<O> {
   /// The name of this method.
   final String name;
 
-  /// The return [Type] of this method.
-  final Type returnType;
+  /// The return [Type] of this method. Returns `null` for void type.
+  final Type? returnType;
 
   /// `true` if the returned value of this method can be `null`.
   final bool returnNullable;
 
-  final Function _method;
+  final Function method;
 
   /// The associated object ([O]) of this method.
   /// `null` for static methods.
   final O? object;
 
   /// The normal parameters [Type]s of this method.
-  final List<Type> normalParameters;
-
-  /// The normal parameters names of this method.
-  final List<String> normalParametersNames;
+  final List<ParameterReflection> normalParameters;
 
   /// The optional parameters [Type]s of this method.
-  final List<Type> optionalParameters;
-
-  /// The optional parameters names of this method.
-  final List<String> optionalParametersNames;
+  final List<ParameterReflection> optionalParameters;
 
   /// The named parameters [Type]s of this method.
-  final Map<String, Type> namedParameters;
+  final Map<String, ParameterReflection> namedParameters;
 
   MethodReflection(
       ClassReflection<O> classReflection,
       this.name,
       this.returnType,
       this.returnNullable,
-      this._method,
+      this.method,
       this.object,
       bool isStatic,
-      List<Type>? normalParameters,
-      List<String>? normalParametersNames,
-      List<Type>? optionalParameters,
-      List<String>? optionalParametersNames,
-      Map<String, Type>? namedParameters)
-      : normalParameters =
-            List<Type>.unmodifiable(normalParameters ?? <Type>[]),
-        normalParametersNames =
-            List<String>.unmodifiable(normalParametersNames ?? <String>[]),
-        optionalParameters =
-            List<Type>.unmodifiable(optionalParameters ?? <Type>[]),
-        optionalParametersNames =
-            List<String>.unmodifiable(optionalParametersNames ?? <String>[]),
-        namedParameters =
-            Map<String, Type>.unmodifiable(namedParameters ?? <String, Type>{}),
+      List<ParameterReflection>? normalParameters,
+      List<ParameterReflection>? optionalParameters,
+      Map<String, ParameterReflection>? namedParameters)
+      : normalParameters = List<ParameterReflection>.unmodifiable(
+            normalParameters ?? <ParameterReflection>[]),
+        optionalParameters = List<ParameterReflection>.unmodifiable(
+            optionalParameters ?? <ParameterReflection>[]),
+        namedParameters = Map<String, ParameterReflection>.unmodifiable(
+            namedParameters ?? <String, ParameterReflection>{}),
         super(classReflection, isStatic);
 
   /// Returns `true` if this methods has no arguments/parameters.
-  bool get noArgs =>
+  bool get hasNoParameters =>
       normalParameters.isEmpty &&
       optionalParameters.isEmpty &&
       namedParameters.isEmpty;
+
+  /// Returns the [normalParameters] [Type]s.
+  List<Type> get normalParametersTypes =>
+      normalParameters.map((e) => e.type).toList();
+
+  /// Returns the [normalParameters] names.
+  List<String> get normalParametersNames =>
+      normalParameters.map((e) => e.name).toList();
+
+  /// Returns the [optionalParameters] [Type]s.
+  List<Type> get optionalParametersTypes =>
+      optionalParameters.map((e) => e.type).toList();
+
+  /// Returns the [optionalParameters] names.
+  List<String> get optionalParametersNames =>
+      optionalParameters.map((e) => e.name).toList();
+
+  /// Returns the [namedParameters] [Type]s.
+  Map<String, Type> get namedParametersTypes =>
+      namedParameters.map((k, v) => MapEntry(k, v.type));
+
+  /// Returns the [namedParameters] names.
+  List<String> get namedParametersNames => namedParameters.keys.toList();
+
+  /// Returns `true` if [parameters] is equals to [normalParameters].
+  bool equalsNormalParametersTypes(List<Type> parameters) =>
+      _listEqualityType.equals(normalParametersTypes, parameters);
+
+  /// Returns `true` if [parameters] is equals to [optionalParameters].
+  bool equalsOptionalParametersTypes(List<Type> parameters) =>
+      _listEqualityType.equals(optionalParametersTypes, parameters);
+
+  /// Returns `true` if [parameters] is equals to [namedParameters].
+  bool equalsNamedParametersTypes(Map<String, Type> parameters) =>
+      _mapEqualityType.equals(namedParametersTypes, parameters);
+
+  /// Creates a [MethodInvocation] using [map] entries as parameters.
+  MethodInvocation<O> methodInvocationFromMap(Map<String, dynamic> map) {
+    return methodInvocation((k) => map[k]);
+  }
+
+  /// Creates a [MethodInvocation] using [parametersProvider].
+  MethodInvocation<O> methodInvocation(
+      Function(String key) parametersProvider) {
+    var normalParameters =
+        this.normalParameters.map((p) => parametersProvider(p.name)).toList();
+
+    var optionalParameters = this.optionalParameters.map((p) {
+      return parametersProvider(p.name);
+    }).toList();
+
+    Map<String, dynamic> namedParameters =
+        Map<String, dynamic>.fromEntries(this.namedParameters.entries.map((e) {
+      var k = e.key;
+      var p = e.value;
+
+      var value = parametersProvider(k);
+
+      if (value == null && p.nullable && !p.required) {
+        return null;
+      } else {
+        return MapEntry(k, value);
+      }
+    }).whereType<MapEntry<String, dynamic>>());
+
+    return MethodInvocation<O>(classReflection.classType, name,
+        normalParameters, optionalParameters, namedParameters);
+  }
 
   /// Invoke this method.
   R? invoke<R>(Iterable<Object?>? positionalArguments,
       [Map<Symbol, Object?>? namedArguments]) {
     return Function.apply(
-        _method, positionalArguments?.toList(), namedArguments);
+        method, positionalArguments?.toList(), namedArguments);
   }
 
   @override
@@ -331,3 +445,63 @@ class MethodReflection<O> extends ElementReflection<O> {
         (object != null ? '<$object>' : '');
   }
 }
+
+/// Represents a method invocation parameters.
+class MethodInvocation<T> {
+  /// The class [Type] of this invocation parameters.
+  final Type classType;
+
+  /// The method name of this invocation parameters.
+  final String methodName;
+
+  /// The normal positional parameters of the related method.
+  final List normalParameters;
+
+  /// The optional positional parameters of the related method.
+  final List? optionalParameters;
+
+  /// The named parameters of the related method.
+  final Map<String, dynamic>? namedParameters;
+
+  MethodInvocation(this.classType, this.methodName, this.normalParameters,
+      [this.optionalParameters, this.namedParameters]);
+
+  /// The positional arguments, derived from [normalParameters] and [optionalParameters].
+  /// Used by [invoke].
+  ///
+  /// - See: [Function.apply].
+  List<dynamic> get positionalArguments {
+    var optionalParameters = this.optionalParameters;
+
+    return optionalParameters == null || optionalParameters.isEmpty
+        ? normalParameters
+        : [
+            ...normalParameters,
+            ...optionalParameters,
+          ];
+  }
+
+  /// The named arguments, derived from [namedParameters].
+  /// Used by [invoke].
+  ///
+  /// - See: [Function.apply].
+  Map<Symbol, dynamic>? get namedArguments {
+    var namedParameters = this.namedParameters;
+    if (namedParameters == null || namedParameters.isEmpty) {
+      return null;
+    }
+    return namedParameters.map((key, value) => MapEntry(Symbol(key), value));
+  }
+
+  /// Invokes the [Function] [f] with [positionalArguments] and [namedArguments].
+  R invoke<R>(Function f) =>
+      Function.apply(f, positionalArguments, namedArguments);
+
+  @override
+  String toString() {
+    return 'MethodInvocation{normalParameters: $normalParameters, optionalParameters: $optionalParameters, namedParameters: $namedParameters}';
+  }
+}
+
+final ListEquality<Type> _listEqualityType = ListEquality<Type>();
+final MapEquality<String, Type> _mapEqualityType = MapEquality<String, Type>();

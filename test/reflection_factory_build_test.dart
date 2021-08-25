@@ -25,7 +25,7 @@ void main() {
           class User {
             static final double version = 1.0; 
             
-            static bool isVersion(double ver) => version == ver;
+            static bool isVersion(double ver, [double tolerance = 0.0]) => version == ver;
             
             String? email ;
             String pass ;
@@ -36,8 +36,12 @@ void main() {
             
             bool get hasEmail => email != null;
             
-            bool checkPassword(String pass) {
-              return this.pass == pass;
+            bool checkPassword(String pass, {bool ignoreCase = false}) {
+              if (ignoreCase) {
+                return  this.pass.toLowerCase() == pass.toLowerCase();
+              } else {
+                return  this.pass == pass;
+              } 
             }
           }
         
@@ -55,6 +59,8 @@ void main() {
             contains("part of 'foo.dart'"),
             contains('User\$reflection'),
             contains('User\$reflectionExtension'),
+            matches(RegExp(
+                r"'ignoreCase':\s*ParameterReflection\(\s*bool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*\)")),
           ))
         },
         onLog: (msg) {

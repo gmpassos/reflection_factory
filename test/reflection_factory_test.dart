@@ -1,4 +1,4 @@
-import 'package:reflection_factory/builder.dart';
+import 'package:reflection_factory/reflection_factory.dart';
 import 'package:test/test.dart';
 
 import 'src/user_reflection_bridge.dart';
@@ -104,9 +104,12 @@ void main() {
       expect(method.className, equals('TestUserWithReflection'));
       expect(method.isStatic, isFalse);
       expect(method.name, equals('checkPassword'));
-      expect(method.noArgs, isFalse);
+      expect(method.hasNoParameters, isFalse);
       expect(method.normalParameters.length, equals(1));
-      expect(method.normalParameters[0], equals(String));
+      expect(method.normalParameters[0],
+          equals(ParameterReflection(String, 'password', false)));
+      expect(method.normalParametersTypes.length, equals(1));
+      expect(method.normalParametersTypes[0], equals(String));
       expect(method.normalParametersNames.length, equals(1));
       expect(method.normalParametersNames[0], equals('password'));
       expect(
@@ -118,9 +121,10 @@ void main() {
       expect(staticMethod.className, equals('TestUserWithReflection'));
       expect(staticMethod.isStatic, isTrue);
       expect(staticMethod.name, equals('isVersion'));
-      expect(staticMethod.noArgs, isFalse);
+      expect(staticMethod.hasNoParameters, isFalse);
       expect(staticMethod.normalParameters.length, equals(1));
-      expect(staticMethod.normalParameters[0], equals(double));
+      expect(staticMethod.normalParameters[0],
+          equals(ParameterReflection(double, 'ver', false)));
       expect(staticMethod.normalParametersNames.length, equals(1));
       expect(staticMethod.normalParametersNames[0], equals('ver'));
       expect(
@@ -155,6 +159,9 @@ void main() {
       expect(userReflection.staticFieldsNames,
           equals(['version', 'withReflection']));
 
+      expect(userReflection.methodsNames, equals(['checkThePassword']));
+      expect(userReflection.staticMethodsNames, equals(['isVersion']));
+
       expect(userReflection.getField('name'), equals('Joe'));
       expect(userReflection.getField('email'), equals('joe@mail.com'));
 
@@ -163,6 +170,115 @@ void main() {
 
       expect(userReflection.invokeMethod('checkThePassword', ['abc']), isFalse);
       expect(userReflection.invokeMethod('checkThePassword', ['123']), isTrue);
+
+      userReflection.setField('password', 'abc');
+
+      expect(userReflection.invokeMethod('checkThePassword', ['abc']), isTrue);
+      expect(userReflection.invokeMethod('checkThePassword', ['ABC']), isFalse);
+
+      expect(
+          userReflection.invokeMethod(
+              'checkThePassword', ['ABC'], {Symbol('ignoreCase'): false}),
+          isFalse);
+      expect(
+          userReflection.invokeMethod(
+              'checkThePassword', ['ABC'], {Symbol('ignoreCase'): true}),
+          isTrue);
+
+      var method = userReflection.method('checkThePassword')!;
+
+      expect(method.hasNoParameters, isFalse);
+      expect(method.normalParameters.length, equals(1));
+      expect(method.normalParametersNames, equals(['password']));
+      expect(method.normalParametersTypes, equals([String]));
+      expect(method.equalsNormalParametersTypes([String]), isTrue);
+      expect(method.equalsNormalParametersTypes([bool]), isFalse);
+
+      expect(method.optionalParameters.length, equals(0));
+      expect(method.optionalParametersNames, isEmpty);
+      expect(method.optionalParametersTypes, isEmpty);
+      expect(method.equalsOptionalParametersTypes([]), isTrue);
+
+      expect(method.namedParameters.length, equals(1));
+      expect(method.namedParametersNames, equals(['ignoreCase']));
+      expect(method.namedParametersTypes, equals({'ignoreCase': bool}));
+      expect(method.equalsNamedParametersTypes({'ignoreCase': bool}), isTrue);
+      expect(
+          method.equalsNamedParametersTypes({'ignoreCase': String}), isFalse);
+
+      expect(
+          method.methodInvocationFromMap({
+            'password': '123',
+            'ignoreCase': false,
+          }).toString(),
+          equals(
+              'MethodInvocation{normalParameters: [123], optionalParameters: [], namedParameters: {ignoreCase: false}}'));
+
+      expect(
+          method.methodInvocationFromMap({
+            'password': '123',
+            'ignoreCase': false,
+          }).invoke(method.method),
+          isFalse);
+
+      expect(
+          method.methodInvocationFromMap({
+            'password': 'abc',
+            'ignoreCase': false,
+          }).invoke(method.method),
+          isTrue);
+
+      expect(
+          method.methodInvocationFromMap({
+            'password': 'ABC',
+            'ignoreCase': false,
+          }).invoke(method.method),
+          isFalse);
+
+      expect(
+          method.methodInvocationFromMap({
+            'password': 'ABC',
+            'ignoreCase': true,
+          }).invoke(method.method),
+          isTrue);
+
+      expect(userReflection.allMethods().whereNoParameters(), isEmpty);
+
+      expect(
+          userReflection.allMethods().whereParametersTypes().map((e) => e.name),
+          ['checkThePassword']);
+
+      expect(
+          userReflection.allMethods().whereParametersTypes(
+              normalParameters: [String]).map((e) => e.name),
+          ['checkThePassword']);
+
+      expect(
+          userReflection.allMethods().whereParametersTypes(
+              normalParameters: [bool]).map((e) => e.name),
+          []);
+
+      expect(
+          userReflection.allMethods().whereParametersTypes(
+              optionalParameters: [bool]).map((e) => e.name),
+          []);
+
+      expect(
+          userReflection
+              .allMethods()
+              .whereParametersTypes(optionalParameters: []).map((e) => e.name),
+          ['checkThePassword']);
+
+      expect(
+          userReflection.allMethods().whereParametersTypes(
+              namedParameters: {'ignoreCase': bool}).map((e) => e.name),
+          ['checkThePassword']);
+
+      expect(userReflection.allStaticMethods().whereNoParameters(), isEmpty);
+      expect(
+          userReflection.allStaticMethods().whereParametersTypes(
+              normalParameters: [double]).map((e) => e.name),
+          ['isVersion']);
 
       var userStaticReflection =
           TestUserReflectionBridge().reflection<TestUserSimple>();
