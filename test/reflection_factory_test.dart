@@ -107,7 +107,7 @@ void main() {
       expect(method.hasNoParameters, isFalse);
       expect(method.normalParameters.length, equals(1));
       expect(method.normalParameters[0],
-          equals(ParameterReflection(String, 'password', false)));
+          equals(ParameterReflection(String, 'password', false, false, null)));
       expect(method.normalParametersTypes.length, equals(1));
       expect(method.normalParametersTypes[0], equals(String));
       expect(method.normalParametersNames.length, equals(1));
@@ -124,7 +124,7 @@ void main() {
       expect(staticMethod.hasNoParameters, isFalse);
       expect(staticMethod.normalParameters.length, equals(1));
       expect(staticMethod.normalParameters[0],
-          equals(ParameterReflection(double, 'ver', false)));
+          equals(ParameterReflection(double, 'ver', false, false, null)));
       expect(staticMethod.normalParametersNames.length, equals(1));
       expect(staticMethod.normalParametersNames[0], equals('ver'));
       expect(
@@ -155,11 +155,18 @@ void main() {
 
       expect(userReflection.classType, equals(TestUserSimple));
 
+      expect(
+          userReflection.classAnnotations,
+          equals([
+            TestAnnotation(['class', 'user'])
+          ]));
+
       expect(userReflection.fieldsNames, equals(['email', 'name', 'password']));
       expect(userReflection.staticFieldsNames,
           equals(['version', 'withReflection']));
 
-      expect(userReflection.methodsNames, equals(['checkThePassword']));
+      expect(userReflection.methodsNames,
+          equals(['checkThePassword', 'hasEmail']));
       expect(userReflection.staticMethodsNames, equals(['isVersion']));
 
       expect(userReflection.getField('name'), equals('Joe'));
@@ -185,7 +192,25 @@ void main() {
               'checkThePassword', ['ABC'], {Symbol('ignoreCase'): true}),
           isTrue);
 
+      var field = userReflection.field('name')!;
+
+      expect(
+          field.annotations,
+          equals([
+            TestAnnotation(['field', 'name'])
+          ]));
+
+      expect(field.type, equals(String));
+      expect(field.nullable, isFalse);
+      expect(field.required, isTrue);
+
       var method = userReflection.method('checkThePassword')!;
+
+      expect(
+          method.annotations,
+          equals([
+            TestAnnotation(['method', 'password checker'])
+          ]));
 
       expect(method.hasNoParameters, isFalse);
       expect(method.normalParameters.length, equals(1));
@@ -193,6 +218,12 @@ void main() {
       expect(method.normalParametersTypes, equals([String]));
       expect(method.equalsNormalParametersTypes([String]), isTrue);
       expect(method.equalsNormalParametersTypes([bool]), isFalse);
+
+      expect(
+          method.normalParameters[0].annotations,
+          equals([
+            TestAnnotation(['parameter', 'password'])
+          ]));
 
       expect(method.optionalParameters.length, equals(0));
       expect(method.optionalParametersNames, isEmpty);
@@ -205,6 +236,8 @@ void main() {
       expect(method.equalsNamedParametersTypes({'ignoreCase': bool}), isTrue);
       expect(
           method.equalsNamedParametersTypes({'ignoreCase': String}), isFalse);
+
+      expect(method.namedParameters.values.first.annotations, isEmpty);
 
       expect(
           method.methodInvocationFromMap({
@@ -242,11 +275,11 @@ void main() {
           }).invoke(method.method),
           isTrue);
 
-      expect(userReflection.allMethods().whereNoParameters(), isEmpty);
+      expect(userReflection.allMethods().whereNoParameters().length, equals(1));
 
       expect(
           userReflection.allMethods().whereParametersTypes().map((e) => e.name),
-          ['checkThePassword']);
+          ['checkThePassword', 'hasEmail']);
 
       expect(
           userReflection.allMethods().whereParametersTypes(
@@ -267,7 +300,7 @@ void main() {
           userReflection
               .allMethods()
               .whereParametersTypes(optionalParameters: []).map((e) => e.name),
-          ['checkThePassword']);
+          ['checkThePassword', 'hasEmail']);
 
       expect(
           userReflection.allMethods().whereParametersTypes(
@@ -279,6 +312,45 @@ void main() {
           userReflection.allStaticMethods().whereParametersTypes(
               normalParameters: [double]).map((e) => e.name),
           ['isVersion']);
+
+      expect(
+          userReflection.allMethods().whereAnnotatedWith([
+            TestAnnotation(['method', 'password checker'])
+          ]).map((e) => e.name),
+          equals(['checkThePassword']));
+
+      expect(
+          userReflection.allMethods().whereAnnotatedWithAnyOf([
+            TestAnnotation(['method', 'password checker'])
+          ]).map((e) => e.name),
+          equals(['checkThePassword']));
+
+      expect(userReflection.allMethods().whereAnnotated().map((e) => e.name),
+          equals(['checkThePassword']));
+
+      expect(
+          userReflection
+              .allMethods()
+              .whereAnnotated((as) => as.any((a) => a is TestAnnotation))
+              .map((e) => e.name),
+          equals(['checkThePassword']));
+
+      expect(
+          userReflection
+              .allMethods()
+              .whereAnnotatedWithType<TestAnnotation>()
+              .map((e) => e.name),
+          equals(['checkThePassword']));
+
+      expect(userReflection.allMethods().whereNotAnnotated().map((e) => e.name),
+          equals(['hasEmail']));
+
+      expect(
+          userReflection
+              .allStaticMethods()
+              .whereNotAnnotated()
+              .map((e) => e.name),
+          isEmpty);
 
       var userStaticReflection =
           TestUserReflectionBridge().reflection<TestUserSimple>();

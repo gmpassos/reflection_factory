@@ -23,10 +23,13 @@ void main() {
           
           @EnableReflection()
           class User {
+            @TestAnnotation(['static field', 'version'])
             static final double version = 1.0; 
             
+            @TestAnnotation(['static method', 'version checker'])
             static bool isVersion(double ver, [double tolerance = 0.0]) => version == ver;
             
+            @TestAnnotation(['field', 'email'])
             String? email ;
             String pass ;
             
@@ -36,7 +39,10 @@ void main() {
             
             bool get hasEmail => email != null;
             
-            bool checkPassword(String pass, {bool ignoreCase = false}) {
+            @TestAnnotation(['method', 'password checker'])
+            bool checkPassword(
+            @TestAnnotation(['parameter', 'pass'])
+            String pass, {bool ignoreCase = false}) {
               if (ignoreCase) {
                 return  this.pass.toLowerCase() == pass.toLowerCase();
               } else {
@@ -60,8 +66,15 @@ void main() {
             contains('User\$reflection'),
             contains('User\$reflectionExtension'),
             matches(RegExp(
-                r"'ignoreCase':\s*ParameterReflection\(\s*bool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*\)")),
-          ))
+                r"'ignoreCase':\s*ParameterReflection\(\s*bool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*null\s*\)")),
+            allOf(
+              contains("TestAnnotation(['static method', 'version checker'])"),
+              contains("TestAnnotation(['method', 'password checker'])"),
+              contains("TestAnnotation(['static field', 'version'])"),
+              contains("TestAnnotation(['field', 'email'])"),
+              contains("TestAnnotation(['parameter', 'pass'])"),
+            ),
+          )),
         },
         onLog: (msg) {
           print(msg);

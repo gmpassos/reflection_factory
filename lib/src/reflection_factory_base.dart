@@ -69,6 +69,9 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
       methodsNames.length +
       staticMethodsNames.length;
 
+  /// Returns a `const` [List] of class annotations.
+  List<Object> get classAnnotations;
+
   /// Returns a `const` [List] of fields names.
   List<String> get fieldsNames;
 
@@ -197,6 +200,15 @@ abstract class ElementReflection<O> {
   String get className => classReflection.className;
 }
 
+final List<Object> _annotationsEmpty = List<Object>.unmodifiable(<Object>[]);
+
+final List<ParameterReflection> _parametersEmpty =
+    List<ParameterReflection>.unmodifiable(<ParameterReflection>[]);
+
+final Map<String, ParameterReflection> _namedParametersEmpty =
+    Map<String, ParameterReflection>.unmodifiable(
+        <String, ParameterReflection>{});
+
 /// A parameter reflection, used method arguments or class fields.
 class ParameterReflection {
   /// The [Type] of the parameter.
@@ -215,8 +227,15 @@ class ParameterReflection {
   /// - Fields: `true` if is NOT [nullable].
   final bool required;
 
-  const ParameterReflection(this.type, this.name, this.nullable,
-      [this.required = false]);
+  final List<Object>? _annotations;
+
+  /// The parameter annotations.
+  List<Object>? get annotations => _annotations != null
+      ? List<Object>.unmodifiable(_annotations!)
+      : _annotationsEmpty;
+
+  const ParameterReflection(
+      this.type, this.name, this.nullable, this.required, this._annotations);
 
   @override
   bool operator ==(Object other) =>
@@ -267,6 +286,13 @@ class FieldReflection<O, T> extends ElementReflection<O>
   /// Returns `true` if this field is final.
   final bool isFinal;
 
+  @override
+  final List<Object> _annotations;
+
+  /// The field annotations.
+  @override
+  List<Object> get annotations => _annotations;
+
   FieldReflection(
     ClassReflection<O> classReflection,
     this.type,
@@ -277,7 +303,11 @@ class FieldReflection<O, T> extends ElementReflection<O>
     this.object,
     bool isStatic,
     this.isFinal,
-  ) : super(classReflection, isStatic);
+    List<Object>? annotations,
+  )   : _annotations = annotations == null || annotations.isEmpty
+            ? _annotationsEmpty
+            : List<Object>.unmodifiable(annotations),
+        super(classReflection, isStatic);
 
   /// Returns this field value.
   T get() => _getter();
@@ -331,23 +361,34 @@ class MethodReflection<O> extends ElementReflection<O> {
   /// The named parameters [Type]s of this method.
   final Map<String, ParameterReflection> namedParameters;
 
+  /// The method annotations.
+  List<Object> annotations;
+
   MethodReflection(
-      ClassReflection<O> classReflection,
-      this.name,
-      this.returnType,
-      this.returnNullable,
-      this.method,
-      this.object,
-      bool isStatic,
-      List<ParameterReflection>? normalParameters,
-      List<ParameterReflection>? optionalParameters,
-      Map<String, ParameterReflection>? namedParameters)
-      : normalParameters = List<ParameterReflection>.unmodifiable(
-            normalParameters ?? <ParameterReflection>[]),
-        optionalParameters = List<ParameterReflection>.unmodifiable(
-            optionalParameters ?? <ParameterReflection>[]),
-        namedParameters = Map<String, ParameterReflection>.unmodifiable(
-            namedParameters ?? <String, ParameterReflection>{}),
+    ClassReflection<O> classReflection,
+    this.name,
+    this.returnType,
+    this.returnNullable,
+    this.method,
+    this.object,
+    bool isStatic,
+    List<ParameterReflection>? normalParameters,
+    List<ParameterReflection>? optionalParameters,
+    Map<String, ParameterReflection>? namedParameters,
+    List<Object>? annotations,
+  )   : normalParameters = normalParameters == null || normalParameters.isEmpty
+            ? _parametersEmpty
+            : List<ParameterReflection>.unmodifiable(normalParameters),
+        optionalParameters =
+            optionalParameters == null || optionalParameters.isEmpty
+                ? _parametersEmpty
+                : List<ParameterReflection>.unmodifiable(optionalParameters),
+        namedParameters = namedParameters == null || namedParameters.isEmpty
+            ? _namedParametersEmpty
+            : Map<String, ParameterReflection>.unmodifiable(namedParameters),
+        annotations = annotations == null || annotations.isEmpty
+            ? _annotationsEmpty
+            : List<Object>.unmodifiable(annotations),
         super(classReflection, isStatic);
 
   /// Returns `true` if this methods has no arguments/parameters.

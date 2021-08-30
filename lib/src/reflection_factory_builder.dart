@@ -441,6 +441,21 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write(
         "  Version get languageVersion => Version.parse('$languageVersion');\n\n");
 
+    var classElement = _Element(_classElement);
+
+    var classAnnotationListCode = classElement.annotationsAsListCode;
+    if (classAnnotationListCode != 'null') {
+      str.write(
+          '  static const List<Object> _classAnnotations = $classAnnotationListCode; \n\n');
+      str.write('  @override');
+      str.write(
+          '  List<Object> get classAnnotations => List<Object>.unmodifiable(_classAnnotations);\n\n');
+    } else {
+      str.write('  @override');
+      str.write(
+          '  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);\n\n');
+    }
+
     _buildField(str);
     _buildStaticField(str);
 
@@ -479,7 +494,12 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       var setter =
           !field.allowSetter ? 'null' : '(T v) => obj!.$name = v as $fullType';
 
-      return "FieldReflection<$className,T>(this, $type, '$name', $nullable, $getter , $setter , obj, false, $isFinal)";
+      return "FieldReflection<$className,T>(this, "
+          "$type, '$name', $nullable, "
+          "$getter , $setter , "
+          "obj, false, $isFinal, "
+          "${field.annotationsAsListCode}, "
+          ")";
     });
 
     str.write('  }\n\n');
@@ -511,7 +531,12 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
           ? 'null'
           : '(T v) => $className.$name = v as $fullType';
 
-      return "FieldReflection<$className,T>(this, $type, '$name', $nullable, $getter , $setter , null, true, $isFinal)";
+      return "FieldReflection<$className,T>(this, "
+          "$type, '$name', $nullable, "
+          "$getter , $setter , "
+          "null, true, $isFinal, "
+          "${field.annotationsAsListCode}, "
+          ")";
     });
 
     str.write('  }\n\n');
@@ -545,7 +570,8 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
           "this, '$name', $type, $nullable, obj.$name , obj , false, "
           "${method.normalParametersAsCode} , "
           "${method.optionalParametersAsCode}, "
-          "${method.namedParametersAsCode}"
+          "${method.namedParametersAsCode}, "
+          "${method.annotationsAsListCode}"
           ")";
     });
 
@@ -575,7 +601,8 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
           "this, '$name', $type, $nullable, $className.$name , null , true, "
           "${method.normalParametersAsCode} , "
           "${method.optionalParametersAsCode}, "
-          "${method.namedParametersAsCode}"
+          "${method.namedParametersAsCode}, "
+          "${method.annotationsAsListCode}"
           ")";
     });
 
@@ -681,7 +708,35 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
   }
 }
 
-class _Parameter {
+class _Element {
+  final Element _element;
+
+  _Element(this._element);
+
+  List<ElementAnnotation> get annotations => _element.metadata;
+
+  List<String> get annotationsAsCode => _element.metadata
+          .map((e) => e.toSource())
+          .where((src) =>
+              !src.startsWith('@EnableReflection(') &&
+              !src.startsWith('@ReflectionBridge('))
+          .map((src) {
+        if (src.startsWith('@')) {
+          src = src.substring(1);
+        }
+        return src;
+      }).toList();
+
+  String get annotationsAsListCode {
+    var codes = annotationsAsCode;
+    return codes.isEmpty ? 'null' : '[${codes.join(',')}]';
+  }
+}
+
+class _Parameter extends _Element {
+  final ParameterElement parameterElement;
+  final int parameterIndex;
+
   final DartType type;
   final String name;
 
@@ -689,13 +744,15 @@ class _Parameter {
 
   final bool required;
 
-  _Parameter(this.type, this.name, this.nullable, this.required);
+  _Parameter(this.parameterElement, this.parameterIndex, this.type, this.name,
+      this.nullable, this.required)
+      : super(parameterElement);
 }
 
-class _Method {
+class _Method extends _Element {
   final MethodElement methodElement;
 
-  _Method(this.methodElement);
+  _Method(this.methodElement) : super(methodElement);
 
   String get name => methodElement.name;
 
@@ -737,10 +794,10 @@ class _Method {
   }
 }
 
-class _Field {
+class _Field extends _Element {
   final FieldElement fieldElement;
 
-  _Field(this.fieldElement);
+  _Field(this.fieldElement) : super(fieldElement);
 
   String get name => fieldElement.name;
 
@@ -789,7 +846,8 @@ extension _FunctionTypeExtension on FunctionType {
     return List<_Parameter>.generate(normalParameterNames.length, (i) {
       var n = normalParameterNames[i];
       var t = normalParameterTypes[i];
-      return _Parameter(t, n, t.isNullable, true);
+      var p = parameters[i];
+      return _Parameter(p, i, t, n, t.isNullable, true);
     });
   }
 
@@ -797,13 +855,27 @@ extension _FunctionTypeExtension on FunctionType {
     return List<_Parameter>.generate(optionalParameterNames.length, (i) {
       var n = optionalParameterNames[i];
       var t = optionalParameterTypes[i];
-      return _Parameter(t, n, t.isNullable, false);
+      var idx = normalParameterNames.length + i;
+      var p = parameters[idx];
+      return _Parameter(p, idx, t, n, t.isNullable, false);
     });
   }
 
-  Map<String, _Parameter> get namedParameters =>
-      namedParameterTypes.map((key, value) => MapEntry(
-          key, _Parameter(value, key, value.isNullable, value.isRequired)));
+  Map<String, _Parameter> get namedParameters {
+    var map = <String, _Parameter>{};
+    var i = 0;
+    for (var e in namedParameterTypes.entries) {
+      var key = e.key;
+      var value = e.value;
+      var idx = normalParameterNames.length + i;
+      var p = parameters[idx];
+      var parameter =
+          _Parameter(p, idx, value, key, value.isNullable, value.isRequired);
+      map[key] = parameter;
+      i++;
+    }
+    return map;
+  }
 }
 
 String _buildStringListCode(Iterable? o,
@@ -826,8 +898,13 @@ String _buildParameterReflectionList(Iterable<_Parameter>? o,
     return nullOnEmpty ? 'null' : '<ParameterReflection>[]';
   } else {
     var parameters = o
-        .map((e) =>
-            "ParameterReflection( ${e.type.typeCodeName} , '${e.name}' , ${e.nullable ? 'true' : 'false'} )")
+        .map((e) => "ParameterReflection( "
+            "${e.type.typeCodeName} , "
+            "'${e.name}' , "
+            "${e.nullable ? 'true' : 'false'} , "
+            "false , "
+            "${e.annotationsAsListCode}"
+            ")")
         .join(', ');
     return 'const <ParameterReflection>[$parameters]';
   }
@@ -845,7 +922,8 @@ String _buildNamedParameterReflectionMap(Map<String, _Parameter>? o,
           "${value.type.typeCodeName} , "
           "'${e.value.name}' , "
           "${e.value.nullable ? 'true' : 'false'} , "
-          "${e.value.required ? 'true' : 'false'} "
+          "${e.value.required ? 'true' : 'false'} , "
+          "${e.value.annotationsAsListCode}"
           ")";
     }).join(', ');
     return 'const <String,ParameterReflection>{$parameters}';

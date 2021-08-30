@@ -25,6 +25,9 @@ class User$reflection extends ClassReflection<User> {
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
+  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+
+  @override
   List<String> get fieldsNames => const <String>['email', 'hasEmail', 'pass'];
 
   @override
@@ -36,29 +39,43 @@ class User$reflection extends ClassReflection<User> {
     switch (lc) {
       case 'email':
         return FieldReflection<User, T>(
-            this,
-            String,
-            'email',
-            true,
-            () => obj!.email as T,
-            (T v) => obj!.email = v as String?,
-            obj,
-            false,
-            false);
+          this,
+          String,
+          'email',
+          true,
+          () => obj!.email as T,
+          (T v) => obj!.email = v as String?,
+          obj,
+          false,
+          false,
+          null,
+        );
       case 'pass':
         return FieldReflection<User, T>(
-            this,
-            String,
-            'pass',
-            false,
-            () => obj!.pass as T,
-            (T v) => obj!.pass = v as String,
-            obj,
-            false,
-            false);
+          this,
+          String,
+          'pass',
+          false,
+          () => obj!.pass as T,
+          (T v) => obj!.pass = v as String,
+          obj,
+          false,
+          false,
+          null,
+        );
       case 'hasemail':
-        return FieldReflection<User, T>(this, bool, 'hasEmail', false,
-            () => obj!.hasEmail as T, null, obj, false, false);
+        return FieldReflection<User, T>(
+          this,
+          bool,
+          'hasEmail',
+          false,
+          () => obj!.hasEmail as T,
+          null,
+          obj,
+          false,
+          false,
+          null,
+        );
       default:
         return null;
     }
@@ -92,8 +109,9 @@ class User$reflection extends ClassReflection<User> {
             obj,
             false,
             const <ParameterReflection>[
-              ParameterReflection(String, 'pass', false)
+              ParameterReflection(String, 'pass', false, false, null)
             ],
+            null,
             null,
             null);
       default:

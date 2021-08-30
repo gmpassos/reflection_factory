@@ -28,6 +28,9 @@ class TestUserWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
+  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+
+  @override
   List<String> get fieldsNames => const <String>['email', 'name', 'password'];
 
   @override
@@ -39,30 +42,44 @@ class TestUserWithReflection$reflection
 
     switch (lc) {
       case 'name':
-        return FieldReflection<TestUserWithReflection, T>(this, String, 'name',
-            false, () => obj!.name as T, null, obj, false, true);
+        return FieldReflection<TestUserWithReflection, T>(
+          this,
+          String,
+          'name',
+          false,
+          () => obj!.name as T,
+          null,
+          obj,
+          false,
+          true,
+          null,
+        );
       case 'email':
         return FieldReflection<TestUserWithReflection, T>(
-            this,
-            String,
-            'email',
-            true,
-            () => obj!.email as T,
-            (T v) => obj!.email = v as String?,
-            obj,
-            false,
-            false);
+          this,
+          String,
+          'email',
+          true,
+          () => obj!.email as T,
+          (T v) => obj!.email = v as String?,
+          obj,
+          false,
+          false,
+          null,
+        );
       case 'password':
         return FieldReflection<TestUserWithReflection, T>(
-            this,
-            String,
-            'password',
-            false,
-            () => obj!.password as T,
-            (T v) => obj!.password = v as String,
-            obj,
-            false,
-            false);
+          this,
+          String,
+          'password',
+          false,
+          () => obj!.password as T,
+          (T v) => obj!.password = v as String,
+          obj,
+          false,
+          false,
+          null,
+        );
       default:
         return null;
     }
@@ -79,26 +96,30 @@ class TestUserWithReflection$reflection
     switch (lc) {
       case 'version':
         return FieldReflection<TestUserWithReflection, T>(
-            this,
-            double,
-            'version',
-            false,
-            () => TestUserWithReflection.version as T,
-            null,
-            null,
-            true,
-            true);
+          this,
+          double,
+          'version',
+          false,
+          () => TestUserWithReflection.version as T,
+          null,
+          null,
+          true,
+          true,
+          null,
+        );
       case 'withreflection':
         return FieldReflection<TestUserWithReflection, T>(
-            this,
-            bool,
-            'withReflection',
-            false,
-            () => TestUserWithReflection.withReflection as T,
-            null,
-            null,
-            true,
-            true);
+          this,
+          bool,
+          'withReflection',
+          false,
+          () => TestUserWithReflection.withReflection as T,
+          null,
+          null,
+          true,
+          true,
+          null,
+        );
       default:
         return null;
     }
@@ -125,8 +146,9 @@ class TestUserWithReflection$reflection
             obj,
             false,
             const <ParameterReflection>[
-              ParameterReflection(String, 'password', false)
+              ParameterReflection(String, 'password', false, false, null)
             ],
+            null,
             null,
             null);
       default:
@@ -152,8 +174,9 @@ class TestUserWithReflection$reflection
             null,
             true,
             const <ParameterReflection>[
-              ParameterReflection(double, 'ver', false)
+              ParameterReflection(double, 'ver', false, false, null)
             ],
+            null,
             null,
             null);
       default:

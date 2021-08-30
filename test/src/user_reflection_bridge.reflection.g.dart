@@ -26,6 +26,14 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   @override
   Version get languageVersion => Version.parse('2.13.0');
 
+  static const List<Object> _classAnnotations = [
+    TestAnnotation(['class', 'user'])
+  ];
+
+  @override
+  List<Object> get classAnnotations =>
+      List<Object>.unmodifiable(_classAnnotations);
+
   @override
   List<String> get fieldsNames => const <String>['email', 'name', 'password'];
 
@@ -38,30 +46,46 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
 
     switch (lc) {
       case 'name':
-        return FieldReflection<TestUserSimple, T>(this, String, 'name', false,
-            () => obj!.name as T, null, obj, false, true);
+        return FieldReflection<TestUserSimple, T>(
+          this,
+          String,
+          'name',
+          false,
+          () => obj!.name as T,
+          null,
+          obj,
+          false,
+          true,
+          [
+            TestAnnotation(['field', 'name'])
+          ],
+        );
       case 'email':
         return FieldReflection<TestUserSimple, T>(
-            this,
-            String,
-            'email',
-            true,
-            () => obj!.email as T,
-            (T v) => obj!.email = v as String?,
-            obj,
-            false,
-            false);
+          this,
+          String,
+          'email',
+          true,
+          () => obj!.email as T,
+          (T v) => obj!.email = v as String?,
+          obj,
+          false,
+          false,
+          null,
+        );
       case 'password':
         return FieldReflection<TestUserSimple, T>(
-            this,
-            String,
-            'password',
-            false,
-            () => obj!.password as T,
-            (T v) => obj!.password = v as String,
-            obj,
-            false,
-            false);
+          this,
+          String,
+          'password',
+          false,
+          () => obj!.password as T,
+          (T v) => obj!.password = v as String,
+          obj,
+          false,
+          false,
+          null,
+        );
       default:
         return null;
     }
@@ -77,26 +101,41 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
 
     switch (lc) {
       case 'version':
-        return FieldReflection<TestUserSimple, T>(this, double, 'version',
-            false, () => TestUserSimple.version as T, null, null, true, true);
+        return FieldReflection<TestUserSimple, T>(
+          this,
+          double,
+          'version',
+          false,
+          () => TestUserSimple.version as T,
+          null,
+          null,
+          true,
+          true,
+          [
+            TestAnnotation(['static field', 'version'])
+          ],
+        );
       case 'withreflection':
         return FieldReflection<TestUserSimple, T>(
-            this,
-            bool,
-            'withReflection',
-            false,
-            () => TestUserSimple.withReflection as T,
-            null,
-            null,
-            true,
-            true);
+          this,
+          bool,
+          'withReflection',
+          false,
+          () => TestUserSimple.withReflection as T,
+          null,
+          null,
+          true,
+          true,
+          null,
+        );
       default:
         return null;
     }
   }
 
   @override
-  List<String> get methodsNames => const <String>['checkThePassword'];
+  List<String> get methodsNames =>
+      const <String>['checkThePassword', 'hasEmail'];
 
   @override
   MethodReflection<TestUserSimple>? method(String methodName,
@@ -116,13 +155,21 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
             obj,
             false,
             const <ParameterReflection>[
-              ParameterReflection(String, 'password', false)
+              ParameterReflection(String, 'password', false, false, [
+                TestAnnotation(['parameter', 'password'])
+              ])
             ],
             null,
             const <String, ParameterReflection>{
               'ignoreCase':
-                  ParameterReflection(bool, 'ignoreCase', false, false)
-            });
+                  ParameterReflection(bool, 'ignoreCase', false, false, null)
+            },
+            [
+              TestAnnotation(['method', 'password checker'])
+            ]);
+      case 'hasemail':
+        return MethodReflection<TestUserSimple>(this, 'hasEmail', bool, false,
+            obj.hasEmail, obj, false, null, null, null, null);
       default:
         return null;
     }
@@ -146,10 +193,13 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
             null,
             true,
             const <ParameterReflection>[
-              ParameterReflection(double, 'ver', false)
+              ParameterReflection(double, 'ver', false, false, null)
             ],
             null,
-            null);
+            null,
+            [
+              TestAnnotation(['static method', 'version checker'])
+            ]);
       default:
         return null;
     }

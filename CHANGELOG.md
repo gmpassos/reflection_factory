@@ -1,3 +1,8 @@
+## 1.0.3
+
+- Annotation reflection:
+  - Support for classes, fields, methods and method parameters.
+
 ## 1.0.2
 
 - `ClassReflection`:
