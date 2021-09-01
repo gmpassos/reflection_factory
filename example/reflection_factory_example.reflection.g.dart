@@ -43,8 +43,8 @@ class User$reflection extends ClassReflection<User> {
           String,
           'email',
           true,
-          () => obj!.email as T,
-          (T v) => obj!.email = v as String?,
+          (o) => () => o!.email as T,
+          (o) => (T v) => o!.email = v as String?,
           obj,
           false,
           false,
@@ -56,8 +56,8 @@ class User$reflection extends ClassReflection<User> {
           String,
           'pass',
           false,
-          () => obj!.pass as T,
-          (T v) => obj!.pass = v as String,
+          (o) => () => o!.pass as T,
+          (o) => (T v) => o!.pass = v as String,
           obj,
           false,
           false,
@@ -69,7 +69,7 @@ class User$reflection extends ClassReflection<User> {
           bool,
           'hasEmail',
           false,
-          () => obj!.hasEmail as T,
+          (o) => () => o!.hasEmail as T,
           null,
           obj,
           false,
@@ -94,7 +94,7 @@ class User$reflection extends ClassReflection<User> {
 
   @override
   MethodReflection<User>? method(String methodName, [User? obj]) {
-    obj ??= object!;
+    obj ??= object;
 
     var lc = methodName.trim().toLowerCase();
 
@@ -105,7 +105,7 @@ class User$reflection extends ClassReflection<User> {
             'checkPassword',
             bool,
             false,
-            obj.checkPassword,
+            (o) => o!.checkPassword,
             obj,
             false,
             const <ParameterReflection>[

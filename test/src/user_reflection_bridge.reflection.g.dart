@@ -51,7 +51,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
           String,
           'name',
           false,
-          () => obj!.name as T,
+          (o) => () => o!.name as T,
           null,
           obj,
           false,
@@ -66,8 +66,8 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
           String,
           'email',
           true,
-          () => obj!.email as T,
-          (T v) => obj!.email = v as String?,
+          (o) => () => o!.email as T,
+          (o) => (T v) => o!.email = v as String?,
           obj,
           false,
           false,
@@ -79,8 +79,8 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
           String,
           'password',
           false,
-          () => obj!.password as T,
-          (T v) => obj!.password = v as String,
+          (o) => () => o!.password as T,
+          (o) => (T v) => o!.password = v as String,
           obj,
           false,
           false,
@@ -106,7 +106,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
           double,
           'version',
           false,
-          () => TestUserSimple.version as T,
+          (o) => () => TestUserSimple.version as T,
           null,
           null,
           true,
@@ -121,7 +121,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
           bool,
           'withReflection',
           false,
-          () => TestUserSimple.withReflection as T,
+          (o) => () => TestUserSimple.withReflection as T,
           null,
           null,
           true,
@@ -140,7 +140,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   @override
   MethodReflection<TestUserSimple>? method(String methodName,
       [TestUserSimple? obj]) {
-    obj ??= object!;
+    obj ??= object;
 
     var lc = methodName.trim().toLowerCase();
 
@@ -151,7 +151,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
             'checkThePassword',
             bool,
             false,
-            obj.checkThePassword,
+            (o) => o!.checkThePassword,
             obj,
             false,
             const <ParameterReflection>[
@@ -169,7 +169,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
             ]);
       case 'hasemail':
         return MethodReflection<TestUserSimple>(this, 'hasEmail', bool, false,
-            obj.hasEmail, obj, false, null, null, null, null);
+            (o) => o!.hasEmail, obj, false, null, null, null, null);
       default:
         return null;
     }
@@ -189,7 +189,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
             'isVersion',
             bool,
             false,
-            TestUserSimple.isVersion,
+            (o) => TestUserSimple.isVersion,
             null,
             true,
             const <ParameterReflection>[

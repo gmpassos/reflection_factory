@@ -6,6 +6,123 @@
 
 part of 'user_with_reflection.dart';
 
+class TestAddressWithReflection$reflection
+    extends ClassReflection<TestAddressWithReflection> {
+  TestAddressWithReflection$reflection([TestAddressWithReflection? object])
+      : super(TestAddressWithReflection, object);
+
+  bool _registered = false;
+  @override
+  void register() {
+    if (!_registered) {
+      _registered = true;
+      super.register();
+    }
+  }
+
+  @override
+  TestAddressWithReflection$reflection withObject(
+          [TestAddressWithReflection? obj]) =>
+      TestAddressWithReflection$reflection(obj);
+
+  @override
+  Version get languageVersion => Version.parse('2.13.0');
+
+  @override
+  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+
+  @override
+  List<String> get fieldsNames => const <String>['city', 'hashCode', 'state'];
+
+  @override
+  FieldReflection<TestAddressWithReflection, T>? field<T>(String fieldName,
+      [TestAddressWithReflection? obj]) {
+    obj ??= object!;
+
+    var lc = fieldName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'state':
+        return FieldReflection<TestAddressWithReflection, T>(
+          this,
+          String,
+          'state',
+          false,
+          (o) => () => o!.state as T,
+          null,
+          obj,
+          false,
+          true,
+          null,
+        );
+      case 'city':
+        return FieldReflection<TestAddressWithReflection, T>(
+          this,
+          String,
+          'city',
+          false,
+          (o) => () => o!.city as T,
+          null,
+          obj,
+          false,
+          true,
+          null,
+        );
+      case 'hashcode':
+        return FieldReflection<TestAddressWithReflection, T>(
+          this,
+          int,
+          'hashCode',
+          false,
+          (o) => () => o!.hashCode as T,
+          null,
+          obj,
+          false,
+          false,
+          null,
+        );
+      default:
+        return null;
+    }
+  }
+
+  @override
+  List<String> get staticFieldsNames => const <String>[];
+
+  @override
+  FieldReflection<TestAddressWithReflection, T>? staticField<T>(
+      String fieldName) {
+    return null;
+  }
+
+  @override
+  List<String> get methodsNames => const <String>['toJson'];
+
+  @override
+  MethodReflection<TestAddressWithReflection>? method(String methodName,
+      [TestAddressWithReflection? obj]) {
+    obj ??= object;
+
+    var lc = methodName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'tojson':
+        return MethodReflection<TestAddressWithReflection>(this, 'toJson', Map,
+            false, (o) => o!.toJson, obj, false, null, null, null, null);
+      default:
+        return null;
+    }
+  }
+
+  @override
+  List<String> get staticMethodsNames => const <String>[];
+
+  @override
+  MethodReflection<TestAddressWithReflection>? staticMethod(String methodName) {
+    return null;
+  }
+}
+
 class TestUserWithReflection$reflection
     extends ClassReflection<TestUserWithReflection> {
   TestUserWithReflection$reflection([TestUserWithReflection? object])
@@ -47,7 +164,7 @@ class TestUserWithReflection$reflection
           String,
           'name',
           false,
-          () => obj!.name as T,
+          (o) => () => o!.name as T,
           null,
           obj,
           false,
@@ -60,8 +177,8 @@ class TestUserWithReflection$reflection
           String,
           'email',
           true,
-          () => obj!.email as T,
-          (T v) => obj!.email = v as String?,
+          (o) => () => o!.email as T,
+          (o) => (T v) => o!.email = v as String?,
           obj,
           false,
           false,
@@ -73,8 +190,8 @@ class TestUserWithReflection$reflection
           String,
           'password',
           false,
-          () => obj!.password as T,
-          (T v) => obj!.password = v as String,
+          (o) => () => o!.password as T,
+          (o) => (T v) => o!.password = v as String,
           obj,
           false,
           false,
@@ -100,7 +217,7 @@ class TestUserWithReflection$reflection
           double,
           'version',
           false,
-          () => TestUserWithReflection.version as T,
+          (o) => () => TestUserWithReflection.version as T,
           null,
           null,
           true,
@@ -113,7 +230,7 @@ class TestUserWithReflection$reflection
           bool,
           'withReflection',
           false,
-          () => TestUserWithReflection.withReflection as T,
+          (o) => () => TestUserWithReflection.withReflection as T,
           null,
           null,
           true,
@@ -131,7 +248,7 @@ class TestUserWithReflection$reflection
   @override
   MethodReflection<TestUserWithReflection>? method(String methodName,
       [TestUserWithReflection? obj]) {
-    obj ??= object!;
+    obj ??= object;
 
     var lc = methodName.trim().toLowerCase();
 
@@ -142,7 +259,7 @@ class TestUserWithReflection$reflection
             'checkPassword',
             bool,
             false,
-            obj.checkPassword,
+            (o) => o!.checkPassword,
             obj,
             false,
             const <ParameterReflection>[
@@ -170,7 +287,7 @@ class TestUserWithReflection$reflection
             'isVersion',
             bool,
             false,
-            TestUserWithReflection.isVersion,
+            (o) => TestUserWithReflection.isVersion,
             null,
             true,
             const <ParameterReflection>[
@@ -183,6 +300,16 @@ class TestUserWithReflection$reflection
         return null;
     }
   }
+}
+
+extension TestAddressWithReflection$reflectionExtension
+    on TestAddressWithReflection {
+  /// Returns a [ClassReflection] for type [TestAddressWithReflection]. (Generated by [ReflectionFactory])
+  ClassReflection<TestAddressWithReflection> get reflection =>
+      TestAddressWithReflection$reflection(this);
+
+  /// Returns an encoded JSON [String] for type [TestAddressWithReflection]. (Generated by [ReflectionFactory])
+  String toJsonEncoded() => reflection.toJsonEncoded();
 }
 
 extension TestUserWithReflection$reflectionExtension on TestUserWithReflection {

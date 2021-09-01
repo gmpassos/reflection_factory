@@ -19,3 +19,26 @@ class TestUserWithReflection {
 
   bool checkPassword(String password) => this.password == password;
 }
+
+@EnableReflection()
+class TestAddressWithReflection {
+  final String state;
+
+  final String city;
+
+  TestAddressWithReflection(this.state, this.city);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TestAddressWithReflection &&
+          runtimeType == other.runtimeType &&
+          state == other.state &&
+          city == other.city;
+
+  @override
+  int get hashCode => state.hashCode ^ city.hashCode;
+
+  // Implements its own `toJson`:
+  Map<String, dynamic> toJson() => {'state': state, 'city': city};
+}

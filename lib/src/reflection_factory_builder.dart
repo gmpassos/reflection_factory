@@ -364,9 +364,30 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
   bool hasStaticMethod(String methodName) =>
       staticMethods.where((m) => m.name == methodName).isNotEmpty;
 
+  bool isValidMethodName(String name) =>
+      name != '==' &&
+      name != '+' &&
+      name != '-' &&
+      name != '*' &&
+      name != '/' &&
+      name != '~/' &&
+      name != '[]' &&
+      name != '[]=' &&
+      name != '<' &&
+      name != '>' &&
+      name != '<=' &&
+      name != '>=' &&
+      name != '&' &&
+      name != '|' &&
+      name != '^' &&
+      name != '<<' &&
+      name != '>>' &&
+      name != '~' &&
+      name != '%';
+
   @override
   T? visitMethodElement(MethodElement element) {
-    if (element.isPrivate) {
+    if (element.isPrivate || !isValidMethodName(element.name)) {
       return super.visitMethodElement(element);
     }
 
@@ -490,9 +511,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       var fullType = field.fullTypeCodeName;
       var nullable = field.nullable ? 'true' : 'false';
       var isFinal = field.isFinal ? 'true' : 'false';
-      var getter = '() => obj!.$name as T';
-      var setter =
-          !field.allowSetter ? 'null' : '(T v) => obj!.$name = v as $fullType';
+      var getter = '(o) => () => o!.$name as T';
+      var setter = !field.allowSetter
+          ? 'null'
+          : '(o) => (T v) => o!.$name = v as $fullType';
 
       return "FieldReflection<$className,T>(this, "
           "$type, '$name', $nullable, "
@@ -526,10 +548,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       var fullType = field.fullTypeCodeName;
       var nullable = field.nullable ? 'true' : 'false';
       var isFinal = field.isFinal ? 'true' : 'false';
-      var getter = '() => $className.$name as T';
+      var getter = '(o) => () => $className.$name as T';
       var setter = !field.allowSetter
           ? 'null'
-          : '(T v) => $className.$name = v as $fullType';
+          : '(o) => (T v) => $className.$name = v as $fullType';
 
       return "FieldReflection<$className,T>(this, "
           "$type, '$name', $nullable, "
@@ -556,7 +578,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  @override\n');
     str.write(
         '  MethodReflection<$className>? method(String methodName, [$className? obj]) {\n');
-    str.write('    obj ??= object!;\n\n');
+    str.write('    obj ??= object;\n\n');
 
     _buildSwitches(str, 'methodName', entries.keys, (name) {
       var method = entries[name]!;
@@ -567,7 +589,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       var type = method.returnTypeCodeName;
       var nullable = method.returnNullable ? 'true' : 'false';
       return "MethodReflection<$className>("
-          "this, '$name', $type, $nullable, obj.$name , obj , false, "
+          "this, '$name', $type, $nullable, (o) => o!.$name , obj , false, "
           "${method.normalParametersAsCode} , "
           "${method.optionalParametersAsCode}, "
           "${method.namedParametersAsCode}, "
@@ -598,7 +620,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       var type = method.returnTypeCodeName;
       var nullable = method.returnNullable ? 'true' : 'false';
       return "MethodReflection<$className>("
-          "this, '$name', $type, $nullable, $className.$name , null , true, "
+          "this, '$name', $type, $nullable, (o) => $className.$name , null , true, "
           "${method.normalParametersAsCode} , "
           "${method.optionalParametersAsCode}, "
           "${method.namedParametersAsCode}, "

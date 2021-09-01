@@ -1,3 +1,16 @@
+## 1.0.4
+
+- Added `ElementResolver`:
+- `ClassReflection`:
+  - Added resolvers:
+    `fieldResolver`, `staticFieldResolver`, `methodResolver`, `staticMethodResolver`.
+  - Optimized `toJson` to resolve faster `MethodReflection` of `obj.toJson`. 
+- Changed `FieldReflection` to allow `withObject`.
+- Changed `MethodReflection` to allow `withObject`.
+- Added `ReflectionFactory.toJsonEncodable`.
+- Improve API Documentation.
+- Fix issue with operator overloading.
+
 ## 1.0.3
 
 - Annotation reflection:

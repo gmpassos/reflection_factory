@@ -93,7 +93,7 @@ void main() {
       expect(userReflection.invokeStaticMethod('isVersion', [1.1]), isTrue);
       expect(userReflection.invokeStaticMethod('isVersion', [2.0]), isFalse);
 
-      var user2 = TestUserWithReflection('Joe', 'joe@mail.com', 'xyz');
+      var user2 = TestUserWithReflection('Joe', 'smith@mail.com', 'xyz');
       expect(userReflection.invokeMethodWith('checkPassword', user2, ['xyz']),
           isTrue);
       expect(userReflection.invokeMethodWith('checkPassword', user2, ['abc']),
@@ -132,10 +132,56 @@ void main() {
           startsWith(
               'MethodReflection{ class: TestUserWithReflection, name: isVersion, returnType: bool, static: true,'));
 
+      var fieldResolver = userReflection.fieldResolver('email');
+      expect(fieldResolver.isResolved, isFalse);
+      expect(fieldResolver.get()!.withObject(user2).get(),
+          equals('smith@mail.com'));
+      expect(fieldResolver.isResolved, isTrue);
+      fieldResolver.reset();
+      expect(fieldResolver.isResolved, isFalse);
+      expect(fieldResolver.get()!.withObject(user2).get(),
+          equals('smith@mail.com'));
+      expect(fieldResolver.isResolved, isTrue);
+
+      expect(
+          userReflection
+              .staticFieldResolver('version')
+              .get()!
+              .withObject(user2)
+              .get(),
+          equals(1.1));
+
+      expect(
+          userReflection
+              .methodResolver('checkPassword')
+              .get()!
+              .withObject(user2)
+              .invoke(['xyz']),
+          isTrue);
+
+      expect(
+          userReflection
+              .staticMethodResolver('isVersion')
+              .get()!
+              .withObject(user2)
+              .invoke([1.1]),
+          isTrue);
+
       expect(userReflection.toJson(),
           equals({'email': 'joe@mail.net', 'name': 'Joe', 'password': 'abc'}));
       expect(userReflection.toJsonEncoded(),
           equals('{"email":"joe@mail.net","name":"Joe","password":"abc"}'));
+
+      expect(ReflectionFactory.toJsonEncodable(user),
+          equals({'email': 'joe@mail.net', 'name': 'Joe', 'password': 'abc'}));
+
+      expect(ReflectionFactory.toJsonEncodable(TestAddress('NY', 'New York')),
+          equals({'state': 'NY', 'city': 'New York'}));
+
+      expect(
+          ReflectionFactory.toJsonEncodable(TestAddress('NY', 'New York'),
+              toEncodable: (o) => 'wow'),
+          equals('wow'));
 
       var userStaticReflection = TestUserWithReflection$reflection();
 
@@ -146,6 +192,12 @@ void main() {
 
       expect(userStaticReflection.getStaticField('version'), equals(1.1));
       expect(userStaticReflection.getStaticField('withReflection'), isTrue);
+
+      var address = TestAddressWithReflection('CA', 'Los Angeles');
+      expect(address.reflection, isNotNull);
+
+      expect(ReflectionFactory.toJsonEncodable(address),
+          equals({'state': 'CA', 'city': 'Los Angeles'}));
     });
 
     test('ReflectionBridge', () async {

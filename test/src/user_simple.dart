@@ -52,3 +52,25 @@ class TestAnnotation {
     return 'TestAnnotation{list: $list}';
   }
 }
+
+// No reflection:
+class TestAddress {
+  final String state;
+
+  final String city;
+
+  TestAddress(this.state, this.city);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TestAddress &&
+          runtimeType == other.runtimeType &&
+          state == other.state &&
+          city == other.city;
+
+  @override
+  int get hashCode => state.hashCode ^ city.hashCode;
+
+  Map<String, dynamic> toJson() => {'state': state, 'city': city};
+}
