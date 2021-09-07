@@ -15,7 +15,14 @@ class TestUserWithReflection {
 
   String password;
 
-  TestUserWithReflection(this.name, this.email, this.password);
+  TestUserWithReflection.fields(this.name, this.email, this.password);
+
+  TestUserWithReflection()
+      : this.fields(
+          '',
+          null,
+          '',
+        );
 
   bool checkPassword(String password) => this.password == password;
 }

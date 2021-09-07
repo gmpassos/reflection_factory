@@ -3,8 +3,10 @@ import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/visitor.dart';
 import 'package:build/build.dart';
+import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:reflection_factory/src/reflection_factory_base.dart';
 
 import 'analyzer/library.dart';
 import 'analyzer/type_checker.dart';
@@ -349,6 +351,43 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
   String get reflectionExtension =>
       _buildReflectionExtensionName(className, reflectionExtensionName);
 
+  final Set<ConstructorElement> constructors = <ConstructorElement>{};
+
+  ConstructorElement? get defaultConstructor =>
+      constructors.firstWhereOrNull((e) => e.isDefaultConstructor);
+
+  ConstructorElement? get emptyConstructor {
+    var noArgsConstructors = constructors
+        .where((e) => e.name.isNotEmpty && e.parameters.isEmpty)
+        .toList();
+
+    if (noArgsConstructors.isEmpty) {
+      return null;
+    } else if (noArgsConstructors.length == 1) {
+      return noArgsConstructors[0];
+    } else {
+      var found = noArgsConstructors.firstWhereOrNull((e) {
+        var name = e.name.toLowerCase();
+        return name == 'empty' || name == 'create' || name == 'def';
+      });
+
+      if (found != null) {
+        return found;
+      } else {
+        return noArgsConstructors.first;
+      }
+    }
+  }
+
+  @override
+  T? visitConstructorElement(ConstructorElement element) {
+    if (element.isPrivate || !isValidMethodName(element.name)) {
+      return super.visitConstructorElement(element);
+    }
+
+    constructors.add(element);
+  }
+
   final Set<MethodElement> staticMethods = <MethodElement>{};
 
   List<String> get staticMethodsNames =>
@@ -446,7 +485,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         '  $reflectionClass([$className? object]) : super($className, object);\n\n');
 
     str.write('  bool _registered = false;\n');
-    str.write('  @override');
+    str.write('  @override\n');
     str.write('  void register() {\n');
     str.write('    if (!_registered) {\n');
     str.write('      _registered = true;\n');
@@ -454,13 +493,15 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('    }\n');
     str.write('  }\n\n');
 
-    str.write('  @override');
+    str.write('  @override\n');
+    str.write(
+        "  Version get languageVersion => Version.parse('$languageVersion');\n\n");
+
+    str.write('  @override\n');
     str.write(
         '  $reflectionClass withObject([$className? obj]) => $reflectionClass(obj);\n\n');
 
-    str.write('  @override');
-    str.write(
-        "  Version get languageVersion => Version.parse('$languageVersion');\n\n");
+    _buildConstructors(str);
 
     var classElement = _Element(_classElement);
 
@@ -468,11 +509,11 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     if (classAnnotationListCode != 'null') {
       str.write(
           '  static const List<Object> _classAnnotations = $classAnnotationListCode; \n\n');
-      str.write('  @override');
+      str.write('  @override\n');
       str.write(
           '  List<Object> get classAnnotations => List<Object>.unmodifiable(_classAnnotations);\n\n');
     } else {
-      str.write('  @override');
+      str.write('  @override\n');
       str.write(
           '  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);\n\n');
     }
@@ -486,6 +527,81 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('}\n\n');
 
     return str.toString();
+  }
+
+  void _buildConstructors(StringBuffer str) {
+    _buildDefaultConstructor(str);
+
+    var entries = _toConstructorEntries(this, constructors);
+    var names = _buildStringListCode(entries.keys, sorted: true);
+
+    str.write('  @override\n');
+    str.write('  List<String> get constructorsNames => $names;\n\n');
+
+    str.write('  @override\n');
+    str.write(
+        '  ConstructorReflection<$className>? constructor<R>(String constructorName) {\n');
+
+    _buildSwitches(str, 'constructorName', entries.keys, (name) {
+      var constructor = entries[name]!;
+      if (verbose) {
+        print(constructor);
+      }
+
+      var callerCode = constructor.asCallerCode;
+
+      return "ConstructorReflection<$className>("
+          "this, '$name', () => $callerCode , "
+          "${constructor.normalParametersAsCode} , "
+          "${constructor.optionalParametersAsCode}, "
+          "${constructor.namedParametersAsCode}, "
+          "${constructor.annotationsAsListCode}"
+          ")";
+    });
+
+    str.write('  }\n\n');
+  }
+
+  void _buildDefaultConstructor(StringBuffer str) {
+    var defaultConstructor = this.defaultConstructor;
+
+    if (defaultConstructor != null) {
+      str.write('  @override\n');
+      str.write('  bool get hasDefaultConstructor => true;\n');
+
+      str.write('  @override\n');
+      str.write(
+          '  $className? createInstanceWithDefaultConstructor() => $className();\n');
+    } else {
+      str.write('  @override\n');
+      str.write('  bool get hasDefaultConstructor => false;\n');
+
+      str.write('  @override\n');
+      str.write(
+          '  $className? createInstanceWithDefaultConstructor() => null;\n');
+    }
+    str.write('\n');
+
+    var emptyConstructor = this.emptyConstructor;
+
+    if (emptyConstructor != null) {
+      str.write('  @override\n');
+      str.write('  bool get hasEmptyConstructor => true;\n');
+
+      str.write('  @override\n');
+      var name = emptyConstructor.name;
+      str.write(
+          '  $className? createInstanceWithEmptyConstructor() => $className.$name();\n');
+    } else {
+      str.write('  @override\n');
+      str.write('  bool get hasEmptyConstructor => false;\n');
+
+      str.write('  @override\n');
+      str.write(
+          '  $className? createInstanceWithEmptyConstructor() => null;\n');
+    }
+
+    str.write('\n');
   }
 
   void _buildField(StringBuffer str) {
@@ -507,17 +623,17 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         print(field);
       }
 
-      var type = field.typeCodeName;
-      var fullType = field.fullTypeCodeName;
+      var typeCode = field.typeAsCode;
+      var fullType = field.typeNameAsNullableCode;
       var nullable = field.nullable ? 'true' : 'false';
       var isFinal = field.isFinal ? 'true' : 'false';
       var getter = '(o) => () => o!.$name as T';
       var setter = !field.allowSetter
           ? 'null'
-          : '(o) => (T v) => o!.$name = v as $fullType';
+          : '(o) => (T? v) => o!.$name = v as $fullType';
 
       return "FieldReflection<$className,T>(this, "
-          "$type, '$name', $nullable, "
+          "$typeCode, '$name', $nullable, "
           "$getter , $setter , "
           "obj, false, $isFinal, "
           "${field.annotationsAsListCode}, "
@@ -544,17 +660,17 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         print(field);
       }
 
-      var type = field.typeCodeName;
-      var fullType = field.fullTypeCodeName;
+      var typeCode = field.typeAsCode;
+      var fullType = field.typeNameAsNullableCode;
       var nullable = field.nullable ? 'true' : 'false';
       var isFinal = field.isFinal ? 'true' : 'false';
       var getter = '(o) => () => $className.$name as T';
       var setter = !field.allowSetter
           ? 'null'
-          : '(o) => (T v) => $className.$name = v as $fullType';
+          : '(o) => (T? v) => $className.$name = v as $fullType';
 
       return "FieldReflection<$className,T>(this, "
-          "$type, '$name', $nullable, "
+          "$typeCode, '$name', $nullable, "
           "$getter , $setter , "
           "null, true, $isFinal, "
           "${field.annotationsAsListCode}, "
@@ -577,7 +693,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     str.write('  @override\n');
     str.write(
-        '  MethodReflection<$className>? method(String methodName, [$className? obj]) {\n');
+        '  MethodReflection<$className,R>? method<R>(String methodName, [$className? obj]) {\n');
     str.write('    obj ??= object;\n\n');
 
     _buildSwitches(str, 'methodName', entries.keys, (name) {
@@ -586,10 +702,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         print(method);
       }
 
-      var type = method.returnTypeCodeName;
+      var returnTypeAsCode = method.returnTypeAsCode;
       var nullable = method.returnNullable ? 'true' : 'false';
-      return "MethodReflection<$className>("
-          "this, '$name', $type, $nullable, (o) => o!.$name , obj , false, "
+      return "MethodReflection<$className,R>("
+          "this, '$name', $returnTypeAsCode, $nullable, (o) => o!.$name , obj , false, "
           "${method.normalParametersAsCode} , "
           "${method.optionalParametersAsCode}, "
           "${method.namedParametersAsCode}, "
@@ -609,7 +725,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     str.write('  @override\n');
     str.write(
-        '  MethodReflection<$className>? staticMethod(String methodName) {\n');
+        '  MethodReflection<$className,R>? staticMethod<R>(String methodName) {\n');
 
     _buildSwitches(str, 'methodName', entries.keys, (name) {
       var method = entries[name]!;
@@ -617,10 +733,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         print(method);
       }
 
-      var type = method.returnTypeCodeName;
+      var returnTypeAsCode = method.returnTypeAsCode;
       var nullable = method.returnNullable ? 'true' : 'false';
-      return "MethodReflection<$className>("
-          "this, '$name', $type, $nullable, (o) => $className.$name , null , true, "
+      return "MethodReflection<$className,R>("
+          "this, '$name', $returnTypeAsCode, $nullable, (o) => $className.$name , null , true, "
           "${method.normalParametersAsCode} , "
           "${method.optionalParametersAsCode}, "
           "${method.namedParametersAsCode}, "
@@ -631,8 +747,15 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  }\n\n');
   }
 
-  Map<String, _Method> _toMethodsEntries(Set<MethodElement> methods) {
-    return Map.fromEntries(methods.map((m) {
+  Map<String, _Constructor> _toConstructorEntries(
+      _ClassTree<T> classTree, Set<ConstructorElement> elements) {
+    return Map.fromEntries(elements.map((c) {
+      return MapEntry(c.name, _Constructor(classTree, c));
+    }));
+  }
+
+  Map<String, _Method> _toMethodsEntries(Set<MethodElement> elements) {
+    return Map.fromEntries(elements.map((m) {
       return MapEntry(m.name, _Method(m));
     }));
   }
@@ -771,6 +894,149 @@ class _Parameter extends _Element {
       : super(parameterElement);
 }
 
+class _Constructor<T> extends _Element {
+  final _ClassTree<T> classTree;
+
+  final ConstructorElement constructorElement;
+
+  _Constructor(this.classTree, this.constructorElement)
+      : super(constructorElement);
+
+  String get name => constructorElement.name;
+
+  bool get returnNullable => constructorElement.returnType.isNullable;
+
+  bool get isStatic => constructorElement.isStatic;
+
+  String get returnTypeNameAsCode =>
+      constructorElement.returnType.typeNameAsCode;
+
+  String get returnTypeAsCode => constructorElement.returnType.typeAsCode;
+
+  List<_Parameter> get normalParameters =>
+      constructorElement.type.normalParameters;
+
+  List<_Parameter> get optionalParameters =>
+      constructorElement.type.optionalParameters;
+
+  Map<String, _Parameter> get namedParameters =>
+      constructorElement.type.namedParameters;
+
+  String get normalParametersAsCode =>
+      _buildParameterReflectionList(normalParameters,
+          nullOnEmpty: true, required: true);
+
+  String get optionalParametersAsCode =>
+      _buildParameterReflectionList(optionalParameters,
+          nullOnEmpty: true, required: false);
+
+  String get namedParametersAsCode =>
+      _buildNamedParameterReflectionMap(namedParameters, nullOnEmpty: true);
+
+  String get asCallerCode {
+    var s = StringBuffer();
+
+    var normalParameters = constructorElement.normalParameters;
+    var optionalParameters = constructorElement.optionalParameters;
+    var namedParameters = constructorElement.namedParameters;
+
+    s.write('(');
+
+    for (var i = 0; i < normalParameters.length; ++i) {
+      var p = normalParameters[i];
+      if (i > 0) s.write(', ');
+      s.write(p.type.toString());
+      s.write(' ');
+      s.write(p.name);
+    }
+
+    if (optionalParameters.isNotEmpty) {
+      if (normalParameters.isNotEmpty) s.write(', ');
+
+      s.write('[');
+
+      for (var i = 0; i < optionalParameters.length; ++i) {
+        var p = optionalParameters[i];
+        if (i > 0) s.write(',');
+        s.write(p.type.toString());
+        s.write(' ');
+        s.write(p.name);
+      }
+      s.write(']');
+    } else if (namedParameters.isNotEmpty) {
+      if (normalParameters.isNotEmpty) s.write(', ');
+
+      s.write('{');
+      var i = 0;
+      for (var e in namedParameters.entries) {
+        var p = e.value;
+        if (i > 0) s.write(', ');
+        s.write(p.type.toString());
+        s.write(' ');
+        s.write(p.name);
+        i++;
+      }
+      s.write('}');
+    }
+
+    s.write(') => ');
+
+    s.write(classTree.className);
+    if (name.isNotEmpty) {
+      s.write('.');
+      s.write(name);
+    }
+
+    s.write('(');
+
+    for (var i = 0; i < normalParameters.length; ++i) {
+      var p = normalParameters[i];
+      if (i > 0) s.write(',');
+      s.write(p.name);
+    }
+
+    if (optionalParameters.isNotEmpty) {
+      if (normalParameters.isNotEmpty) s.write(', ');
+
+      for (var i = 0; i < optionalParameters.length; ++i) {
+        var p = optionalParameters[i];
+        if (i > 0) s.write(',');
+        s.write(p.name);
+      }
+    } else if (namedParameters.isNotEmpty) {
+      if (normalParameters.isNotEmpty) s.write(', ');
+
+      var i = 0;
+      for (var e in namedParameters.entries) {
+        var k = e.key;
+        var p = e.value;
+        if (i > 0) s.write(',');
+        s.write(k);
+        s.write(': ');
+        s.write(p.name);
+        i++;
+      }
+    }
+
+    s.write(') ');
+
+    return s.toString();
+  }
+
+  @override
+  String toString() {
+    return '_Constructor{ '
+        'name: $name, '
+        'static: $isStatic, '
+        'return: $returnTypeNameAsCode '
+        '}( '
+        'normal: $normalParameters, '
+        'optional: $optionalParameters, '
+        'named: $namedParameters '
+        ')<$constructorElement>';
+  }
+}
+
 class _Method extends _Element {
   final MethodElement methodElement;
 
@@ -778,12 +1044,13 @@ class _Method extends _Element {
 
   String get name => methodElement.name;
 
-  bool get returnNullable =>
-      methodElement.returnType.nullabilitySuffix == NullabilitySuffix.question;
+  bool get returnNullable => methodElement.returnType.isNullable;
 
   bool get isStatic => methodElement.isStatic;
 
-  String get returnTypeCodeName => methodElement.returnType.typeCodeName;
+  String get returnTypeNameAsCode => methodElement.returnType.typeNameAsCode;
+
+  String get returnTypeAsCode => methodElement.returnType.typeAsCode;
 
   List<_Parameter> get normalParameters => methodElement.type.normalParameters;
 
@@ -794,10 +1061,12 @@ class _Method extends _Element {
       methodElement.type.namedParameters;
 
   String get normalParametersAsCode =>
-      _buildParameterReflectionList(normalParameters, nullOnEmpty: true);
+      _buildParameterReflectionList(normalParameters,
+          nullOnEmpty: true, required: true);
 
   String get optionalParametersAsCode =>
-      _buildParameterReflectionList(optionalParameters, nullOnEmpty: true);
+      _buildParameterReflectionList(optionalParameters,
+          nullOnEmpty: true, required: false);
 
   String get namedParametersAsCode =>
       _buildNamedParameterReflectionMap(namedParameters, nullOnEmpty: true);
@@ -807,7 +1076,7 @@ class _Method extends _Element {
     return '_Method{ '
         'name: $name, '
         'static: $isStatic, '
-        'return: $returnTypeCodeName '
+        'return: $returnTypeNameAsCode '
         '}( '
         'normal: $normalParameters, '
         'optional: $optionalParameters, '
@@ -823,8 +1092,7 @@ class _Field extends _Element {
 
   String get name => fieldElement.name;
 
-  bool get nullable =>
-      fieldElement.type.nullabilitySuffix == NullabilitySuffix.question;
+  bool get nullable => fieldElement.type.isNullable;
 
   bool get isStatic => fieldElement.isStatic;
 
@@ -834,9 +1102,11 @@ class _Field extends _Element {
 
   bool get allowSetter => !isFinal && !isConst && fieldElement.setter != null;
 
-  String get typeCodeName => fieldElement.type.typeCodeName;
+  String get typeNameAsCode => fieldElement.type.typeNameAsCode;
 
-  String get fullTypeCodeName => nullable ? '$typeCodeName?' : typeCodeName;
+  String get typeNameAsNullableCode => fieldElement.type.typeNameAsNullableCode;
+
+  String get typeAsCode => fieldElement.type.typeAsCode;
 
   @override
   String toString() {
@@ -855,12 +1125,127 @@ extension _DartTypeExtension on DartType {
 
   bool get isRequired => element?.hasRequired ?? false;
 
-  String get typeCodeName {
+  String get typeName {
+    var name = element?.name;
+
+    if (name == null) {
+      name = getDisplayString(withNullability: false);
+      var idx = name.indexOf('<');
+      if (idx > 0) {
+        name = name.substring(0, idx);
+      }
+    }
+
+    return name;
+  }
+
+  bool get hasTypeArguments {
+    var self = this;
+    if (self is ParameterizedType) {
+      return self.typeArguments.isNotEmpty;
+    } else {
+      return false;
+    }
+  }
+
+  bool get hasSimpleTypeArguments {
+    var self = this;
+
+    if (self is ParameterizedType && self.typeArguments.isNotEmpty) {
+      return self.typeArguments.where((e) => !e.hasTypeArguments).length ==
+          self.typeArguments.length;
+    }
+
+    return false;
+  }
+
+  List<DartType> get resolvedTypeArguments {
+    var self = this;
+    if (self is ParameterizedType) {
+      return self.typeArguments;
+    } else {
+      return <DartType>[];
+    }
+  }
+
+  String get typeNameAsCode {
     if (this is VoidType) {
       return 'null';
     }
-    return element?.name ?? getDisplayString(withNullability: false);
+
+    var name = typeName;
+    var arguments = resolvedTypeArguments;
+
+    if (arguments.isNotEmpty) {
+      return '$name<${arguments.map((e) => e.typeNameAsCode).join(', ')}>';
+    } else {
+      return name;
+    }
   }
+
+  String get typeNameAsNullableCode =>
+      isNullable ? '$typeNameAsCode?' : typeNameAsCode;
+
+  String get typeAsCode {
+    if (this is VoidType) {
+      return 'null';
+    }
+
+    var name = typeName;
+    var arguments = resolvedTypeArguments;
+
+    if (arguments.isNotEmpty) {
+      if (hasSimpleTypeArguments) {
+        var constName = TypeReflection.getConstantName(
+            name, arguments.map((a) => a.typeName).toList());
+
+        if (constName != null) {
+          return 'TypeReflection.$constName';
+        }
+      }
+
+      return 'TypeReflection($name, [${arguments.map((e) {
+        if (!e.hasTypeArguments && !e.isNullable) {
+          return e.typeNameAsCode;
+        } else {
+          return e.typeAsCode;
+        }
+      }).join(', ')}])';
+    } else {
+      var constName = TypeReflection.getConstantName(name);
+      if (constName != null) {
+        return 'TypeReflection.$constName';
+      } else {
+        return 'TypeReflection($name)';
+      }
+    }
+  }
+}
+
+extension _ConstructorElementExtension on ConstructorElement {
+  List<_Parameter> parametersWhere(bool Function(ParameterElement p) filter) {
+    var list = <_Parameter>[];
+    var i = 0;
+    for (var p in parameters) {
+      if (filter(p)) {
+        var param = _Parameter(
+            p, i, p.type, p.name, p.type.isNullable, p.isRequiredNamed);
+        list.add(param);
+      }
+      i++;
+    }
+    return list;
+  }
+
+  List<_Parameter> get normalParameters =>
+      parametersWhere((p) => !p.isOptionalPositional && !p.isNamed);
+
+  List<_Parameter> get optionalParameters =>
+      parametersWhere((p) => p.isOptionalPositional);
+
+  Map<String, _Parameter> get namedParameters =>
+      Map<String, _Parameter>.fromEntries(
+          parametersWhere((p) => p.isNamed).map((e) => MapEntry(e.name, e)));
 }
 
 extension _FunctionTypeExtension on FunctionType {
@@ -915,16 +1300,16 @@ String _buildStringListCode(Iterable? o,
 }
 
 String _buildParameterReflectionList(Iterable<_Parameter>? o,
-    {bool nullOnEmpty = false}) {
+    {required bool nullOnEmpty, required bool required}) {
   if (o == null || o.isEmpty) {
     return nullOnEmpty ? 'null' : '<ParameterReflection>[]';
   } else {
     var parameters = o
         .map((e) => "ParameterReflection( "
-            "${e.type.typeCodeName} , "
+            "${e.type.typeAsCode} , "
             "'${e.name}' , "
             "${e.nullable ? 'true' : 'false'} , "
-            "false , "
+            "$required , "
             "${e.annotationsAsListCode}"
             ")")
         .join(', ');
@@ -941,7 +1326,7 @@ String _buildNamedParameterReflectionMap(Map<String, _Parameter>? o,
       var key = e.key;
       var value = e.value;
       return "'$key': ParameterReflection( "
-          "${value.type.typeCodeName} , "
+          "${value.type.typeAsCode} , "
           "'${e.value.name}' , "
           "${e.value.nullable ? 'true' : 'false'} , "
           "${e.value.required ? 'true' : 'false'} , "

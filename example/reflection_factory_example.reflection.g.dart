@@ -19,10 +19,50 @@ class User$reflection extends ClassReflection<User> {
   }
 
   @override
+  Version get languageVersion => Version.parse('2.13.0');
+
+  @override
   User$reflection withObject([User? obj]) => User$reflection(obj);
 
   @override
-  Version get languageVersion => Version.parse('2.13.0');
+  bool get hasDefaultConstructor => false;
+  @override
+  User? createInstanceWithDefaultConstructor() => null;
+
+  @override
+  bool get hasEmptyConstructor => true;
+  @override
+  User? createInstanceWithEmptyConstructor() => User.empty();
+
+  @override
+  List<String> get constructorsNames => const <String>['', 'empty'];
+
+  @override
+  ConstructorReflection<User>? constructor<R>(String constructorName) {
+    var lc = constructorName.trim().toLowerCase();
+
+    switch (lc) {
+      case '':
+        return ConstructorReflection<User>(
+            this,
+            '',
+            () => (String? email, String pass) => User(email, pass),
+            const <ParameterReflection>[
+              ParameterReflection(
+                  TypeReflection.tString, 'email', true, true, null),
+              ParameterReflection(
+                  TypeReflection.tString, 'pass', false, true, null)
+            ],
+            null,
+            null,
+            null);
+      case 'empty':
+        return ConstructorReflection<User>(
+            this, 'empty', () => () => User.empty(), null, null, null, null);
+      default:
+        return null;
+    }
+  }
 
   @override
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
@@ -40,11 +80,11 @@ class User$reflection extends ClassReflection<User> {
       case 'email':
         return FieldReflection<User, T>(
           this,
-          String,
+          TypeReflection.tString,
           'email',
           true,
           (o) => () => o!.email as T,
-          (o) => (T v) => o!.email = v as String?,
+          (o) => (T? v) => o!.email = v as String?,
           obj,
           false,
           false,
@@ -53,11 +93,11 @@ class User$reflection extends ClassReflection<User> {
       case 'pass':
         return FieldReflection<User, T>(
           this,
-          String,
+          TypeReflection.tString,
           'pass',
           false,
           (o) => () => o!.pass as T,
-          (o) => (T v) => o!.pass = v as String,
+          (o) => (T? v) => o!.pass = v as String,
           obj,
           false,
           false,
@@ -66,7 +106,7 @@ class User$reflection extends ClassReflection<User> {
       case 'hasemail':
         return FieldReflection<User, T>(
           this,
-          bool,
+          TypeReflection.tBool,
           'hasEmail',
           false,
           (o) => () => o!.hasEmail as T,
@@ -93,23 +133,24 @@ class User$reflection extends ClassReflection<User> {
   List<String> get methodsNames => const <String>['checkPassword'];
 
   @override
-  MethodReflection<User>? method(String methodName, [User? obj]) {
+  MethodReflection<User, R>? method<R>(String methodName, [User? obj]) {
     obj ??= object;
 
     var lc = methodName.trim().toLowerCase();
 
     switch (lc) {
       case 'checkpassword':
-        return MethodReflection<User>(
+        return MethodReflection<User, R>(
             this,
             'checkPassword',
-            bool,
+            TypeReflection.tBool,
             false,
             (o) => o!.checkPassword,
             obj,
             false,
             const <ParameterReflection>[
-              ParameterReflection(String, 'pass', false, false, null)
+              ParameterReflection(
+                  TypeReflection.tString, 'pass', false, true, null)
             ],
             null,
             null,
@@ -123,7 +164,7 @@ class User$reflection extends ClassReflection<User> {
   List<String> get staticMethodsNames => const <String>[];
 
   @override
-  MethodReflection<User>? staticMethod(String methodName) {
+  MethodReflection<User, R>? staticMethod<R>(String methodName) {
     return null;
   }
 }

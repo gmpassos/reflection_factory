@@ -1,3 +1,11 @@
+## 1.0.5
+
+- Added support for class constructors.
+- Added `TypeReflection`:
+  - Allows handling of Type generics/arguments.
+- Added extensions:
+  - `IterableTypeReflectionExtension`, `IterableParameterReflectionExtension`, `IterableFieldReflectionExtension`.
+
 ## 1.0.4
 
 - Added `ElementResolver`:

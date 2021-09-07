@@ -4,6 +4,24 @@ import 'package:reflection_factory/reflection_factory.dart';
 // $> dart run build_runner build
 part 'reflection_factory_example.reflection.g.dart';
 
+// Indicates that reflection for class `User` will be generated/enabled:
+@EnableReflection()
+class User {
+  String? email;
+
+  String pass;
+
+  User(this.email, this.pass);
+
+  User.empty() : this(null, '');
+
+  bool get hasEmail => email != null;
+
+  bool checkPassword(String pass) {
+    return this.pass == pass;
+  }
+}
+
 void main() {
   var user = User('joe@mail.com', '123');
 
@@ -21,27 +39,25 @@ void main() {
   var passOk2 = methodCheckPassword.invoke(['123']); // true
   print('pass("123"): $passOk2');
 
+  // Using the generated `toJson` extension method:
   print('User JSON:');
   print(user.toJson());
 
+  // Using the generated `toJsonEncoded` extension method:
   print('User JSON encoded:');
   print(user.toJsonEncoded());
-}
 
-// Indicated that reflection for class `User` will be generated/enabled:
-@EnableReflection()
-class User {
-  String? email;
+  // Accessing reflection through class:
+  var userReflection2 = User$reflection();
 
-  String pass;
+  // Creating an `User` instance from the default or empty constructor:
+  var user2 = userReflection2.createInstance()!;
 
-  User(this.email, this.pass);
+  user2.email = 'smith@mail.com';
+  user2.pass = 'abc';
 
-  bool get hasEmail => email != null;
-
-  bool checkPassword(String pass) {
-    return this.pass == pass;
-  }
+  print('User 2 JSON:');
+  print(user2.toJson());
 }
 
 // ------------------------
@@ -51,6 +67,8 @@ class User {
 // pass("wrong"): false
 // pass("123"): true
 // User JSON:
-// {email: joe@mail.com, pass: 123, hasEmail: true}
+// {email: joe@mail.com, hasEmail: true, pass: 123}
 // User JSON encoded:
-// {"email":"joe@mail.com","pass":"123","hasEmail":true}
+// {"email":"joe@mail.com","hasEmail":true,"pass":"123"}
+// User 2 JSON:
+// {email: smith@mail.com, hasEmail: true, pass: abc}

@@ -18,6 +18,8 @@ class TestUserSimple {
 
   TestUserSimple(this.name, this.email, this.password);
 
+  TestUserSimple.empty() : this('', null, '');
+
   @TestAnnotation(['method', 'password checker'])
   bool checkThePassword(
       @TestAnnotation(['parameter', 'password']) String password,
@@ -60,6 +62,8 @@ class TestAddress {
   final String city;
 
   TestAddress(this.state, this.city);
+
+  TestAddress.empty() : this('', '');
 
   @override
   bool operator ==(Object other) =>

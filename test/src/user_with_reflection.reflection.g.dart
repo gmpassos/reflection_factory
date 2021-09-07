@@ -21,12 +21,51 @@ class TestAddressWithReflection$reflection
   }
 
   @override
+  Version get languageVersion => Version.parse('2.13.0');
+
+  @override
   TestAddressWithReflection$reflection withObject(
           [TestAddressWithReflection? obj]) =>
       TestAddressWithReflection$reflection(obj);
 
   @override
-  Version get languageVersion => Version.parse('2.13.0');
+  bool get hasDefaultConstructor => false;
+  @override
+  TestAddressWithReflection? createInstanceWithDefaultConstructor() => null;
+
+  @override
+  bool get hasEmptyConstructor => false;
+  @override
+  TestAddressWithReflection? createInstanceWithEmptyConstructor() => null;
+
+  @override
+  List<String> get constructorsNames => const <String>[''];
+
+  @override
+  ConstructorReflection<TestAddressWithReflection>? constructor<R>(
+      String constructorName) {
+    var lc = constructorName.trim().toLowerCase();
+
+    switch (lc) {
+      case '':
+        return ConstructorReflection<TestAddressWithReflection>(
+            this,
+            '',
+            () => (String state, String city) =>
+                TestAddressWithReflection(state, city),
+            const <ParameterReflection>[
+              ParameterReflection(
+                  TypeReflection.tString, 'state', false, true, null),
+              ParameterReflection(
+                  TypeReflection.tString, 'city', false, true, null)
+            ],
+            null,
+            null,
+            null);
+      default:
+        return null;
+    }
+  }
 
   @override
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
@@ -45,7 +84,7 @@ class TestAddressWithReflection$reflection
       case 'state':
         return FieldReflection<TestAddressWithReflection, T>(
           this,
-          String,
+          TypeReflection.tString,
           'state',
           false,
           (o) => () => o!.state as T,
@@ -58,7 +97,7 @@ class TestAddressWithReflection$reflection
       case 'city':
         return FieldReflection<TestAddressWithReflection, T>(
           this,
-          String,
+          TypeReflection.tString,
           'city',
           false,
           (o) => () => o!.city as T,
@@ -71,7 +110,7 @@ class TestAddressWithReflection$reflection
       case 'hashcode':
         return FieldReflection<TestAddressWithReflection, T>(
           this,
-          int,
+          TypeReflection.tInt,
           'hashCode',
           false,
           (o) => () => o!.hashCode as T,
@@ -99,7 +138,7 @@ class TestAddressWithReflection$reflection
   List<String> get methodsNames => const <String>['toJson'];
 
   @override
-  MethodReflection<TestAddressWithReflection>? method(String methodName,
+  MethodReflection<TestAddressWithReflection, R>? method<R>(String methodName,
       [TestAddressWithReflection? obj]) {
     obj ??= object;
 
@@ -107,8 +146,18 @@ class TestAddressWithReflection$reflection
 
     switch (lc) {
       case 'tojson':
-        return MethodReflection<TestAddressWithReflection>(this, 'toJson', Map,
-            false, (o) => o!.toJson, obj, false, null, null, null, null);
+        return MethodReflection<TestAddressWithReflection, R>(
+            this,
+            'toJson',
+            TypeReflection.tMapStringDynamic,
+            false,
+            (o) => o!.toJson,
+            obj,
+            false,
+            null,
+            null,
+            null,
+            null);
       default:
         return null;
     }
@@ -118,7 +167,8 @@ class TestAddressWithReflection$reflection
   List<String> get staticMethodsNames => const <String>[];
 
   @override
-  MethodReflection<TestAddressWithReflection>? staticMethod(String methodName) {
+  MethodReflection<TestAddressWithReflection, R>? staticMethod<R>(
+      String methodName) {
     return null;
   }
 }
@@ -138,11 +188,56 @@ class TestUserWithReflection$reflection
   }
 
   @override
+  Version get languageVersion => Version.parse('2.13.0');
+
+  @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
       TestUserWithReflection$reflection(obj);
 
   @override
-  Version get languageVersion => Version.parse('2.13.0');
+  bool get hasDefaultConstructor => true;
+  @override
+  TestUserWithReflection? createInstanceWithDefaultConstructor() =>
+      TestUserWithReflection();
+
+  @override
+  bool get hasEmptyConstructor => false;
+  @override
+  TestUserWithReflection? createInstanceWithEmptyConstructor() => null;
+
+  @override
+  List<String> get constructorsNames => const <String>['', 'fields'];
+
+  @override
+  ConstructorReflection<TestUserWithReflection>? constructor<R>(
+      String constructorName) {
+    var lc = constructorName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'fields':
+        return ConstructorReflection<TestUserWithReflection>(
+            this,
+            'fields',
+            () => (String name, String? email, String password) =>
+                TestUserWithReflection.fields(name, email, password),
+            const <ParameterReflection>[
+              ParameterReflection(
+                  TypeReflection.tString, 'name', false, true, null),
+              ParameterReflection(
+                  TypeReflection.tString, 'email', true, true, null),
+              ParameterReflection(
+                  TypeReflection.tString, 'password', false, true, null)
+            ],
+            null,
+            null,
+            null);
+      case '':
+        return ConstructorReflection<TestUserWithReflection>(this, '',
+            () => () => TestUserWithReflection(), null, null, null, null);
+      default:
+        return null;
+    }
+  }
 
   @override
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
@@ -161,7 +256,7 @@ class TestUserWithReflection$reflection
       case 'name':
         return FieldReflection<TestUserWithReflection, T>(
           this,
-          String,
+          TypeReflection.tString,
           'name',
           false,
           (o) => () => o!.name as T,
@@ -174,11 +269,11 @@ class TestUserWithReflection$reflection
       case 'email':
         return FieldReflection<TestUserWithReflection, T>(
           this,
-          String,
+          TypeReflection.tString,
           'email',
           true,
           (o) => () => o!.email as T,
-          (o) => (T v) => o!.email = v as String?,
+          (o) => (T? v) => o!.email = v as String?,
           obj,
           false,
           false,
@@ -187,11 +282,11 @@ class TestUserWithReflection$reflection
       case 'password':
         return FieldReflection<TestUserWithReflection, T>(
           this,
-          String,
+          TypeReflection.tString,
           'password',
           false,
           (o) => () => o!.password as T,
-          (o) => (T v) => o!.password = v as String,
+          (o) => (T? v) => o!.password = v as String,
           obj,
           false,
           false,
@@ -214,7 +309,7 @@ class TestUserWithReflection$reflection
       case 'version':
         return FieldReflection<TestUserWithReflection, T>(
           this,
-          double,
+          TypeReflection.tDouble,
           'version',
           false,
           (o) => () => TestUserWithReflection.version as T,
@@ -227,7 +322,7 @@ class TestUserWithReflection$reflection
       case 'withreflection':
         return FieldReflection<TestUserWithReflection, T>(
           this,
-          bool,
+          TypeReflection.tBool,
           'withReflection',
           false,
           (o) => () => TestUserWithReflection.withReflection as T,
@@ -246,7 +341,7 @@ class TestUserWithReflection$reflection
   List<String> get methodsNames => const <String>['checkPassword'];
 
   @override
-  MethodReflection<TestUserWithReflection>? method(String methodName,
+  MethodReflection<TestUserWithReflection, R>? method<R>(String methodName,
       [TestUserWithReflection? obj]) {
     obj ??= object;
 
@@ -254,16 +349,17 @@ class TestUserWithReflection$reflection
 
     switch (lc) {
       case 'checkpassword':
-        return MethodReflection<TestUserWithReflection>(
+        return MethodReflection<TestUserWithReflection, R>(
             this,
             'checkPassword',
-            bool,
+            TypeReflection.tBool,
             false,
             (o) => o!.checkPassword,
             obj,
             false,
             const <ParameterReflection>[
-              ParameterReflection(String, 'password', false, false, null)
+              ParameterReflection(
+                  TypeReflection.tString, 'password', false, true, null)
             ],
             null,
             null,
@@ -277,21 +373,23 @@ class TestUserWithReflection$reflection
   List<String> get staticMethodsNames => const <String>['isVersion'];
 
   @override
-  MethodReflection<TestUserWithReflection>? staticMethod(String methodName) {
+  MethodReflection<TestUserWithReflection, R>? staticMethod<R>(
+      String methodName) {
     var lc = methodName.trim().toLowerCase();
 
     switch (lc) {
       case 'isversion':
-        return MethodReflection<TestUserWithReflection>(
+        return MethodReflection<TestUserWithReflection, R>(
             this,
             'isVersion',
-            bool,
+            TypeReflection.tBool,
             false,
             (o) => TestUserWithReflection.isVersion,
             null,
             true,
             const <ParameterReflection>[
-              ParameterReflection(double, 'ver', false, false, null)
+              ParameterReflection(
+                  TypeReflection.tDouble, 'ver', false, true, null)
             ],
             null,
             null,

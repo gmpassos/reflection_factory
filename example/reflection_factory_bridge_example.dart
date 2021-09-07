@@ -21,14 +21,28 @@ void main() {
   var passOk2 = methodCheckPassword.invoke(['123']); // true
   print('pass("123"): $passOk2');
 
+  // Using the generated `toJson` extension method:
   print('User JSON:');
   print(user.toJson());
 
+  // Using the generated `toJsonEncoded` extension method:
   print('User JSON encoded:');
   print(user.toJsonEncoded());
+
+  // Accessing reflection through class Type:
+  var userReflection2 = UserReflectionBridge().reflection<User>();
+
+  // Creating an `User` instance from the default or empty constructor:
+  var user2 = userReflection2.createInstance()!;
+
+  user2.email = 'smith@mail.com';
+  user2.pass = 'abc';
+
+  print('User 2 JSON:');
+  print(user2.toJson());
 }
 
-// Indicated that reflection for class `User` will be generated/enabled:
+// Indicates that reflection for class `User` will be generated/enabled:
 @ReflectionBridge([User])
 class UserReflectionBridge {}
 
@@ -38,6 +52,8 @@ class User {
   String pass;
 
   User(this.email, this.pass);
+
+  User.empty() : this(null, '');
 
   bool get hasEmail => email != null;
 
@@ -53,6 +69,8 @@ class User {
 // pass("wrong"): false
 // pass("123"): true
 // User JSON:
-// {email: joe@mail.com, pass: 123, hasEmail: true}
+// {email: joe@mail.com, hasEmail: true, pass: 123}
 // User JSON encoded:
-// {"email":"joe@mail.com","pass":"123","hasEmail":true}
+// {"email":"joe@mail.com","hasEmail":true,"pass":"123"}
+// User 2 JSON:
+// {email: smith@mail.com, hasEmail: true, pass: abc}

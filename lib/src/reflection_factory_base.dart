@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert' as dart_convert;
 
 import 'package:collection/collection.dart' show ListEquality, MapEquality;
@@ -106,11 +107,55 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   /// Returns a `const` [List] of class annotations.
   List<Object> get classAnnotations;
 
+  /// Returns `true` if the class has a default constructor.
+  bool get hasDefaultConstructor;
+
+  /// Creates an instance using the default constructor (if present),
+  /// other wise returns `null`.
+  O? createInstanceWithDefaultConstructor();
+
+  /// Returns `true` if the class has a empty constructor.
+  bool get hasEmptyConstructor;
+
+  /// Creates an instance using an empty constructor (if present),
+  /// other wise returns `null`.
+  ///
+  /// An empty constructor is a named constructor that can be called without parameters.
+  ///
+  /// Will return the first matching constructor in the following order:
+  /// - An empty constructor with the names: `empty`, `create` or `def` (in this order).
+  /// - First empty constructor with any name.
+  O? createInstanceWithEmptyConstructor();
+
+  /// Creates an instances calling [createInstanceWithDefaultConstructor] or
+  /// [createInstanceWithEmptyConstructor].
+  O? createInstance() =>
+      createInstanceWithDefaultConstructor() ??
+      createInstanceWithEmptyConstructor();
+
+  /// Returns a `const` [List] of constructors names.
+  List<String> get constructorsNames;
+
+  /// Returns a [List] with all constructors [ConstructorReflection].
+  List<ConstructorReflection<O>> allConstructors() =>
+      constructorsNames.map((e) => constructor(e)!).toList();
+
+  /// Returns a [ConstructorReflection] for [constructorName].
+  ConstructorReflection<O>? constructor<R>(String constructorName);
+
   /// Returns a `const` [List] of fields names.
   List<String> get fieldsNames;
 
+  /// Returns a [List] with all fields [FieldReflection].
+  List<FieldReflection<O, dynamic>> allFields([O? obj]) =>
+      fieldsNames.map((e) => field(e, obj)!).toList();
+
   /// Returns a `const` [List] of static fields names.
   List<String> get staticFieldsNames;
+
+  /// Returns a [List] with all static fields [FieldReflection].
+  List<FieldReflection<O, dynamic>> allStaticFields() =>
+      staticFieldsNames.map((e) => staticField(e)!).toList();
 
   /// Returns a [FieldReflection] for [fieldName], with the optional associated [obj].
   FieldReflection<O, T>? field<T>(String fieldName, [O? obj]);
@@ -131,30 +176,32 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   List<String> get methodsNames;
 
   /// Returns a [List] with all methods [MethodReflection].
-  List<MethodReflection<O>> allMethods([O? obj]) =>
+  List<MethodReflection<O, dynamic>> allMethods([O? obj]) =>
       methodsNames.map((e) => method(e, obj)!).toList();
 
   /// Returns a `const` [List] of static methods names.
   List<String> get staticMethodsNames;
 
   /// Returns a [List] with all static methods [MethodReflection].
-  List<MethodReflection<O>> allStaticMethods() =>
+  List<MethodReflection<O, dynamic>> allStaticMethods() =>
       staticMethodsNames.map((e) => staticMethod(e)!).toList();
 
   /// Returns a [MethodReflection] for [methodName], with the optional associated [obj].
-  MethodReflection<O>? method(String methodName, [O? obj]);
+  MethodReflection<O, R>? method<R>(String methodName, [O? obj]);
 
   /// Returns a static [MethodReflection] for [methodName].
-  MethodReflection<O>? staticMethod(String methodName);
+  MethodReflection<O, R>? staticMethod<R>(String methodName);
 
   /// Returns a [ElementResolver] for a [MethodReflection] for a method with [methodName].
-  ElementResolver<MethodReflection<O>> methodResolver(String methodName) =>
-      ElementResolver<MethodReflection<O>>(() => method(methodName));
+  ElementResolver<MethodReflection<O, R>> methodResolver<R>(
+          String methodName) =>
+      ElementResolver<MethodReflection<O, R>>(() => method<R>(methodName));
 
   /// Returns a [ElementResolver] for a [MethodReflection] for a static method with [methodName].
-  ElementResolver<MethodReflection<O>> staticMethodResolver(
+  ElementResolver<MethodReflection<O, R>> staticMethodResolver<R>(
           String methodName) =>
-      ElementResolver<MethodReflection<O>>(() => staticMethod(methodName));
+      ElementResolver<MethodReflection<O, R>>(
+          () => staticMethod<R>(methodName));
 
   /// Returns the field value for [fieldName].
   T? getField<T>(String fieldName, [O? obj]) {
@@ -165,7 +212,7 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   /// Sets the field [value] for [fieldName].
   void setField<T>(String fieldName, T value, [O? obj]) {
     var field = this.field<T>(fieldName, obj);
-    return field?.set(value);
+    field?.set(value);
   }
 
   /// Returns the static field value for [fieldName].
@@ -203,9 +250,9 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
     return method?.invoke(positionalArguments, namedArguments);
   }
 
-  ElementResolver<MethodReflection<O>>? _methodToJsonResolver;
+  ElementResolver<MethodReflection<O, dynamic>>? _methodToJsonResolver;
 
-  MethodReflection<O>? get _methodToJson =>
+  MethodReflection<O, dynamic>? get _methodToJson =>
       (_methodToJsonResolver ??= methodResolver('toJson')).get();
 
   /// Returns a JSON [Map].
@@ -215,9 +262,12 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   Map<String, dynamic> toJson([O? obj]) {
     var m = _methodToJson;
 
-    if (m != null && m.normalParameters.isEmpty) {
+    if (m != null && m.normalParameters.isEmpty && m.returnType?.type == Map) {
       m = m.withObject(obj ?? object!);
-      return m.invoke([]);
+      var map = m.invoke([]) as Map;
+      return map is Map<String, dynamic>
+          ? map
+          : map.map((key, value) => MapEntry('$key', value));
     }
 
     return toJsonFromFields(obj);
@@ -307,7 +357,7 @@ final Map<String, ParameterReflection> _namedParametersEmpty =
 /// A parameter reflection, used method arguments or class fields.
 class ParameterReflection {
   /// The [Type] of the parameter.
-  final Type type;
+  final TypeReflection type;
 
   /// The name of the parameter.
   final String name;
@@ -352,8 +402,286 @@ class ParameterReflection {
   }
 }
 
+/// Dart [Type] reflection.
+class TypeReflection {
+  static const TypeReflection tObject = TypeReflection(Object);
+  static const TypeReflection tDynamic = TypeReflection(dynamic);
+  static const TypeReflection tString = TypeReflection(String);
+  static const TypeReflection tDouble = TypeReflection(double);
+  static const TypeReflection tInt = TypeReflection(int);
+  static const TypeReflection tNum = TypeReflection(num);
+  static const TypeReflection tBool = TypeReflection(bool);
+  static const TypeReflection tList = TypeReflection(List);
+  static const TypeReflection tMap = TypeReflection(Map);
+  static const TypeReflection tSet = TypeReflection(Set);
+  static const TypeReflection tFuture = TypeReflection(Future);
+  static const TypeReflection tFutureOr = TypeReflection(FutureOr);
+
+  static const TypeReflection tListObject =
+      TypeReflection(List, [TypeReflection.tObject]);
+  static const TypeReflection tListDynamic =
+      TypeReflection(List, [TypeReflection.tDynamic]);
+  static const TypeReflection tListString =
+      TypeReflection(List, [TypeReflection.tString]);
+  static const TypeReflection tListDouble =
+      TypeReflection(List, [TypeReflection.tDouble]);
+  static const TypeReflection tListInt =
+      TypeReflection(List, [TypeReflection.tInt]);
+  static const TypeReflection tListNum =
+      TypeReflection(List, [TypeReflection.tNum]);
+  static const TypeReflection tListBool =
+      TypeReflection(List, [TypeReflection.tBool]);
+
+  static const TypeReflection tMapStringObject =
+      TypeReflection(Map, [TypeReflection.tString, TypeReflection.tObject]);
+  static const TypeReflection tMapStringDynamic =
+      TypeReflection(Map, [TypeReflection.tString, TypeReflection.tDynamic]);
+  static const TypeReflection tMapStringString =
+      TypeReflection(Map, [TypeReflection.tString, TypeReflection.tString]);
+  static const TypeReflection tMapObjectObject =
+      TypeReflection(Map, [TypeReflection.tObject, TypeReflection.tObject]);
+
+  static const TypeReflection tSetObject =
+      TypeReflection(Set, [TypeReflection.tObject]);
+  static const TypeReflection tSetDynamic =
+      TypeReflection(Set, [TypeReflection.tDynamic]);
+  static const TypeReflection tSetString =
+      TypeReflection(Set, [TypeReflection.tString]);
+  static const TypeReflection tSetInt =
+      TypeReflection(Set, [TypeReflection.tInt]);
+
+  static const TypeReflection tFutureObject =
+      TypeReflection(Future, [TypeReflection.tObject]);
+  static const TypeReflection tFutureDynamic =
+      TypeReflection(Future, [TypeReflection.tDynamic]);
+  static const TypeReflection tFutureString =
+      TypeReflection(Future, [TypeReflection.tString]);
+  static const TypeReflection tFutureBool =
+      TypeReflection(Future, [TypeReflection.tBool]);
+  static const TypeReflection tFutureInt =
+      TypeReflection(Future, [TypeReflection.tInt]);
+
+  static const TypeReflection tFutureOrObject =
+      TypeReflection(FutureOr, [TypeReflection.tObject]);
+  static const TypeReflection tFutureOrDynamic =
+      TypeReflection(FutureOr, [TypeReflection.tDynamic]);
+  static const TypeReflection tFutureOrString =
+      TypeReflection(FutureOr, [TypeReflection.tString]);
+  static const TypeReflection tFutureOrBool =
+      TypeReflection(FutureOr, [TypeReflection.tBool]);
+  static const TypeReflection tFutureOrInt =
+      TypeReflection(FutureOr, [TypeReflection.tInt]);
+
+  static String? getConstantName(String type,
+      [List<String> args = const <String>[]]) {
+    switch (type) {
+      case 'Object':
+        return 'tObject';
+      case 'dynamic':
+        return 'tDynamic';
+      case 'String':
+        return 'tString';
+      case 'double':
+        return 'tDouble';
+      case 'int':
+        return 'tInt';
+      case 'num':
+        return 'tNum';
+      case 'bool':
+        return 'tBool';
+      case 'List':
+        {
+          if (args.length != 1) {
+            return 'tList';
+          }
+          switch (args[0]) {
+            case 'Object':
+              return 'tListObject';
+            case 'dynamic':
+              return 'tListDynamic';
+            case 'String':
+              return 'tListString';
+            case 'double':
+              return 'tListDouble';
+            case 'int':
+              return 'tListInt';
+            case 'num':
+              return 'tListNum';
+            case 'bool':
+              return 'tListBool';
+            default:
+              return null;
+          }
+        }
+      case 'Map':
+        {
+          if (args.length != 2) {
+            return 'tMap';
+          }
+
+          var a = args[0] + ';' + args[1];
+
+          switch (a) {
+            case 'Object;Object':
+              return 'tMapObjectObject';
+            case 'String;String':
+              return 'tMapStringString';
+            case 'String;dynamic':
+              return 'tMapStringDynamic';
+            case 'String;Object':
+              return 'tMapStringObject';
+            default:
+              return null;
+          }
+        }
+      case 'Set':
+        {
+          {
+            if (args.length != 1) {
+              return 'tSet';
+            }
+            switch (args[0]) {
+              case 'Object':
+                return 'tSetObject';
+              case 'dynamic':
+                return 'tSetDynamic';
+              case 'String':
+                return 'tSetString';
+              case 'int':
+                return 'tSetInt';
+              default:
+                return null;
+            }
+          }
+        }
+      case 'Future':
+        {
+          {
+            if (args.length != 1) {
+              return 'tFuture';
+            }
+            switch (args[0]) {
+              case 'Object':
+                return 'tFutureObject';
+              case 'dynamic':
+                return 'tFutureDynamic';
+              case 'String':
+                return 'tFutureString';
+              case 'int':
+                return 'tFutureInt';
+              case 'bool':
+                return 'tFutureBool';
+              default:
+                return null;
+            }
+          }
+        }
+      case 'FutureOr':
+        {
+          {
+            if (args.length != 1) {
+              return 'tFutureOr';
+            }
+            switch (args[0]) {
+              case 'Object':
+                return 'tFutureOrObject';
+              case 'dynamic':
+                return 'tFutureOrDynamic';
+              case 'String':
+                return 'tFutureOrString';
+              case 'int':
+                return 'tFutureOrInt';
+              case 'bool':
+                return 'tFutureOrBool';
+              default:
+                return null;
+            }
+          }
+        }
+      default:
+        return null;
+    }
+  }
+
+  /// The Dart [Type].
+  final Type type;
+
+  /// The [Type] arguments.
+  ///
+  /// Example: `Map<String, int>` will return `[String, int]`.
+  final List<Object>? _arguments;
+
+  const TypeReflection(this.type, [this._arguments]);
+
+  factory TypeReflection.from(Object o) {
+    if (o is TypeReflection) {
+      return o;
+    } else if (o is Type) {
+      return TypeReflection(o);
+    } else if (o is List<Type>) {
+      var t = o[0];
+      if (o.length > 1) {
+        var args = o.sublist(1).map((e) => TypeReflection.from(e)).toList();
+        return TypeReflection(t, args);
+      } else {
+        return TypeReflection(t);
+      }
+    } else {
+      throw ArgumentError("Invalid type: $o");
+    }
+  }
+
+  List<TypeReflection> get arguments {
+    var arguments = _arguments;
+    return arguments == null
+        ? <TypeReflection>[]
+        : arguments
+            .map((e) => e is TypeReflection ? e : TypeReflection.from(e))
+            .toList();
+  }
+
+  /// Returns `true` if this type has [arguments].
+  bool get hasArguments => _arguments != null && _arguments!.isNotEmpty;
+
+  /// Returns `true` if [arguments] have equals [types].
+  bool equalsArgumentsTypes(List<Type> types) {
+    var argumentsObj = _arguments;
+    if (argumentsObj == null || argumentsObj.isEmpty) {
+      return types.isEmpty;
+    }
+
+    if (argumentsObj.length != types.length) {
+      return false;
+    }
+
+    return _listEqualityType.equals(
+        arguments.map((e) => e.type).toList(), types);
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TypeReflection &&
+          runtimeType == other.runtimeType &&
+          type == other.type &&
+          _listEqualityTypeReflection.equals(arguments, other.arguments);
+
+  @override
+  int get hashCode =>
+      type.hashCode ^ _listEqualityTypeReflection.hash(arguments);
+
+  @override
+  String toString() {
+    if (hasArguments) {
+      return '$type<${arguments.join(', ')}>';
+    } else {
+      return '$type';
+    }
+  }
+}
+
 typedef FieldGetter<T> = T Function();
-typedef FieldSetter<T> = void Function(T v);
+typedef FieldSetter<T> = void Function(T? v);
 
 typedef FieldReflectionGetterAccessor<O, T> = FieldGetter<T> Function(O? obj);
 typedef FieldReflectionSetterAccessor<O, T> = FieldSetter<T> Function(O? obj);
@@ -363,7 +691,7 @@ class FieldReflection<O, T> extends ElementReflection<O>
     implements ParameterReflection {
   /// Returns [Type] of this field.
   @override
-  final Type type;
+  final TypeReflection type;
 
   /// Returns name of this field.
   @override
@@ -452,7 +780,7 @@ class FieldReflection<O, T> extends ElementReflection<O>
   FieldSetter<T>? _setter;
 
   /// Sets this field value.
-  void set(T v) {
+  void set(T? v) {
     var setter = _setter;
     if (setter == null && setterAccessor != null) {
       setter = _setter = setterAccessor!(object);
@@ -482,24 +810,16 @@ class FieldReflection<O, T> extends ElementReflection<O>
   }
 }
 
-typedef MethodReflectionAccessor<O> = Function Function(O? obj);
-
-/// A class method reflection.
-class MethodReflection<O> extends ElementReflection<O> {
+/// Base class fro methods and constructors.
+abstract class FunctionReflection<O, R> extends ElementReflection<O> {
   /// The name of this method.
   final String name;
 
   /// The return [Type] of this method. Returns `null` for void type.
-  final Type? returnType;
+  final TypeReflection? returnType;
 
   /// `true` if the returned value of this method can be `null`.
   final bool returnNullable;
-
-  final MethodReflectionAccessor<O> methodAccessor;
-
-  /// The associated object ([O]) of this method.
-  /// `null` for static methods.
-  final O? object;
 
   /// The normal parameters [Type]s of this method.
   final List<ParameterReflection> normalParameters;
@@ -510,16 +830,21 @@ class MethodReflection<O> extends ElementReflection<O> {
   /// The named parameters [Type]s of this method.
   final Map<String, ParameterReflection> namedParameters;
 
+  /// Returns all the parameters: [normalParameters], [optionalParameters], [namedParameters].
+  List<ParameterReflection> get allParameters =>
+      [...normalParameters, ...optionalParameters, ...namedParameters.values];
+
   /// The method annotations.
   List<Object> annotations;
 
-  MethodReflection(
+  /// The Dart function for the method or constructor.
+  Function get _function;
+
+  FunctionReflection(
     ClassReflection<O> classReflection,
     this.name,
     this.returnType,
     this.returnNullable,
-    this.methodAccessor,
-    this.object,
     bool isStatic,
     List<ParameterReflection>? normalParameters,
     List<ParameterReflection>? optionalParameters,
@@ -540,13 +865,11 @@ class MethodReflection<O> extends ElementReflection<O> {
             : List<Object>.unmodifiable(annotations),
         super(classReflection, isStatic);
 
-  MethodReflection._(
+  FunctionReflection._(
     ClassReflection<O> classReflection,
     this.name,
     this.returnType,
     this.returnNullable,
-    this.methodAccessor,
-    this.object,
     bool isStatic,
     this.normalParameters,
     this.optionalParameters,
@@ -554,49 +877,43 @@ class MethodReflection<O> extends ElementReflection<O> {
     this.annotations,
   ) : super(classReflection, isStatic);
 
-  /// Returns a new instance that references [object].
-  MethodReflection<O> withObject(O object) => MethodReflection._(
-      classReflection,
-      name,
-      returnType,
-      returnNullable,
-      methodAccessor,
-      object,
-      isStatic,
-      normalParameters,
-      optionalParameters,
-      namedParameters,
-      annotations);
-
-  Function? _method;
-
-  Function get method => _method ??= methodAccessor(object);
-
   /// Returns `true` if this methods has no arguments/parameters.
   bool get hasNoParameters =>
       normalParameters.isEmpty &&
       optionalParameters.isEmpty &&
       namedParameters.isEmpty;
 
+  /// Returns the [normalParameters] [TypeReflection]s.
+  List<TypeReflection> get normalParametersTypeReflection =>
+      normalParameters.map((e) => e.type).toList();
+
   /// Returns the [normalParameters] [Type]s.
   List<Type> get normalParametersTypes =>
-      normalParameters.map((e) => e.type).toList();
+      normalParameters.map((e) => e.type.type).toList();
 
   /// Returns the [normalParameters] names.
   List<String> get normalParametersNames =>
       normalParameters.map((e) => e.name).toList();
 
+  /// Returns the [optionalParameters] [TypeReflection]s.
+  List<TypeReflection> get optionalParametersTypeReflection =>
+      optionalParameters.map((e) => e.type).toList();
+
   /// Returns the [optionalParameters] [Type]s.
   List<Type> get optionalParametersTypes =>
-      optionalParameters.map((e) => e.type).toList();
+      optionalParameters.map((e) => e.type.type).toList();
 
   /// Returns the [optionalParameters] names.
   List<String> get optionalParametersNames =>
       optionalParameters.map((e) => e.name).toList();
 
+  /// Returns the [namedParameters] [TypeReflection]s.
+  Map<String, TypeReflection> get namedParametersTypeReflection =>
+      namedParameters.map((k, v) => MapEntry(k, v.type));
+
   /// Returns the [namedParameters] [Type]s.
   Map<String, Type> get namedParametersTypes =>
-      namedParameters.map((k, v) => MapEntry(k, v.type));
+      namedParameters.map((k, v) => MapEntry(k, v.type.type));
 
   /// Returns the [namedParameters] names.
   List<String> get namedParametersNames => namedParameters.keys.toList();
@@ -647,11 +964,113 @@ class MethodReflection<O> extends ElementReflection<O> {
   }
 
   /// Invoke this method.
-  R? invoke<R>(Iterable<Object?>? positionalArguments,
+  R invoke(Iterable<Object?>? positionalArguments,
       [Map<Symbol, Object?>? namedArguments]) {
     return Function.apply(
-        method, positionalArguments?.toList(), namedArguments);
+        _function, positionalArguments?.toList(), namedArguments);
   }
+}
+
+typedef ConstructorReflectionAccessor<O> = Function Function();
+
+class ConstructorReflection<O> extends FunctionReflection<O, O> {
+  final ConstructorReflectionAccessor constructorAccessor;
+
+  ConstructorReflection(
+      ClassReflection<O> classReflection,
+      String name,
+      this.constructorAccessor,
+      List<ParameterReflection>? normalParameters,
+      List<ParameterReflection>? optionalParameters,
+      Map<String, ParameterReflection>? namedParameters,
+      List<Object>? annotations,
+      {Type? type})
+      : super(classReflection, name, TypeReflection(type ?? O), false, true,
+            normalParameters, optionalParameters, namedParameters, annotations);
+
+  Function? _constructor;
+
+  Function get constructor => _constructor ??= constructorAccessor();
+
+  @override
+  Function get _function => constructor();
+
+  bool get isNamed => name.isNotEmpty;
+
+  bool get isDefaultConstructor => name.isEmpty && hasNoParameters;
+
+  @override
+  String toString() {
+    return 'ConstructorReflection{ '
+        'class: $className, '
+        'name: $name, '
+        'normalParameters: $normalParameters, '
+        'optionalParameters: $optionalParameters, '
+        'namedParameters: $namedParameters '
+        '}';
+  }
+}
+
+typedef MethodReflectionAccessor<O> = Function Function(O? obj);
+
+/// A class method reflection.
+class MethodReflection<O, R> extends FunctionReflection<O, R> {
+  final MethodReflectionAccessor<O> methodAccessor;
+
+  /// The associated object ([O]) of this method.
+  /// `null` for static methods.
+  final O? object;
+
+  MethodReflection(
+    ClassReflection<O> classReflection,
+    String name,
+    TypeReflection? returnType,
+    bool returnNullable,
+    this.methodAccessor,
+    this.object,
+    bool isStatic,
+    List<ParameterReflection>? normalParameters,
+    List<ParameterReflection>? optionalParameters,
+    Map<String, ParameterReflection>? namedParameters,
+    List<Object>? annotations,
+  ) : super(classReflection, name, returnType, returnNullable, isStatic,
+            normalParameters, optionalParameters, namedParameters, annotations);
+
+  MethodReflection._(
+    ClassReflection<O> classReflection,
+    String name,
+    TypeReflection? returnType,
+    bool returnNullable,
+    this.methodAccessor,
+    this.object,
+    bool isStatic,
+    List<ParameterReflection> normalParameters,
+    List<ParameterReflection> optionalParameters,
+    Map<String, ParameterReflection> namedParameters,
+    List<Object> annotations,
+  ) : super._(classReflection, name, returnType, returnNullable, isStatic,
+            normalParameters, optionalParameters, namedParameters, annotations);
+
+  /// Returns a new instance that references [object].
+  MethodReflection<O, R> withObject(O object) => MethodReflection._(
+      classReflection,
+      name,
+      returnType,
+      returnNullable,
+      methodAccessor,
+      object,
+      isStatic,
+      normalParameters,
+      optionalParameters,
+      namedParameters,
+      annotations);
+
+  Function? _method;
+
+  Function get method => _method ??= methodAccessor(object);
+
+  @override
+  Function get _function => method;
 
   @override
   String toString() {
@@ -724,6 +1143,9 @@ class MethodInvocation<T> {
     return 'MethodInvocation{normalParameters: $normalParameters, optionalParameters: $optionalParameters, namedParameters: $namedParameters}';
   }
 }
+
+final ListEquality<TypeReflection> _listEqualityTypeReflection =
+    ListEquality<TypeReflection>();
 
 final ListEquality<Type> _listEqualityType = ListEquality<Type>();
 final MapEquality<String, Type> _mapEqualityType = MapEquality<String, Type>();

@@ -49,6 +49,11 @@ void main() {
                 return  this.pass == pass;
               } 
             }
+            
+            Map<String, dynamic> toJson() => {
+              'email': email,
+              'pass': pass,
+            };
           }
         
         '''
@@ -66,13 +71,15 @@ void main() {
             contains('User\$reflection'),
             contains('User\$reflectionExtension'),
             matches(RegExp(
-                r"'ignoreCase':\s*ParameterReflection\(\s*bool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*null\s*\)")),
+                r"'ignoreCase':\s*ParameterReflection\(\s*TypeReflection.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*null\s*\)")),
             allOf(
               contains("TestAnnotation(['static method', 'version checker'])"),
               contains("TestAnnotation(['method', 'password checker'])"),
               contains("TestAnnotation(['static field', 'version'])"),
               contains("TestAnnotation(['field', 'email'])"),
               contains("TestAnnotation(['parameter', 'pass'])"),
+              isNot(contains(
+                  'Map<String, dynamic> toJson() => reflection.toJson()')),
             ),
           )),
         },
@@ -128,6 +135,7 @@ void main() {
             contains("part of 'foo.dart'"),
             contains('RefUser'),
             contains('RefUserExt'),
+            contains('Map<String, dynamic> toJson() => reflection.toJson()'),
           ))
         },
         onLog: (msg) {

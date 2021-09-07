@@ -1,4 +1,5 @@
 import 'package:reflection_factory/reflection_factory.dart';
+import 'package:reflection_factory/src/reflection_factory_base.dart';
 import 'package:test/test.dart';
 
 import 'src/user_reflection_bridge.dart';
@@ -10,12 +11,110 @@ void main() {
     setUp(() {});
 
     test('EnableReflection', () async {
+      expect(TypeReflection.getConstantName('Object'), equals('tObject'));
+      expect(TypeReflection.getConstantName('dynamic'), equals('tDynamic'));
+      expect(TypeReflection.getConstantName('String'), equals('tString'));
+      expect(TypeReflection.getConstantName('double'), equals('tDouble'));
+      expect(TypeReflection.getConstantName('int'), equals('tInt'));
+      expect(TypeReflection.getConstantName('num'), equals('tNum'));
+      expect(TypeReflection.getConstantName('bool'), equals('tBool'));
+      expect(TypeReflection.getConstantName('List'), equals('tList'));
+      expect(TypeReflection.getConstantName('Map'), equals('tMap'));
+      expect(TypeReflection.getConstantName('Set'), equals('tSet'));
+      expect(TypeReflection.getConstantName('Future'), equals('tFuture'));
+      expect(TypeReflection.getConstantName('FutureOr'), equals('tFutureOr'));
+
+      expect(TypeReflection.getConstantName('List', ['Object']),
+          equals('tListObject'));
+      expect(TypeReflection.getConstantName('List', ['dynamic']),
+          equals('tListDynamic'));
+      expect(TypeReflection.getConstantName('List', ['String']),
+          equals('tListString'));
+      expect(
+          TypeReflection.getConstantName('List', ['int']), equals('tListInt'));
+      expect(TypeReflection.getConstantName('List', ['double']),
+          equals('tListDouble'));
+      expect(
+          TypeReflection.getConstantName('List', ['num']), equals('tListNum'));
+      expect(TypeReflection.getConstantName('List', ['bool']),
+          equals('tListBool'));
+
+      expect(TypeReflection.getConstantName('Map', ['String', 'Object']),
+          equals('tMapStringObject'));
+      expect(TypeReflection.getConstantName('Map', ['String', 'dynamic']),
+          equals('tMapStringDynamic'));
+      expect(TypeReflection.getConstantName('Map', ['String', 'String']),
+          equals('tMapStringString'));
+      expect(TypeReflection.getConstantName('Map', ['Object', 'Object']),
+          equals('tMapObjectObject'));
+
+      expect(TypeReflection.getConstantName('Set', ['Object']),
+          equals('tSetObject'));
+      expect(TypeReflection.getConstantName('Set', ['dynamic']),
+          equals('tSetDynamic'));
+      expect(TypeReflection.getConstantName('Set', ['String']),
+          equals('tSetString'));
+      expect(TypeReflection.getConstantName('Set', ['int']), equals('tSetInt'));
+
+      expect(TypeReflection.getConstantName('Future', ['Object']),
+          equals('tFutureObject'));
+      expect(TypeReflection.getConstantName('Future', ['dynamic']),
+          equals('tFutureDynamic'));
+      expect(TypeReflection.getConstantName('Future', ['String']),
+          equals('tFutureString'));
+      expect(TypeReflection.getConstantName('Future', ['int']),
+          equals('tFutureInt'));
+      expect(TypeReflection.getConstantName('Future', ['bool']),
+          equals('tFutureBool'));
+
+      expect(TypeReflection.getConstantName('FutureOr', ['Object']),
+          equals('tFutureOrObject'));
+      expect(TypeReflection.getConstantName('FutureOr', ['dynamic']),
+          equals('tFutureOrDynamic'));
+      expect(TypeReflection.getConstantName('FutureOr', ['String']),
+          equals('tFutureOrString'));
+      expect(TypeReflection.getConstantName('FutureOr', ['int']),
+          equals('tFutureOrInt'));
+      expect(TypeReflection.getConstantName('FutureOr', ['bool']),
+          equals('tFutureOrBool'));
+
+      expect(TypeReflection.from(TypeReflection.tString),
+          equals(TypeReflection.tString));
+      expect(TypeReflection.from(TypeReflection.tInt),
+          equals(TypeReflection.tInt));
+
+      expect(TypeReflection.from(String), equals(TypeReflection.tString));
+      expect(TypeReflection.from(int), equals(TypeReflection.tInt));
+
+      expect(TypeReflection.from([List, String]),
+          equals(TypeReflection.tListString));
+      expect(TypeReflection.from([List, int]), equals(TypeReflection.tListInt));
+      expect(TypeReflection.from([List, double]),
+          equals(TypeReflection.tListDouble));
+
+      expect(TypeReflection.from([Map, String, Object]),
+          equals(TypeReflection.tMapStringObject));
+      expect(TypeReflection.from([Map, String, String]),
+          equals(TypeReflection.tMapStringString));
+
+      expect(TypeReflection.tListDouble.equalsArgumentsTypes([double]), isTrue);
+      expect(
+          TypeReflection.tMapStringObject
+              .equalsArgumentsTypes([String, Object]),
+          isTrue);
+      expect(
+          TypeReflection.tMapStringString
+              .equalsArgumentsTypes([String, String]),
+          isTrue);
+    });
+
+    test('EnableReflection', () async {
       expect(
           ReflectionFactory()
               .hasRegisterClassReflection(TestUserWithReflection),
           isFalse);
 
-      var user = TestUserWithReflection('Joe', 'joe@mail.com', '123');
+      var user = TestUserWithReflection.fields('Joe', 'joe@mail.com', '123');
 
       var userReflection = user.reflection;
 
@@ -34,12 +133,76 @@ void main() {
               .classType,
           equals(TestUserWithReflection));
 
+      expect(userReflection.constructorsNames, equals(['', 'fields']));
+
+      expect(userReflection.allConstructors().length, equals(2));
+
+      {
+        var constructorDefault = userReflection.constructor('');
+        expect(constructorDefault, isNotNull);
+
+        expect(constructorDefault!.name, isEmpty);
+        expect(constructorDefault.isNamed, isFalse);
+
+        expect(constructorDefault.isDefaultConstructor, isTrue);
+        expect(constructorDefault.isStatic, isTrue);
+
+        expect(constructorDefault.hasNoParameters, isTrue);
+        expect(constructorDefault.normalParameters, isEmpty);
+        expect(constructorDefault.optionalParameters, isEmpty);
+        expect(constructorDefault.namedParameters, isEmpty);
+      }
+
+      {
+        var constructorFields = userReflection.constructor('fields');
+        expect(constructorFields, isNotNull);
+
+        expect(constructorFields!.name, isNotEmpty);
+        expect(constructorFields.isNamed, isTrue);
+
+        expect(constructorFields.isStatic, isTrue);
+
+        expect(constructorFields.hasNoParameters, isFalse);
+        expect(constructorFields.normalParameters.length, equals(3));
+        expect(constructorFields.optionalParameters, isEmpty);
+        expect(constructorFields.namedParameters, isEmpty);
+      }
+
+      {
+        expect(userReflection.hasDefaultConstructor, isTrue);
+        expect(userReflection.hasEmptyConstructor, isFalse);
+
+        expect(userReflection.createInstanceWithEmptyConstructor(), isNull);
+
+        var user = userReflection.createInstanceWithDefaultConstructor();
+        expect(user, isNotNull);
+
+        expect(user!.name, isEmpty);
+        expect(user.email, isNull);
+        expect(user.password, isEmpty);
+
+        expect(user.toJson(), userReflection.createInstance()!.toJson());
+      }
+
       expect(userReflection.fieldsNames, equals(['email', 'name', 'password']));
+      expect(userReflection.allFields().map((e) => e.name),
+          equals(userReflection.fieldsNames));
+
       expect(userReflection.staticFieldsNames,
           equals(['version', 'withReflection']));
+      expect(
+          userReflection.allStaticFields().map((e) => e.name),
+          equals(
+            userReflection.staticFieldsNames,
+          ));
 
       expect(userReflection.methodsNames, equals(['checkPassword']));
+      expect(userReflection.allMethods().map((e) => e.name),
+          equals(userReflection.methodsNames));
+
       expect(userReflection.staticMethodsNames, equals(['isVersion']));
+      expect(userReflection.allStaticMethods().map((e) => e.name),
+          equals(userReflection.staticMethodsNames));
 
       expect(userReflection.getField('name'), equals('Joe'));
       expect(userReflection.getField('email'), equals('joe@mail.com'));
@@ -53,7 +216,7 @@ void main() {
       expect(field.className, equals('TestUserWithReflection'));
       expect(field.isStatic, isFalse);
       expect(field.name, equals('email'));
-      expect(field.type, equals(String));
+      expect(field.type, equals(TypeReflection.tString));
       expect(field.isFinal, isFalse);
       expect(
           field.toString(),
@@ -78,7 +241,7 @@ void main() {
       expect(staticField.className, equals('TestUserWithReflection'));
       expect(staticField.isStatic, isTrue);
       expect(staticField.name, equals('version'));
-      expect(staticField.type, equals(double));
+      expect(staticField.type, equals(TypeReflection.tDouble));
       expect(staticField.isFinal, isTrue);
       expect(
           staticField.toString(),
@@ -93,7 +256,7 @@ void main() {
       expect(userReflection.invokeStaticMethod('isVersion', [1.1]), isTrue);
       expect(userReflection.invokeStaticMethod('isVersion', [2.0]), isFalse);
 
-      var user2 = TestUserWithReflection('Joe', 'smith@mail.com', 'xyz');
+      var user2 = TestUserWithReflection.fields('Joe', 'smith@mail.com', 'xyz');
       expect(userReflection.invokeMethodWith('checkPassword', user2, ['xyz']),
           isTrue);
       expect(userReflection.invokeMethodWith('checkPassword', user2, ['abc']),
@@ -106,8 +269,10 @@ void main() {
       expect(method.name, equals('checkPassword'));
       expect(method.hasNoParameters, isFalse);
       expect(method.normalParameters.length, equals(1));
-      expect(method.normalParameters[0],
-          equals(ParameterReflection(String, 'password', false, false, null)));
+      expect(
+          method.normalParameters[0],
+          equals(ParameterReflection(
+              TypeReflection.tString, 'password', false, true, null)));
       expect(method.normalParametersTypes.length, equals(1));
       expect(method.normalParametersTypes[0], equals(String));
       expect(method.normalParametersNames.length, equals(1));
@@ -117,14 +282,60 @@ void main() {
           startsWith(
               'MethodReflection{ class: TestUserWithReflection, name: checkPassword, returnType: bool, static: false,'));
 
+      expect(method.normalParametersTypeReflection,
+          equals([TypeReflection.tString]));
+      expect(method.normalParametersTypes, equals([String]));
+      expect(method.normalParameters.length, equals(1));
+
+      expect(method.optionalParametersTypeReflection, isEmpty);
+      expect(method.optionalParametersTypes, isEmpty);
+      expect(method.optionalParameters, isEmpty);
+
+      expect(method.namedParametersTypeReflection, isEmpty);
+      expect(method.namedParametersTypes, isEmpty);
+      expect(method.namedParameters, isEmpty);
+
+      expect(method.allParameters.toNames(), equals(['password']));
+      expect(method.allParameters.whereNullable(), isEmpty);
+      expect(method.allParameters.whereRequired().length, equals(1));
+      expect(method.allParameters.toTypes(), equals([String]));
+      expect(method.allParameters.toTypeReflections().map((e) => e.type),
+          equals([String]));
+
+      expect(
+          method.allParameters.map((e) => e.type).toTypes(), equals([String]));
+
+      var allFields = userReflection.allFields();
+      expect(allFields.toNames(), equals(['email', 'name', 'password']));
+      expect(allFields.whereFinal().toNames(), equals(['name']));
+      expect(allFields.whereNullable().toNames(), equals(['email']));
+      expect(allFields.toTypes(), equals([String, String, String]));
+
+      var allStaticFields = userReflection.allStaticFields();
+      expect(allStaticFields.toNames(), equals(['version', 'withReflection']));
+      expect(allStaticFields.whereStatic().toNames(),
+          equals(['version', 'withReflection']));
+
+      var allMethods = userReflection.allMethods();
+      expect(allMethods.toNames(), equals(['checkPassword']));
+      expect(
+          allMethods.toReturnTypeReflections(), equals([TypeReflection.tBool]));
+      expect(allMethods.toReturnTypes(), equals([bool]));
+      expect(allMethods.whereStatic(), isEmpty);
+
+      var allStaticMethods = userReflection.allStaticMethods();
+      expect(allStaticMethods.whereStatic().toNames(), equals(['isVersion']));
+
       var staticMethod = userReflection.staticMethod('isVersion')!;
       expect(staticMethod.className, equals('TestUserWithReflection'));
       expect(staticMethod.isStatic, isTrue);
       expect(staticMethod.name, equals('isVersion'));
       expect(staticMethod.hasNoParameters, isFalse);
       expect(staticMethod.normalParameters.length, equals(1));
-      expect(staticMethod.normalParameters[0],
-          equals(ParameterReflection(double, 'ver', false, false, null)));
+      expect(
+          staticMethod.normalParameters[0],
+          equals(ParameterReflection(
+              TypeReflection.tDouble, 'ver', false, true, null)));
       expect(staticMethod.normalParametersNames.length, equals(1));
       expect(staticMethod.normalParametersNames[0], equals('ver'));
       expect(
@@ -252,7 +463,7 @@ void main() {
             TestAnnotation(['field', 'name'])
           ]));
 
-      expect(field.type, equals(String));
+      expect(field.type, equals(TypeReflection.tString));
       expect(field.nullable, isFalse);
       expect(field.required, isTrue);
 
