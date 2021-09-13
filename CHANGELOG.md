@@ -1,3 +1,11 @@
+## 1.0.7
+
+- `TypeReflection`:
+  - Added `isOfType`.
+- `FunctionReflection` (`MethodReflection`, `ConstructorReflection`):
+  - `methodInvocation(parametersProvider)` now accepts a `ParameterReflection`,
+    not only a `String` with the parameter name.
+
 ## 1.0.6
 
 - `ClassReflection`:

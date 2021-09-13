@@ -136,6 +136,13 @@ void main() {
       expect(TypeReflection.tMap.isCollectionType, isTrue);
       expect(TypeReflection.tMap.isIterableType, isFalse);
       expect(TypeReflection.tMap.isMapType, isTrue);
+
+      expect(TypeReflection.tMap.isOfType(Map), isTrue);
+      expect(TypeReflection.tMapStringObject.isOfType(Map), isTrue);
+      expect(TypeReflection.tMapStringObject.isOfType(Map, [String, Object]),
+          isTrue);
+      expect(TypeReflection.tMapStringObject.isOfType(Map, [String, String]),
+          isFalse);
     });
 
     test('EnableReflection', () async {

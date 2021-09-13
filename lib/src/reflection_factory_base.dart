@@ -630,6 +630,14 @@ class TypeReflection {
   /// The Dart [Type].
   final Type type;
 
+  /// Returns `true` if the parameter [type] is equals to field [type].
+  ///
+  /// - If [arguments] is provided, also checks [equalsArgumentsTypes].
+  bool isOfType(Type type, [List<Type>? arguments]) {
+    return this.type == type &&
+        (arguments == null || equalsArgumentsTypes(arguments));
+  }
+
   /// The [Type] arguments.
   ///
   /// Example: `Map<String, int>` will return `[String, int]`.
@@ -996,30 +1004,28 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
 
   /// Creates a [MethodInvocation] using [map] entries as parameters.
   MethodInvocation<O> methodInvocationFromMap(Map<String, dynamic> map) {
-    return methodInvocation((k) => map[k]);
+    return methodInvocation((p) => map[p.name]);
   }
 
   /// Creates a [MethodInvocation] using [parametersProvider].
   MethodInvocation<O> methodInvocation(
-      Function(String key) parametersProvider) {
+      Function(ParameterReflection parameter) parametersProvider) {
     var normalParameters =
-        this.normalParameters.map((p) => parametersProvider(p.name)).toList();
+        this.normalParameters.map(parametersProvider).toList();
 
-    var optionalParameters = this.optionalParameters.map((p) {
-      return parametersProvider(p.name);
-    }).toList();
+    var optionalParameters =
+        this.optionalParameters.map(parametersProvider).toList();
 
     Map<String, dynamic> namedParameters =
         Map<String, dynamic>.fromEntries(this.namedParameters.entries.map((e) {
-      var k = e.key;
       var p = e.value;
 
-      var value = parametersProvider(k);
+      var value = parametersProvider(p);
 
       if (value == null && p.nullable && !p.required) {
         return null;
       } else {
-        return MapEntry(k, value);
+        return MapEntry(e.key, value);
       }
     }).whereType<MapEntry<String, dynamic>>());
 
