@@ -1,3 +1,11 @@
+## 1.0.6
+
+- `ClassReflection`:
+  - Added: `fieldsWhere`, `staticFieldsWhere`, `methodsWhere`, `staticMethodsWhere`.
+- `TypeReflection`:
+- Added: `isPrimitiveType`, `isCollectionType`, `isMapType`, `isIterableType`,
+  `isNumericType`, `isIntType`, `isDoubleType`, `isBoolType`, `isStringType`.
+
 ## 1.0.5
 
 - Added support for class constructors.

@@ -163,6 +163,18 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   /// Returns a static [FieldReflection] for [fieldName].
   FieldReflection<O, T>? staticField<T>(String fieldName);
 
+  /// Returns a [List] of fields [FieldReflection] that matches [test].
+  Iterable<FieldReflection<O, dynamic>> fieldsWhere(
+      bool Function(FieldReflection<O, dynamic> f) test) {
+    return fieldsNames.map((n) => field(n)!).where(test);
+  }
+
+  /// Returns a [List] of static fields [FieldReflection] that matches [test].
+  Iterable<FieldReflection<O, dynamic>> staticFieldsWhere(
+      bool Function(FieldReflection<O, dynamic> f) test) {
+    return staticFieldsNames.map((n) => staticField(n)!).where(test);
+  }
+
   /// Returns a [ElementResolver] for a [FieldReflection] for a field with [fieldName].
   ElementResolver<FieldReflection<O, T>> fieldResolver<T>(String fieldName) =>
       ElementResolver<FieldReflection<O, T>>(() => field<T>(fieldName));
@@ -191,6 +203,18 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
 
   /// Returns a static [MethodReflection] for [methodName].
   MethodReflection<O, R>? staticMethod<R>(String methodName);
+
+  /// Returns a [List] of methods [MethodReflection] that matches [test].
+  Iterable<MethodReflection<O, dynamic>> methodsWhere(
+      bool Function(MethodReflection<O, dynamic> f) test) {
+    return methodsNames.map((n) => method(n)!).where(test);
+  }
+
+  /// Returns a [List] of static methods [MethodReflection] that matches [test].
+  Iterable<MethodReflection<O, dynamic>> staticMethodsWhere(
+      bool Function(MethodReflection<O, dynamic> f) test) {
+    return staticMethodsNames.map((n) => staticMethod(n)!).where(test);
+  }
 
   /// Returns a [ElementResolver] for a [MethodReflection] for a method with [methodName].
   ElementResolver<MethodReflection<O, R>> methodResolver<R>(
@@ -656,6 +680,46 @@ class TypeReflection {
 
     return _listEqualityType.equals(
         arguments.map((e) => e.type).toList(), types);
+  }
+
+  bool get isPrimitiveType {
+    return type == String ||
+        type == int ||
+        type == double ||
+        type == num ||
+        type == bool;
+  }
+
+  bool get isCollectionType {
+    return type == Map || type == List || type == Iterable || type == Set;
+  }
+
+  bool get isMapType {
+    return type == Map;
+  }
+
+  bool get isIterableType {
+    return type == List || type == Iterable || type == Set;
+  }
+
+  bool get isNumericType {
+    return type == int || type == double || type == num;
+  }
+
+  bool get isIntType {
+    return type == int;
+  }
+
+  bool get isDoubleType {
+    return type == double;
+  }
+
+  bool get isBoolType {
+    return type == bool;
+  }
+
+  bool get isStringType {
+    return type == String;
   }
 
   @override

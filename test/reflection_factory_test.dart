@@ -106,6 +106,36 @@ void main() {
           TypeReflection.tMapStringString
               .equalsArgumentsTypes([String, String]),
           isTrue);
+
+      expect(TypeReflection.tBool.isPrimitiveType, isTrue);
+      expect(TypeReflection.tBool.isStringType, isFalse);
+      expect(TypeReflection.tBool.isDoubleType, isFalse);
+      expect(TypeReflection.tBool.isIntType, isFalse);
+      expect(TypeReflection.tBool.isNumericType, isFalse);
+      expect(TypeReflection.tBool.isBoolType, isTrue);
+      expect(TypeReflection.tBool.isCollectionType, isFalse);
+      expect(TypeReflection.tBool.isIterableType, isFalse);
+      expect(TypeReflection.tBool.isMapType, isFalse);
+
+      expect(TypeReflection.tList.isPrimitiveType, isFalse);
+      expect(TypeReflection.tList.isStringType, isFalse);
+      expect(TypeReflection.tList.isDoubleType, isFalse);
+      expect(TypeReflection.tList.isIntType, isFalse);
+      expect(TypeReflection.tList.isNumericType, isFalse);
+      expect(TypeReflection.tList.isBoolType, isFalse);
+      expect(TypeReflection.tList.isCollectionType, isTrue);
+      expect(TypeReflection.tList.isIterableType, isTrue);
+      expect(TypeReflection.tList.isMapType, isFalse);
+
+      expect(TypeReflection.tMap.isPrimitiveType, isFalse);
+      expect(TypeReflection.tMap.isStringType, isFalse);
+      expect(TypeReflection.tMap.isDoubleType, isFalse);
+      expect(TypeReflection.tMap.isIntType, isFalse);
+      expect(TypeReflection.tMap.isNumericType, isFalse);
+      expect(TypeReflection.tMap.isBoolType, isFalse);
+      expect(TypeReflection.tMap.isCollectionType, isTrue);
+      expect(TypeReflection.tMap.isIterableType, isFalse);
+      expect(TypeReflection.tMap.isMapType, isTrue);
     });
 
     test('EnableReflection', () async {
@@ -188,6 +218,11 @@ void main() {
       expect(userReflection.allFields().map((e) => e.name),
           equals(userReflection.fieldsNames));
 
+      expect(userReflection.fieldsWhere((f) => f.nullable).map((f) => f.name),
+          equals(['email']));
+
+      expect(userReflection.fieldsWhere((f) => f.type.isBoolType), isEmpty);
+
       expect(userReflection.staticFieldsNames,
           equals(['version', 'withReflection']));
       expect(
@@ -196,13 +231,47 @@ void main() {
             userReflection.staticFieldsNames,
           ));
 
+      expect(
+          userReflection
+              .staticFieldsWhere((f) => f.type.isBoolType)
+              .map((f) => f.name),
+          equals(['withReflection']));
+
+      expect(userReflection.staticFieldsWhere((f) => f.type.isStringType),
+          isEmpty);
+
       expect(userReflection.methodsNames, equals(['checkPassword']));
       expect(userReflection.allMethods().map((e) => e.name),
           equals(userReflection.methodsNames));
 
+      expect(
+          userReflection
+              .methodsWhere((m) => m.equalsNormalParametersTypes([String]))
+              .map((e) => e.name),
+          equals(['checkPassword']));
+
+      expect(userReflection.methodsWhere((m) => m.hasNoParameters), isEmpty);
+
       expect(userReflection.staticMethodsNames, equals(['isVersion']));
       expect(userReflection.allStaticMethods().map((e) => e.name),
           equals(userReflection.staticMethodsNames));
+
+      expect(
+          userReflection
+              .staticMethodsWhere(
+                  (m) => m.equalsNormalParametersTypes([double]))
+              .map((e) => e.name),
+          equals(['isVersion']));
+
+      expect(
+          userReflection
+              .staticMethodsWhere(
+                  (m) => m.normalParametersTypeReflection[0].isPrimitiveType)
+              .length,
+          equals(1));
+
+      expect(
+          userReflection.staticMethodsWhere((m) => m.hasNoParameters), isEmpty);
 
       expect(userReflection.getField('name'), equals('Joe'));
       expect(userReflection.getField('email'), equals('joe@mail.com'));
