@@ -338,7 +338,8 @@ class TestUserWithReflection$reflection
   }
 
   @override
-  List<String> get methodsNames => const <String>['checkPassword'];
+  List<String> get methodsNames =>
+      const <String>['checkPassword', 'getField', 'setField'];
 
   @override
   MethodReflection<TestUserWithReflection, R>? method<R>(String methodName,
@@ -363,6 +364,46 @@ class TestUserWithReflection$reflection
             ],
             null,
             null,
+            null);
+      case 'getfield':
+        return MethodReflection<TestUserWithReflection, R>(
+            this,
+            'getField',
+            TypeReflection.tObject,
+            true,
+            (o) => o!.getField,
+            obj,
+            false,
+            const <ParameterReflection>[
+              ParameterReflection(
+                  TypeReflection.tString, 'key', false, true, null)
+            ],
+            const <ParameterReflection>[
+              ParameterReflection(
+                  TypeReflection.tObject, 'def', true, false, null)
+            ],
+            null,
+            null);
+      case 'setfield':
+        return MethodReflection<TestUserWithReflection, R>(
+            this,
+            'setField',
+            null,
+            false,
+            (o) => o!.setField,
+            obj,
+            false,
+            const <ParameterReflection>[
+              ParameterReflection(
+                  TypeReflection.tString, 'key', false, true, null),
+              ParameterReflection(
+                  TypeReflection.tObject, 'value', true, true, null)
+            ],
+            null,
+            const <String, ParameterReflection>{
+              'def': ParameterReflection(
+                  TypeReflection.tObject, 'def', true, false, null)
+            },
             null);
       default:
         return null;

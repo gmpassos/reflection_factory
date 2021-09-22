@@ -1,3 +1,8 @@
+## 1.0.8
+
+- Improve tests.
+- Fix issue with genetic types.
+
 ## 1.0.7
 
 - `TypeReflection`:

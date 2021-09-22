@@ -1196,9 +1196,9 @@ extension _DartTypeExtension on DartType {
 
     if (arguments.isNotEmpty) {
       if (hasSimpleTypeArguments) {
-        var constName = TypeReflection.getConstantName(
-            name, arguments.map((a) => a.typeName).toList());
+        var typeArgs = arguments.map((a) => a.typeName).toList();
 
+        var constName = TypeReflection.getConstantName(name, typeArgs);
         if (constName != null) {
           return 'TypeReflection.$constName';
         }
@@ -1212,13 +1212,37 @@ extension _DartTypeExtension on DartType {
         }
       }).join(', ')}])';
     } else {
-      var constName = TypeReflection.getConstantName(name);
+      var constName = _getTypeReflectionConstantName(name);
       if (constName != null) {
         return 'TypeReflection.$constName';
       } else {
-        return 'TypeReflection($name)';
+        if (this is TypeParameterType) {
+          return 'TypeReflection.tObject';
+        } else {
+          return 'TypeReflection($name)';
+        }
       }
     }
+  }
+
+  String? _getTypeReflectionConstantName([String? name]) {
+    name ??= typeName;
+
+    if (isDartCoreObject) {
+      return 'tObject';
+    } else if (isDartCoreString) {
+      return 'tString';
+    } else if (isDartCoreInt) {
+      return 'tInt';
+    } else if (isDartCoreDouble) {
+      return 'tDouble';
+    } else if (isDartCoreNum) {
+      return 'tNum';
+    } else if (isDartCoreBool) {
+      return 'tBool';
+    }
+
+    return TypeReflection.getConstantName(name);
   }
 }
 

@@ -247,7 +247,8 @@ void main() {
       expect(userReflection.staticFieldsWhere((f) => f.type.isStringType),
           isEmpty);
 
-      expect(userReflection.methodsNames, equals(['checkPassword']));
+      expect(userReflection.methodsNames,
+          equals(['checkPassword', 'getField', 'setField']));
       expect(userReflection.allMethods().map((e) => e.name),
           equals(userReflection.methodsNames));
 
@@ -255,7 +256,13 @@ void main() {
           userReflection
               .methodsWhere((m) => m.equalsNormalParametersTypes([String]))
               .map((e) => e.name),
-          equals(['checkPassword']));
+          equals(['checkPassword', 'getField']));
+
+      expect(
+          userReflection
+              .methodsWhere((m) => m.equalsOptionalParametersTypes([Object]))
+              .map((e) => e.name),
+          equals(['getField']));
 
       expect(userReflection.methodsWhere((m) => m.hasNoParameters), isEmpty);
 
@@ -393,10 +400,11 @@ void main() {
           equals(['version', 'withReflection']));
 
       var allMethods = userReflection.allMethods();
-      expect(allMethods.toNames(), equals(['checkPassword']));
-      expect(
-          allMethods.toReturnTypeReflections(), equals([TypeReflection.tBool]));
-      expect(allMethods.toReturnTypes(), equals([bool]));
+      expect(allMethods.toNames(),
+          equals(['checkPassword', 'getField', 'setField']));
+      expect(allMethods.toReturnTypeReflections(),
+          equals([TypeReflection.tBool, TypeReflection.tObject, null]));
+      expect(allMethods.toReturnTypes(), equals([bool, Object, null]));
       expect(allMethods.whereStatic(), isEmpty);
 
       var allStaticMethods = userReflection.allStaticMethods();

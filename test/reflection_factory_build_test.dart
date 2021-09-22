@@ -54,6 +54,29 @@ void main() {
               'email': email,
               'pass': pass,
             };
+              
+            V? getField<V extends Object>(String key, [V? def]) {
+              switch (key) {
+                case 'email':
+                  return email as V?;
+                case 'password':
+                  return password as V?;
+                default:
+                  return null;
+              }
+            }
+            
+            void setField<V>(String key, V? value) {
+              switch (key) {
+                case 'email':
+                  { email = value as String? ; break;}
+                case 'password':
+                  { password = value as String ; break;}
+                default:
+                  return;
+              }
+            }
+            
           }
         
         '''
@@ -80,6 +103,11 @@ void main() {
               contains("TestAnnotation(['parameter', 'pass'])"),
               isNot(contains(
                   'Map<String, dynamic> toJson() => reflection.toJson()')),
+            ),
+            allOf(
+              contains("case 'tojson':"),
+              contains("case 'getfield':"),
+              contains("case 'setfield':"),
             ),
           )),
         },

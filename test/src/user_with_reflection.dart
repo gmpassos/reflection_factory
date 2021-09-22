@@ -25,6 +25,38 @@ class TestUserWithReflection {
         );
 
   bool checkPassword(String password) => this.password == password;
+
+  V? getField<V extends Object>(String key, [V? def]) {
+    switch (key) {
+      case 'name':
+        return name as V?;
+      case 'email':
+        return email as V?;
+      case 'password':
+        return password as V?;
+      default:
+        return null;
+    }
+  }
+
+  void setField<V>(String key, V? value, {V? def}) {
+    value ??= def;
+
+    switch (key) {
+      case 'email':
+        {
+          email = value as String?;
+          break;
+        }
+      case 'password':
+        {
+          password = value as String;
+          break;
+        }
+      default:
+        break;
+    }
+  }
 }
 
 @EnableReflection()
