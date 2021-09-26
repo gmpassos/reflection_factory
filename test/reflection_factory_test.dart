@@ -1,5 +1,4 @@
 import 'package:reflection_factory/reflection_factory.dart';
-import 'package:reflection_factory/src/reflection_factory_base.dart';
 import 'package:test/test.dart';
 
 import 'src/user_reflection_bridge.dart';

@@ -6,6 +6,9 @@ import 'package:pub_semver/pub_semver.dart';
 
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
+  // ignore: constant_identifier_names
+  static const String VERSION = '1.0.9';
+
   static final ReflectionFactory _instance = ReflectionFactory._();
 
   ReflectionFactory._();
@@ -48,6 +51,10 @@ class ReflectionFactory {
       {Object? Function(dynamic object)? toEncodable}) {
     if (object == null) {
       return null;
+    }
+
+    if (object is DateTime) {
+      return object.toString();
     }
 
     var classReflection =

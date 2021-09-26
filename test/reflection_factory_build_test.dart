@@ -1,4 +1,5 @@
 import 'package:build_test/build_test.dart';
+import 'package:reflection_factory/src/reflection_factory_base.dart';
 import 'package:reflection_factory/src/reflection_factory_builder.dart';
 import 'package:test/test.dart';
 
@@ -89,8 +90,12 @@ void main() {
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
-            contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-            contains("part of 'foo.dart'"),
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of 'foo.dart'"),
+            ),
             contains('User\$reflection'),
             contains('User\$reflectionExtension'),
             matches(RegExp(

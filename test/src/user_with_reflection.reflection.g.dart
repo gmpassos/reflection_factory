@@ -1,7 +1,8 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: "reflection_factory"
+// BUILDER: reflection_factory/1.0.9
 // BUILD COMMAND: dart run build_runner build
+// BUILD TIME: 2021-09-26 15:40:20.443705
 //
 
 part of 'user_with_reflection.dart';

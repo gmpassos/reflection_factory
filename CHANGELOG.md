@@ -1,3 +1,10 @@
+## 1.0.9
+
+- Added `ReflectionInspector`.
+- Generated files now have the package version in the header comments.
+- `toJsonEncodable`: fixed handling of `DateTime`.
+- Improved tests.
+
 ## 1.0.8
 
 - Improve tests.
