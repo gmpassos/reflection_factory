@@ -60,7 +60,6 @@ class ReflectionBuilder implements Builder {
     fullCode
         .write('// BUILDER: reflection_factory/${ReflectionFactory.VERSION}\n');
     fullCode.write('// BUILD COMMAND: dart run build_runner build\n');
-    fullCode.write('// BUILD TIME: ${DateTime.now()}\n');
     fullCode.write('// \n\n');
 
     fullCode.write("part of '${inputId.pathSegments.last}';\n\n");

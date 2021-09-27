@@ -1,3 +1,7 @@
+## 1.0.10
+
+- Removed `BUILD TIME` comment in generated files to avoid unnecessary generate file modification/change.
+
 ## 1.0.9
 
 - Added `ReflectionInspector`.
