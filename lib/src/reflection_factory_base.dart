@@ -7,7 +7,7 @@ import 'package:pub_semver/pub_semver.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.0.10';
+  static const String VERSION = '1.0.11';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -403,6 +403,11 @@ class ParameterReflection {
   /// - Fields: `true` if is NOT [nullable].
   final bool required;
 
+  /// The default value of this parameter.
+  ///
+  /// Only exists for optional and named parameters.
+  final Object? defaultValue;
+
   final List<Object>? _annotations;
 
   /// The parameter annotations.
@@ -410,8 +415,8 @@ class ParameterReflection {
       ? List<Object>.unmodifiable(_annotations!)
       : _annotationsEmpty;
 
-  const ParameterReflection(
-      this.type, this.name, this.nullable, this.required, this._annotations);
+  const ParameterReflection(this.type, this.name, this.nullable, this.required,
+      this.defaultValue, this._annotations);
 
   @override
   bool operator ==(Object other) =>
@@ -783,6 +788,12 @@ class FieldReflection<O, T> extends ElementReflection<O>
   /// Returns `true` if this field is NOT [nullable].
   @override
   bool get required => !nullable;
+
+  /// The default value of the field.
+  ///
+  /// ** Not implemented for fields.
+  @override
+  Object? get defaultValue => null;
 
   /// A [Function] that returns the field getter.
   final FieldReflectionGetterAccessor<O, T> getterAccessor;

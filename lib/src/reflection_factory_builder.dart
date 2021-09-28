@@ -893,6 +893,11 @@ class _Parameter extends _Element {
   _Parameter(this.parameterElement, this.parameterIndex, this.type, this.name,
       this.nullable, this.required)
       : super(parameterElement);
+
+  String? get defaultValue {
+    var valCode = parameterElement.defaultValueCode;
+    return valCode;
+  }
 }
 
 class _Constructor<T> extends _Element {
@@ -962,6 +967,11 @@ class _Constructor<T> extends _Element {
         s.write(p.type.toString());
         s.write(' ');
         s.write(p.name);
+        var defVal = p.defaultValue;
+        if (defVal != null) {
+          s.write(' = ');
+          s.write(defVal);
+        }
       }
       s.write(']');
     } else if (namedParameters.isNotEmpty) {
@@ -975,6 +985,11 @@ class _Constructor<T> extends _Element {
         s.write(p.type.toString());
         s.write(' ');
         s.write(p.name);
+        var defVal = p.defaultValue;
+        if (defVal != null) {
+          s.write(' = ');
+          s.write(defVal);
+        }
         i++;
       }
       s.write('}');
@@ -1335,6 +1350,7 @@ String _buildParameterReflectionList(Iterable<_Parameter>? o,
             "'${e.name}' , "
             "${e.nullable ? 'true' : 'false'} , "
             "$required , "
+            "${e.defaultValue ?? 'null'} , "
             "${e.annotationsAsListCode}"
             ")")
         .join(', ');
@@ -1355,6 +1371,7 @@ String _buildNamedParameterReflectionMap(Map<String, _Parameter>? o,
           "'${e.value.name}' , "
           "${e.value.nullable ? 'true' : 'false'} , "
           "${e.value.required ? 'true' : 'false'} , "
+          "${e.value.defaultValue ?? 'null'} , "
           "${e.value.annotationsAsListCode}"
           ")";
     }).join(', ');

@@ -201,7 +201,7 @@ void main() {
         expect(constructorFields.hasNoParameters, isFalse);
         expect(constructorFields.normalParameters.length, equals(3));
         expect(constructorFields.optionalParameters, isEmpty);
-        expect(constructorFields.namedParameters, isEmpty);
+        expect(constructorFields.namedParameters.keys, equals(['enabled']));
       }
 
       {
@@ -220,14 +220,19 @@ void main() {
         expect(user.toJson(), userReflection.createInstance()!.toJson());
       }
 
-      expect(userReflection.fieldsNames, equals(['email', 'name', 'password']));
+      expect(userReflection.fieldsNames,
+          equals(['email', 'enabled', 'name', 'password']));
       expect(userReflection.allFields().map((e) => e.name),
           equals(userReflection.fieldsNames));
 
       expect(userReflection.fieldsWhere((f) => f.nullable).map((f) => f.name),
           equals(['email']));
 
-      expect(userReflection.fieldsWhere((f) => f.type.isBoolType), isEmpty);
+      expect(
+          userReflection
+              .fieldsWhere((f) => f.type.isBoolType)
+              .map((e) => e.name),
+          equals(['enabled']));
 
       expect(userReflection.staticFieldsNames,
           equals(['version', 'withReflection']));
@@ -354,7 +359,7 @@ void main() {
       expect(
           method.normalParameters[0],
           equals(ParameterReflection(
-              TypeReflection.tString, 'password', false, true, null)));
+              TypeReflection.tString, 'password', false, true, null, null)));
       expect(method.normalParametersTypes.length, equals(1));
       expect(method.normalParametersTypes[0], equals(String));
       expect(method.normalParametersNames.length, equals(1));
@@ -388,10 +393,11 @@ void main() {
           method.allParameters.map((e) => e.type).toTypes(), equals([String]));
 
       var allFields = userReflection.allFields();
-      expect(allFields.toNames(), equals(['email', 'name', 'password']));
+      expect(allFields.toNames(),
+          equals(['email', 'enabled', 'name', 'password']));
       expect(allFields.whereFinal().toNames(), equals(['name']));
       expect(allFields.whereNullable().toNames(), equals(['email']));
-      expect(allFields.toTypes(), equals([String, String, String]));
+      expect(allFields.toTypes(), equals([String, bool, String, String]));
 
       var allStaticFields = userReflection.allStaticFields();
       expect(allStaticFields.toNames(), equals(['version', 'withReflection']));
@@ -418,7 +424,7 @@ void main() {
       expect(
           staticMethod.normalParameters[0],
           equals(ParameterReflection(
-              TypeReflection.tDouble, 'ver', false, true, null)));
+              TypeReflection.tDouble, 'ver', false, true, null, null)));
       expect(staticMethod.normalParametersNames.length, equals(1));
       expect(staticMethod.normalParametersNames[0], equals('ver'));
       expect(
@@ -461,13 +467,27 @@ void main() {
               .invoke([1.1]),
           isTrue);
 
-      expect(userReflection.toJson(),
-          equals({'email': 'joe@mail.net', 'name': 'Joe', 'password': 'abc'}));
-      expect(userReflection.toJsonEncoded(),
-          equals('{"email":"joe@mail.net","name":"Joe","password":"abc"}'));
+      expect(
+          userReflection.toJson(),
+          equals({
+            'email': 'joe@mail.net',
+            'enabled': true,
+            'name': 'Joe',
+            'password': 'abc'
+          }));
+      expect(
+          userReflection.toJsonEncoded(),
+          equals(
+              '{"email":"joe@mail.net","enabled":true,"name":"Joe","password":"abc"}'));
 
-      expect(ReflectionFactory.toJsonEncodable(user),
-          equals({'email': 'joe@mail.net', 'name': 'Joe', 'password': 'abc'}));
+      expect(
+          ReflectionFactory.toJsonEncodable(user),
+          equals({
+            'email': 'joe@mail.net',
+            'enabled': true,
+            'name': 'Joe',
+            'password': 'abc'
+          }));
 
       expect(ReflectionFactory.toJsonEncodable(TestAddress('NY', 'New York')),
           equals({'state': 'NY', 'city': 'New York'}));

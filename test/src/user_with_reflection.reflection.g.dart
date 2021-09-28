@@ -1,8 +1,7 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.9
+// BUILDER: reflection_factory/1.0.11
 // BUILD COMMAND: dart run build_runner build
-// BUILD TIME: 2021-09-26 15:40:20.443705
 //
 
 part of 'user_with_reflection.dart';
@@ -56,9 +55,9 @@ class TestAddressWithReflection$reflection
                 TestAddressWithReflection(state, city),
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tString, 'state', false, true, null),
+                  TypeReflection.tString, 'state', false, true, null, null),
               ParameterReflection(
-                  TypeReflection.tString, 'city', false, true, null)
+                  TypeReflection.tString, 'city', false, true, null, null)
             ],
             null,
             null,
@@ -219,18 +218,23 @@ class TestUserWithReflection$reflection
         return ConstructorReflection<TestUserWithReflection>(
             this,
             'fields',
-            () => (String name, String? email, String password) =>
-                TestUserWithReflection.fields(name, email, password),
+            () => (String name, String? email, String password,
+                    {bool enabled = true}) =>
+                TestUserWithReflection.fields(name, email, password,
+                    enabled: enabled),
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tString, 'name', false, true, null),
+                  TypeReflection.tString, 'name', false, true, null, null),
               ParameterReflection(
-                  TypeReflection.tString, 'email', true, true, null),
+                  TypeReflection.tString, 'email', true, true, null, null),
               ParameterReflection(
-                  TypeReflection.tString, 'password', false, true, null)
+                  TypeReflection.tString, 'password', false, true, null, null)
             ],
             null,
-            null,
+            const <String, ParameterReflection>{
+              'enabled': ParameterReflection(
+                  TypeReflection.tBool, 'enabled', false, false, true, null)
+            },
             null);
       case '':
         return ConstructorReflection<TestUserWithReflection>(this, '',
@@ -244,7 +248,8 @@ class TestUserWithReflection$reflection
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
 
   @override
-  List<String> get fieldsNames => const <String>['email', 'name', 'password'];
+  List<String> get fieldsNames =>
+      const <String>['email', 'enabled', 'name', 'password'];
 
   @override
   FieldReflection<TestUserWithReflection, T>? field<T>(String fieldName,
@@ -288,6 +293,19 @@ class TestUserWithReflection$reflection
           false,
           (o) => () => o!.password as T,
           (o) => (T? v) => o!.password = v as String,
+          obj,
+          false,
+          false,
+          null,
+        );
+      case 'enabled':
+        return FieldReflection<TestUserWithReflection, T>(
+          this,
+          TypeReflection.tBool,
+          'enabled',
+          false,
+          (o) => () => o!.enabled as T,
+          (o) => (T? v) => o!.enabled = v as bool,
           obj,
           false,
           false,
@@ -361,7 +379,7 @@ class TestUserWithReflection$reflection
             false,
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tString, 'password', false, true, null)
+                  TypeReflection.tString, 'password', false, true, null, null)
             ],
             null,
             null,
@@ -377,11 +395,11 @@ class TestUserWithReflection$reflection
             false,
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tString, 'key', false, true, null)
+                  TypeReflection.tString, 'key', false, true, null, null)
             ],
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tObject, 'def', true, false, null)
+                  TypeReflection.tObject, 'def', true, false, null, null)
             ],
             null,
             null);
@@ -396,14 +414,14 @@ class TestUserWithReflection$reflection
             false,
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tString, 'key', false, true, null),
+                  TypeReflection.tString, 'key', false, true, null, null),
               ParameterReflection(
-                  TypeReflection.tObject, 'value', true, true, null)
+                  TypeReflection.tObject, 'value', true, true, null, null)
             ],
             null,
             const <String, ParameterReflection>{
               'def': ParameterReflection(
-                  TypeReflection.tObject, 'def', true, false, null)
+                  TypeReflection.tObject, 'def', true, false, null, null)
             },
             null);
       default:
@@ -431,7 +449,7 @@ class TestUserWithReflection$reflection
             true,
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tDouble, 'ver', false, true, null)
+                  TypeReflection.tDouble, 'ver', false, true, null, null)
             ],
             null,
             null,

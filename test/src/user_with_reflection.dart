@@ -15,7 +15,10 @@ class TestUserWithReflection {
 
   String password;
 
-  TestUserWithReflection.fields(this.name, this.email, this.password);
+  bool enabled;
+
+  TestUserWithReflection.fields(this.name, this.email, this.password,
+      {this.enabled = true});
 
   TestUserWithReflection()
       : this.fields(
@@ -34,6 +37,8 @@ class TestUserWithReflection {
         return email as V?;
       case 'password':
         return password as V?;
+      case 'enabled':
+        return enabled as V?;
       default:
         return null;
     }
@@ -51,6 +56,11 @@ class TestUserWithReflection {
       case 'password':
         {
           password = value as String;
+          break;
+        }
+      case 'enabled':
+        {
+          enabled = value as bool;
           break;
         }
       default:

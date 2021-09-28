@@ -33,8 +33,10 @@ void main() {
             @TestAnnotation(['field', 'email'])
             String? email ;
             String pass ;
+            bool enabled ;
             
-            User(this.email, this.pass);
+            
+            User(this.email, this.pass, {this.enabled = true});
             
             String? get eMail => email;
             
@@ -99,7 +101,7 @@ void main() {
             contains('User\$reflection'),
             contains('User\$reflectionExtension'),
             matches(RegExp(
-                r"'ignoreCase':\s*ParameterReflection\(\s*TypeReflection.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*null\s*\)")),
+                r"'ignoreCase':\s*ParameterReflection\(\s*TypeReflection.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*false\s*,\s*null\s*\)")),
             allOf(
               contains("TestAnnotation(['static method', 'version checker'])"),
               contains("TestAnnotation(['method', 'password checker'])"),

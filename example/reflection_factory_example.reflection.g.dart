@@ -1,8 +1,7 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.9
+// BUILDER: reflection_factory/1.0.11
 // BUILD COMMAND: dart run build_runner build
-// BUILD TIME: 2021-09-26 15:40:19.982020
 //
 
 part of 'reflection_factory_example.dart';
@@ -50,9 +49,9 @@ class User$reflection extends ClassReflection<User> {
             () => (String? email, String pass) => User(email, pass),
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tString, 'email', true, true, null),
+                  TypeReflection.tString, 'email', true, true, null, null),
               ParameterReflection(
-                  TypeReflection.tString, 'pass', false, true, null)
+                  TypeReflection.tString, 'pass', false, true, null, null)
             ],
             null,
             null,
@@ -151,7 +150,7 @@ class User$reflection extends ClassReflection<User> {
             false,
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tString, 'pass', false, true, null)
+                  TypeReflection.tString, 'pass', false, true, null, null)
             ],
             null,
             null,

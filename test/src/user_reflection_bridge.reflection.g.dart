@@ -1,8 +1,7 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.9
+// BUILDER: reflection_factory/1.0.11
 // BUILD COMMAND: dart run build_runner build
-// BUILD TIME: 2021-09-26 15:40:20.005871
 //
 
 part of 'user_reflection_bridge.dart';
@@ -55,11 +54,11 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
                 TestUserSimple(name, email, password),
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tString, 'name', false, true, null),
+                  TypeReflection.tString, 'name', false, true, null, null),
               ParameterReflection(
-                  TypeReflection.tString, 'email', true, true, null),
+                  TypeReflection.tString, 'email', true, true, null, null),
               ParameterReflection(
-                  TypeReflection.tString, 'password', false, true, null)
+                  TypeReflection.tString, 'password', false, true, null, null)
             ],
             null,
             null,
@@ -202,14 +201,14 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
             false,
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tString, 'password', false, true, [
+                  TypeReflection.tString, 'password', false, true, null, [
                 TestAnnotation(['parameter', 'password'])
               ])
             ],
             null,
             const <String, ParameterReflection>{
               'ignoreCase': ParameterReflection(
-                  TypeReflection.tBool, 'ignoreCase', false, false, null)
+                  TypeReflection.tBool, 'ignoreCase', false, false, false, null)
             },
             [
               TestAnnotation(['method', 'password checker'])
@@ -251,7 +250,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
             true,
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tDouble, 'ver', false, true, null)
+                  TypeReflection.tDouble, 'ver', false, true, null, null)
             ],
             null,
             null,
