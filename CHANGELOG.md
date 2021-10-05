@@ -1,3 +1,7 @@
+## 1.0.12
+
+- `FieldReflection`: added `hasSetter`.
+
 ## 1.0.11
 
 - Added support to default values of optional and named parameters.

@@ -225,6 +225,13 @@ void main() {
       expect(userReflection.allFields().map((e) => e.name),
           equals(userReflection.fieldsNames));
 
+      expect(
+          userReflection
+              .allFields()
+              .where((e) => e.hasSetter)
+              .map((e) => e.name),
+          equals(['email', 'enabled', 'password']));
+
       expect(userReflection.fieldsWhere((f) => f.nullable).map((f) => f.name),
           equals(['email']));
 

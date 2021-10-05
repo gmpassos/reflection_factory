@@ -7,7 +7,7 @@ import 'package:pub_semver/pub_semver.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.0.11';
+  static const String VERSION = '1.0.12';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -868,6 +868,8 @@ class FieldReflection<O, T> extends ElementReflection<O>
   }
 
   FieldSetter<T>? _setter;
+
+  bool get hasSetter => _setter != null || setterAccessor != null;
 
   /// Sets this field value.
   void set(T? v) {
