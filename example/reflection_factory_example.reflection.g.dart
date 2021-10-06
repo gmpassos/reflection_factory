@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.12
+// BUILDER: reflection_factory/1.0.13
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -72,7 +72,7 @@ class User$reflection extends ClassReflection<User> {
 
   @override
   FieldReflection<User, T>? field<T>(String fieldName, [User? obj]) {
-    obj ??= object!;
+    obj ??= object;
 
     var lc = fieldName.trim().toLowerCase();
 

@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.12
+// BUILDER: reflection_factory/1.0.13
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -76,7 +76,7 @@ class TestAddressWithReflection$reflection
   @override
   FieldReflection<TestAddressWithReflection, T>? field<T>(String fieldName,
       [TestAddressWithReflection? obj]) {
-    obj ??= object!;
+    obj ??= object;
 
     var lc = fieldName.trim().toLowerCase();
 
@@ -254,7 +254,7 @@ class TestUserWithReflection$reflection
   @override
   FieldReflection<TestUserWithReflection, T>? field<T>(String fieldName,
       [TestUserWithReflection? obj]) {
-    obj ??= object!;
+    obj ??= object;
 
     var lc = fieldName.trim().toLowerCase();
 

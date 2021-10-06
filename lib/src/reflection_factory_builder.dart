@@ -615,7 +615,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  @override\n');
     str.write(
         '  FieldReflection<$className,T>? field<T>(String fieldName, [$className? obj]) {\n');
-    str.write('    obj ??= object!;\n\n');
+    str.write('    obj ??= object;\n\n');
 
     _buildSwitches(str, 'fieldName', entries.keys, (name) {
       var field = entries[name]!;

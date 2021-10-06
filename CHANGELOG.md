@@ -1,3 +1,7 @@
+## 1.0.13
+
+- Allow call to `field` without an object. Useful to get the field type before instantiate an object. 
+
 ## 1.0.12
 
 - `FieldReflection`: added `hasSetter`.
