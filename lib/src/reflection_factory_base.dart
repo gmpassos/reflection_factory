@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:convert' as dart_convert;
 
-import 'package:collection/collection.dart' show ListEquality, MapEquality;
+import 'package:collection/collection.dart'
+    show ListEquality, MapEquality, IterableExtension;
 import 'package:pub_semver/pub_semver.dart';
 
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.0.13';
+  static const String VERSION = '1.0.14';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -54,7 +55,7 @@ class ReflectionFactory {
     }
 
     if (object is DateTime) {
-      return object.toString();
+      return object.toUtc().toString();
     }
 
     var classReflection =
@@ -90,11 +91,14 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   /// Returns a new instances with [obj] as the associated object ([O]).
   ClassReflection<O> withObject([O? obj]);
 
+  /// Returns a new instances without an [object] instance.
+  ClassReflection<O> withoutObjectInstance() => hasObject ? withObject() : this;
+
   /// Called automatically when instantiated.
   /// Registers this reflection into [ReflectionFactory].
   void register() {
     if (!ReflectionFactory().hasRegisterClassReflection(classType)) {
-      var cr = hasObject ? withObject() : this;
+      var cr = withoutObjectInstance();
       ReflectionFactory().registerClassReflection(cr);
     }
   }
@@ -110,6 +114,18 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
       staticFieldsNames.length +
       methodsNames.length +
       staticMethodsNames.length;
+
+  /// Returns a [List] of siblings [ClassReflection] (declared in the same code unit).
+  List<ClassReflection> siblingsClassReflection();
+
+  /// Returns a [siblingsClassReflection] for [type], [obj] or [T].
+  ClassReflection? siblingClassReflectionFor<T>({T? obj, Type? type}) {
+    type ??= obj?.runtimeType ?? T;
+
+    var classReflectionForType =
+        siblingsClassReflection().where((c) => c.classType == type).firstOrNull;
+    return classReflectionForType;
+  }
 
   /// Returns a `const` [List] of class annotations.
   List<Object> get classAnnotations;

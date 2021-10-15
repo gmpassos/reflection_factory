@@ -53,6 +53,8 @@ class ReflectionBuilder implements Builder {
       return;
     }
 
+    var siblingsClassReflection = _buildSiblingsClassReflection(codeTable);
+
     var fullCode = StringBuffer();
 
     fullCode.write('// \n');
@@ -73,6 +75,8 @@ class ReflectionBuilder implements Builder {
         fullCode.write(code);
       }
     }
+
+    fullCode.write(siblingsClassReflection);
 
     var genId = inputId.changeExtension('.reflection.g.dart');
 
@@ -294,6 +298,36 @@ class ReflectionBuilder implements Builder {
     var classLibrary = await resolver.libraryFor(classAssetId);
     return classLibrary;
   }
+
+  String _buildSiblingsClassReflection(Map<String, String> codeTable) {
+    var str = StringBuffer();
+
+    str.write('List<ClassReflection> _listSiblingsClassReflection() => ');
+    str.write('<ClassReflection>[');
+
+    for (var c in codeTable.keys.where((e) => e.endsWith(r'$reflection'))) {
+      str.write(c);
+      str.write('(), ');
+    }
+
+    str.write('];\n\n');
+
+    str.write('List<ClassReflection>? _siblingsClassReflectionList;\n');
+    str.write('List<ClassReflection> _siblingsClassReflection() => ');
+    str.write(
+        '_siblingsClassReflectionList ??= List<ClassReflection>.unmodifiable( _listSiblingsClassReflection() );\n\n');
+
+    str.write('bool _registerSiblingsClassReflectionCalled = false;\n');
+    str.write('void _registerSiblingsClassReflection() {\n');
+    str.write('  if (_registerSiblingsClassReflectionCalled) return ;\n');
+    str.write('  _registerSiblingsClassReflectionCalled = true ;\n');
+    str.write('  var length = _listSiblingsClassReflection().length;\n');
+    str.write('  assert(length > 0);\n');
+    str.write('}\n\n');
+
+    var code = str.toString();
+    return code;
+  }
 }
 
 String _buildReflectionClassName(String className, String reflectionClassName) {
@@ -485,12 +519,13 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write(
         '  $reflectionClass([$className? object]) : super($className, object);\n\n');
 
-    str.write('  bool _registered = false;\n');
+    str.write('  static bool _registered = false;\n');
     str.write('  @override\n');
     str.write('  void register() {\n');
     str.write('    if (!_registered) {\n');
     str.write('      _registered = true;\n');
     str.write('      super.register();\n');
+    str.write('      _registerSiblingsClassReflection();\n');
     str.write('    }\n');
     str.write('  }\n\n');
 
@@ -518,6 +553,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       str.write(
           '  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);\n\n');
     }
+
+    str.write('\n  @override\n');
+    str.write(
+        '  List<ClassReflection> siblingsClassReflection() => _siblingsClassReflection();\n\n');
 
     _buildField(str);
     _buildStaticField(str);

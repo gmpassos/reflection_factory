@@ -1,3 +1,11 @@
+## 1.0.14
+
+- `ClassReflection`:
+  - Added `siblingsClassReflection` and `withoutObjectInstance`.
+  - `register` now triggers registration of all sibling `ClassReflection`.
+- Using standard Dart coverage.
+- coverage: ^1.0.3
+
 ## 1.0.13
 
 - Allow call to `field` without an object. Useful to get the field type before instantiate an object. 
