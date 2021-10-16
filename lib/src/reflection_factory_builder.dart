@@ -535,7 +535,16 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     str.write('  @override\n');
     str.write(
+        "  Version get reflectionFactoryVersion => Version.parse('${ReflectionFactory.VERSION}');\n\n");
+
+    str.write('  @override\n');
+    str.write(
         '  $reflectionClass withObject([$className? obj]) => $reflectionClass(obj);\n\n');
+
+    str.write('  static $reflectionClass? _withoutObjectInstance;\n');
+    str.write('  @override\n');
+    str.write(
+        '  $reflectionClass withoutObjectInstance() => _withoutObjectInstance ??= super.withoutObjectInstance() as $reflectionClass;\n\n');
 
     _buildConstructors(str);
 

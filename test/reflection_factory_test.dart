@@ -155,6 +155,15 @@ void main() {
       var userReflection = user.reflection;
 
       expect(userReflection.classType, equals(TestUserWithReflection));
+      expect(userReflection.languageVersion.toString(), isNotEmpty);
+      expect(userReflection.reflectionFactoryVersion.toString(),
+          equals(ReflectionFactory.VERSION));
+
+      expect(
+          identical(userReflection.withoutObjectInstance(),
+              userReflection.withoutObjectInstance()),
+          isTrue);
+
       expect(userReflection.toString(),
           startsWith('ClassReflection{ class: TestUserWithReflection }'));
 

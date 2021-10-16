@@ -8,7 +8,7 @@ import 'package:pub_semver/pub_semver.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.0.15';
+  static const String VERSION = '1.0.16';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -105,6 +105,9 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
 
   /// Returns the Dart language [Version] of the reflected code.
   Version get languageVersion;
+
+  /// Returns `reflection_factory` [Version] used to generate this reflection code.
+  Version get reflectionFactoryVersion;
 
   /// Returns the class name.
   String get className => classType.toString();

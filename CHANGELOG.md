@@ -1,3 +1,9 @@
+## 1.0.16
+
+- `ClassReflection`:
+  - `withoutObjectInstance`: now always returns the same instance.
+  - Added `reflectionFactoryVersion`.
+
 ## 1.0.15
 
 - `ClassReflection`: added `callCasted`.

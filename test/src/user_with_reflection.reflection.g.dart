@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.15
+// BUILDER: reflection_factory/1.0.16
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -25,9 +25,18 @@ class TestAddressWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
+  Version get reflectionFactoryVersion => Version.parse('1.0.16');
+
+  @override
   TestAddressWithReflection$reflection withObject(
           [TestAddressWithReflection? obj]) =>
       TestAddressWithReflection$reflection(obj);
+
+  static TestAddressWithReflection$reflection? _withoutObjectInstance;
+  @override
+  TestAddressWithReflection$reflection withoutObjectInstance() =>
+      _withoutObjectInstance ??=
+          super.withoutObjectInstance() as TestAddressWithReflection$reflection;
 
   @override
   bool get hasDefaultConstructor => false;
@@ -196,8 +205,17 @@ class TestUserWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
+  Version get reflectionFactoryVersion => Version.parse('1.0.16');
+
+  @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
       TestUserWithReflection$reflection(obj);
+
+  static TestUserWithReflection$reflection? _withoutObjectInstance;
+  @override
+  TestUserWithReflection$reflection withoutObjectInstance() =>
+      _withoutObjectInstance ??=
+          super.withoutObjectInstance() as TestUserWithReflection$reflection;
 
   @override
   bool get hasDefaultConstructor => true;
