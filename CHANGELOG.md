@@ -1,3 +1,8 @@
+## 1.0.15
+
+- `ClassReflection`: added `callCasted`.
+- `ReflectionInspector`: now checks if a generated file version is the same of the `reflection_factory` package.
+
 ## 1.0.14
 
 - `ClassReflection`:

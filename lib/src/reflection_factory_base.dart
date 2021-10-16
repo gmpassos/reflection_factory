@@ -8,7 +8,7 @@ import 'package:pub_semver/pub_semver.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.0.14';
+  static const String VERSION = '1.0.15';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -115,16 +115,21 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
       methodsNames.length +
       staticMethodsNames.length;
 
+  /// Calls [function] with correct casting for [ClassReflection].
+  R callCasted<R>(R Function<O>(ClassReflection<O> classReflection) function) {
+    return function<O>(this);
+  }
+
   /// Returns a [List] of siblings [ClassReflection] (declared in the same code unit).
   List<ClassReflection> siblingsClassReflection();
 
   /// Returns a [siblingsClassReflection] for [type], [obj] or [T].
-  ClassReflection? siblingClassReflectionFor<T>({T? obj, Type? type}) {
+  ClassReflection<T>? siblingClassReflectionFor<T>({T? obj, Type? type}) {
     type ??= obj?.runtimeType ?? T;
 
     var classReflectionForType =
         siblingsClassReflection().where((c) => c.classType == type).firstOrNull;
-    return classReflectionForType;
+    return classReflectionForType as ClassReflection<T>;
   }
 
   /// Returns a `const` [List] of class annotations.

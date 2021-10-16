@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as pack_path;
+import 'package:reflection_factory/builder.dart';
 
 class ReflectionInspector {
   final Directory rootDirectory;
@@ -109,14 +110,40 @@ class ReflectionInspector {
 
   List<File> get dartFilesWithExpiredReflection =>
       _dartFilesWithExpiredReflection ??= dartFilesUsingReflection.where((f) {
-        var f2 = f.toReflectionDartFile()!;
-        if (generatedDartFilesPaths.contains(f2.path)) {
-          var fTime = f.lastModifiedSync();
-          var fTime2 = f2.lastModifiedSync();
-          return fTime.millisecondsSinceEpoch > fTime2.millisecondsSinceEpoch;
+        var fGen = f.toReflectionDartFile()!;
+        if (generatedDartFilesPaths.contains(fGen.path)) {
+          return _isExpiredByTime(f, fGen) || _isExpiredByVersion(fGen);
         }
         return false;
       }).toList();
+
+  bool _isExpiredByTime(File f, File fGen) {
+    var fTime = f.lastModifiedSync();
+    var fTimeGen = fGen.lastModifiedSync();
+
+    var expiredByTime =
+        fTime.millisecondsSinceEpoch > fTimeGen.millisecondsSinceEpoch;
+    return expiredByTime;
+  }
+
+  bool _isExpiredByVersion(File fGen) {
+    var genVer = _generatedFileReflectionFactoryVersion(fGen);
+    var expiredByVer = genVer != ReflectionFactory.VERSION;
+    return expiredByVer;
+  }
+
+  static final RegExp _regExpReflectionFactoryVersion =
+      RegExp(r'//+\s+BUILDER:\s+reflection_factory/(\d+\S+)');
+
+  String? _generatedFileReflectionFactoryVersion(File e) {
+    var data = e.readAsStringSync();
+
+    var match = _regExpReflectionFactoryVersion.firstMatch(data);
+    if (match == null) return null;
+
+    var versionStr = match.group(1)?.trim();
+    return versionStr;
+  }
 
   @override
   String toString() {
