@@ -1,3 +1,13 @@
+## 1.0.17
+
+- Better JSON handling and refletion integration.
+- `ClassReflection`:
+  - Added `createInstanceWithNoRequiredArgsConstructor` as another way to create an instance without arguments.
+  - Added `getBestConstructorFor`, that selects the constructor capable to create an instance with provided parameters.
+  - Added `fromJson` and `fromJsonEncoded`.
+  - Added `createInstanceWithBestConstructor` and `createInstanceFromMap`.
+- Generating `ClassFoo$fromJson` and `ClassFoo$fromJsonEncoded`.
+
 ## 1.0.16
 
 - `ClassReflection`:

@@ -1,10 +1,17 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.16
+// BUILDER: reflection_factory/1.0.17
 // BUILD COMMAND: dart run build_runner build
 //
 
 part of 'user_reflection_bridge.dart';
+
+// ignore: non_constant_identifier_names
+TestUserSimple TestUserSimple$fromJson(Map<String, Object?> map) =>
+    TestUserSimple$reflection.staticInstance.fromJson(map);
+// ignore: non_constant_identifier_names
+TestUserSimple TestUserSimple$fromJsonEncoded(String jsonEncoded) =>
+    TestUserSimple$reflection.staticInstance.fromJsonEncoded(jsonEncoded);
 
 class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   TestUserSimple$reflection([TestUserSimple? object])
@@ -24,7 +31,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.16');
+  Version get reflectionFactoryVersion => Version.parse('1.0.17');
 
   @override
   TestUserSimple$reflection withObject([TestUserSimple? obj]) =>
@@ -36,6 +43,9 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
       _withoutObjectInstance ??=
           super.withoutObjectInstance() as TestUserSimple$reflection;
 
+  static TestUserSimple$reflection get staticInstance =>
+      _withoutObjectInstance ??= TestUserSimple$reflection();
+
   @override
   bool get hasDefaultConstructor => false;
   @override
@@ -45,6 +55,11 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   bool get hasEmptyConstructor => true;
   @override
   TestUserSimple? createInstanceWithEmptyConstructor() =>
+      TestUserSimple.empty();
+  @override
+  bool get hasNoRequiredArgsConstructor => true;
+  @override
+  TestUserSimple? createInstanceWithNoRequiredArgsConstructor() =>
       TestUserSimple.empty();
 
   @override

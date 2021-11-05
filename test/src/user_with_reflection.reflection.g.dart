@@ -1,10 +1,38 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.16
+// BUILDER: reflection_factory/1.0.17
 // BUILD COMMAND: dart run build_runner build
 //
 
 part of 'user_with_reflection.dart';
+
+// ignore: non_constant_identifier_names
+TestAddressWithReflection TestAddressWithReflection$fromJson(
+        Map<String, Object?> map) =>
+    TestAddressWithReflection$reflection.staticInstance.fromJson(map);
+// ignore: non_constant_identifier_names
+TestAddressWithReflection TestAddressWithReflection$fromJsonEncoded(
+        String jsonEncoded) =>
+    TestAddressWithReflection$reflection.staticInstance
+        .fromJsonEncoded(jsonEncoded);
+// ignore: non_constant_identifier_names
+TestCompanyWithReflection TestCompanyWithReflection$fromJson(
+        Map<String, Object?> map) =>
+    TestCompanyWithReflection$reflection.staticInstance.fromJson(map);
+// ignore: non_constant_identifier_names
+TestCompanyWithReflection TestCompanyWithReflection$fromJsonEncoded(
+        String jsonEncoded) =>
+    TestCompanyWithReflection$reflection.staticInstance
+        .fromJsonEncoded(jsonEncoded);
+// ignore: non_constant_identifier_names
+TestUserWithReflection TestUserWithReflection$fromJson(
+        Map<String, Object?> map) =>
+    TestUserWithReflection$reflection.staticInstance.fromJson(map);
+// ignore: non_constant_identifier_names
+TestUserWithReflection TestUserWithReflection$fromJsonEncoded(
+        String jsonEncoded) =>
+    TestUserWithReflection$reflection.staticInstance
+        .fromJsonEncoded(jsonEncoded);
 
 class TestAddressWithReflection$reflection
     extends ClassReflection<TestAddressWithReflection> {
@@ -25,7 +53,7 @@ class TestAddressWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.16');
+  Version get reflectionFactoryVersion => Version.parse('1.0.17');
 
   @override
   TestAddressWithReflection$reflection withObject(
@@ -38,18 +66,27 @@ class TestAddressWithReflection$reflection
       _withoutObjectInstance ??=
           super.withoutObjectInstance() as TestAddressWithReflection$reflection;
 
+  static TestAddressWithReflection$reflection get staticInstance =>
+      _withoutObjectInstance ??= TestAddressWithReflection$reflection();
+
   @override
   bool get hasDefaultConstructor => false;
   @override
   TestAddressWithReflection? createInstanceWithDefaultConstructor() => null;
 
   @override
-  bool get hasEmptyConstructor => false;
+  bool get hasEmptyConstructor => true;
   @override
-  TestAddressWithReflection? createInstanceWithEmptyConstructor() => null;
+  TestAddressWithReflection? createInstanceWithEmptyConstructor() =>
+      TestAddressWithReflection.empty();
+  @override
+  bool get hasNoRequiredArgsConstructor => true;
+  @override
+  TestAddressWithReflection? createInstanceWithNoRequiredArgsConstructor() =>
+      TestAddressWithReflection.empty();
 
   @override
-  List<String> get constructorsNames => const <String>[''];
+  List<String> get constructorsNames => const <String>['', 'empty'];
 
   @override
   ConstructorReflection<TestAddressWithReflection>? constructor<R>(
@@ -61,14 +98,24 @@ class TestAddressWithReflection$reflection
         return ConstructorReflection<TestAddressWithReflection>(
             this,
             '',
-            () => (String state, String city) =>
+            () => (String state, [String city = '']) =>
                 TestAddressWithReflection(state, city),
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tString, 'state', false, true, null, null),
-              ParameterReflection(
-                  TypeReflection.tString, 'city', false, true, null, null)
+                  TypeReflection.tString, 'state', false, true, null, null)
             ],
+            const <ParameterReflection>[
+              ParameterReflection(
+                  TypeReflection.tString, 'city', false, false, '', null)
+            ],
+            null,
+            null);
+      case 'empty':
+        return ConstructorReflection<TestAddressWithReflection>(
+            this,
+            'empty',
+            () => () => TestAddressWithReflection.empty(),
+            null,
             null,
             null,
             null);
@@ -186,6 +233,199 @@ class TestAddressWithReflection$reflection
   }
 }
 
+class TestCompanyWithReflection$reflection
+    extends ClassReflection<TestCompanyWithReflection> {
+  TestCompanyWithReflection$reflection([TestCompanyWithReflection? object])
+      : super(TestCompanyWithReflection, object);
+
+  static bool _registered = false;
+  @override
+  void register() {
+    if (!_registered) {
+      _registered = true;
+      super.register();
+      _registerSiblingsClassReflection();
+    }
+  }
+
+  @override
+  Version get languageVersion => Version.parse('2.13.0');
+
+  @override
+  Version get reflectionFactoryVersion => Version.parse('1.0.17');
+
+  @override
+  TestCompanyWithReflection$reflection withObject(
+          [TestCompanyWithReflection? obj]) =>
+      TestCompanyWithReflection$reflection(obj);
+
+  static TestCompanyWithReflection$reflection? _withoutObjectInstance;
+  @override
+  TestCompanyWithReflection$reflection withoutObjectInstance() =>
+      _withoutObjectInstance ??=
+          super.withoutObjectInstance() as TestCompanyWithReflection$reflection;
+
+  static TestCompanyWithReflection$reflection get staticInstance =>
+      _withoutObjectInstance ??= TestCompanyWithReflection$reflection();
+
+  @override
+  bool get hasDefaultConstructor => false;
+  @override
+  TestCompanyWithReflection? createInstanceWithDefaultConstructor() => null;
+
+  @override
+  bool get hasEmptyConstructor => false;
+  @override
+  TestCompanyWithReflection? createInstanceWithEmptyConstructor() => null;
+  @override
+  bool get hasNoRequiredArgsConstructor => false;
+  @override
+  TestCompanyWithReflection? createInstanceWithNoRequiredArgsConstructor() =>
+      null;
+
+  @override
+  List<String> get constructorsNames => const <String>[''];
+
+  @override
+  ConstructorReflection<TestCompanyWithReflection>? constructor<R>(
+      String constructorName) {
+    var lc = constructorName.trim().toLowerCase();
+
+    switch (lc) {
+      case '':
+        return ConstructorReflection<TestCompanyWithReflection>(
+            this,
+            '',
+            () => (String name, TestAddressWithReflection mainAddress,
+                    List<TestAddressWithReflection> extraAddresses) =>
+                TestCompanyWithReflection(name, mainAddress, extraAddresses),
+            const <ParameterReflection>[
+              ParameterReflection(
+                  TypeReflection.tString, 'name', false, true, null, null),
+              ParameterReflection(TypeReflection(TestAddressWithReflection),
+                  'mainAddress', false, true, null, null),
+              ParameterReflection(
+                  TypeReflection(List, [TestAddressWithReflection]),
+                  'extraAddresses',
+                  false,
+                  true,
+                  null,
+                  null)
+            ],
+            null,
+            null,
+            null);
+      default:
+        return null;
+    }
+  }
+
+  @override
+  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+
+  @override
+  List<ClassReflection> siblingsClassReflection() => _siblingsClassReflection();
+
+  @override
+  List<String> get fieldsNames =>
+      const <String>['extraAddresses', 'hashCode', 'mainAddress', 'name'];
+
+  @override
+  FieldReflection<TestCompanyWithReflection, T>? field<T>(String fieldName,
+      [TestCompanyWithReflection? obj]) {
+    obj ??= object;
+
+    var lc = fieldName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'name':
+        return FieldReflection<TestCompanyWithReflection, T>(
+          this,
+          TypeReflection.tString,
+          'name',
+          false,
+          (o) => () => o!.name as T,
+          null,
+          obj,
+          false,
+          true,
+          null,
+        );
+      case 'mainaddress':
+        return FieldReflection<TestCompanyWithReflection, T>(
+          this,
+          TypeReflection(TestAddressWithReflection),
+          'mainAddress',
+          false,
+          (o) => () => o!.mainAddress as T,
+          (o) => (T? v) => o!.mainAddress = v as TestAddressWithReflection,
+          obj,
+          false,
+          false,
+          null,
+        );
+      case 'extraaddresses':
+        return FieldReflection<TestCompanyWithReflection, T>(
+          this,
+          TypeReflection(List, [TestAddressWithReflection]),
+          'extraAddresses',
+          false,
+          (o) => () => o!.extraAddresses as T,
+          (o) => (T? v) =>
+              o!.extraAddresses = v as List<TestAddressWithReflection>,
+          obj,
+          false,
+          false,
+          null,
+        );
+      case 'hashcode':
+        return FieldReflection<TestCompanyWithReflection, T>(
+          this,
+          TypeReflection.tInt,
+          'hashCode',
+          false,
+          (o) => () => o!.hashCode as T,
+          null,
+          obj,
+          false,
+          false,
+          null,
+        );
+      default:
+        return null;
+    }
+  }
+
+  @override
+  List<String> get staticFieldsNames => const <String>[];
+
+  @override
+  FieldReflection<TestCompanyWithReflection, T>? staticField<T>(
+      String fieldName) {
+    return null;
+  }
+
+  @override
+  List<String> get methodsNames => const <String>[];
+
+  @override
+  MethodReflection<TestCompanyWithReflection, R>? method<R>(String methodName,
+      [TestCompanyWithReflection? obj]) {
+    obj ??= object;
+
+    return null;
+  }
+
+  @override
+  List<String> get staticMethodsNames => const <String>[];
+
+  @override
+  MethodReflection<TestCompanyWithReflection, R>? staticMethod<R>(
+      String methodName) {
+    return null;
+  }
+}
+
 class TestUserWithReflection$reflection
     extends ClassReflection<TestUserWithReflection> {
   TestUserWithReflection$reflection([TestUserWithReflection? object])
@@ -205,7 +445,7 @@ class TestUserWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.16');
+  Version get reflectionFactoryVersion => Version.parse('1.0.17');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
@@ -217,6 +457,9 @@ class TestUserWithReflection$reflection
       _withoutObjectInstance ??=
           super.withoutObjectInstance() as TestUserWithReflection$reflection;
 
+  static TestUserWithReflection$reflection get staticInstance =>
+      _withoutObjectInstance ??= TestUserWithReflection$reflection();
+
   @override
   bool get hasDefaultConstructor => true;
   @override
@@ -227,6 +470,10 @@ class TestUserWithReflection$reflection
   bool get hasEmptyConstructor => false;
   @override
   TestUserWithReflection? createInstanceWithEmptyConstructor() => null;
+  @override
+  bool get hasNoRequiredArgsConstructor => false;
+  @override
+  TestUserWithReflection? createInstanceWithNoRequiredArgsConstructor() => null;
 
   @override
   List<String> get constructorsNames => const <String>['', 'fields'];
@@ -496,6 +743,19 @@ extension TestAddressWithReflection$reflectionExtension
   String toJsonEncoded() => reflection.toJsonEncoded();
 }
 
+extension TestCompanyWithReflection$reflectionExtension
+    on TestCompanyWithReflection {
+  /// Returns a [ClassReflection] for type [TestCompanyWithReflection]. (Generated by [ReflectionFactory])
+  ClassReflection<TestCompanyWithReflection> get reflection =>
+      TestCompanyWithReflection$reflection(this);
+
+  /// Returns a JSON [Map] for type [TestCompanyWithReflection]. (Generated by [ReflectionFactory])
+  Map<String, dynamic> toJson() => reflection.toJson();
+
+  /// Returns an encoded JSON [String] for type [TestCompanyWithReflection]. (Generated by [ReflectionFactory])
+  String toJsonEncoded() => reflection.toJsonEncoded();
+}
+
 extension TestUserWithReflection$reflectionExtension on TestUserWithReflection {
   /// Returns a [ClassReflection] for type [TestUserWithReflection]. (Generated by [ReflectionFactory])
   ClassReflection<TestUserWithReflection> get reflection =>
@@ -511,6 +771,7 @@ extension TestUserWithReflection$reflectionExtension on TestUserWithReflection {
 List<ClassReflection> _listSiblingsClassReflection() => <ClassReflection>[
       TestUserWithReflection$reflection(),
       TestAddressWithReflection$reflection(),
+      TestCompanyWithReflection$reflection(),
     ];
 
 List<ClassReflection>? _siblingsClassReflectionList;

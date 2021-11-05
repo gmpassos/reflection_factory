@@ -172,8 +172,13 @@ void main() {
               .hasRegisterClassReflection(TestUserWithReflection),
           isTrue);
 
-      expect(userReflection.siblingsClassReflection().map((e) => e.classType),
-          equals([TestUserWithReflection, TestAddressWithReflection]));
+      expect(
+          userReflection.siblingsClassReflection().map((e) => e.classType),
+          equals([
+            TestUserWithReflection,
+            TestAddressWithReflection,
+            TestCompanyWithReflection
+          ]));
 
       expect(
           ReflectionFactory()

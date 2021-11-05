@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:reflection_factory/reflection_factory.dart';
 
 part 'user_with_reflection.reflection.g.dart';
@@ -75,7 +76,9 @@ class TestAddressWithReflection {
 
   final String city;
 
-  TestAddressWithReflection(this.state, this.city);
+  TestAddressWithReflection(this.state, [this.city = '']);
+
+  TestAddressWithReflection.empty() : this('', '');
 
   @override
   bool operator ==(Object other) =>
@@ -90,4 +93,28 @@ class TestAddressWithReflection {
 
   // Implements its own `toJson`:
   Map<String, dynamic> toJson() => {'state': state, 'city': city};
+}
+
+@EnableReflection()
+class TestCompanyWithReflection {
+  final String name;
+  TestAddressWithReflection mainAddress;
+
+  List<TestAddressWithReflection> extraAddresses;
+
+  TestCompanyWithReflection(this.name, this.mainAddress, this.extraAddresses);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TestCompanyWithReflection &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          mainAddress == other.mainAddress &&
+          ListEquality<TestAddressWithReflection>()
+              .equals(extraAddresses, other.extraAddresses);
+
+  @override
+  int get hashCode =>
+      name.hashCode ^ mainAddress.hashCode ^ extraAddresses.hashCode;
 }

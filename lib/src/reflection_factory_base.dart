@@ -2,13 +2,18 @@ import 'dart:async';
 import 'dart:convert' as dart_convert;
 
 import 'package:collection/collection.dart'
-    show ListEquality, MapEquality, IterableExtension;
+    show
+        ListEquality,
+        MapEquality,
+        IterableExtension,
+        IterableNullableExtension;
 import 'package:pub_semver/pub_semver.dart';
+import 'package:reflection_factory/src/reflection_factory_json.dart';
 
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.0.16';
+  static const String VERSION = '1.0.17';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -118,6 +123,30 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
       methodsNames.length +
       staticMethodsNames.length;
 
+  /// Cast [list] to [classType] if [type] == [classType] or return `null`.
+  List? castList(List list, Type type) {
+    if (type == classType) {
+      if (list is List<O>) {
+        return list;
+      } else {
+        return List<O>.from(list);
+      }
+    }
+    return null;
+  }
+
+  /// Cast [itr] to [classType] if [type] == [classType] or return `null`.
+  Iterable? castIterable(Iterable itr, Type type) {
+    if (type == classType) {
+      if (itr is Iterable<O>) {
+        return itr;
+      } else {
+        return itr.cast<O>();
+      }
+    }
+    return null;
+  }
+
   /// Calls [function] with correct casting for [ClassReflection].
   R callCasted<R>(R Function<O>(ClassReflection<O> classReflection) function) {
     return function<O>(this);
@@ -145,7 +174,7 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   /// other wise returns `null`.
   O? createInstanceWithDefaultConstructor();
 
-  /// Returns `true` if the class has a empty constructor.
+  /// Returns `true` if the class has an empty constructor.
   bool get hasEmptyConstructor;
 
   /// Creates an instance using an empty constructor (if present),
@@ -158,11 +187,19 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   /// - First empty constructor with any name.
   O? createInstanceWithEmptyConstructor();
 
+  /// Returns `true` if the class has a constructor without required arguments.
+  bool get hasNoRequiredArgsConstructor;
+
+  /// Creates an instance using a constructor without required arguments (if present),
+  /// other wise returns `null`.
+  O? createInstanceWithNoRequiredArgsConstructor();
+
   /// Creates an instances calling [createInstanceWithDefaultConstructor] or
   /// [createInstanceWithEmptyConstructor].
   O? createInstance() =>
       createInstanceWithDefaultConstructor() ??
-      createInstanceWithEmptyConstructor();
+      createInstanceWithEmptyConstructor() ??
+      createInstanceWithNoRequiredArgsConstructor();
 
   /// Returns a `const` [List] of constructors names.
   List<String> get constructorsNames;
@@ -174,12 +211,114 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   /// Returns a [ConstructorReflection] for [constructorName].
   ConstructorReflection<O>? constructor<R>(String constructorName);
 
+  /// Returns the best [ConstructorReflection] for [requiredParameters], [optionalParameters],
+  /// [nullableParameters] and [presentParameters].
+  ConstructorReflection<O>? getBestConstructorFor(
+      {Iterable<String> requiredParameters = const <String>[],
+      Iterable<String> optionalParameters = const <String>[],
+      Iterable<String> nullableParameters = const <String>[],
+      Iterable<String> presentParameters = const <String>[]}) {
+    if (nullableParameters is! List && nullableParameters is! Set) {
+      nullableParameters = nullableParameters.toList(growable: false);
+    }
+
+    var constructors = allConstructors();
+
+    if (constructors.isEmpty) return null;
+
+    var presentParametersResolved = presentParameters.toSet();
+
+    if (requiredParameters.isNotEmpty) {
+      var constructorsWithRequired = constructors.where((c) {
+        return _elementsInCount<String>(
+                requiredParameters, c.allParametersNames) ==
+            requiredParameters.length;
+      }).toList();
+
+      constructors = constructorsWithRequired;
+      if (constructors.isEmpty) return null;
+
+      presentParametersResolved.addAll(requiredParameters);
+    }
+
+    if (nullableParameters.isNotEmpty) {
+      var constructorsWithNullables = constructors.where((c) {
+        var paramsNullable =
+            c.parametersNamesWhere((p) => p.nullable || !p.required).toList();
+        return _elementsInCount(nullableParameters, paramsNullable) ==
+            nullableParameters.length;
+      }).toList();
+
+      constructors = constructorsWithNullables;
+      if (constructors.isEmpty) return null;
+
+      presentParametersResolved.addAll(nullableParameters);
+    }
+
+    presentParametersResolved.addAll(optionalParameters);
+
+    constructors = constructors.where((c) {
+      var paramsRequired = c.parametersNamesWhere((p) => p.required).toList();
+      return _elementsInCount<String>(
+              presentParametersResolved, paramsRequired) ==
+          paramsRequired.length;
+    }).toList();
+
+    if (constructors.isEmpty) return null;
+
+    if (constructors.length == 1) {
+      return constructors.first;
+    }
+
+    var constructorsInfo = Map.fromEntries(constructors.map((c) {
+      var requiredCount = c.getParametersByNames(requiredParameters).length;
+      var optionalCount = c.getParametersByNames(optionalParameters).length;
+      return MapEntry(c, [requiredCount, optionalCount]);
+    }));
+
+    constructors.sort((c1, c2) {
+      var i1 = constructorsInfo[c1]!;
+      var i2 = constructorsInfo[c2]!;
+
+      var req1 = i1[0];
+      var req2 = i2[0];
+
+      var cmp = req2.compareTo(req1);
+      if (cmp == 0) {
+        var opt1 = i1[1];
+        var opt2 = i2[1];
+        cmp = opt2.compareTo(opt1);
+      }
+      return cmp;
+    });
+
+    return constructors.first;
+  }
+
+  static int _elementsInCount<T>(Iterable<T> list, List<T> inList) =>
+      _elementsIn(list, inList).length;
+
+  static Iterable<T> _elementsIn<T>(Iterable<T> list, Iterable<T> inList) =>
+      list.where((e) => inList.contains(e));
+
   /// Returns a `const` [List] of fields names.
   List<String> get fieldsNames;
 
   /// Returns a [List] with all fields [FieldReflection].
   List<FieldReflection<O, dynamic>> allFields([O? obj]) =>
       fieldsNames.map((e) => field(e, obj)!).toList();
+
+  bool? _hasFinalField;
+
+  /// Returns `true` if some [field] is final (ignoring `hashCode`).
+  bool get hasFinalField => _hasFinalField ??=
+      fieldsWhere((f) => f.name != 'hashCode' && f.isFinal).isNotEmpty;
+
+  bool? _hasFieldWithoutSetter;
+
+  /// Returns `true` if some [field] doesn't have a setter (ignoring `hashCode`).
+  bool get hasFieldWithoutSetter => _hasFieldWithoutSetter ??=
+      fieldsWhere((f) => f.name != 'hashCode' && !f.hasSetter).isNotEmpty;
 
   /// Returns a `const` [List] of static fields names.
   List<String> get staticFieldsNames;
@@ -196,8 +335,16 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
 
   /// Returns a [List] of fields [FieldReflection] that matches [test].
   Iterable<FieldReflection<O, dynamic>> fieldsWhere(
-      bool Function(FieldReflection<O, dynamic> f) test) {
-    return fieldsNames.map((n) => field(n)!).where(test);
+      bool Function(FieldReflection<O, dynamic> f) test,
+      [O? obj]) {
+    return fieldsNames.map((n) => field(n, obj)!).where(test);
+  }
+
+  /// Returns a [List] of fields names that matches [test].
+  Iterable<String> fieldsNamesWhere(
+      bool Function(FieldReflection<O, dynamic> f) test,
+      [O? obj]) {
+    return fieldsWhere(test, obj).map((e) => e.name);
   }
 
   /// Returns a [List] of static fields [FieldReflection] that matches [test].
@@ -314,34 +461,153 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   /// If the class implements `toJson` calls it.
   ///
   /// - If [obj] is not provided, uses [object] as instance.
-  Map<String, dynamic> toJson([O? obj]) {
+  Map<String, dynamic> toJson([O? obj, JsonEncoder? jsonEncoder]) {
     var m = _methodToJson;
 
     if (m != null && m.normalParameters.isEmpty && m.returnType?.type == Map) {
       m = m.withObject(obj ?? object!);
       var map = m.invoke([]) as Map;
-      return map is Map<String, dynamic>
+
+      var mapResolved = map is Map<String, dynamic>
           ? map
           : map.map((key, value) => MapEntry('$key', value));
+
+      if (jsonEncoder != null) {
+        return jsonEncoder.toJson(mapResolved);
+      } else {
+        return mapResolved;
+      }
     }
 
-    return toJsonFromFields(obj);
+    return toJsonFromFields(obj, jsonEncoder);
   }
 
   /// Returns a JSON [Map] from [fieldsNames], calling [getField] for each one.
   ///
   /// - If [obj] is not provided, uses [object] as instance.
-  Map<String, dynamic> toJsonFromFields([O? obj]) {
-    return Map<String, dynamic>.fromEntries(fieldsNames.map((f) {
-      var val = getField(f, obj);
-      return MapEntry(f, val);
-    }));
+  Map<String, dynamic> toJsonFromFields([O? obj, JsonEncoder? jsonEncoder]) {
+    var entries = fieldsWhere((f) => f.isEntityField, obj).map((f) {
+      var val = f.get();
+      return MapEntry(f.name, val);
+    });
+
+    var map = Map<String, dynamic>.fromEntries(entries);
+
+    if (jsonEncoder != null) {
+      return jsonEncoder.toJson(map);
+    } else {
+      return map;
+    }
   }
 
   /// Returns a JSON [Map]. See [toJson].
   String toJsonEncoded([O? obj]) {
     var json = toJson(obj);
     return dart_convert.json.encode(json);
+  }
+
+  O fromJson(Map<String, Object?> json) {
+    return JsonDecoder.defaultCodec.fromJsonMap<O>(json, type: classType);
+  }
+
+  O fromJsonEncoded(String jsonEncoded) {
+    return JsonDecoder.defaultCodec.decode<O>(jsonEncoded, type: classType);
+  }
+
+  static String? _defaultFieldResolver(
+          String field, Map<String, Object?> map) =>
+      map.containsKey(field) ? field : null;
+
+  O? createInstanceWithBestConstructor(Map<String, Object?> map,
+      {FieldNameResolver? fieldNameResolver,
+      FieldValueResolver? fieldValueResolver}) {
+    var fieldsResolved =
+        _resolveFieldsNames(fieldNameResolver ?? _defaultFieldResolver, map);
+
+    var fieldsNotPresent = fieldsNamesWhere(
+        (f) => f.isEntityField && !fieldsResolved.containsKey(f.name)).toList();
+
+    var fieldsRequired =
+        fieldsNamesWhere((f) => f.isEntityField && !f.hasSetter).toList();
+
+    var fieldsOptional = fieldsNamesWhere(
+        (f) => f.isEntityField && !fieldsRequired.contains(f.name)).toList();
+
+    var presentParameters = fieldsResolved.keys.toList();
+
+    var constructor = getBestConstructorFor(
+        requiredParameters: fieldsRequired,
+        optionalParameters: fieldsOptional,
+        nullableParameters: fieldsNotPresent,
+        presentParameters: presentParameters);
+
+    if (constructor == null) return null;
+
+    var methodInvocation =
+        constructor.methodInvocationFromMap(map, reviver: fieldValueResolver);
+
+    var o = methodInvocation.invoke(constructor.constructor);
+
+    return o;
+  }
+
+  O? createInstanceFromMap(Map<String, Object?> map,
+      {FieldNameResolver? fieldNameResolver,
+      FieldValueResolver? fieldValueResolver}) {
+    fieldNameResolver ??= _defaultFieldResolver;
+
+    if (hasFieldWithoutSetter) {
+      var o = createInstanceWithBestConstructor(map,
+          fieldNameResolver: fieldNameResolver,
+          fieldValueResolver: fieldValueResolver);
+      if (o != null) return o;
+    }
+
+    var fieldsResolved = _resolveFieldsNames(fieldNameResolver, map);
+
+    var o = createInstance();
+    if (o == null) return null;
+
+    for (var f in fieldsNames) {
+      if (map.containsKey(f)) {
+        var field = this.field(f, o)!;
+        var key = fieldsResolved[f];
+
+        if (key == null) {
+          if (!field.isFinal && field.nullable) {
+            field.set(null);
+          }
+          continue;
+        }
+
+        var val = map[key];
+
+        if (fieldValueResolver != null) {
+          val = fieldValueResolver(key, val, field.type);
+        }
+
+        if (val != null) {
+          if (field.isFinal) {
+            throw StateError(
+                "Can't create instance from `Map` due final field `$f`. $key: $val");
+          }
+          field.set(val);
+        } else if (field.nullable) {
+          field.set(null);
+        }
+      }
+    }
+
+    return o;
+  }
+
+  Map<String, String> _resolveFieldsNames(
+      FieldNameResolver fieldNameResolver, Map<String, Object?> map) {
+    var entries = fieldsNames.map((f) {
+      var f2 = fieldNameResolver(f, map);
+      return f2 != null ? MapEntry(f, f2) : null;
+    }).whereNotNull();
+    return Map<String, String>.fromEntries(entries);
   }
 
   @override
@@ -441,6 +707,9 @@ class ParameterReflection {
 
   const ParameterReflection(this.type, this.name, this.nullable, this.required,
       this.defaultValue, this._annotations);
+
+  /// Returns `true` if [defaultValue] is NOT `null`.
+  bool get hasDefaultValue => defaultValue != null;
 
   @override
   bool operator ==(Object other) =>
@@ -726,6 +995,7 @@ class TypeReflection {
         arguments.map((e) => e.type).toList(), types);
   }
 
+  /// Returns `true` if [type] is `String`, `int`, `double`, `num` or `bool`.
   bool get isPrimitiveType {
     return type == String ||
         type == int ||
@@ -734,37 +1004,57 @@ class TypeReflection {
         type == bool;
   }
 
-  bool get isCollectionType {
-    return type == Map || type == List || type == Iterable || type == Set;
-  }
+  /// Returns `true` if [type] is a collection ([List], [Iterable], [Map] or [Set]).
+  bool get isCollectionType =>
+      isListType || isIterableType || isMapType || isSetType;
 
-  bool get isMapType {
-    return type == Map;
-  }
+  /// Returns `true` if [type] is `Map`.
+  bool get isMapType => type == Map;
 
+  /// Returns `true` if [type] is `Iterable`.
   bool get isIterableType {
     return type == List || type == Iterable || type == Set;
   }
 
-  bool get isNumericType {
-    return type == int || type == double || type == num;
-  }
+  /// Returns `true` if [type] is `int`.
+  bool get isIntType => type == int;
 
-  bool get isIntType {
-    return type == int;
-  }
+  /// Returns `true` if [type] is `double`.
+  bool get isDoubleType => type == double;
 
-  bool get isDoubleType {
-    return type == double;
-  }
+  /// Returns `true` if [type] is `num`.
+  bool get isNumType => type == num;
 
-  bool get isBoolType {
-    return type == bool;
-  }
+  /// Returns `true` if [type] is `int`, `double` or `num`.
+  bool get isNumericType => isIntType || isDoubleType || isNumType;
 
-  bool get isStringType {
-    return type == String;
-  }
+  /// Returns `true` if [type] is `bool`.
+  bool get isBoolType => type == bool;
+
+  /// Returns `true` if [type] is `String`.
+  bool get isStringType => type == String;
+
+  /// Returns `true` if [type] is `String`.
+  bool get isString => type == String;
+
+  /// Returns `true` if [type] is a [List].
+  bool get isListType => type == List;
+
+  /// Returns `true` if [type] is a [Set].
+  bool get isSetType => type == Set;
+
+  /// Returns `true` if [type] [isPrimitiveType] or [isCollection].
+  bool get isBasicType => isPrimitiveType || isCollectionType;
+
+  /// Returns `true` if [type] can be an entity (![isBasicType]).
+  bool get isEntityType => !isBasicType;
+
+  /// Returns `true` if [type] is a [List] of entities.
+  bool get isListEntity =>
+      isListType && hasArguments && arguments.first.isEntityType;
+
+  /// The [TypeReflection] of the [List] elements type.
+  TypeReflection? get listEntityType => isListEntity ? arguments.first : null;
 
   @override
   bool operator ==(Object other) =>
@@ -794,6 +1084,12 @@ typedef FieldSetter<T> = void Function(T? v);
 typedef FieldReflectionGetterAccessor<O, T> = FieldGetter<T> Function(O? obj);
 typedef FieldReflectionSetterAccessor<O, T> = FieldSetter<T> Function(O? obj);
 
+typedef FieldNameResolver = String? Function(
+    String field, Map<String, Object?> map);
+
+typedef FieldValueResolver = Object? Function(
+    String field, Object? value, TypeReflection type);
+
 /// A class field reflection.
 class FieldReflection<O, T> extends ElementReflection<O>
     implements ParameterReflection {
@@ -815,9 +1111,15 @@ class FieldReflection<O, T> extends ElementReflection<O>
 
   /// The default value of the field.
   ///
-  /// ** Not implemented for fields.
+  /// ** Not implemented for fields: always `null`.
   @override
   Object? get defaultValue => null;
+
+  /// Returns `true` if [defaultValue] is NOT `null`.
+  ///
+  /// ** Not implemented for fields: always `false`.
+  @override
+  bool get hasDefaultValue => false;
 
   /// A [Function] that returns the field getter.
   final FieldReflectionGetterAccessor<O, T> getterAccessor;
@@ -913,6 +1215,10 @@ class FieldReflection<O, T> extends ElementReflection<O>
     }
   }
 
+  /// Returns `true` if this [Field] can be an entity field.
+  /// Usually an entity field can be used in a `JSON`, `toJson` and `fromJson`.
+  bool get isEntityField => hasSetter || isFinal;
+
   @override
   String toString() {
     return 'FieldReflection{ '
@@ -924,6 +1230,18 @@ class FieldReflection<O, T> extends ElementReflection<O>
             '}' +
         (object != null ? '<$object>' : '');
   }
+}
+
+final Object absentParameterValue = _AbsentParameterValue();
+
+class _AbsentParameterValue {
+  const _AbsentParameterValue();
+
+  @override
+  bool operator ==(Object other) => identical(this, other);
+
+  @override
+  int get hashCode => 0;
 }
 
 /// Base class fro methods and constructors.
@@ -949,6 +1267,10 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
   /// Returns all the parameters: [normalParameters], [optionalParameters], [namedParameters].
   List<ParameterReflection> get allParameters =>
       [...normalParameters, ...optionalParameters, ...namedParameters.values];
+
+  /// Returns [allParameters] names.
+  List<String> get allParametersNames =>
+      allParameters.map((e) => e.name).toList();
 
   /// The method annotations.
   List<Object> annotations;
@@ -993,6 +1315,12 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
     this.annotations,
   ) : super(classReflection, isStatic);
 
+  /// Returns the amount of parameters.
+  int get parametersLength =>
+      normalParameters.length +
+      optionalParameters.length +
+      namedParameters.length;
+
   /// Returns `true` if this methods has no arguments/parameters.
   bool get hasNoParameters =>
       normalParameters.isEmpty &&
@@ -1034,6 +1362,56 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
   /// Returns the [namedParameters] names.
   List<String> get namedParametersNames => namedParameters.keys.toList();
 
+  /// Returns a [List] of [ParameterReflection] that matches [test].
+  Iterable<ParameterReflection> parametersWhere(
+          bool Function(ParameterReflection parameter) test) =>
+      allParameters.where(test);
+
+  /// Returns a [List] of parameters names that matches [test].
+  Iterable<String> parametersNamesWhere(
+          bool Function(ParameterReflection parameter) test) =>
+      allParameters.where(test).map((e) => e.name);
+
+  /// Returns a [ParameterReflection] by [name].
+  ParameterReflection? getParameterByName(String name) {
+    for (var p in normalParameters) {
+      if (p.name == name) return p;
+    }
+
+    for (var p in optionalParameters) {
+      if (p.name == name) return p;
+    }
+
+    for (var p in namedParameters.values) {
+      if (p.name == name) return p;
+    }
+
+    return null;
+  }
+
+  /// Returns [allParameters] in [names] list.
+  List<ParameterReflection> getParametersByNames(Iterable<String> names) =>
+      allParameters.where((p) => names.contains(p.name)).toList();
+
+  /// Returns a [ParameterReflection] by [index].
+  ParameterReflection? getParameterByIndex(int index) {
+    if (index < normalParameters.length) {
+      return normalParameters[index];
+    }
+
+    var offset = normalParameters.length;
+
+    if (index < offset + optionalParameters.length) {
+      return optionalParameters[index - offset];
+    }
+
+    if (index < offset + namedParameters.length) {
+      return namedParameters.values.elementAt(index - offset);
+    }
+
+    return null;
+  }
+
   /// Returns `true` if [parameters] is equals to [normalParameters].
   bool equalsNormalParametersTypes(List<Type> parameters) =>
       _listEqualityType.equals(normalParametersTypes, parameters);
@@ -1047,18 +1425,49 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
       _mapEqualityType.equals(namedParametersTypes, parameters);
 
   /// Creates a [MethodInvocation] using [map] entries as parameters.
-  MethodInvocation<O> methodInvocationFromMap(Map<String, dynamic> map) {
-    return methodInvocation((p) => map[p.name]);
+  MethodInvocation<O> methodInvocationFromMap(Map<String, dynamic> map,
+      {FieldValueResolver? reviver}) {
+    return methodInvocation((p) {
+      var val = map[p.name];
+
+      if (reviver != null) {
+        val = reviver(p.name, val, p.type);
+      }
+
+      if (val != null) return val;
+      return map.containsKey(p.name) ? null : absentParameterValue;
+    });
   }
 
   /// Creates a [MethodInvocation] using [parametersProvider].
   MethodInvocation<O> methodInvocation(
-      Function(ParameterReflection parameter) parametersProvider) {
+      Object? Function(ParameterReflection parameter) parametersProvider) {
     var normalParameters =
         this.normalParameters.map(parametersProvider).toList();
 
     var optionalParameters =
         this.optionalParameters.map(parametersProvider).toList();
+
+    while (optionalParameters.isNotEmpty) {
+      var lastIndex = optionalParameters.length - 1;
+
+      var value = optionalParameters[lastIndex];
+      var isAbsent = absentParameterValue == value;
+      if (value != null && !isAbsent) break;
+
+      var lastParam = this.optionalParameters[lastIndex];
+
+      if (isAbsent) {
+        optionalParameters.removeAt(lastIndex);
+      } else {
+        if (lastParam.hasDefaultValue || lastParam.nullable) {
+          optionalParameters.removeAt(lastIndex);
+        } else {
+          throw StateError(
+              "Invalid optional parameter value: $optionalParameters != ${this.optionalParameters}");
+        }
+      }
+    }
 
     Map<String, dynamic> namedParameters =
         Map<String, dynamic>.fromEntries(this.namedParameters.entries.map((e) {

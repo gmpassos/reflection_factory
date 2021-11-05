@@ -207,6 +207,8 @@ class ReflectionBuilder implements Builder {
         print(classTree);
       }
 
+      codeTable.putIfAbsent(classTree.classGlobalFunction('_'),
+          () => classTree.buildClassGlobalFunctions());
       codeTable.putIfAbsent(
           classTree.reflectionClass, () => classTree.buildReflectionClass());
       codeTable.putIfAbsent(classTree.reflectionExtension,
@@ -281,10 +283,12 @@ class ReflectionBuilder implements Builder {
       print(classTree);
     }
 
+    var classGlobalFunctions = classTree.buildClassGlobalFunctions();
     var reflectionClassCode = classTree.buildReflectionClass();
     var reflectionExtensionCode = classTree.buildReflectionExtension();
 
     return {
+      classTree.classGlobalFunction('_'): classGlobalFunctions,
       classTree.reflectionClass: reflectionClassCode,
       classTree.reflectionExtension: reflectionExtensionCode,
     };
@@ -328,6 +332,17 @@ class ReflectionBuilder implements Builder {
     var code = str.toString();
     return code;
   }
+}
+
+String _buildClassGlobalFunction(
+    String className, String reflectionClassName, String functionName,
+    {String delimiter = '\$'}) {
+  reflectionClassName = reflectionClassName.trim();
+  if (reflectionClassName.isNotEmpty) {
+    return '$reflectionClassName$delimiter$functionName';
+  }
+
+  return '$className$delimiter$functionName';
 }
 
 String _buildReflectionClassName(String className, String reflectionClassName) {
@@ -380,6 +395,9 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         '}';
   }
 
+  String classGlobalFunction(String functionName) =>
+      _buildClassGlobalFunction(className, reflectionClassName, functionName);
+
   String get reflectionClass =>
       _buildReflectionClassName(className, reflectionClassName);
 
@@ -394,6 +412,33 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
   ConstructorElement? get emptyConstructor {
     var noArgsConstructors = constructors
         .where((e) => e.name.isNotEmpty && e.parameters.isEmpty)
+        .toList();
+
+    if (noArgsConstructors.isEmpty) {
+      return null;
+    } else if (noArgsConstructors.length == 1) {
+      return noArgsConstructors[0];
+    } else {
+      var found = noArgsConstructors.firstWhereOrNull((e) {
+        var name = e.name.toLowerCase();
+        return name == 'empty' || name == 'create' || name == 'def';
+      });
+
+      if (found != null) {
+        return found;
+      } else {
+        return noArgsConstructors.first;
+      }
+    }
+  }
+
+  ConstructorElement? get noRequiredArgsConstructor {
+    var noArgsConstructors = constructors
+        .where((e) =>
+            e.name.isNotEmpty &&
+            e.normalParameters.isEmpty &&
+            e.optionalParameters.where((p) => p.required).isEmpty &&
+            e.namedParameters.values.where((p) => p.required).isEmpty)
         .toList();
 
     if (noArgsConstructors.isEmpty) {
@@ -510,8 +555,30 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     return super.visitFieldElement(element);
   }
 
+  String buildClassGlobalFunctions() {
+    var str = StringBuffer();
+
+    var reflectionClass = this.reflectionClass;
+
+    var fromJsonName = classGlobalFunction('fromJson');
+
+    str.write('// ignore: non_constant_identifier_names\n');
+    str.write(
+        '$className $fromJsonName(Map<String,Object?> map) => $reflectionClass.staticInstance.fromJson(map);\n');
+
+    var fromJsonEncodedName = classGlobalFunction('fromJsonEncoded');
+
+    str.write('// ignore: non_constant_identifier_names\n');
+    str.write(
+        '$className $fromJsonEncodedName(String jsonEncoded) => $reflectionClass.staticInstance.fromJsonEncoded(jsonEncoded);\n');
+
+    return str.toString();
+  }
+
   String buildReflectionClass() {
     var str = StringBuffer();
+
+    var reflectionClass = this.reflectionClass;
 
     str.write(
         'class $reflectionClass extends ClassReflection<$className> {\n\n');
@@ -545,6 +612,9 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  @override\n');
     str.write(
         '  $reflectionClass withoutObjectInstance() => _withoutObjectInstance ??= super.withoutObjectInstance() as $reflectionClass;\n\n');
+
+    str.write(
+        '  static $reflectionClass get staticInstance => _withoutObjectInstance ??= $reflectionClass();\n\n');
 
     _buildConstructors(str);
 
@@ -648,6 +718,25 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       str.write('  @override\n');
       str.write(
           '  $className? createInstanceWithEmptyConstructor() => null;\n');
+    }
+
+    var noRequiredArgsConstructor = this.noRequiredArgsConstructor;
+
+    if (noRequiredArgsConstructor != null) {
+      str.write('  @override\n');
+      str.write('  bool get hasNoRequiredArgsConstructor => true;\n');
+
+      str.write('  @override\n');
+      var name = noRequiredArgsConstructor.name;
+      str.write(
+          '  $className? createInstanceWithNoRequiredArgsConstructor() => $className.$name();\n');
+    } else {
+      str.write('  @override\n');
+      str.write('  bool get hasNoRequiredArgsConstructor => false;\n');
+
+      str.write('  @override\n');
+      str.write(
+          '  $className? createInstanceWithNoRequiredArgsConstructor() => null;\n');
     }
 
     str.write('\n');

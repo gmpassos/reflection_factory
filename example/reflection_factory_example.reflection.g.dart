@@ -1,10 +1,17 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.16
+// BUILDER: reflection_factory/1.0.17
 // BUILD COMMAND: dart run build_runner build
 //
 
 part of 'reflection_factory_example.dart';
+
+// ignore: non_constant_identifier_names
+User User$fromJson(Map<String, Object?> map) =>
+    User$reflection.staticInstance.fromJson(map);
+// ignore: non_constant_identifier_names
+User User$fromJsonEncoded(String jsonEncoded) =>
+    User$reflection.staticInstance.fromJsonEncoded(jsonEncoded);
 
 class User$reflection extends ClassReflection<User> {
   User$reflection([User? object]) : super(User, object);
@@ -23,7 +30,7 @@ class User$reflection extends ClassReflection<User> {
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.16');
+  Version get reflectionFactoryVersion => Version.parse('1.0.17');
 
   @override
   User$reflection withObject([User? obj]) => User$reflection(obj);
@@ -32,6 +39,9 @@ class User$reflection extends ClassReflection<User> {
   @override
   User$reflection withoutObjectInstance() => _withoutObjectInstance ??=
       super.withoutObjectInstance() as User$reflection;
+
+  static User$reflection get staticInstance =>
+      _withoutObjectInstance ??= User$reflection();
 
   @override
   bool get hasDefaultConstructor => false;
@@ -42,6 +52,10 @@ class User$reflection extends ClassReflection<User> {
   bool get hasEmptyConstructor => true;
   @override
   User? createInstanceWithEmptyConstructor() => User.empty();
+  @override
+  bool get hasNoRequiredArgsConstructor => true;
+  @override
+  User? createInstanceWithNoRequiredArgsConstructor() => User.empty();
 
   @override
   List<String> get constructorsNames => const <String>['', 'empty'];
