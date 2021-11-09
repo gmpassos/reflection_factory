@@ -76,6 +76,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
       case '':
         return ConstructorReflection<TestUserSimple>(
             this,
+            TestUserSimple,
             '',
             () => (String name, String? email, String password) =>
                 TestUserSimple(name, email, password),
@@ -91,8 +92,15 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
             null,
             null);
       case 'empty':
-        return ConstructorReflection<TestUserSimple>(this, 'empty',
-            () => () => TestUserSimple.empty(), null, null, null, null);
+        return ConstructorReflection<TestUserSimple>(
+            this,
+            TestUserSimple,
+            'empty',
+            () => () => TestUserSimple.empty(),
+            null,
+            null,
+            null,
+            null);
       default:
         return null;
     }
@@ -136,6 +144,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
       case 'name':
         return FieldReflection<TestUserSimple, T>(
           this,
+          TestUserSimple,
           TypeReflection.tString,
           'name',
           false,
@@ -151,6 +160,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
       case 'email':
         return FieldReflection<TestUserSimple, T>(
           this,
+          TestUserSimple,
           TypeReflection.tString,
           'email',
           true,
@@ -164,6 +174,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
       case 'password':
         return FieldReflection<TestUserSimple, T>(
           this,
+          TestUserSimple,
           TypeReflection.tString,
           'password',
           false,
@@ -191,6 +202,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
       case 'version':
         return FieldReflection<TestUserSimple, T>(
           this,
+          TestUserSimple,
           TypeReflection.tDouble,
           'version',
           false,
@@ -206,6 +218,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
       case 'withreflection':
         return FieldReflection<TestUserSimple, T>(
           this,
+          TestUserSimple,
           TypeReflection.tBool,
           'withReflection',
           false,
@@ -236,6 +249,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
       case 'checkthepassword':
         return MethodReflection<TestUserSimple, R>(
             this,
+            TestUserSimple,
             'checkThePassword',
             TypeReflection.tBool,
             false,
@@ -259,6 +273,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
       case 'hasemail':
         return MethodReflection<TestUserSimple, R>(
             this,
+            TestUserSimple,
             'hasEmail',
             TypeReflection.tBool,
             false,
@@ -285,6 +300,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
       case 'isversion':
         return MethodReflection<TestUserSimple, R>(
             this,
+            TestUserSimple,
             'isVersion',
             TypeReflection.tBool,
             false,

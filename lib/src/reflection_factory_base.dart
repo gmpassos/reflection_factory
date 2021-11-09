@@ -1138,10 +1138,13 @@ abstract class ElementReflection<O> {
   /// The [ClassReflection] of this element.
   final ClassReflection<O> classReflection;
 
+  /// The [Type] that declared this element.
+  final Type declaringType;
+
   /// Returns `true` if this element is static.
   final bool isStatic;
 
-  ElementReflection(this.classReflection, this.isStatic);
+  ElementReflection(this.classReflection, this.declaringType, this.isStatic);
 
   /// Returns the class name of this element.
   String get className => classReflection.className;
@@ -1646,6 +1649,7 @@ class FieldReflection<O, T> extends ElementReflection<O>
 
   FieldReflection(
     ClassReflection<O> classReflection,
+    Type declaringType,
     this.type,
     this.name,
     this.nullable,
@@ -1658,10 +1662,11 @@ class FieldReflection<O, T> extends ElementReflection<O>
   )   : _annotations = annotations == null || annotations.isEmpty
             ? _annotationsEmpty
             : List<Object>.unmodifiable(annotations),
-        super(classReflection, isStatic);
+        super(classReflection, declaringType, isStatic);
 
   FieldReflection._(
     ClassReflection<O> classReflection,
+    Type declaringType,
     this.type,
     this.name,
     this.nullable,
@@ -1671,12 +1676,13 @@ class FieldReflection<O, T> extends ElementReflection<O>
     bool isStatic,
     this.isFinal,
     this._annotations,
-  ) : super(classReflection, isStatic);
+  ) : super(classReflection, declaringType, isStatic);
 
   /// Returns a new instance that references [object].
   FieldReflection<O, T> withObject(O object) {
     return FieldReflection<O, T>._(
         classReflection,
+        declaringType,
         type,
         name,
         nullable,
@@ -1817,6 +1823,7 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
 
   FunctionReflection(
     ClassReflection<O> classReflection,
+    Type declaringType,
     this.name,
     this.returnType,
     this.returnNullable,
@@ -1838,10 +1845,11 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
         annotations = annotations == null || annotations.isEmpty
             ? _annotationsEmpty
             : List<Object>.unmodifiable(annotations),
-        super(classReflection, isStatic);
+        super(classReflection, declaringType, isStatic);
 
   FunctionReflection._(
     ClassReflection<O> classReflection,
+    Type declaringType,
     this.name,
     this.returnType,
     this.returnNullable,
@@ -1850,7 +1858,7 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
     this.optionalParameters,
     this.namedParameters,
     this.annotations,
-  ) : super(classReflection, isStatic);
+  ) : super(classReflection, declaringType, isStatic);
 
   /// Returns the amount of parameters.
   int get parametersLength =>
@@ -2092,6 +2100,7 @@ class ConstructorReflection<O> extends FunctionReflection<O, O> {
 
   ConstructorReflection(
       ClassReflection<O> classReflection,
+      Type declaringType,
       String name,
       this.constructorAccessor,
       List<ParameterReflection>? normalParameters,
@@ -2099,8 +2108,17 @@ class ConstructorReflection<O> extends FunctionReflection<O, O> {
       Map<String, ParameterReflection>? namedParameters,
       List<Object>? annotations,
       {Type? type})
-      : super(classReflection, name, TypeReflection(type ?? O), false, true,
-            normalParameters, optionalParameters, namedParameters, annotations);
+      : super(
+            classReflection,
+            declaringType,
+            name,
+            TypeReflection(type ?? O),
+            false,
+            true,
+            normalParameters,
+            optionalParameters,
+            namedParameters,
+            annotations);
 
   Function? _constructor;
 
@@ -2137,6 +2155,7 @@ class MethodReflection<O, R> extends FunctionReflection<O, R> {
 
   MethodReflection(
     ClassReflection<O> classReflection,
+    Type declaringType,
     String name,
     TypeReflection? returnType,
     bool returnNullable,
@@ -2147,11 +2166,21 @@ class MethodReflection<O, R> extends FunctionReflection<O, R> {
     List<ParameterReflection>? optionalParameters,
     Map<String, ParameterReflection>? namedParameters,
     List<Object>? annotations,
-  ) : super(classReflection, name, returnType, returnNullable, isStatic,
-            normalParameters, optionalParameters, namedParameters, annotations);
+  ) : super(
+            classReflection,
+            declaringType,
+            name,
+            returnType,
+            returnNullable,
+            isStatic,
+            normalParameters,
+            optionalParameters,
+            namedParameters,
+            annotations);
 
   MethodReflection._(
     ClassReflection<O> classReflection,
+    Type declaringType,
     String name,
     TypeReflection? returnType,
     bool returnNullable,
@@ -2162,12 +2191,22 @@ class MethodReflection<O, R> extends FunctionReflection<O, R> {
     List<ParameterReflection> optionalParameters,
     Map<String, ParameterReflection> namedParameters,
     List<Object> annotations,
-  ) : super._(classReflection, name, returnType, returnNullable, isStatic,
-            normalParameters, optionalParameters, namedParameters, annotations);
+  ) : super._(
+            classReflection,
+            declaringType,
+            name,
+            returnType,
+            returnNullable,
+            isStatic,
+            normalParameters,
+            optionalParameters,
+            namedParameters,
+            annotations);
 
   /// Returns a new instance that references [object].
   MethodReflection<O, R> withObject(O object) => MethodReflection._(
       classReflection,
+      declaringType,
       name,
       returnType,
       returnNullable,

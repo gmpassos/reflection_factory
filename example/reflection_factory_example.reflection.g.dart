@@ -70,6 +70,7 @@ class User$reflection extends ClassReflection<User> {
       case '':
         return ConstructorReflection<User>(
             this,
+            User,
             '',
             () => (String? email, String pass) => User(email, pass),
             const <ParameterReflection>[
@@ -82,8 +83,8 @@ class User$reflection extends ClassReflection<User> {
             null,
             null);
       case 'empty':
-        return ConstructorReflection<User>(
-            this, 'empty', () => () => User.empty(), null, null, null, null);
+        return ConstructorReflection<User>(this, User, 'empty',
+            () => () => User.empty(), null, null, null, null);
       default:
         return null;
     }
@@ -121,6 +122,7 @@ class User$reflection extends ClassReflection<User> {
       case 'email':
         return FieldReflection<User, T>(
           this,
+          User,
           TypeReflection.tString,
           'email',
           true,
@@ -134,6 +136,7 @@ class User$reflection extends ClassReflection<User> {
       case 'pass':
         return FieldReflection<User, T>(
           this,
+          User,
           TypeReflection.tString,
           'pass',
           false,
@@ -147,6 +150,7 @@ class User$reflection extends ClassReflection<User> {
       case 'hasemail':
         return FieldReflection<User, T>(
           this,
+          User,
           TypeReflection.tBool,
           'hasEmail',
           false,
@@ -183,6 +187,7 @@ class User$reflection extends ClassReflection<User> {
       case 'checkpassword':
         return MethodReflection<User, R>(
             this,
+            User,
             'checkPassword',
             TypeReflection.tBool,
             false,

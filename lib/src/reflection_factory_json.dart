@@ -556,7 +556,7 @@ abstract class JsonDecoder extends JsonConverter<String, Object?> {
   /// Sames as [decode] but from a [Uint8List].
   T decodeFromBytes<T>(Uint8List encodedJsonBytes, {Type? type});
 
-  /// Decodes [encodedJson] to a JSON collection/data.
+  /// Decodes [encodedJson] to a JSON collection/data accepting async values.
   FutureOr<T> decodeAsync<T>(FutureOr<String> encodedJson, {Type? type});
 
   /// Sames as [decodeAsync] but from a [Uint8List].
@@ -1064,6 +1064,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     return decode<T>(encodedJson, type: type);
   }
 
+  /// Decodes [encodedJson] to a JSON collection/data accepting async values.
   @override
   FutureOr<T> decodeAsync<T>(FutureOr<String> encodedJson, {Type? type}) {
     type ??= T;

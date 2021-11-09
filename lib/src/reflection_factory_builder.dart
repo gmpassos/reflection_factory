@@ -649,6 +649,8 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   ClassElement? get _visitingClass => _visitingClassStack.last;
 
+  bool get _isVisitingSupperClass => _visitingClass != _classElement;
+
   void scan(ClassElement classElement) {
     try {
       _visitingClassStack.addLast(classElement);
@@ -757,7 +759,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       return super.visitConstructorElement(element);
     }
 
-    if (_visitingClass == _classElement) {
+    if (!_isVisitingSupperClass) {
       _addWithUniqueName(constructors, element);
     }
   }
@@ -814,7 +816,9 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     }
 
     if (element.isStatic) {
-      _addWithUniqueName(staticMethods, element);
+      if (!_isVisitingSupperClass) {
+        _addWithUniqueName(staticMethods, element);
+      }
     } else {
       _addWithUniqueName(methods, element);
     }
@@ -850,7 +854,9 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     }
 
     if (element.isStatic) {
-      _addWithUniqueName(staticFields, element);
+      if (!_isVisitingSupperClass) {
+        _addWithUniqueName(staticFields, element);
+      }
     } else {
       _addWithUniqueName(fields, element);
     }
@@ -981,10 +987,11 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         print(constructor);
       }
 
+      var declaringType = constructor.declaringType!.typeNameResolvable;
       var callerCode = constructor.asCallerCode;
 
       return "ConstructorReflection<$className>("
-          "this, '$name', () => $callerCode , "
+          "this, $declaringType, '$name', () => $callerCode , "
           "${constructor.normalParametersAsCode} , "
           "${constructor.optionalParametersAsCode}, "
           "${constructor.namedParametersAsCode}, "
@@ -1081,6 +1088,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         print(field);
       }
 
+      var declaringType = field.declaringType!.typeNameResolvable;
       var typeCode = field.typeAsCode;
       var fullType = field.typeNameAsNullableCode;
       var nullable = field.nullable ? 'true' : 'false';
@@ -1092,7 +1100,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
       var annotations = field.annotationsAsListCode;
 
-      return "FieldReflection<$className,T>(this, "
+      return "FieldReflection<$className,T>(this, $declaringType, "
           "$typeCode, '$name', $nullable, "
           "$getter , $setter , "
           "obj, false, $isFinal, "
@@ -1120,6 +1128,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         print(field);
       }
 
+      var declaringType = field.declaringType!.typeNameResolvable;
       var typeCode = field.typeAsCode;
       var fullType = field.typeNameAsNullableCode;
       var nullable = field.nullable ? 'true' : 'false';
@@ -1129,7 +1138,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
           ? 'null'
           : '(o) => (T? v) => $className.$name = v as $fullType';
 
-      return "FieldReflection<$className,T>(this, "
+      return "FieldReflection<$className,T>(this, $declaringType, "
           "$typeCode, '$name', $nullable, "
           "$getter , $setter , "
           "null, true, $isFinal, "
@@ -1185,10 +1194,12 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         print(method);
       }
 
+      var declaringType = method.declaringType!.typeNameResolvable;
       var returnTypeAsCode = method.returnTypeAsCode;
       var nullable = method.returnNullable ? 'true' : 'false';
+
       return "MethodReflection<$className,R>("
-          "this, '$name', $returnTypeAsCode, $nullable, (o) => o!.$name , obj , false, "
+          "this, $declaringType, '$name', $returnTypeAsCode, $nullable, (o) => o!.$name , obj , false, "
           "${method.normalParametersAsCode} , "
           "${method.optionalParametersAsCode}, "
           "${method.namedParametersAsCode}, "
@@ -1216,10 +1227,12 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         print(method);
       }
 
+      var declaringType = method.declaringType!.typeNameResolvable;
       var returnTypeAsCode = method.returnTypeAsCode;
       var nullable = method.returnNullable ? 'true' : 'false';
+
       return "MethodReflection<$className,R>("
-          "this, '$name', $returnTypeAsCode, $nullable, (o) => $className.$name , null , true, "
+          "this, $declaringType, '$name', $returnTypeAsCode, $nullable, (o) => $className.$name , null , true, "
           "${method.normalParametersAsCode} , "
           "${method.optionalParametersAsCode}, "
           "${method.namedParametersAsCode}, "
@@ -1350,11 +1363,26 @@ class _Element {
 
   _Element(this._element);
 
+  DartType? get declaringType {
+    var element = _element;
+    if (element is ClassElement) {
+      return null;
+    }
+
+    var enclosingElement = element.enclosingElement;
+
+    if (enclosingElement is ClassElement) {
+      return enclosingElement.thisType;
+    }
+
+    return null;
+  }
+
   List<ElementAnnotation> get annotations => _element.metadata;
 
   List<String> get annotationsAsCode {
     var element = _element;
-    var metadata = element.metadata.toList();
+    var metadata = List<ElementAnnotation>.from(element.metadata);
 
     if (element is FieldElement) {
       var getter = element.getter;
@@ -1657,6 +1685,11 @@ extension _DartTypeExtension on DartType {
 
   bool get isRequired => element?.hasRequired ?? false;
 
+  String get typeNameResolvable {
+    var name = this is TypeParameterType ? 'dynamic' : typeName;
+    return name;
+  }
+
   String get typeName {
     var name = element?.name;
 
@@ -1713,7 +1746,7 @@ extension _DartTypeExtension on DartType {
       return 'null';
     }
 
-    var name = typeName;
+    var name = typeNameResolvable;
     var arguments = resolvedTypeArguments;
 
     if (arguments.isNotEmpty) {
@@ -1731,12 +1764,12 @@ extension _DartTypeExtension on DartType {
       return 'null';
     }
 
-    var name = typeName;
+    var name = typeNameResolvable;
     var arguments = resolvedTypeArguments;
 
     if (arguments.isNotEmpty) {
       if (hasSimpleTypeArguments) {
-        var typeArgs = arguments.map((a) => a.typeName).toList();
+        var typeArgs = arguments.map((a) => a.typeNameResolvable).toList();
 
         var constName = TypeReflection.getConstantName(name, typeArgs);
         if (constName != null) {
@@ -1757,7 +1790,7 @@ extension _DartTypeExtension on DartType {
         return 'TypeReflection.$constName';
       } else {
         if (this is TypeParameterType) {
-          return 'TypeReflection.tObject';
+          return 'TypeReflection.tDynamic';
         } else {
           return 'TypeReflection($name)';
         }
@@ -1766,8 +1799,6 @@ extension _DartTypeExtension on DartType {
   }
 
   String? _getTypeReflectionConstantName([String? name]) {
-    name ??= typeName;
-
     if (isDartCoreObject) {
       return 'tObject';
     } else if (isDartCoreString) {
@@ -1782,6 +1813,7 @@ extension _DartTypeExtension on DartType {
       return 'tBool';
     }
 
+    name ??= typeNameResolvable;
     return TypeReflection.getConstantName(name);
   }
 }

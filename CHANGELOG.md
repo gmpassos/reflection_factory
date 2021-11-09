@@ -6,11 +6,12 @@
   - `@JsonField`: to hide a field or to force it as a json field.
 - Added support for enums: `EnumReflection` 
 - `ClassReflection`:
+  - Support for supper classes.
   - Added `createInstanceWithNoRequiredArgsConstructor` as another way to create an instance without arguments.
   - Added `getBestConstructorFor`, that selects the constructor capable to create an instance with provided parameters.
   - Added `fromJson` and `fromJsonEncoded`.
   - Added `createInstanceWithBestConstructor` and `createInstanceFromMap`.
-  - Support for supper classes.
+  - Added `declaringType`.
 - Generating `ClassFoo$fromJson` and `ClassFoo$fromJsonEncoded`.
 - Optimized some operations.
 - Fixed `TypeReflection` for `Function`.

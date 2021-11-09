@@ -346,7 +346,7 @@ void main() {
 
       expect(
           userReflection
-              .methodsWhere((m) => m.equalsOptionalParametersTypes([Object]))
+              .methodsWhere((m) => m.equalsOptionalParametersTypes([dynamic]))
               .map((e) => e.name),
           equals(['getField']));
 
@@ -513,8 +513,8 @@ void main() {
       expect(allMethods.toNames(),
           equals(['checkPassword', 'getField', 'setField']));
       expect(allMethods.toReturnTypeReflections(),
-          equals([TypeReflection.tBool, TypeReflection.tObject, null]));
-      expect(allMethods.toReturnTypes(), equals([bool, Object, null]));
+          equals([TypeReflection.tBool, TypeReflection.tDynamic, null]));
+      expect(allMethods.toReturnTypes(), equals([bool, dynamic, null]));
       expect(allMethods.whereStatic(), isEmpty);
 
       var allStaticMethods = userReflection.allStaticMethods();
@@ -574,23 +574,51 @@ void main() {
 
       var opReflection = TestOpWithReflection$reflection.staticInstance;
       var opAReflection = TestOpAWithReflection$reflection.staticInstance;
-      var opBWithReflection$reflection =
-          TestOpBWithReflection$reflection.staticInstance;
+      var opBReflection = TestOpBWithReflection$reflection.staticInstance;
 
       expect(opReflection.supperTypes, isEmpty);
       expect(opAReflection.supperTypes, equals([TestOpWithReflection]));
-      expect(opBWithReflection$reflection.supperTypes,
-          equals([TestOpWithReflection]));
+      expect(opBReflection.supperTypes, equals([TestOpWithReflection]));
 
       expect(opReflection.fieldsNames, equals(['type']));
       expect(opAReflection.fieldsNames, equals(['type', 'value']));
+      expect(opBReflection.fieldsNames, equals(['amount', 'type']));
+
       expect(
-          opBWithReflection$reflection.fieldsNames, equals(['amount', 'type']));
+          opAReflection
+              .fieldsWhere((m) => m.declaringType == TestOpWithReflection)
+              .map((e) => e.name),
+          equals(['type']));
+
+      expect(
+          opAReflection
+              .fieldsWhere((m) => m.declaringType == TestOpAWithReflection)
+              .map((e) => e.name),
+          equals(['value']));
+
+      expect(opReflection.staticFieldsNames, equals(['statifField']));
+      expect(opAReflection.staticFieldsNames, equals(['statifFieldA']));
+      expect(opBReflection.staticFieldsNames, isEmpty);
 
       expect(opReflection.methodsNames, equals(['isEmptyType']));
       expect(opAReflection.methodsNames, equals(['isEmptyType', 'methodA']));
-      expect(opBWithReflection$reflection.methodsNames,
-          equals(['isEmptyType', 'methodB']));
+      expect(opBReflection.methodsNames, equals(['isEmptyType', 'methodB']));
+
+      expect(
+          opAReflection
+              .methodsWhere((m) => m.declaringType == TestOpWithReflection)
+              .map((e) => e.name),
+          equals(['isEmptyType']));
+
+      expect(
+          opAReflection
+              .methodsWhere((m) => m.declaringType == TestOpAWithReflection)
+              .map((e) => e.name),
+          equals(['methodA']));
+
+      expect(opReflection.staticMethodsNames, equals(['staticMethod']));
+      expect(opAReflection.staticMethodsNames, isEmpty);
+      expect(opBReflection.staticMethodsNames, equals(['staticMethodB']));
 
       expect(
           userReflection.toJson(),

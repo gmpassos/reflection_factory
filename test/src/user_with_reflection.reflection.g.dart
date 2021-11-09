@@ -144,6 +144,7 @@ class TestAddressWithReflection$reflection
       case '':
         return ConstructorReflection<TestAddressWithReflection>(
             this,
+            TestAddressWithReflection,
             '',
             () => (String state, [String city = '']) =>
                 TestAddressWithReflection(state, city),
@@ -160,6 +161,7 @@ class TestAddressWithReflection$reflection
       case 'empty':
         return ConstructorReflection<TestAddressWithReflection>(
             this,
+            TestAddressWithReflection,
             'empty',
             () => () => TestAddressWithReflection.empty(),
             null,
@@ -207,6 +209,7 @@ class TestAddressWithReflection$reflection
       case 'state':
         return FieldReflection<TestAddressWithReflection, T>(
           this,
+          TestAddressWithReflection,
           TypeReflection.tString,
           'state',
           false,
@@ -220,6 +223,7 @@ class TestAddressWithReflection$reflection
       case 'city':
         return FieldReflection<TestAddressWithReflection, T>(
           this,
+          TestAddressWithReflection,
           TypeReflection.tString,
           'city',
           false,
@@ -233,6 +237,7 @@ class TestAddressWithReflection$reflection
       case 'hashcode':
         return FieldReflection<TestAddressWithReflection, T>(
           this,
+          TestAddressWithReflection,
           TypeReflection.tInt,
           'hashCode',
           false,
@@ -271,6 +276,7 @@ class TestAddressWithReflection$reflection
       case 'tojson':
         return MethodReflection<TestAddressWithReflection, R>(
             this,
+            TestAddressWithReflection,
             'toJson',
             TypeReflection.tMapStringDynamic,
             false,
@@ -358,6 +364,7 @@ class TestCompanyWithReflection$reflection
       case '':
         return ConstructorReflection<TestCompanyWithReflection>(
             this,
+            TestCompanyWithReflection,
             '',
             () => (String name, TestAddressWithReflection mainAddress,
                     List<TestAddressWithReflection> extraAddresses,
@@ -428,6 +435,7 @@ class TestCompanyWithReflection$reflection
       case 'name':
         return FieldReflection<TestCompanyWithReflection, T>(
           this,
+          TestCompanyWithReflection,
           TypeReflection.tString,
           'name',
           false,
@@ -441,6 +449,7 @@ class TestCompanyWithReflection$reflection
       case 'mainaddress':
         return FieldReflection<TestCompanyWithReflection, T>(
           this,
+          TestCompanyWithReflection,
           TypeReflection(TestAddressWithReflection),
           'mainAddress',
           false,
@@ -454,6 +463,7 @@ class TestCompanyWithReflection$reflection
       case 'extranames':
         return FieldReflection<TestCompanyWithReflection, T>(
           this,
+          TestCompanyWithReflection,
           TypeReflection.tListString,
           'extraNames',
           false,
@@ -467,6 +477,7 @@ class TestCompanyWithReflection$reflection
       case 'extraaddresses':
         return FieldReflection<TestCompanyWithReflection, T>(
           this,
+          TestCompanyWithReflection,
           TypeReflection(List, [TestAddressWithReflection]),
           'extraAddresses',
           false,
@@ -481,6 +492,7 @@ class TestCompanyWithReflection$reflection
       case 'local':
         return FieldReflection<TestCompanyWithReflection, T>(
           this,
+          TestCompanyWithReflection,
           TypeReflection.tBool,
           'local',
           false,
@@ -494,6 +506,7 @@ class TestCompanyWithReflection$reflection
       case 'hashcode':
         return FieldReflection<TestCompanyWithReflection, T>(
           this,
+          TestCompanyWithReflection,
           TypeReflection.tInt,
           'hashCode',
           false,
@@ -599,6 +612,7 @@ class TestDataWithReflection$reflection
       case '':
         return ConstructorReflection<TestDataWithReflection>(
             this,
+            TestDataWithReflection,
             '',
             () => (String name, Uint8List bytes,
                     {BigInt? id, TestDomainWithReflection? domain}) =>
@@ -661,6 +675,7 @@ class TestDataWithReflection$reflection
       case 'name':
         return FieldReflection<TestDataWithReflection, T>(
           this,
+          TestDataWithReflection,
           TypeReflection.tString,
           'name',
           false,
@@ -674,6 +689,7 @@ class TestDataWithReflection$reflection
       case 'id':
         return FieldReflection<TestDataWithReflection, T>(
           this,
+          TestDataWithReflection,
           TypeReflection(BigInt),
           'id',
           false,
@@ -687,6 +703,7 @@ class TestDataWithReflection$reflection
       case 'bytes':
         return FieldReflection<TestDataWithReflection, T>(
           this,
+          TestDataWithReflection,
           TypeReflection(Uint8List),
           'bytes',
           false,
@@ -700,6 +717,7 @@ class TestDataWithReflection$reflection
       case 'domain':
         return FieldReflection<TestDataWithReflection, T>(
           this,
+          TestDataWithReflection,
           TypeReflection(TestDomainWithReflection),
           'domain',
           true,
@@ -713,6 +731,7 @@ class TestDataWithReflection$reflection
       case 'hashcode':
         return FieldReflection<TestDataWithReflection, T>(
           this,
+          TestDataWithReflection,
           TypeReflection.tInt,
           'hashCode',
           false,
@@ -819,6 +838,7 @@ class TestDomainWithReflection$reflection
       case '':
         return ConstructorReflection<TestDomainWithReflection>(
             this,
+            TestDomainWithReflection,
             '',
             () => (String name, String suffix) =>
                 TestDomainWithReflection(name, suffix),
@@ -834,6 +854,7 @@ class TestDomainWithReflection$reflection
       case 'parse':
         return ConstructorReflection<TestDomainWithReflection>(
             this,
+            TestDomainWithReflection,
             'parse',
             () => (String s) => TestDomainWithReflection.parse(s),
             const <ParameterReflection>[
@@ -884,6 +905,7 @@ class TestDomainWithReflection$reflection
       case 'name':
         return FieldReflection<TestDomainWithReflection, T>(
           this,
+          TestDomainWithReflection,
           TypeReflection.tString,
           'name',
           false,
@@ -897,6 +919,7 @@ class TestDomainWithReflection$reflection
       case 'suffix':
         return FieldReflection<TestDomainWithReflection, T>(
           this,
+          TestDomainWithReflection,
           TypeReflection.tString,
           'suffix',
           false,
@@ -910,6 +933,7 @@ class TestDomainWithReflection$reflection
       case 'hashcode':
         return FieldReflection<TestDomainWithReflection, T>(
           this,
+          TestDomainWithReflection,
           TypeReflection.tInt,
           'hashCode',
           false,
@@ -948,6 +972,7 @@ class TestDomainWithReflection$reflection
       case 'tojson':
         return MethodReflection<TestDomainWithReflection, R>(
             this,
+            TestDomainWithReflection,
             'toJson',
             TypeReflection.tString,
             false,
@@ -961,6 +986,7 @@ class TestDomainWithReflection$reflection
       case 'tostring':
         return MethodReflection<TestDomainWithReflection, R>(
             this,
+            TestDomainWithReflection,
             'toString',
             TypeReflection.tString,
             false,
@@ -1106,6 +1132,7 @@ class TestOpAWithReflection$reflection
       case '':
         return ConstructorReflection<TestOpAWithReflection>(
             this,
+            TestOpAWithReflection,
             '',
             () => (int value) => TestOpAWithReflection(value),
             const <ParameterReflection>[
@@ -1153,6 +1180,7 @@ class TestOpAWithReflection$reflection
       case 'value':
         return FieldReflection<TestOpAWithReflection, T>(
           this,
+          TestOpAWithReflection,
           TypeReflection.tInt,
           'value',
           false,
@@ -1166,6 +1194,7 @@ class TestOpAWithReflection$reflection
       case 'type':
         return FieldReflection<TestOpAWithReflection, T>(
           this,
+          TestOpWithReflection,
           TypeReflection.tString,
           'type',
           false,
@@ -1182,11 +1211,30 @@ class TestOpAWithReflection$reflection
   }
 
   @override
-  List<String> get staticFieldsNames => const <String>[];
+  List<String> get staticFieldsNames => const <String>['statifFieldA'];
 
   @override
   FieldReflection<TestOpAWithReflection, T>? staticField<T>(String fieldName) {
-    return null;
+    var lc = fieldName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'statiffielda':
+        return FieldReflection<TestOpAWithReflection, T>(
+          this,
+          TestOpAWithReflection,
+          TypeReflection.tInt,
+          'statifFieldA',
+          false,
+          (o) => () => TestOpAWithReflection.statifFieldA as T,
+          (o) => (T? v) => TestOpAWithReflection.statifFieldA = v as int,
+          null,
+          true,
+          false,
+          null,
+        );
+      default:
+        return null;
+    }
   }
 
   @override
@@ -1203,6 +1251,7 @@ class TestOpAWithReflection$reflection
       case 'methoda':
         return MethodReflection<TestOpAWithReflection, R>(
             this,
+            TestOpAWithReflection,
             'methodA',
             TypeReflection.tBool,
             false,
@@ -1216,6 +1265,7 @@ class TestOpAWithReflection$reflection
       case 'isemptytype':
         return MethodReflection<TestOpAWithReflection, R>(
             this,
+            TestOpWithReflection,
             'isEmptyType',
             TypeReflection.tBool,
             false,
@@ -1301,6 +1351,7 @@ class TestOpBWithReflection$reflection
       case '':
         return ConstructorReflection<TestOpBWithReflection>(
             this,
+            TestOpBWithReflection,
             '',
             () => (int amount) => TestOpBWithReflection(amount),
             const <ParameterReflection>[
@@ -1348,6 +1399,7 @@ class TestOpBWithReflection$reflection
       case 'amount':
         return FieldReflection<TestOpBWithReflection, T>(
           this,
+          TestOpBWithReflection,
           TypeReflection.tInt,
           'amount',
           false,
@@ -1361,6 +1413,7 @@ class TestOpBWithReflection$reflection
       case 'type':
         return FieldReflection<TestOpBWithReflection, T>(
           this,
+          TestOpWithReflection,
           TypeReflection.tString,
           'type',
           false,
@@ -1398,8 +1451,9 @@ class TestOpBWithReflection$reflection
       case 'methodb':
         return MethodReflection<TestOpBWithReflection, R>(
             this,
+            TestOpBWithReflection,
             'methodB',
-            TypeReflection.tBool,
+            TypeReflection.tSetDynamic,
             false,
             (o) => o!.methodB,
             obj,
@@ -1411,6 +1465,7 @@ class TestOpBWithReflection$reflection
       case 'isemptytype':
         return MethodReflection<TestOpBWithReflection, R>(
             this,
+            TestOpWithReflection,
             'isEmptyType',
             TypeReflection.tBool,
             false,
@@ -1427,12 +1482,31 @@ class TestOpBWithReflection$reflection
   }
 
   @override
-  List<String> get staticMethodsNames => const <String>[];
+  List<String> get staticMethodsNames => const <String>['staticMethodB'];
 
   @override
   MethodReflection<TestOpBWithReflection, R>? staticMethod<R>(
       String methodName) {
-    return null;
+    var lc = methodName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'staticmethodb':
+        return MethodReflection<TestOpBWithReflection, R>(
+            this,
+            TestOpBWithReflection,
+            'staticMethodB',
+            TypeReflection.tBool,
+            false,
+            (o) => TestOpBWithReflection.staticMethodB,
+            null,
+            true,
+            null,
+            null,
+            null,
+            null);
+      default:
+        return null;
+    }
   }
 }
 
@@ -1498,6 +1572,7 @@ class TestOpWithReflection$reflection
       case '':
         return ConstructorReflection<TestOpWithReflection>(
             this,
+            TestOpWithReflection,
             '',
             () => (String type) => TestOpWithReflection(type),
             const <ParameterReflection>[
@@ -1508,8 +1583,15 @@ class TestOpWithReflection$reflection
             null,
             null);
       case 'empty':
-        return ConstructorReflection<TestOpWithReflection>(this, 'empty',
-            () => () => TestOpWithReflection.empty(), null, null, null, null);
+        return ConstructorReflection<TestOpWithReflection>(
+            this,
+            TestOpWithReflection,
+            'empty',
+            () => () => TestOpWithReflection.empty(),
+            null,
+            null,
+            null,
+            null);
       default:
         return null;
     }
@@ -1548,6 +1630,7 @@ class TestOpWithReflection$reflection
       case 'type':
         return FieldReflection<TestOpWithReflection, T>(
           this,
+          TestOpWithReflection,
           TypeReflection.tString,
           'type',
           false,
@@ -1564,11 +1647,30 @@ class TestOpWithReflection$reflection
   }
 
   @override
-  List<String> get staticFieldsNames => const <String>[];
+  List<String> get staticFieldsNames => const <String>['statifField'];
 
   @override
   FieldReflection<TestOpWithReflection, T>? staticField<T>(String fieldName) {
-    return null;
+    var lc = fieldName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'statiffield':
+        return FieldReflection<TestOpWithReflection, T>(
+          this,
+          TestOpWithReflection,
+          TypeReflection.tInt,
+          'statifField',
+          false,
+          (o) => () => TestOpWithReflection.statifField as T,
+          (o) => (T? v) => TestOpWithReflection.statifField = v as int,
+          null,
+          true,
+          false,
+          null,
+        );
+      default:
+        return null;
+    }
   }
 
   @override
@@ -1585,6 +1687,7 @@ class TestOpWithReflection$reflection
       case 'isemptytype':
         return MethodReflection<TestOpWithReflection, R>(
             this,
+            TestOpWithReflection,
             'isEmptyType',
             TypeReflection.tBool,
             false,
@@ -1601,12 +1704,31 @@ class TestOpWithReflection$reflection
   }
 
   @override
-  List<String> get staticMethodsNames => const <String>[];
+  List<String> get staticMethodsNames => const <String>['staticMethod'];
 
   @override
   MethodReflection<TestOpWithReflection, R>? staticMethod<R>(
       String methodName) {
-    return null;
+    var lc = methodName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'staticmethod':
+        return MethodReflection<TestOpWithReflection, R>(
+            this,
+            TestOpWithReflection,
+            'staticMethod',
+            TypeReflection.tBool,
+            false,
+            (o) => TestOpWithReflection.staticMethod,
+            null,
+            true,
+            null,
+            null,
+            null,
+            null);
+      default:
+        return null;
+    }
   }
 }
 
@@ -1671,6 +1793,7 @@ class TestUserWithReflection$reflection
       case 'fields':
         return ConstructorReflection<TestUserWithReflection>(
             this,
+            TestUserWithReflection,
             'fields',
             () => (String name, String? email, String password,
                     {bool enabled = true,
@@ -1702,8 +1825,15 @@ class TestUserWithReflection$reflection
             },
             null);
       case '':
-        return ConstructorReflection<TestUserWithReflection>(this, '',
-            () => () => TestUserWithReflection(), null, null, null, null);
+        return ConstructorReflection<TestUserWithReflection>(
+            this,
+            TestUserWithReflection,
+            '',
+            () => () => TestUserWithReflection(),
+            null,
+            null,
+            null,
+            null);
       default:
         return null;
     }
@@ -1752,6 +1882,7 @@ class TestUserWithReflection$reflection
       case 'name':
         return FieldReflection<TestUserWithReflection, T>(
           this,
+          TestUserWithReflection,
           TypeReflection.tString,
           'name',
           false,
@@ -1765,6 +1896,7 @@ class TestUserWithReflection$reflection
       case 'email':
         return FieldReflection<TestUserWithReflection, T>(
           this,
+          TestUserWithReflection,
           TypeReflection.tString,
           'email',
           true,
@@ -1778,6 +1910,7 @@ class TestUserWithReflection$reflection
       case 'password':
         return FieldReflection<TestUserWithReflection, T>(
           this,
+          TestUserWithReflection,
           TypeReflection.tString,
           'password',
           false,
@@ -1791,6 +1924,7 @@ class TestUserWithReflection$reflection
       case 'enabled':
         return FieldReflection<TestUserWithReflection, T>(
           this,
+          TestUserWithReflection,
           TypeReflection.tBool,
           'enabled',
           false,
@@ -1804,6 +1938,7 @@ class TestUserWithReflection$reflection
       case 'axis':
         return FieldReflection<TestUserWithReflection, T>(
           this,
+          TestUserWithReflection,
           TypeReflection(TestEnumWithReflection),
           'axis',
           false,
@@ -1817,6 +1952,7 @@ class TestUserWithReflection$reflection
       case 'level':
         return FieldReflection<TestUserWithReflection, T>(
           this,
+          TestUserWithReflection,
           TypeReflection.tInt,
           'level',
           true,
@@ -1830,6 +1966,7 @@ class TestUserWithReflection$reflection
       case 'isenabled':
         return FieldReflection<TestUserWithReflection, T>(
           this,
+          TestUserWithReflection,
           TypeReflection.tBool,
           'isEnabled',
           false,
@@ -1843,6 +1980,7 @@ class TestUserWithReflection$reflection
       case 'isnotenabled':
         return FieldReflection<TestUserWithReflection, T>(
           this,
+          TestUserWithReflection,
           TypeReflection.tBool,
           'isNotEnabled',
           false,
@@ -1856,6 +1994,7 @@ class TestUserWithReflection$reflection
       case 'hashcode':
         return FieldReflection<TestUserWithReflection, T>(
           this,
+          TestUserWithReflection,
           TypeReflection.tInt,
           'hashCode',
           false,
@@ -1883,6 +2022,7 @@ class TestUserWithReflection$reflection
       case 'version':
         return FieldReflection<TestUserWithReflection, T>(
           this,
+          TestUserWithReflection,
           TypeReflection.tDouble,
           'version',
           false,
@@ -1896,6 +2036,7 @@ class TestUserWithReflection$reflection
       case 'withreflection':
         return FieldReflection<TestUserWithReflection, T>(
           this,
+          TestUserWithReflection,
           TypeReflection.tBool,
           'withReflection',
           false,
@@ -1926,6 +2067,7 @@ class TestUserWithReflection$reflection
       case 'checkpassword':
         return MethodReflection<TestUserWithReflection, R>(
             this,
+            TestUserWithReflection,
             'checkPassword',
             TypeReflection.tBool,
             false,
@@ -1942,8 +2084,9 @@ class TestUserWithReflection$reflection
       case 'getfield':
         return MethodReflection<TestUserWithReflection, R>(
             this,
+            TestUserWithReflection,
             'getField',
-            TypeReflection.tObject,
+            TypeReflection.tDynamic,
             true,
             (o) => o!.getField,
             obj,
@@ -1954,13 +2097,14 @@ class TestUserWithReflection$reflection
             ],
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tObject, 'def', true, false, null, null)
+                  TypeReflection.tDynamic, 'def', true, false, null, null)
             ],
             null,
             null);
       case 'setfield':
         return MethodReflection<TestUserWithReflection, R>(
             this,
+            TestUserWithReflection,
             'setField',
             null,
             false,
@@ -1971,12 +2115,12 @@ class TestUserWithReflection$reflection
               ParameterReflection(
                   TypeReflection.tString, 'key', false, true, null, null),
               ParameterReflection(
-                  TypeReflection.tObject, 'value', true, true, null, null)
+                  TypeReflection.tDynamic, 'value', true, true, null, null)
             ],
             null,
             const <String, ParameterReflection>{
               'def': ParameterReflection(
-                  TypeReflection.tObject, 'def', true, false, null, null)
+                  TypeReflection.tDynamic, 'def', true, false, null, null)
             },
             null);
       default:
@@ -1996,6 +2140,7 @@ class TestUserWithReflection$reflection
       case 'isversion':
         return MethodReflection<TestUserWithReflection, R>(
             this,
+            TestUserWithReflection,
             'isVersion',
             TypeReflection.tBool,
             false,

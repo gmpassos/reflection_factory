@@ -230,6 +230,9 @@ class TestDomainWithReflection {
 
 @EnableReflection()
 class TestOpWithReflection {
+  static int statifField = 1;
+  static bool staticMethod() => true;
+
   final String type;
 
   TestOpWithReflection(this.type);
@@ -241,6 +244,8 @@ class TestOpWithReflection {
 
 @EnableReflection()
 class TestOpAWithReflection extends TestOpWithReflection {
+  static int statifFieldA = 2;
+
   int value;
 
   TestOpAWithReflection(this.value) : super('a');
@@ -250,9 +255,11 @@ class TestOpAWithReflection extends TestOpWithReflection {
 
 @EnableReflection()
 class TestOpBWithReflection extends TestOpWithReflection {
+  static bool staticMethodB() => false;
+
   int amount;
 
   TestOpBWithReflection(this.amount) : super('b');
 
-  bool methodB() => false;
+  Set<T> methodB<T>() => <T>{};
 }

@@ -143,12 +143,16 @@ void main() {
           abstract class Op {
             final String type;
             Op(this.type);
+            
+            List<Set<int>> opMethod() => <Set<int>>[{1},{2}] ;
           }
           
           @EnableReflection()
           class OpA extends Op {
             int value;
             OpA(this.value) : super('a');
+            
+            Set<List<T>> opAMethod<T>() => <List<T>>{<T>[]};
           }
           
         '''
@@ -181,6 +185,8 @@ void main() {
               contains("case 'type':"),
               contains("case 'value':"),
               contains("fieldsNames => const <String>['type', 'value']"),
+              contains("TypeReflection(List, [TypeReflection.tSetInt])"),
+              contains("TypeReflection(Set, [TypeReflection.tListDynamic])"),
             ),
           )),
         },
