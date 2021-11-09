@@ -1,12 +1,20 @@
 ## 1.0.17
 
-- Better JSON handling and refletion integration.
+- JSON
+  - Better JSON handling and reflection integration.
+  - Encoding/decoding to/from bytes (`Uint8List`).
+  - `@JsonField`: to hide a field or to force it as a json field.
+- Added support for enums: `EnumReflection` 
 - `ClassReflection`:
   - Added `createInstanceWithNoRequiredArgsConstructor` as another way to create an instance without arguments.
   - Added `getBestConstructorFor`, that selects the constructor capable to create an instance with provided parameters.
   - Added `fromJson` and `fromJsonEncoded`.
   - Added `createInstanceWithBestConstructor` and `createInstanceFromMap`.
 - Generating `ClassFoo$fromJson` and `ClassFoo$fromJsonEncoded`.
+- Optimized some operations.
+- Fixed `TypeReflection` for `Function`.
+- mime: ^1.0.1
+- base_codecs: ^1.0.1
 
 ## 1.0.16
 

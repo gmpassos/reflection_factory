@@ -3,11 +3,13 @@ import 'dart:convert' as dart_convert;
 
 import 'package:collection/collection.dart'
     show
+        IterableExtension,
+        IterableNullableExtension,
         ListEquality,
         MapEquality,
-        IterableExtension,
-        IterableNullableExtension;
+        equalsIgnoreAsciiCase;
 import 'package:pub_semver/pub_semver.dart';
+import 'package:reflection_factory/reflection_factory.dart';
 import 'package:reflection_factory/src/reflection_factory_json.dart';
 
 /// Class with all registered reflections ([ClassReflection]).
@@ -21,6 +23,27 @@ class ReflectionFactory {
 
   /// Returns the singleton instance of [ReflectionFactory].
   factory ReflectionFactory() => _instance;
+
+  final Map<Type, EnumReflection> _registeredEnumReflection =
+      <Type, EnumReflection>{};
+
+  /// Returns `true` if a [EnumReflection] is registered for [enumType].
+  bool hasRegisterEnumReflection<O>([Type? enumType]) =>
+      _registeredEnumReflection.containsKey(enumType ?? O);
+
+  /// Returns the registered [EnumReflection] for [enumType].
+  EnumReflection<O>? getRegisterEnumReflection<O>([Type? enumType]) =>
+      _registeredEnumReflection[enumType ?? O] as EnumReflection<O>?;
+
+  /// Called by [EnumReflection] when instantiated for the 1st time.
+  void registerEnumReflection<O>(EnumReflection<O> enumReflection) {
+    var enumType = enumReflection.enumType;
+    var prev = _registeredEnumReflection[enumType];
+
+    if (prev == null || prev.compareTo(enumReflection) < 0) {
+      _registeredEnumReflection[enumType] = enumReflection;
+    }
+  }
 
   final Map<Type, ClassReflection> _registeredClassReflection =
       <Type, ClassReflection>{};
@@ -69,6 +92,12 @@ class ReflectionFactory {
       return classReflection.toJson(object);
     }
 
+    var enumReflection =
+        _instance.getRegisterEnumReflection(object.runtimeType);
+    if (enumReflection != null) {
+      return enumReflection.toJson(object);
+    }
+
     if (toEncodable != null) {
       return toEncodable(object);
     }
@@ -81,32 +110,22 @@ class ReflectionFactory {
   }
 }
 
-/// Base for Class reflection.
-abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
-  final Type classType;
-  final O? object;
+/// Base for reflection.
+abstract class Reflection<O> {
+  /// The reflected type by this implementation.
+  Type get reflectedType;
 
-  ClassReflection(this.classType, [this.object]) {
-    register();
-  }
+  /// Register this reflection implementation.
+  void register();
 
   /// Returns `true` if this instances has an associated object ([O]).
-  bool get hasObject => object != null;
+  bool get hasObject;
 
   /// Returns a new instances with [obj] as the associated object ([O]).
-  ClassReflection<O> withObject([O? obj]);
+  Reflection<O> withObject([O? obj]);
 
   /// Returns a new instances without an [object] instance.
-  ClassReflection<O> withoutObjectInstance() => hasObject ? withObject() : this;
-
-  /// Called automatically when instantiated.
-  /// Registers this reflection into [ReflectionFactory].
-  void register() {
-    if (!ReflectionFactory().hasRegisterClassReflection(classType)) {
-      var cr = withoutObjectInstance();
-      ReflectionFactory().registerClassReflection(cr);
-    }
-  }
+  Reflection<O> withoutObjectInstance();
 
   /// Returns the Dart language [Version] of the reflected code.
   Version get languageVersion;
@@ -114,18 +133,15 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   /// Returns `reflection_factory` [Version] used to generate this reflection code.
   Version get reflectionFactoryVersion;
 
-  /// Returns the class name.
-  String get className => classType.toString();
+  /// Returns the reflection name.
+  String get reflectionName => reflectedType.toString();
 
-  int get reflectionLevel =>
-      fieldsNames.length +
-      staticFieldsNames.length +
-      methodsNames.length +
-      staticMethodsNames.length;
+  /// The reflection level (complexity).
+  int get reflectionLevel;
 
   /// Cast [list] to [classType] if [type] == [classType] or return `null`.
   List? castList(List list, Type type) {
-    if (type == classType) {
+    if (type == reflectedType) {
       if (list is List<O>) {
         return list;
       } else {
@@ -137,7 +153,7 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
 
   /// Cast [itr] to [classType] if [type] == [classType] or return `null`.
   Iterable? castIterable(Iterable itr, Type type) {
-    if (type == classType) {
+    if (type == reflectedType) {
       if (itr is Iterable<O>) {
         return itr;
       } else {
@@ -147,7 +163,333 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
     return null;
   }
 
+  /// Calls [function] with correct casting for [Reflection].
+  R callCasted<R>(R Function<O>(Reflection<O> reflection) function) {
+    return function<O>(this);
+  }
+
+  /// Returns a [List] of siblings [Reflection] (declared in the same code unit).
+  List<Reflection> siblingsReflection();
+
+  /// Returns a [Reflection] for [type], [obj] or [T].
+  Reflection<T>? siblingReflectionFor<T>({T? obj, Type? type}) {
+    type ??= obj?.runtimeType ?? T;
+
+    var reflectionForType =
+        siblingsReflection().where((c) => c.reflectedType == type).firstOrNull;
+    return reflectionForType as Reflection<T>;
+  }
+
+  /// Returns a `const` [List] of class annotations.
+  List<Object> get classAnnotations;
+
+  /// Returns a `const` [List] of fields names.
+  List<String> get fieldsNames;
+
+  /// Returns a JSON.
+  Object? toJson([O? obj, JsonEncoder? jsonEncoder]);
+
+  /// Returns a JSON [Map].
+  Map<String, Object?>? toJsonMap([O? obj, JsonEncoder? jsonEncoder]);
+
+  /// Returns a JSON encoded. See [toJson].
+  String toJsonEncoded({O? obj, JsonEncoder? jsonEncoder, bool pretty = false});
+
+  /// Returns an object instances from [json].
+  O fromJson(Object? json);
+
+  /// Returns an object instances from [jsonEncoded].
+  O fromJsonEncoded(String jsonEncoded);
+}
+
+/// Base for Enum reflection.
+abstract class EnumReflection<O> extends Reflection<O>
+    implements Comparable<EnumReflection<O>> {
+  final Type enumType;
+  final O? object;
+
+  EnumReflection(this.enumType, [this.object]) {
+    register();
+  }
+
+  @override
+  Type get reflectedType => enumType;
+
+  /// Returns `true` if this instances has an associated object ([O]).
+  @override
+  bool get hasObject => object != null;
+
+  /// Returns a new instances with [obj] as the associated object ([O]).
+  @override
+  EnumReflection<O> withObject([O? obj]);
+
+  /// Returns a new instances without an [object] instance.
+  @override
+  EnumReflection<O> withoutObjectInstance() => hasObject ? withObject() : this;
+
+  /// Returns the Dart language [Version] of the reflected code.
+  @override
+  Version get languageVersion;
+
+  /// Returns `reflection_factory` [Version] used to generate this reflection code.
+  @override
+  Version get reflectionFactoryVersion;
+
+  /// Called automatically when instantiated.
+  /// Registers this reflection into [ReflectionFactory].
+  @override
+  void register() {
+    if (!ReflectionFactory().hasRegisterEnumReflection(enumType)) {
+      var er = withoutObjectInstance();
+      ReflectionFactory().registerEnumReflection(er);
+    }
+  }
+
+  /// Returns the class name.
+  String get enumName => enumType.toString();
+
+  @override
+  int get reflectionLevel => fieldsNames.length;
+
+  /// Calls [function] with correct casting for [EnumReflection].
+  @override
+  R callCasted<R>(R Function<O>(EnumReflection<O> enumReflection) function) {
+    return function<O>(this);
+  }
+
+  /// Returns a [List] of siblings [ClassReflection] (declared in the same code unit).
+  List<EnumReflection> siblingsEnumReflection();
+
+  /// Returns a [siblingsClassReflection] for [type], [obj] or [T].
+  EnumReflection<T>? siblingEnumReflectionFor<T>({T? obj, Type? type}) {
+    type ??= obj?.runtimeType ?? T;
+
+    var enumReflectionForType =
+        siblingsEnumReflection().where((c) => c.enumType == type).firstOrNull;
+    return enumReflectionForType as EnumReflection<T>;
+  }
+
+  /// Returns a `const` [List] of class annotations.
+  @override
+  List<Object> get classAnnotations;
+
+  /// Returns a `const` [List] of fields names.
+  @override
+  List<String> get fieldsNames;
+
+  /// Returns a `const` [Map] of values by name.
+  Map<String, O> get valuesByName;
+
+  /// Returns the Enum values.
+  List<O> get values;
+
+  String? name([O? obj]) {
+    obj ??= object;
+
+    if (obj == null) {
+      return null;
+    }
+
+    return getName(obj);
+  }
+
+  /// Returns an Enum instance by [o].
+  O? from(Object? o) {
+    if (o == null) {
+      return null;
+    } else if (o is O) {
+      return o as O;
+    }
+
+    var s = o.toString().trim();
+
+    if (s.startsWith('"') || s.startsWith("'")) {
+      s = s.substring(1).trim();
+    }
+
+    if (s.endsWith('"') || s.endsWith("'")) {
+      s = s.substring(0, s.length - 1).trim();
+    }
+
+    var obj = valuesByName[s];
+    if (obj != null) {
+      return obj;
+    }
+
+    for (var e in valuesByName.entries) {
+      var name = e.key;
+      if (equalsIgnoreAsciiCase(name, s)) {
+        return e.value;
+      }
+    }
+
+    return null;
+  }
+
+  /// Returns the name of [enumInstance].
+  String? getName(O? enumInstance) {
+    if (enumInstance == null) {
+      return null;
+    }
+
+    for (var e in valuesByName.entries) {
+      if (e.value == enumInstance) {
+        return e.key;
+      }
+    }
+
+    return null;
+  }
+
+  /// Returns the index of [enumInstance].
+  int? getIndex(O? enumInstance) {
+    if (enumInstance == null) {
+      return null;
+    }
+
+    for (var e in valuesByName.entries) {
+      var value = e.value;
+      if (value == enumInstance) {
+        return values.indexOf(value);
+      }
+    }
+
+    return null;
+  }
+
+  /// Returns a enum instance as a JSON value.
+  @override
+  String? toJson([O? obj, JsonEncoder? jsonEncoder]) {
+    obj ??= object;
+    if (obj == null) {
+      return null;
+    }
+
+    if (jsonEncoder == null) {
+      var name = getName(obj);
+      return name;
+    } else {
+      return jsonEncoder.toJson(obj);
+    }
+  }
+
+  /// Returns a enum instance as a JSON [Map].
+  @override
+  Map<String, Object>? toJsonMap([O? obj, JsonEncoder? jsonEncoder]) {
+    obj ??= object;
+    if (obj == null) return null;
+
+    var name = getName(obj)!;
+    var index = getIndex(obj)!;
+
+    return {'name': name, 'index': index};
+  }
+
+  /// Returns a JSON encoded. See [toJson].
+  @override
+  String toJsonEncoded(
+      {O? obj, JsonEncoder? jsonEncoder, bool pretty = false}) {
+    obj ??= object;
+
+    if (jsonEncoder == null) {
+      var name = getName(obj);
+      return dart_convert.json.encode(name);
+    } else {
+      return jsonEncoder.encode(obj, pretty: pretty);
+    }
+  }
+
+  /// Returns an Enum instance from [json].
+  ///
+  /// See [from].
+  @override
+  O fromJson(Object? json) {
+    if (json == null) {
+      throw StateError("Null JSON for enum: $enumName");
+    }
+
+    var o = from(json);
+    if (o == null) {
+      throw StateError("No enum `$enumName` for JSON: $json");
+    }
+
+    return o;
+  }
+
+  /// Returns an Enum instance from [jsonEncoded].
+  @override
+  O fromJsonEncoded(String jsonEncoded) {
+    return from(jsonEncoded)!;
+  }
+
+  @override
+  int compareTo(EnumReflection<O> other) =>
+      reflectionLevel.compareTo(other.reflectionLevel);
+
+  @override
+  String toString() {
+    return 'EnumReflection{ '
+            'enum: $enumName '
+            '}' +
+        (object != null ? '<$object>' : '');
+  }
+}
+
+/// Base for Class reflection.
+abstract class ClassReflection<O> extends Reflection<O>
+    implements Comparable<ClassReflection<O>> {
+  final Type classType;
+  final O? object;
+
+  ClassReflection(this.classType, [this.object]) {
+    register();
+  }
+
+  @override
+  Type get reflectedType => classType;
+
+  /// Returns `true` if this instances has an associated object ([O]).
+  @override
+  bool get hasObject => object != null;
+
+  /// Returns a new instances with [obj] as the associated object ([O]).
+  @override
+  ClassReflection<O> withObject([O? obj]);
+
+  /// Returns a new instances without an [object] instance.
+  @override
+  ClassReflection<O> withoutObjectInstance() => hasObject ? withObject() : this;
+
+  /// Called automatically when instantiated.
+  /// Registers this reflection into [ReflectionFactory].
+  @override
+  void register() {
+    if (!ReflectionFactory().hasRegisterClassReflection(classType)) {
+      var cr = withoutObjectInstance();
+      ReflectionFactory().registerClassReflection(cr);
+    }
+  }
+
+  /// Returns the Dart language [Version] of the reflected code.
+  @override
+  Version get languageVersion;
+
+  /// Returns `reflection_factory` [Version] used to generate this reflection code.
+  @override
+  Version get reflectionFactoryVersion;
+
+  /// Returns the class name.
+  String get className => classType.toString();
+
+  @override
+  int get reflectionLevel =>
+      fieldsNames.length +
+      staticFieldsNames.length +
+      methodsNames.length +
+      staticMethodsNames.length;
+
   /// Calls [function] with correct casting for [ClassReflection].
+  @override
   R callCasted<R>(R Function<O>(ClassReflection<O> classReflection) function) {
     return function<O>(this);
   }
@@ -165,6 +507,7 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   }
 
   /// Returns a `const` [List] of class annotations.
+  @override
   List<Object> get classAnnotations;
 
   /// Returns `true` if the class has a default constructor.
@@ -204,9 +547,12 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   /// Returns a `const` [List] of constructors names.
   List<String> get constructorsNames;
 
+  List<ConstructorReflection<O>>? _allConstructors;
+
   /// Returns a [List] with all constructors [ConstructorReflection].
   List<ConstructorReflection<O>> allConstructors() =>
-      constructorsNames.map((e) => constructor(e)!).toList();
+      _allConstructors ??= List<ConstructorReflection<O>>.unmodifiable(
+          constructorsNames.map((e) => constructor(e)!));
 
   /// Returns a [ConstructorReflection] for [constructorName].
   ConstructorReflection<O>? constructor<R>(String constructorName);
@@ -231,7 +577,7 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
     if (requiredParameters.isNotEmpty) {
       var constructorsWithRequired = constructors.where((c) {
         return _elementsInCount<String>(
-                requiredParameters, c.allParametersNames) ==
+                requiredParameters, c.allParametersNames, _nameNormalizer) ==
             requiredParameters.length;
       }).toList();
 
@@ -245,7 +591,8 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
       var constructorsWithNullables = constructors.where((c) {
         var paramsNullable =
             c.parametersNamesWhere((p) => p.nullable || !p.required).toList();
-        return _elementsInCount(nullableParameters, paramsNullable) ==
+        return _elementsInCount(
+                nullableParameters, paramsNullable, _nameNormalizer) ==
             nullableParameters.length;
       }).toList();
 
@@ -260,7 +607,7 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
     constructors = constructors.where((c) {
       var paramsRequired = c.parametersNamesWhere((p) => p.required).toList();
       return _elementsInCount<String>(
-              presentParametersResolved, paramsRequired) ==
+              presentParametersResolved, paramsRequired, _nameNormalizer) ==
           paramsRequired.length;
     }).toList();
 
@@ -295,18 +642,43 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
     return constructors.first;
   }
 
-  static int _elementsInCount<T>(Iterable<T> list, List<T> inList) =>
-      _elementsIn(list, inList).length;
+  static String _nameNormalizer(String name) {
+    var n = name.toLowerCase().trim();
+    if (n.startsWith('_')) {
+      n = n.substring(1);
+    }
+    return n;
+  }
 
-  static Iterable<T> _elementsIn<T>(Iterable<T> list, Iterable<T> inList) =>
-      list.where((e) => inList.contains(e));
+  static int _elementsInCount<T>(Iterable<T> list, List<T> inList,
+          [T Function(T)? normalizer]) =>
+      _elementsIn(list, inList, normalizer).length;
+
+  static Iterable<T> _elementsIn<T>(Iterable<T> list, Iterable<T> inList,
+      [T Function(T)? normalizer]) {
+    if (normalizer != null) {
+      inList = inList.map(normalizer).toList();
+      return list.map(normalizer).where((e) => inList.contains(e));
+    } else {
+      return list.where((e) => inList.contains(e));
+    }
+  }
 
   /// Returns a `const` [List] of fields names.
+  @override
   List<String> get fieldsNames;
 
+  List<FieldReflection<O, dynamic>>? _allFieldsNoObject;
+
   /// Returns a [List] with all fields [FieldReflection].
-  List<FieldReflection<O, dynamic>> allFields([O? obj]) =>
-      fieldsNames.map((e) => field(e, obj)!).toList();
+  List<FieldReflection<O, dynamic>> allFields([O? obj]) {
+    if (obj == null && object == null) {
+      _allFieldsNoObject ??= List<FieldReflection<O, dynamic>>.unmodifiable(
+          fieldsNames.map((e) => field(e, obj)!));
+    }
+
+    return fieldsNames.map((e) => field(e, obj)!).toList();
+  }
 
   bool? _hasFinalField;
 
@@ -323,9 +695,12 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   /// Returns a `const` [List] of static fields names.
   List<String> get staticFieldsNames;
 
+  List<FieldReflection<O, dynamic>>? _allStaticFields;
+
   /// Returns a [List] with all static fields [FieldReflection].
   List<FieldReflection<O, dynamic>> allStaticFields() =>
-      staticFieldsNames.map((e) => staticField(e)!).toList();
+      _allStaticFields ??= List<FieldReflection<O, dynamic>>.unmodifiable(
+          staticFieldsNames.map((e) => staticField(e)!));
 
   /// Returns a [FieldReflection] for [fieldName], with the optional associated [obj].
   FieldReflection<O, T>? field<T>(String fieldName, [O? obj]);
@@ -337,7 +712,7 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   Iterable<FieldReflection<O, dynamic>> fieldsWhere(
       bool Function(FieldReflection<O, dynamic> f) test,
       [O? obj]) {
-    return fieldsNames.map((n) => field(n, obj)!).where(test);
+    return allFields(obj).where(test);
   }
 
   /// Returns a [List] of fields names that matches [test].
@@ -350,7 +725,7 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   /// Returns a [List] of static fields [FieldReflection] that matches [test].
   Iterable<FieldReflection<O, dynamic>> staticFieldsWhere(
       bool Function(FieldReflection<O, dynamic> f) test) {
-    return staticFieldsNames.map((n) => staticField(n)!).where(test);
+    return allStaticFields().where(test);
   }
 
   /// Returns a [ElementResolver] for a [FieldReflection] for a field with [fieldName].
@@ -365,16 +740,28 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
   /// Returns a `const` [List] of methods names.
   List<String> get methodsNames;
 
+  List<MethodReflection<O, dynamic>>? _allMethodsNoObject;
+
   /// Returns a [List] with all methods [MethodReflection].
-  List<MethodReflection<O, dynamic>> allMethods([O? obj]) =>
-      methodsNames.map((e) => method(e, obj)!).toList();
+  List<MethodReflection<O, dynamic>> allMethods([O? obj]) {
+    if (obj == null && object == null) {
+      return _allMethodsNoObject ??=
+          List<MethodReflection<O, dynamic>>.unmodifiable(
+              methodsNames.map((e) => method(e)!));
+    }
+
+    return methodsNames.map((e) => method(e, obj)!).toList();
+  }
 
   /// Returns a `const` [List] of static methods names.
   List<String> get staticMethodsNames;
 
+  List<MethodReflection<O, dynamic>>? _allStaticMethods;
+
   /// Returns a [List] with all static methods [MethodReflection].
   List<MethodReflection<O, dynamic>> allStaticMethods() =>
-      staticMethodsNames.map((e) => staticMethod(e)!).toList();
+      _allStaticMethods ??= List<MethodReflection<O, dynamic>>.unmodifiable(
+          staticMethodsNames.map((e) => staticMethod(e)!));
 
   /// Returns a [MethodReflection] for [methodName], with the optional associated [obj].
   MethodReflection<O, R>? method<R>(String methodName, [O? obj]);
@@ -384,14 +771,15 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
 
   /// Returns a [List] of methods [MethodReflection] that matches [test].
   Iterable<MethodReflection<O, dynamic>> methodsWhere(
-      bool Function(MethodReflection<O, dynamic> f) test) {
-    return methodsNames.map((n) => method(n)!).where(test);
+      bool Function(MethodReflection<O, dynamic> f) test,
+      [O? obj]) {
+    return allMethods(obj).where(test);
   }
 
   /// Returns a [List] of static methods [MethodReflection] that matches [test].
   Iterable<MethodReflection<O, dynamic>> staticMethodsWhere(
       bool Function(MethodReflection<O, dynamic> f) test) {
-    return staticMethodsNames.map((n) => staticMethod(n)!).where(test);
+    return allStaticMethods().where(test);
   }
 
   /// Returns a [ElementResolver] for a [MethodReflection] for a method with [methodName].
@@ -452,30 +840,47 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
     return method?.invoke(positionalArguments, namedArguments);
   }
 
-  ElementResolver<MethodReflection<O, dynamic>>? _methodToJsonResolver;
+  bool get hasMethodToJson;
 
-  MethodReflection<O, dynamic>? get _methodToJson =>
-      (_methodToJsonResolver ??= methodResolver('toJson')).get();
+  Object? callMethodToJson([O? obj]);
+
+  /// Returns a JSON.
+  /// If the class implements `toJson` calls it.
+  ///
+  /// - If [obj] is not provided, uses [object] as instance.
+  @override
+  Object? toJson([O? obj, JsonEncoder? jsonEncoder]) {
+    if (hasMethodToJson) {
+      var json = callMethodToJson(obj);
+
+      if (jsonEncoder != null) {
+        return jsonEncoder.toJson(json);
+      } else {
+        return json;
+      }
+    }
+
+    return toJsonFromFields(obj, jsonEncoder);
+  }
 
   /// Returns a JSON [Map].
   /// If the class implements `toJson` calls it.
   ///
   /// - If [obj] is not provided, uses [object] as instance.
-  Map<String, dynamic> toJson([O? obj, JsonEncoder? jsonEncoder]) {
-    var m = _methodToJson;
-
-    if (m != null && m.normalParameters.isEmpty && m.returnType?.type == Map) {
-      m = m.withObject(obj ?? object!);
-      var map = m.invoke([]) as Map;
-
-      var mapResolved = map is Map<String, dynamic>
-          ? map
-          : map.map((key, value) => MapEntry('$key', value));
+  @override
+  Map<String, dynamic>? toJsonMap([O? obj, JsonEncoder? jsonEncoder]) {
+    if (hasMethodToJson) {
+      var json = callMethodToJson(obj);
 
       if (jsonEncoder != null) {
-        return jsonEncoder.toJson(mapResolved);
-      } else {
-        return mapResolved;
+        json = jsonEncoder.toJson(json);
+      }
+
+      if (json is Map) {
+        var map = json is Map<String, dynamic>
+            ? json
+            : json.map((key, value) => MapEntry('$key', value));
+        return map;
       }
     }
 
@@ -493,36 +898,72 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
 
     var map = Map<String, dynamic>.fromEntries(entries);
 
-    if (jsonEncoder != null) {
-      return jsonEncoder.toJson(map);
+    jsonEncoder ??= JsonEncoder.defaultDecoder;
+    return jsonEncoder.toJson(map);
+  }
+
+  /// Returns a JSON encoded. See [toJson].
+  @override
+  String toJsonEncoded(
+      {O? obj, JsonEncoder? jsonEncoder, bool pretty = false}) {
+    obj ??= object;
+    jsonEncoder ??= JsonEncoder.defaultDecoder;
+    return jsonEncoder.encode(obj, pretty: pretty);
+  }
+
+  /// Returns a class instance from [json].
+  @override
+  O fromJson(Object? json) {
+    if (json == null) {
+      throw StateError("Null JSON for class: $className");
+    }
+
+    if (json is Map) {
+      var map = json is Map<String, Object?>
+          ? json
+          : json.map((k, v) => MapEntry(k.toString(), v));
+      return JsonDecoder.defaultDecoder.fromJsonMap<O>(map, type: classType);
     } else {
-      return map;
+      throw StateError(
+          "JSON needs to be a Map to decode a class object: $className");
     }
   }
 
-  /// Returns a JSON [Map]. See [toJson].
-  String toJsonEncoded([O? obj]) {
-    var json = toJson(obj);
-    return dart_convert.json.encode(json);
-  }
-
-  O fromJson(Map<String, Object?> json) {
-    return JsonDecoder.defaultCodec.fromJsonMap<O>(json, type: classType);
-  }
-
+  /// Returns a class instance from [jsonEncoded].
+  @override
   O fromJsonEncoded(String jsonEncoded) {
-    return JsonDecoder.defaultCodec.decode<O>(jsonEncoded, type: classType);
+    return JsonDecoder.defaultDecoder.decode<O>(jsonEncoded, type: classType);
   }
 
-  static String? _defaultFieldResolver(
-          String field, Map<String, Object?> map) =>
-      map.containsKey(field) ? field : null;
+  static String? _defaultFieldNameResolver(
+      String field, Map<String, Object?> map) {
+    if (map.containsKey(field)) {
+      return field;
+    }
+
+    String? field2 = field;
+
+    if (field.startsWith('_')) {
+      field2 = field.substring(1);
+      if (map.containsKey(field2)) {
+        return field2;
+      }
+    }
+
+    for (var k in map.keys) {
+      if (equalsIgnoreAsciiCase(k, field2)) {
+        return k;
+      }
+    }
+
+    return null;
+  }
 
   O? createInstanceWithBestConstructor(Map<String, Object?> map,
       {FieldNameResolver? fieldNameResolver,
       FieldValueResolver? fieldValueResolver}) {
-    var fieldsResolved =
-        _resolveFieldsNames(fieldNameResolver ?? _defaultFieldResolver, map);
+    var fieldsResolved = _resolveFieldsNames(
+        fieldNameResolver ?? _defaultFieldNameResolver, map);
 
     var fieldsNotPresent = fieldsNamesWhere(
         (f) => f.isEntityField && !fieldsResolved.containsKey(f.name)).toList();
@@ -541,20 +982,32 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
         nullableParameters: fieldsNotPresent,
         presentParameters: presentParameters);
 
+    constructor ??= getBestConstructorFor(
+        optionalParameters: fieldsOptional,
+        nullableParameters: fieldsNotPresent,
+        presentParameters: presentParameters);
+
     if (constructor == null) return null;
 
-    var methodInvocation =
-        constructor.methodInvocationFromMap(map, reviver: fieldValueResolver);
+    var methodInvocation = constructor.methodInvocationFromMap(map,
+        reviver: fieldValueResolver, nameResolver: fieldNameResolver);
 
-    var o = methodInvocation.invoke(constructor.constructor);
-
-    return o;
+    try {
+      var o = methodInvocation.invoke(constructor.constructor);
+      return o;
+    } catch (_) {
+      print('Error invoking>\n'
+          '  - constructor: $constructor\n'
+          '  - map: $map\n'
+          '  - methodInvocation: $methodInvocation\n');
+      rethrow;
+    }
   }
 
   O? createInstanceFromMap(Map<String, Object?> map,
       {FieldNameResolver? fieldNameResolver,
       FieldValueResolver? fieldValueResolver}) {
-    fieldNameResolver ??= _defaultFieldResolver;
+    fieldNameResolver ??= _defaultFieldNameResolver;
 
     if (hasFieldWithoutSetter) {
       var o = createInstanceWithBestConstructor(map,
@@ -565,34 +1018,59 @@ abstract class ClassReflection<O> implements Comparable<ClassReflection<O>> {
 
     var fieldsResolved = _resolveFieldsNames(fieldNameResolver, map);
 
+    var fieldsNamesInMap =
+        fieldsNames.where((f) => map.containsKey(f)).toList();
+
+    var canSetFromMap = true;
+    for (var f in fieldsNamesInMap) {
+      var key = fieldsResolved[f];
+      if (key == null) continue;
+
+      var field = this.field(f)!;
+      if (field.isFinal) {
+        canSetFromMap = false;
+        break;
+      }
+    }
+
+    if (!canSetFromMap) {
+      var o = createInstanceWithBestConstructor(map,
+          fieldNameResolver: fieldNameResolver,
+          fieldValueResolver: fieldValueResolver);
+      if (o != null) return o;
+    }
+
     var o = createInstance();
     if (o == null) return null;
 
-    for (var f in fieldsNames) {
-      if (map.containsKey(f)) {
-        var field = this.field(f, o)!;
-        var key = fieldsResolved[f];
+    for (var f in fieldsNamesInMap) {
+      var field = this.field(f, o)!;
+      var key = fieldsResolved[f];
 
-        if (key == null) {
-          if (!field.isFinal && field.nullable) {
-            field.set(null);
-          }
-          continue;
+      if (key == null) {
+        if (!field.isFinal && field.nullable) {
+          field.set(null);
+        }
+        continue;
+      }
+
+      var val = map[key];
+
+      if (fieldValueResolver != null) {
+        val = fieldValueResolver(key, val, field.type);
+      }
+
+      if (val != null) {
+        if (field.isFinal) {
+          throw StateError(
+              "Can't create instance from `Map` due final field `$f`. $key = $val");
         }
 
-        var val = map[key];
-
-        if (fieldValueResolver != null) {
-          val = fieldValueResolver(key, val, field.type);
-        }
-
-        if (val != null) {
-          if (field.isFinal) {
-            throw StateError(
-                "Can't create instance from `Map` due final field `$f`. $key: $val");
-          }
+        if (field.hasSetter) {
           field.set(val);
-        } else if (field.nullable) {
+        }
+      } else if (field.nullable) {
+        if (field.hasSetter) {
           field.set(null);
         }
       }
@@ -745,6 +1223,7 @@ class TypeReflection {
   static const TypeReflection tSet = TypeReflection(Set);
   static const TypeReflection tFuture = TypeReflection(Future);
   static const TypeReflection tFutureOr = TypeReflection(FutureOr);
+  static const TypeReflection tFunction = TypeReflection(Function);
 
   static const TypeReflection tListObject =
       TypeReflection(List, [TypeReflection.tObject]);
@@ -927,6 +1406,8 @@ class TypeReflection {
             }
           }
         }
+      case 'Function':
+        return 'tFunction';
       default:
         return null;
     }
@@ -1034,8 +1515,14 @@ class TypeReflection {
   /// Returns `true` if [type] is `String`.
   bool get isStringType => type == String;
 
-  /// Returns `true` if [type] is `String`.
-  bool get isString => type == String;
+  /// Returns `true` if [type] is `Object`.
+  bool get isObjectType => type == Object;
+
+  /// Returns `true` if [type] is `dynamic`.
+  bool get isDynamicType => type == dynamic;
+
+  /// Returns `true` if [type] is `Object` or `dynamic`.
+  bool get isObjectOrDynamicType => type == Object || type == dynamic;
 
   /// Returns `true` if [type] is a [List].
   bool get isListType => type == List;
@@ -1053,8 +1540,12 @@ class TypeReflection {
   bool get isListEntity =>
       isListType && hasArguments && arguments.first.isEntityType;
 
+  /// Returns `true` if [type] [isIterableType] of entities.
+  bool get isIterableEntity =>
+      isIterableType && hasArguments && arguments.first.isEntityType;
+
   /// The [TypeReflection] of the [List] elements type.
-  TypeReflection? get listEntityType => isListEntity ? arguments.first : null;
+  TypeReflection? get listEntityType => isIterableType ? arguments.first : null;
 
   @override
   bool operator ==(Object other) =>
@@ -1141,6 +1632,15 @@ class FieldReflection<O, T> extends ElementReflection<O>
   @override
   List<Object> get annotations => _annotations;
 
+  /// Returns the [JsonAnnotation] of this field.
+  ///
+  /// See [JsonField].
+  List<JsonAnnotation> get jsonAnnotations =>
+      _annotations.whereType<JsonAnnotation>().toList();
+
+  List<JsonField> get jsonFieldAnnotations =>
+      _annotations.whereType<JsonField>().toList();
+
   FieldReflection(
     ClassReflection<O> classReflection,
     this.type,
@@ -1217,7 +1717,33 @@ class FieldReflection<O, T> extends ElementReflection<O>
 
   /// Returns `true` if this [Field] can be an entity field.
   /// Usually an entity field can be used in a `JSON`, `toJson` and `fromJson`.
-  bool get isEntityField => hasSetter || isFinal;
+  bool get isEntityField {
+    var ok = hasSetter || isFinal || type.isCollectionType;
+
+    if (ok) {
+      return !isJsonFieldHidden;
+    } else {
+      return isJsonFieldVisible;
+    }
+  }
+
+  bool get isJsonFieldVisible {
+    for (var a in jsonFieldAnnotations) {
+      if (a.isVisible) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool get isJsonFieldHidden {
+    for (var a in jsonFieldAnnotations) {
+      if (a.isHidden) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   @override
   String toString() {
@@ -1264,13 +1790,21 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
   /// The named parameters [Type]s of this method.
   final Map<String, ParameterReflection> namedParameters;
 
+  List<ParameterReflection>? _allParameters;
+
   /// Returns all the parameters: [normalParameters], [optionalParameters], [namedParameters].
   List<ParameterReflection> get allParameters =>
-      [...normalParameters, ...optionalParameters, ...namedParameters.values];
+      _allParameters ??= List<ParameterReflection>.unmodifiable([
+        ...normalParameters,
+        ...optionalParameters,
+        ...namedParameters.values
+      ]);
+
+  List<String>? _allParametersNames;
 
   /// Returns [allParameters] names.
-  List<String> get allParametersNames =>
-      allParameters.map((e) => e.name).toList();
+  List<String> get allParametersNames => _allParametersNames ??=
+      List<String>.unmodifiable(allParameters.map((e) => e.name));
 
   /// The method annotations.
   List<Object> annotations;
@@ -1327,29 +1861,43 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
       optionalParameters.isEmpty &&
       namedParameters.isEmpty;
 
+  List<TypeReflection>? _normalParametersTypeReflection;
+
   /// Returns the [normalParameters] [TypeReflection]s.
   List<TypeReflection> get normalParametersTypeReflection =>
-      normalParameters.map((e) => e.type).toList();
+      _normalParametersTypeReflection ??= List<TypeReflection>.unmodifiable(
+          normalParameters.map((e) => e.type));
+
+  List<Type>? _normalParametersTypes;
 
   /// Returns the [normalParameters] [Type]s.
-  List<Type> get normalParametersTypes =>
-      normalParameters.map((e) => e.type.type).toList();
+  List<Type> get normalParametersTypes => _normalParametersTypes ??=
+      List<Type>.unmodifiable(normalParameters.map((e) => e.type.type));
+
+  List<String>? _normalParametersNames;
 
   /// Returns the [normalParameters] names.
-  List<String> get normalParametersNames =>
-      normalParameters.map((e) => e.name).toList();
+  List<String> get normalParametersNames => _normalParametersNames ??=
+      List<String>.unmodifiable(normalParameters.map((e) => e.name));
+
+  List<TypeReflection>? _optionalParametersTypeReflection;
 
   /// Returns the [optionalParameters] [TypeReflection]s.
   List<TypeReflection> get optionalParametersTypeReflection =>
-      optionalParameters.map((e) => e.type).toList();
+      _optionalParametersTypeReflection ??= List<TypeReflection>.unmodifiable(
+          optionalParameters.map((e) => e.type));
+
+  List<Type>? _optionalParametersTypes;
 
   /// Returns the [optionalParameters] [Type]s.
-  List<Type> get optionalParametersTypes =>
-      optionalParameters.map((e) => e.type.type).toList();
+  List<Type> get optionalParametersTypes => _optionalParametersTypes ??=
+      List<Type>.unmodifiable(optionalParameters.map((e) => e.type.type));
+
+  List<String>? _optionalParametersNames;
 
   /// Returns the [optionalParameters] names.
-  List<String> get optionalParametersNames =>
-      optionalParameters.map((e) => e.name).toList();
+  List<String> get optionalParametersNames => _optionalParametersNames ??=
+      List<String>.unmodifiable(optionalParameters.map((e) => e.name));
 
   /// Returns the [namedParameters] [TypeReflection]s.
   Map<String, TypeReflection> get namedParametersTypeReflection =>
@@ -1359,8 +1907,11 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
   Map<String, Type> get namedParametersTypes =>
       namedParameters.map((k, v) => MapEntry(k, v.type.type));
 
+  List<String>? _namedParametersNames;
+
   /// Returns the [namedParameters] names.
-  List<String> get namedParametersNames => namedParameters.keys.toList();
+  List<String> get namedParametersNames => _namedParametersNames ??=
+      List<String>.unmodifiable(namedParameters.keys.toList());
 
   /// Returns a [List] of [ParameterReflection] that matches [test].
   Iterable<ParameterReflection> parametersWhere(
@@ -1426,16 +1977,23 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
 
   /// Creates a [MethodInvocation] using [map] entries as parameters.
   MethodInvocation<O> methodInvocationFromMap(Map<String, dynamic> map,
-      {FieldValueResolver? reviver}) {
+      {FieldValueResolver? reviver, FieldNameResolver? nameResolver}) {
     return methodInvocation((p) {
-      var val = map[p.name];
+      String name;
+      if (nameResolver != null) {
+        name = nameResolver(p.name, map) ?? p.name;
+      } else {
+        name = p.name;
+      }
+
+      var val = map[name];
 
       if (reviver != null) {
         val = reviver(p.name, val, p.type);
       }
 
       if (val != null) return val;
-      return map.containsKey(p.name) ? null : absentParameterValue;
+      return map.containsKey(name) ? null : absentParameterValue;
     });
   }
 
@@ -1469,15 +2027,26 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
       }
     }
 
+    _removeAbsentParameterValue(normalParameters);
+    _removeAbsentParameterValue(optionalParameters);
+
     Map<String, dynamic> namedParameters =
         Map<String, dynamic>.fromEntries(this.namedParameters.entries.map((e) {
       var p = e.value;
 
       var value = parametersProvider(p);
 
-      if (value == null && p.nullable && !p.required) {
+      var isAbsent = absentParameterValue == value;
+
+      if ((value == null || isAbsent) &&
+          (p.nullable || p.hasDefaultValue) &&
+          !p.required) {
         return null;
       } else {
+        if (isAbsent) {
+          throw StateError(
+              "Required named parameter `${p.name}` for `MethodInvocation[${classReflection.classType}.$name]`: $p");
+        }
         return MapEntry(e.key, value);
       }
     }).whereType<MapEntry<String, dynamic>>());
@@ -1486,15 +2055,34 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
         normalParameters, optionalParameters, namedParameters);
   }
 
+  void _removeAbsentParameterValue(List<Object?> parameters) {
+    for (var i = parameters.length - 1; i >= 0; --i) {
+      var value = parameters[i];
+      var isAbsent = absentParameterValue == value;
+      if (isAbsent) {
+        parameters[i] = null;
+      }
+    }
+  }
+
   /// Invoke this method.
   R invoke(Iterable<Object?>? positionalArguments,
       [Map<Symbol, Object?>? namedArguments]) {
-    return Function.apply(
-        _function, positionalArguments?.toList(), namedArguments);
+    try {
+      return Function.apply(
+          _function, positionalArguments?.toList(), namedArguments);
+    } catch (_) {
+      print('Error invoking:\n'
+          '  - FunctionReflection: $this\n'
+          '  - _function: $_function\n'
+          '  - positionalArguments: $positionalArguments\n'
+          '  - namedArguments: $namedArguments\n');
+      rethrow;
+    }
   }
 }
 
-typedef ConstructorReflectionAccessor<O> = Function Function();
+typedef ConstructorReflectionAccessor = Function Function();
 
 class ConstructorReflection<O> extends FunctionReflection<O, O> {
   final ConstructorReflectionAccessor constructorAccessor;
@@ -1516,7 +2104,7 @@ class ConstructorReflection<O> extends FunctionReflection<O, O> {
   Function get constructor => _constructor ??= constructorAccessor();
 
   @override
-  Function get _function => constructor();
+  Function get _function => constructor;
 
   bool get isNamed => name.isNotEmpty;
 

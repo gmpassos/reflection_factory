@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:base_codecs/base_codecs.dart';
 import 'package:reflection_factory/reflection_factory.dart';
 import 'package:test/test.dart';
 
@@ -41,6 +45,23 @@ class AB {
 }
 
 void main() {
+  group('JSON', () {
+    test('castListType', () {
+      expect(<dynamic>['a', 'b'], isNot(isA<List<String>>()));
+      expect(castListType(<dynamic>['a', 'b'], String), isA<List<String>>());
+      expect(castListType(<dynamic>[1, 2], int), isA<List<int>>());
+      expect(castListType(<dynamic>[1.2, 2.3], double), isA<List<double>>());
+      expect(castListType(<dynamic>[1, 2.2], num), isA<List<num>>());
+      expect(castListType(<dynamic>[true, false], bool), isA<List<bool>>());
+      expect(castListType(<dynamic>[DateTime.now()], DateTime),
+          isA<List<DateTime>>());
+      expect(castListType(<dynamic>[BigInt.from(123)], BigInt),
+          isA<List<BigInt>>());
+      expect(castListType(<dynamic>[Uint8List(10)], Uint8List),
+          isA<List<Uint8List>>());
+    });
+  });
+
   group('JsonCodec', () {
     setUp(() {});
 
@@ -82,7 +103,25 @@ void main() {
       expect(
           JsonCodec(removeNullFields: true)
               .toJson(TestUserWithReflection.fields('Joe', null, '123')),
-          equals({'enabled': true, 'name': 'Joe', 'password': '123'}));
+          equals({
+            'axis': 'x',
+            'enabled': true,
+            'isEnabled': true,
+            'name': 'Joe',
+            'password': '123'
+          }));
+
+      expect(
+          JsonCodec(removeNullFields: true).toJson(
+              TestUserWithReflection.fields('Smith', null, '456',
+                  axis: TestEnumWithReflection.Z)),
+          equals({
+            'axis': 'Z',
+            'enabled': true,
+            'isEnabled': true,
+            'name': 'Smith',
+            'password': '456'
+          }));
 
       expect(
           JsonCodec(toEncodableProvider: (obj) {
@@ -104,6 +143,7 @@ void main() {
               {'state': 'State2', 'city': 'City2'},
               {'state': 'State3', 'city': 'City3'}
             ],
+            'extraNames': [],
             'mainAddress': {'state': 'State1', 'city': 'City1'},
             'name': 'FooInc'
           }));
@@ -115,7 +155,21 @@ void main() {
             TestAddressWithReflection('State3', 'City3')
           ])),
           equals(
-              '{"extraAddresses":[{"state":"State2","city":"City2"},{"state":"State3","city":"City3"}],"mainAddress":{"state":"State1","city":"City1"},"name":"FooInc"}'));
+              '{"extraAddresses":[{"state":"State2","city":"City2"},{"state":"State3","city":"City3"}],"extraNames":[],"mainAddress":{"state":"State1","city":"City1"},"name":"FooInc"}'));
+
+      expect(
+          JsonCodec().encode(TestDataWithReflection(
+              'file', Uint8List.fromList(utf8.encode('Hello!')),
+              id: BigInt.two)),
+          equals(
+              '{"bytes":"data:application/octet-stream;base64,SGVsbG8h","domain":null,"id":2,"name":"file"}'));
+
+      expect(
+          JsonCodec().encode(TestDataWithReflection(
+              'file', Uint8List.fromList(utf8.encode('Hi!')),
+              domain: TestDomainWithReflection('foo', 'com'), id: BigInt.two)),
+          equals(
+              '{"bytes":"data:application/octet-stream;base64,SGkh","domain":"foo.com","id":2,"name":"file"}'));
     });
 
     test('fromJson', () async {
@@ -123,6 +177,29 @@ void main() {
 
       expect(JsonCodec().fromJson('2020-01-02 10:11:12.000Z', type: DateTime),
           equals(DateTime.utc(2020, 1, 2, 10, 11, 12)));
+
+      expect(
+          JsonCodec().fromJson({
+            'axis': 'x',
+            'enabled': true,
+            'isEnabled': true,
+            'name': 'Joe',
+            'password': '123'
+          }, type: TestUserWithReflection),
+          equals(TestUserWithReflection.fields('Joe', null, '123')));
+
+      expect(
+          JsonCodec().fromJson({
+            'axis': 'x',
+            'email': 'joe@mail.com',
+            'enabled': true,
+            'isEnabled': true,
+            'level': 456,
+            'name': 'Joe',
+            'password': '123'
+          }, type: TestUserWithReflection),
+          equals(TestUserWithReflection.fields('Joe', 'joe@mail.com', '123',
+              level: 456)));
 
       expect(
           JsonCodec().fromJson({'state': 'LA', 'city': 'Los Angeles'},
@@ -149,13 +226,18 @@ void main() {
               {'state': 'State3', 'city': 'City3'}
             ],
             'mainAddress': {'state': 'State1', 'city': 'City1'},
-            'name': 'FooInc'
+            'name': 'FooInc',
+            'extraNames': ['BarInc', 'BazIn'],
           }, type: TestCompanyWithReflection),
           equals(TestCompanyWithReflection(
               'FooInc', TestAddressWithReflection('State1', 'City1'), [
             TestAddressWithReflection('State2', 'City2'),
             TestAddressWithReflection('State3', 'City3')
-          ])));
+          ],
+              extraNames: [
+                'BarInc',
+                'BazIn'
+              ])));
 
       expect(
           TestCompanyWithReflection$fromJson({
@@ -171,6 +253,89 @@ void main() {
             TestAddressWithReflection('State2', 'City2'),
             TestAddressWithReflection('State3', 'City3')
           ])));
+
+      expect(
+          TestCompanyWithReflection$fromJson({
+            'extraAddresses': [
+              {'state': 'State2', 'city': 'City2'},
+              {'state': 'State3', 'city': 'City3'}
+            ],
+            'extraNames': ['BarIn', 'BazInc'],
+            'mainAddress': {'state': 'State1', 'city': 'City1'},
+            'name': 'FooInc'
+          }),
+          equals(TestCompanyWithReflection(
+              'FooInc', TestAddressWithReflection('State1', 'City1'), [
+            TestAddressWithReflection('State2', 'City2'),
+            TestAddressWithReflection('State3', 'City3')
+          ],
+              extraNames: [
+                'BarIn',
+                'BazInc'
+              ])));
+
+      expect(
+          await JsonCodec.defaultCodec.fromJsonAsync(
+              Future.value({
+                'extraAddresses': [
+                  {'state': 'State2', 'city': 'City2'},
+                  {'state': 'State3', 'city': 'City3'}
+                ],
+                'mainAddress': {'state': 'State1', 'city': 'City1'},
+                'name': 'FooInc'
+              }),
+              type: TestCompanyWithReflection),
+          equals(TestCompanyWithReflection(
+              'FooInc', TestAddressWithReflection('State1', 'City1'), [
+            TestAddressWithReflection('State2', 'City2'),
+            TestAddressWithReflection('State3', 'City3')
+          ])));
+
+      expect(
+          JsonCodec.defaultCodec.fromJsonList([
+            TestAddressWithReflection('State2', 'City2'),
+            TestAddressWithReflection('State3', 'City3')
+          ], type: TestAddressWithReflection),
+          equals([
+            TestAddressWithReflection('State2', 'City2'),
+            TestAddressWithReflection('State3', 'City3')
+          ]));
+
+      expect(
+          await JsonCodec.defaultCodec.fromJsonListAsync(
+              Future.value([
+                TestAddressWithReflection('State2', 'City2'),
+                TestAddressWithReflection('State3', 'City3')
+              ]),
+              type: TestAddressWithReflection),
+          equals([
+            TestAddressWithReflection('State2', 'City2'),
+            TestAddressWithReflection('State3', 'City3')
+          ]));
+
+      expect(
+          JsonCodec.defaultCodec.fromJsonMap(
+              {'state': 'State1', 'city': 'City1'},
+              type: TestAddressWithReflection),
+          equals(
+            TestAddressWithReflection('State1', 'City1'),
+          ));
+
+      expect(
+          await JsonCodec.defaultCodec.fromJsonMapAsync(
+              Future.value({'state': 'State1', 'city': 'City1'}),
+              type: TestAddressWithReflection),
+          equals(
+            TestAddressWithReflection('State1', 'City1'),
+          ));
+
+      expect(
+          await JsonCodec.defaultCodec.fromJsonMapAsync(
+              {'state': 'State1', 'city': Future.value('City1')},
+              type: TestAddressWithReflection),
+          equals(
+            TestAddressWithReflection('State1', 'City1'),
+          ));
 
       expect(
           JsonCodec().decode(
@@ -191,12 +356,52 @@ void main() {
             TestAddressWithReflection('State2', 'City2'),
             TestAddressWithReflection('State3', 'City3')
           ])));
+
+      expect(
+          TestDataWithReflection$fromJsonEncoded(
+            '{"bytes":"data:application/octet-stream;base64,SGVsbG8h","id":2,"name":"file"}',
+          ),
+          equals(TestDataWithReflection(
+              'file', Uint8List.fromList(utf8.encode('Hello!')),
+              id: BigInt.two)));
+
+      expect(
+          TestDataWithReflection$fromJsonEncoded(
+            '{"bytes":"data:application/octet-stream;base64,SGkh","domain":"foo.com","id":2,"name":"file"}',
+          ),
+          equals(TestDataWithReflection(
+              'file', Uint8List.fromList(utf8.encode('Hi!')),
+              domain: TestDomainWithReflection('foo', 'com'), id: BigInt.two)));
+
+      expect(
+          TestDataWithReflection$fromJsonEncoded(
+            '{"bytes":"data:application/octet-stream,Hello Plain!","id":2,"name":"file"}',
+          ),
+          equals(TestDataWithReflection(
+              'file', Uint8List.fromList(utf8.encode('Hello Plain!')),
+              id: BigInt.two)));
+
+      expect(
+          TestDataWithReflection$fromJsonEncoded(
+            '{"bytes": "${base16Encode(Uint8List.fromList(utf8.encode('Hello Hex!')))}" ,"id":2,"name":"file"}',
+          ),
+          equals(TestDataWithReflection(
+              'file', Uint8List.fromList(utf8.encode('Hello Hex!')),
+              id: BigInt.two)));
+
+      expect(
+          TestDataWithReflection$fromJsonEncoded(
+            '{"bytes": "${base64Encode(Uint8List.fromList(utf8.encode('Hello Base64!')))}" ,"id":2,"name":"file"}',
+          ),
+          equals(TestDataWithReflection(
+              'file', Uint8List.fromList(utf8.encode('Hello Base64!')),
+              id: BigInt.two)));
     });
 
     test('encode', () async {
       expect(JsonCodec().encode({'a': 1, 'b': 2}), equals('{"a":1,"b":2}'));
 
-      expect(JsonEncoder.defaultCodec.convert({'a': 1, 'b': 2}),
+      expect(JsonEncoder.defaultDecoder.convert({'a': 1, 'b': 2}),
           equals('{"a":1,"b":2}'));
 
       expect(
@@ -222,7 +427,7 @@ void main() {
 
       expect(jsonCodec.decode('{"a":1,"b":2}'), equals({'a': 1, 'b': 2}));
 
-      expect(JsonDecoder.defaultCodec.convert('{"a":1,"b":2}'),
+      expect(JsonDecoder.defaultDecoder.convert('{"a":1,"b":2}'),
           equals({'a': 1, 'b': 2}));
 
       expect(await jsonCodec.decodeAsync<Map>(Future.value('{"a":1,"b":2}')),
@@ -261,6 +466,19 @@ void main() {
           }).decodeAsync('{"state":"State4","city":"City4"}',
               type: TestAddressWithReflection),
           equals(TestAddressWithReflection('STATE4', 'CITY4')));
+    });
+
+    test('encodeToBytes/decodeFromBytes', () async {
+      var jsonBytes = JsonCodec().encodeToBytes({'a': 1, 'b': 2});
+      expect(utf8.decode(jsonBytes), equals('{"a":1,"b":2}'));
+      expect(JsonCodec().decodeFromBytes(jsonBytes), equals({'a': 1, 'b': 2}));
+
+      var jsonBytes2 =
+          JsonCodec().encodeToBytes({'a': 1, 'b': 2}, pretty: true);
+      expect(utf8.decode(jsonBytes2), equals('{\n  "a": 1,\n  "b": 2\n}'));
+      expect(JsonCodec().decodeFromBytes(jsonBytes2), equals({'a': 1, 'b': 2}));
+      expect(await JsonCodec().decodeFromBytesAsync(Future.value(jsonBytes2)),
+          equals({'a': 1, 'b': 2}));
     });
   });
 }

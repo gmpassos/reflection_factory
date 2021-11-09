@@ -1,7 +1,17 @@
+import 'dart:typed_data';
+
 import 'package:collection/collection.dart';
 import 'package:reflection_factory/reflection_factory.dart';
 
 part 'user_with_reflection.reflection.g.dart';
+
+@EnableReflection()
+enum TestEnumWithReflection {
+  x,
+  y,
+  z,
+  Z,
+}
 
 @EnableReflection()
 class TestUserWithReflection {
@@ -18,8 +28,12 @@ class TestUserWithReflection {
 
   bool enabled;
 
+  TestEnumWithReflection axis;
+
+  int? level;
+
   TestUserWithReflection.fields(this.name, this.email, this.password,
-      {this.enabled = true});
+      {this.enabled = true, this.axis = TestEnumWithReflection.x, this.level});
 
   TestUserWithReflection()
       : this.fields(
@@ -27,6 +41,12 @@ class TestUserWithReflection {
           null,
           '',
         );
+
+  @JsonField.visible()
+  bool get isEnabled => enabled;
+
+  @JsonField.hidden()
+  bool get isNotEnabled => !enabled;
 
   bool checkPassword(String password) => this.password == password;
 
@@ -68,6 +88,25 @@ class TestUserWithReflection {
         break;
     }
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TestUserWithReflection &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          email == other.email &&
+          password == other.password &&
+          enabled == other.enabled &&
+          axis == other.axis;
+
+  @override
+  int get hashCode =>
+      name.hashCode ^
+      email.hashCode ^
+      password.hashCode ^
+      enabled.hashCode ^
+      axis.hashCode;
 }
 
 @EnableReflection()
@@ -100,9 +139,15 @@ class TestCompanyWithReflection {
   final String name;
   TestAddressWithReflection mainAddress;
 
+  final List<String> extraNames;
+
   List<TestAddressWithReflection> extraAddresses;
 
-  TestCompanyWithReflection(this.name, this.mainAddress, this.extraAddresses);
+  TestCompanyWithReflection(this.name, this.mainAddress, this.extraAddresses,
+      {this.extraNames = const <String>[]});
+
+  @JsonField.hidden()
+  bool local = false;
 
   @override
   bool operator ==(Object other) =>
@@ -112,9 +157,73 @@ class TestCompanyWithReflection {
           name == other.name &&
           mainAddress == other.mainAddress &&
           ListEquality<TestAddressWithReflection>()
-              .equals(extraAddresses, other.extraAddresses);
+              .equals(extraAddresses, other.extraAddresses) &&
+          ListEquality<String>().equals(extraNames, other.extraNames);
 
   @override
   int get hashCode =>
-      name.hashCode ^ mainAddress.hashCode ^ extraAddresses.hashCode;
+      name.hashCode ^
+      mainAddress.hashCode ^
+      ListEquality<TestAddressWithReflection>().hash(extraAddresses) ^
+      ListEquality<String>().hash(extraNames);
+}
+
+@EnableReflection()
+class TestDataWithReflection {
+  final String name;
+
+  BigInt id;
+
+  Uint8List bytes;
+
+  TestDomainWithReflection? domain;
+
+  TestDataWithReflection(this.name, this.bytes, {BigInt? id, this.domain})
+      : id = id ?? BigInt.zero;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TestDataWithReflection &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          id == other.id &&
+          domain == other.domain &&
+          ListEquality<int>().equals(bytes, other.bytes);
+
+  @override
+  int get hashCode =>
+      name.hashCode ^
+      id.hashCode ^
+      (domain?.hashCode ?? 0) ^
+      ListEquality<int>().hash(bytes);
+}
+
+@EnableReflection()
+class TestDomainWithReflection {
+  final String name;
+  final String suffix;
+
+  TestDomainWithReflection(this.name, this.suffix);
+
+  factory TestDomainWithReflection.parse(String s) {
+    var parts = s.split('.');
+    return TestDomainWithReflection(parts[0], parts[1]);
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TestDomainWithReflection &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          suffix == other.suffix;
+
+  @override
+  int get hashCode => name.hashCode ^ suffix.hashCode;
+
+  String toJson() => toString();
+
+  @override
+  String toString() => '$name.$suffix';
 }

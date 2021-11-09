@@ -147,6 +147,11 @@ void main() {
     test('EnableReflection', () async {
       expect(
           ReflectionFactory()
+              .hasRegisterClassReflection(TestEnumWithReflection),
+          isFalse);
+
+      expect(
+          ReflectionFactory()
               .hasRegisterClassReflection(TestUserWithReflection),
           isFalse);
 
@@ -177,8 +182,44 @@ void main() {
           equals([
             TestUserWithReflection,
             TestAddressWithReflection,
-            TestCompanyWithReflection
+            TestCompanyWithReflection,
+            TestDataWithReflection,
+            TestDomainWithReflection
           ]));
+
+      expect(
+          TestEnumWithReflection$from('x'), equals(TestEnumWithReflection.x));
+
+      expect(
+          TestEnumWithReflection$from('Y'), equals(TestEnumWithReflection.y));
+
+      expect(
+          TestEnumWithReflection$from('z'), equals(TestEnumWithReflection.z));
+
+      expect(
+          TestEnumWithReflection$from('Z'), equals(TestEnumWithReflection.Z));
+
+      expect(TestEnumWithReflection$from('w'), isNull);
+
+      expect(TestEnumWithReflection$reflection().values,
+          equals(TestEnumWithReflection.values));
+
+      expect(TestEnumWithReflection$reflection().fieldsNames,
+          equals(['Z', 'x', 'y', 'z']));
+
+      expect(TestEnumWithReflection$reflection(TestEnumWithReflection.x).name(),
+          equals('x'));
+
+      expect(
+          TestEnumWithReflection$reflection(TestEnumWithReflection.x)
+              .name(TestEnumWithReflection.y),
+          equals('y'));
+
+      expect(
+          ReflectionFactory()
+              .getRegisterEnumReflection(TestEnumWithReflection)!
+              .enumType,
+          equals(TestEnumWithReflection));
 
       expect(
           ReflectionFactory()
@@ -218,7 +259,8 @@ void main() {
         expect(constructorFields.hasNoParameters, isFalse);
         expect(constructorFields.normalParameters.length, equals(3));
         expect(constructorFields.optionalParameters, isEmpty);
-        expect(constructorFields.namedParameters.keys, equals(['enabled']));
+        expect(constructorFields.namedParameters.keys,
+            equals(['axis', 'enabled', 'level']));
       }
 
       {
@@ -237,8 +279,19 @@ void main() {
         expect(user.toJson(), userReflection.createInstance()!.toJson());
       }
 
-      expect(userReflection.fieldsNames,
-          equals(['email', 'enabled', 'name', 'password']));
+      expect(
+          userReflection.fieldsNames,
+          equals([
+            'axis',
+            'email',
+            'enabled',
+            'hashCode',
+            'isEnabled',
+            'isNotEnabled',
+            'level',
+            'name',
+            'password'
+          ]));
       expect(userReflection.allFields().map((e) => e.name),
           equals(userReflection.fieldsNames));
 
@@ -247,16 +300,16 @@ void main() {
               .allFields()
               .where((e) => e.hasSetter)
               .map((e) => e.name),
-          equals(['email', 'enabled', 'password']));
+          equals(['axis', 'email', 'enabled', 'level', 'password']));
 
       expect(userReflection.fieldsWhere((f) => f.nullable).map((f) => f.name),
-          equals(['email']));
+          equals(['email', 'level']));
 
       expect(
           userReflection
               .fieldsWhere((f) => f.type.isBoolType)
               .map((e) => e.name),
-          equals(['enabled']));
+          equals(['enabled', 'isEnabled', 'isNotEnabled']));
 
       expect(userReflection.staticFieldsNames,
           equals(['version', 'withReflection']));
@@ -417,11 +470,34 @@ void main() {
           method.allParameters.map((e) => e.type).toTypes(), equals([String]));
 
       var allFields = userReflection.allFields();
-      expect(allFields.toNames(),
-          equals(['email', 'enabled', 'name', 'password']));
+      expect(
+          allFields.toNames(),
+          equals([
+            'axis',
+            'email',
+            'enabled',
+            'hashCode',
+            'isEnabled',
+            'isNotEnabled',
+            'level',
+            'name',
+            'password'
+          ]));
       expect(allFields.whereFinal().toNames(), equals(['name']));
-      expect(allFields.whereNullable().toNames(), equals(['email']));
-      expect(allFields.toTypes(), equals([String, bool, String, String]));
+      expect(allFields.whereNullable().toNames(), equals(['email', 'level']));
+      expect(
+          allFields.toTypes(),
+          equals([
+            TestEnumWithReflection,
+            String,
+            bool,
+            int,
+            bool,
+            bool,
+            int,
+            String,
+            String
+          ]));
 
       var allStaticFields = userReflection.allStaticFields();
       expect(allStaticFields.toNames(), equals(['version', 'withReflection']));
@@ -494,21 +570,42 @@ void main() {
       expect(
           userReflection.toJson(),
           equals({
+            'axis': 'x',
             'email': 'joe@mail.net',
             'enabled': true,
+            'isEnabled': true,
+            'level': null,
             'name': 'Joe',
             'password': 'abc'
           }));
       expect(
           userReflection.toJsonEncoded(),
           equals(
-              '{"email":"joe@mail.net","enabled":true,"name":"Joe","password":"abc"}'));
+              '{"axis":"x","email":"joe@mail.net","enabled":true,"isEnabled":true,"level":null,"name":"Joe","password":"abc"}'));
 
       expect(
           ReflectionFactory.toJsonEncodable(user),
           equals({
+            'axis': 'x',
             'email': 'joe@mail.net',
             'enabled': true,
+            'isEnabled': true,
+            'level': null,
+            'name': 'Joe',
+            'password': 'abc'
+          }));
+
+      var userDecoded = TestUserWithReflection$fromJsonEncoded(
+          '{"axis":"y","email":null,"enabled":false,"isEnabled":false,"level":123,"name":"Joe","password":"abc"}');
+
+      expect(
+          ReflectionFactory.toJsonEncodable(userDecoded),
+          equals({
+            'axis': 'y',
+            'email': null,
+            'enabled': false,
+            'isEnabled': false,
+            'level': 123,
             'name': 'Joe',
             'password': 'abc'
           }));

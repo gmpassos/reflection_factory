@@ -23,6 +23,9 @@ void main() {
           part 'foo.reflection.g.dart';
           
           @EnableReflection()
+          enum Axis {x, y, z}
+          
+          @EnableReflection()
           class User {
             @TestAnnotation(['static field', 'version'])
             static final double version = 1.0; 
@@ -38,6 +41,7 @@ void main() {
             
             User(this.email, this.pass, {this.enabled = true});
             
+            @TestAnnotation(['field', 'eMail'])
             String? get eMail => email;
             
             bool get hasEmail => email != null;
@@ -103,14 +107,15 @@ void main() {
             matches(RegExp(
                 r"'ignoreCase':\s*ParameterReflection\(\s*TypeReflection.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*false\s*,\s*null\s*\)")),
             allOf(
-              contains("TestAnnotation(['static method', 'version checker'])"),
-              contains("TestAnnotation(['method', 'password checker'])"),
-              contains("TestAnnotation(['static field', 'version'])"),
-              contains("TestAnnotation(['field', 'email'])"),
-              contains("TestAnnotation(['parameter', 'pass'])"),
-              isNot(contains(
-                  'Map<String, dynamic> toJson() => reflection.toJson()')),
-            ),
+                contains(
+                    "TestAnnotation(['static method', 'version checker'])"),
+                contains("TestAnnotation(['method', 'password checker'])"),
+                contains("TestAnnotation(['static field', 'version'])"),
+                contains("TestAnnotation(['field', 'email'])"),
+                contains("TestAnnotation(['parameter', 'pass'])"),
+                isNot(contains('Object? toJson() => reflection.toJson()')),
+                contains(
+                    'Map<String, dynamic>? toJsonMap() => reflection.toJsonMap()')),
             allOf(
               contains("case 'tojson':"),
               contains("case 'getfield':"),
@@ -170,7 +175,9 @@ void main() {
             contains("part of 'foo.dart'"),
             contains('RefUser'),
             contains('RefUserExt'),
-            contains('Map<String, dynamic> toJson() => reflection.toJson()'),
+            contains('Object? toJson() => reflection.toJson()'),
+            contains(
+                'Map<String, dynamic>? toJsonMap() => reflection.toJsonMap()'),
           ))
         },
         onLog: (msg) {

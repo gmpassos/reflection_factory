@@ -64,6 +64,8 @@ class ReflectionBuilder implements Builder {
     fullCode.write('// BUILD COMMAND: dart run build_runner build\n');
     fullCode.write('// \n\n');
 
+    fullCode.write('// ignore_for_file: unnecessary_const\n\n');
+
     fullCode.write("part of '${inputId.pathSegments.last}';\n\n");
 
     var codeKeys = codeTable.keys.toList();
@@ -114,18 +116,29 @@ class ReflectionBuilder implements Builder {
         libraryReader.annotatedWith(typeEnableReflection).toList();
 
     for (var annotated in annotatedEnableReflection) {
+      var annotation = annotated.annotation;
+      var reflectionClassName =
+          annotation.peek('reflectionClassName')!.stringValue;
+      var reflectionExtensionName =
+          annotated.annotation.peek('reflectionExtensionName')!.stringValue;
+
       if (annotated.element.kind == ElementKind.CLASS) {
         var classElement = annotated.element as ClassElement;
 
-        var annotation = annotated.annotation;
-        var reflectionClassName =
-            annotation.peek('reflectionClassName')!.stringValue;
-        var reflectionExtensionName =
-            annotated.annotation.peek('reflectionExtensionName')!.stringValue;
-
-        var codes = await _enableReflection(
+        var codes = await _enableReflectionClass(
           buildStep,
           classElement,
+          reflectionClassName,
+          reflectionExtensionName,
+        );
+
+        codeTable.addAll(codes);
+      } else if (annotated.element.kind == ElementKind.ENUM) {
+        var enumElement = annotated.element;
+
+        var codes = await _enableReflectionEnum(
+          buildStep,
+          enumElement,
           reflectionClassName,
           reflectionExtensionName,
         );
@@ -190,7 +203,7 @@ class ReflectionBuilder implements Builder {
         continue;
       }
 
-      var classLibrary = await _getClassLibrary(buildStep, classElement);
+      var classLibrary = await _getElementLibrary(buildStep, classElement);
 
       var reflectionClassName = reflectionExtensionNames[classType] ?? '';
       var reflectionExtensionName = reflectionExtensionNames[classType] ?? '';
@@ -264,12 +277,42 @@ class ReflectionBuilder implements Builder {
     return {bridgeExtensionName: code};
   }
 
-  Future<Map<String, String>> _enableReflection(
+  Future<Map<String, String>> _enableReflectionEnum(
+      BuildStep buildStep,
+      Element enumElement,
+      String reflectionClassName,
+      String reflectionExtensionName) async {
+    var enumLibrary = await _getElementLibrary(buildStep, enumElement);
+
+    var enumTree = _EnumTree(
+      enumElement,
+      reflectionClassName,
+      reflectionExtensionName,
+      enumLibrary.languageVersion.effective,
+      verbose: verbose,
+    );
+
+    if (verbose) {
+      print(enumTree);
+    }
+
+    var enumGlobalFunctions = enumTree.buildEnumGlobalFunctions();
+    var reflectionClassCode = enumTree.buildReflectionEnum();
+    var reflectionExtensionCode = enumTree.buildReflectionExtension();
+
+    return {
+      enumTree.classGlobalFunction('_'): enumGlobalFunctions,
+      enumTree.reflectionClass: reflectionClassCode,
+      enumTree.reflectionExtension: reflectionExtensionCode,
+    };
+  }
+
+  Future<Map<String, String>> _enableReflectionClass(
       BuildStep buildStep,
       ClassElement classElement,
       String reflectionClassName,
       String reflectionExtensionName) async {
-    var classLibrary = await _getClassLibrary(buildStep, classElement);
+    var classLibrary = await _getElementLibrary(buildStep, classElement);
 
     var classTree = _ClassTree(
       classElement,
@@ -294,20 +337,19 @@ class ReflectionBuilder implements Builder {
     };
   }
 
-  Future<LibraryElement> _getClassLibrary(
-      BuildStep buildStep, ClassElement classElement) async {
+  Future<LibraryElement> _getElementLibrary(
+      BuildStep buildStep, Element element) async {
     var resolver = buildStep.resolver;
-
-    var classAssetId = await resolver.assetIdForElement(classElement);
-    var classLibrary = await resolver.libraryFor(classAssetId);
-    return classLibrary;
+    var classAssetId = await resolver.assetIdForElement(element);
+    var library = await resolver.libraryFor(classAssetId);
+    return library;
   }
 
   String _buildSiblingsClassReflection(Map<String, String> codeTable) {
     var str = StringBuffer();
 
-    str.write('List<ClassReflection> _listSiblingsClassReflection() => ');
-    str.write('<ClassReflection>[');
+    str.write('List<Reflection> _listSiblingsReflection() => ');
+    str.write('<Reflection>[');
 
     for (var c in codeTable.keys.where((e) => e.endsWith(r'$reflection'))) {
       str.write(c);
@@ -316,16 +358,16 @@ class ReflectionBuilder implements Builder {
 
     str.write('];\n\n');
 
-    str.write('List<ClassReflection>? _siblingsClassReflectionList;\n');
-    str.write('List<ClassReflection> _siblingsClassReflection() => ');
+    str.write('List<Reflection>? _siblingsReflectionList;\n');
+    str.write('List<Reflection> _siblingsReflection() => ');
     str.write(
-        '_siblingsClassReflectionList ??= List<ClassReflection>.unmodifiable( _listSiblingsClassReflection() );\n\n');
+        '_siblingsReflectionList ??= List<Reflection>.unmodifiable( _listSiblingsReflection() );\n\n');
 
-    str.write('bool _registerSiblingsClassReflectionCalled = false;\n');
-    str.write('void _registerSiblingsClassReflection() {\n');
-    str.write('  if (_registerSiblingsClassReflectionCalled) return ;\n');
-    str.write('  _registerSiblingsClassReflectionCalled = true ;\n');
-    str.write('  var length = _listSiblingsClassReflection().length;\n');
+    str.write('bool _registerSiblingsReflectionCalled = false;\n');
+    str.write('void _registerSiblingsReflection() {\n');
+    str.write('  if (_registerSiblingsReflectionCalled) return ;\n');
+    str.write('  _registerSiblingsReflectionCalled = true ;\n');
+    str.write('  var length = _listSiblingsReflection().length;\n');
     str.write('  assert(length > 0);\n');
     str.write('}\n\n');
 
@@ -362,6 +404,222 @@ String _buildReflectionExtensionName(
   }
 
   return '$className\$reflectionExtension';
+}
+
+class _EnumTree<T> extends RecursiveElementVisitor<T> {
+  final Element _enumElement;
+
+  final String reflectionClassName;
+  final String reflectionExtensionName;
+
+  final Version languageVersion;
+
+  final bool verbose;
+
+  final String enumName;
+
+  _EnumTree(this._enumElement, this.reflectionClassName,
+      this.reflectionExtensionName, this.languageVersion,
+      {this.verbose = false})
+      : enumName = _enumElement.name! {
+    _enumElement.visitChildren(this);
+  }
+
+  String classGlobalFunction(String functionName) =>
+      _buildClassGlobalFunction(enumName, reflectionClassName, functionName);
+
+  String get reflectionClass =>
+      _buildReflectionClassName(enumName, reflectionClassName);
+
+  String get reflectionExtension =>
+      _buildReflectionExtensionName(enumName, reflectionExtensionName);
+
+  final Set<FieldElement> fields = <FieldElement>{};
+
+  @override
+  T? visitFieldElement(FieldElement element) {
+    var name = element.name;
+
+    if (name == 'index' || name == 'values') {
+      return null;
+    }
+
+    fields.add(element);
+  }
+
+  List<String> get fieldsNames => fields.map((e) => e.name).toList();
+
+  bool hasField(String filedName) =>
+      fields.where((m) => m.name == filedName).isNotEmpty;
+
+  @override
+  String toString() {
+    return '_EnumTree{ '
+        'enumName: $enumName, '
+        'languageVersion: $languageVersion, '
+        'fields: $fieldsNames '
+        '}';
+  }
+
+  String buildEnumGlobalFunctions() {
+    var str = StringBuffer();
+
+    var reflectionClass = this.reflectionClass;
+
+    var from = classGlobalFunction('from');
+
+    str.write('// ignore: non_constant_identifier_names\n');
+    str.write(
+        '$enumName? $from(Object? o) => $reflectionClass.staticInstance.from(o);\n');
+
+    return str.toString();
+  }
+
+  String buildReflectionEnum() {
+    var str = StringBuffer();
+
+    var reflectionClass = this.reflectionClass;
+
+    str.write('class $reflectionClass extends EnumReflection<$enumName> {\n\n');
+
+    str.write(
+        '  $reflectionClass([$enumName? object]) : super($enumName, object);\n\n');
+
+    str.write('  static bool _registered = false;\n');
+    str.write('  @override\n');
+    str.write('  void register() {\n');
+    str.write('    if (!_registered) {\n');
+    str.write('      _registered = true;\n');
+    str.write('      super.register();\n');
+    str.write('      _registerSiblingsReflection();\n');
+    str.write('    }\n');
+    str.write('  }\n\n');
+
+    str.write('  @override\n');
+    str.write(
+        "  Version get languageVersion => Version.parse('$languageVersion');\n\n");
+
+    str.write('  @override\n');
+    str.write(
+        "  Version get reflectionFactoryVersion => Version.parse('${ReflectionFactory.VERSION}');\n\n");
+
+    str.write('  @override\n');
+    str.write(
+        '  $reflectionClass withObject([$enumName? obj]) => $reflectionClass(obj);\n\n');
+
+    str.write('  static $reflectionClass? _withoutObjectInstance;\n');
+    str.write('  @override\n');
+    str.write(
+        '  $reflectionClass withoutObjectInstance() => _withoutObjectInstance ??= super.withoutObjectInstance() as $reflectionClass;\n\n');
+
+    str.write(
+        '  static $reflectionClass get staticInstance => _withoutObjectInstance ??= $reflectionClass();\n\n');
+
+    var classElement = _Element(_enumElement);
+
+    var classAnnotationListCode = classElement.annotationsAsListCode;
+    if (classAnnotationListCode != 'null') {
+      str.write(
+          '  static const List<Object> _classAnnotations = $classAnnotationListCode; \n\n');
+      str.write('  @override\n');
+      str.write(
+          '  List<Object> get classAnnotations => List<Object>.unmodifiable(_classAnnotations);\n\n');
+    } else {
+      str.write('  @override\n');
+      str.write(
+          '  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);\n\n');
+    }
+
+    str.write('\n  @override\n');
+    str.write(
+        '  List<EnumReflection> siblingsEnumReflection() => _siblingsReflection().whereType<EnumReflection>().toList();\n\n');
+
+    str.write('\n  @override\n');
+    str.write(
+        '  List<Reflection> siblingsReflection() => _siblingsReflection();\n\n');
+
+    _buildField(str);
+
+    str.write('}\n\n');
+
+    return str.toString();
+  }
+
+  void _buildField(StringBuffer str) {
+    var entries = _toFieldEntries(fields);
+    var names = _buildStringListCode(entries.keys, sorted: true);
+
+    str.write('  @override\n');
+    str.write('  List<String> get fieldsNames => $names;\n\n');
+
+    str.write('  @override\n');
+    str.write(
+        '  Map<String,$enumName> get valuesByName => const <String,$enumName>{\n');
+    for (var name in entries.keys) {
+      str.write("  '$name': $enumName.$name,\n");
+    }
+    str.write('  };\n\n');
+
+    str.write('  @override\n');
+    str.write('  List<$enumName> get values => $enumName.values;\n\n');
+  }
+
+  Map<String, _Field> _toFieldEntries(Set<FieldElement> fields) {
+    return Map.fromEntries(fields.map((e) => MapEntry(e.name, _Field(e))));
+  }
+
+  String buildReflectionExtension() {
+    var str = StringBuffer();
+
+    _buildExtension(str);
+
+    return str.toString();
+  }
+
+  void _buildExtension(StringBuffer codeBuffer) {
+    var str = StringBuffer();
+
+    str.write('extension $reflectionExtension on $enumName {\n');
+
+    var entriesCount = 0;
+
+    if (!hasField('reflection')) {
+      str.write(
+          '  /// Returns a [EnumReflection] for type [$enumName]. (Generated by [ReflectionFactory])\n');
+      str.write(
+          '  EnumReflection<$enumName> get reflection => $reflectionClass(this);\n');
+      entriesCount++;
+    }
+
+    if (!hasField('toJson')) {
+      str.write(
+          '\n  /// Returns a JSON for type [$enumName]. (Generated by [ReflectionFactory])\n');
+      str.write('  String? toJson() => reflection.toJson();\n');
+      entriesCount++;
+    }
+
+    if (!hasField('toJsonMap')) {
+      str.write(
+          '\n  /// Returns a JSON [Map] for type [$enumName]. (Generated by [ReflectionFactory])\n');
+      str.write(
+          '  Map<String,Object>? toJsonMap() => reflection.toJsonMap();\n');
+      entriesCount++;
+    }
+
+    if (!hasField('toJsonEncoded')) {
+      str.write(
+          '\n  /// Returns an encoded JSON [String] for type [$enumName]. (Generated by [ReflectionFactory])\n');
+      str.write(
+          '  String toJsonEncoded({bool pretty = false}) => reflection.toJsonEncoded(pretty: pretty);\n');
+      entriesCount++;
+    }
+
+    str.write('}\n\n');
+
+    if (entriesCount > 0) {
+      codeBuffer.write(str);
+    }
+  }
 }
 
 class _ClassTree<T> extends RecursiveElementVisitor<T> {
@@ -592,7 +850,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('    if (!_registered) {\n');
     str.write('      _registered = true;\n');
     str.write('      super.register();\n');
-    str.write('      _registerSiblingsClassReflection();\n');
+    str.write('      _registerSiblingsReflection();\n');
     str.write('    }\n');
     str.write('  }\n\n');
 
@@ -635,7 +893,13 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     str.write('\n  @override\n');
     str.write(
-        '  List<ClassReflection> siblingsClassReflection() => _siblingsClassReflection();\n\n');
+        '  List<ClassReflection> siblingsClassReflection() => _siblingsReflection().whereType<ClassReflection>().toList();\n\n');
+
+    str.write('\n  @override\n');
+    str.write(
+        '  List<Reflection> siblingsReflection() => _siblingsReflection();\n\n');
+
+    _buildCallMethodToJson(str);
 
     _buildField(str);
     _buildStaticField(str);
@@ -651,7 +915,8 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
   void _buildConstructors(StringBuffer str) {
     _buildDefaultConstructor(str);
 
-    var entries = _toConstructorEntries(this, constructors);
+    var entries =
+        _toConstructorEntries(this, constructors.where(_canConstruct).toSet());
     var names = _buildStringListCode(entries.keys, sorted: true);
 
     str.write('  @override\n');
@@ -681,10 +946,16 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  }\n\n');
   }
 
+  bool _canConstruct(ConstructorElement? c) {
+    if (c == null) return false;
+    if (c.isFactory) return true;
+    return !_classElement.isAbstract;
+  }
+
   void _buildDefaultConstructor(StringBuffer str) {
     var defaultConstructor = this.defaultConstructor;
 
-    if (defaultConstructor != null) {
+    if (_canConstruct(defaultConstructor)) {
       str.write('  @override\n');
       str.write('  bool get hasDefaultConstructor => true;\n');
 
@@ -703,12 +974,12 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     var emptyConstructor = this.emptyConstructor;
 
-    if (emptyConstructor != null) {
+    if (_canConstruct(emptyConstructor)) {
       str.write('  @override\n');
       str.write('  bool get hasEmptyConstructor => true;\n');
 
       str.write('  @override\n');
-      var name = emptyConstructor.name;
+      var name = emptyConstructor!.name;
       str.write(
           '  $className? createInstanceWithEmptyConstructor() => $className.$name();\n');
     } else {
@@ -722,12 +993,12 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     var noRequiredArgsConstructor = this.noRequiredArgsConstructor;
 
-    if (noRequiredArgsConstructor != null) {
+    if (_canConstruct(noRequiredArgsConstructor)) {
       str.write('  @override\n');
       str.write('  bool get hasNoRequiredArgsConstructor => true;\n');
 
       str.write('  @override\n');
-      var name = noRequiredArgsConstructor.name;
+      var name = noRequiredArgsConstructor!.name;
       str.write(
           '  $className? createInstanceWithNoRequiredArgsConstructor() => $className.$name();\n');
     } else {
@@ -770,11 +1041,13 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
           ? 'null'
           : '(o) => (T? v) => o!.$name = v as $fullType';
 
+      var annotations = field.annotationsAsListCode;
+
       return "FieldReflection<$className,T>(this, "
           "$typeCode, '$name', $nullable, "
           "$getter , $setter , "
           "obj, false, $isFinal, "
-          "${field.annotationsAsListCode}, "
+          "$annotations, "
           ")";
     });
 
@@ -820,6 +1093,29 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   Map<String, _Field> _toFieldEntries(Set<FieldElement> fields) {
     return Map.fromEntries(fields.map((e) => MapEntry(e.name, _Field(e))));
+  }
+
+  void _buildCallMethodToJson(StringBuffer str) {
+    var entries = _toMethodsEntries(methods);
+
+    var toJsonMethod = entries.values
+        .where((m) => m.name.toLowerCase() == 'tojson')
+        .firstOrNull;
+
+    if (toJsonMethod != null &&
+        toJsonMethod.normalParameters.isEmpty &&
+        !toJsonMethod.hasRequiredNamedParameter) {
+      str.write('  @override\n');
+      str.write('  bool get hasMethodToJson => true;\n\n');
+      str.write('  @override\n');
+      str.write(
+          '  Object? callMethodToJson([$className? obj]) { obj ??= object ; return obj?.${toJsonMethod.name}();}\n\n');
+    } else {
+      str.write('  @override\n');
+      str.write('  bool get hasMethodToJson => false;\n\n');
+      str.write('  @override\n');
+      str.write('  Object? callMethodToJson([$className? obj]) => null;\n\n');
+    }
   }
 
   void _buildMethod(StringBuffer str) {
@@ -971,15 +1267,24 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     if (!hasEntry('toJson')) {
       str.write(
+          '\n  /// Returns a JSON for type [$className]. (Generated by [ReflectionFactory])\n');
+      str.write('  Object? toJson() => reflection.toJson();\n');
+      entriesCount++;
+    }
+
+    if (!hasEntry('toJsonMap')) {
+      str.write(
           '\n  /// Returns a JSON [Map] for type [$className]. (Generated by [ReflectionFactory])\n');
-      str.write('  Map<String,dynamic> toJson() => reflection.toJson();\n');
+      str.write(
+          '  Map<String,dynamic>? toJsonMap() => reflection.toJsonMap();\n');
       entriesCount++;
     }
 
     if (!hasEntry('toJsonEncoded')) {
       str.write(
           '\n  /// Returns an encoded JSON [String] for type [$className]. (Generated by [ReflectionFactory])\n');
-      str.write('  String toJsonEncoded() => reflection.toJsonEncoded();\n');
+      str.write(
+          '  String toJsonEncoded({bool pretty = false}) => reflection.toJsonEncoded(pretty: pretty);\n');
       entriesCount++;
     }
 
@@ -998,17 +1303,34 @@ class _Element {
 
   List<ElementAnnotation> get annotations => _element.metadata;
 
-  List<String> get annotationsAsCode => _element.metadata
-          .map((e) => e.toSource())
-          .where((src) =>
-              !src.startsWith('@EnableReflection(') &&
-              !src.startsWith('@ReflectionBridge('))
-          .map((src) {
-        if (src.startsWith('@')) {
-          src = src.substring(1);
-        }
-        return src;
-      }).toList();
+  List<String> get annotationsAsCode {
+    var element = _element;
+    var metadata = element.metadata.toList();
+
+    if (element is FieldElement) {
+      var getter = element.getter;
+      if (getter != null) {
+        metadata.addAll(getter.metadata);
+      }
+
+      var setter = element.setter;
+      if (setter != null) {
+        metadata.addAll(setter.metadata);
+      }
+    }
+
+    return metadata
+        .map((e) => e.toSource())
+        .where((src) =>
+            !src.startsWith('@EnableReflection(') &&
+            !src.startsWith('@ReflectionBridge('))
+        .map((src) {
+      if (src.startsWith('@')) {
+        src = src.substring(1);
+      }
+      return src;
+    }).toList();
+  }
 
   String get annotationsAsListCode {
     var codes = annotationsAsCode;
@@ -1031,9 +1353,13 @@ class _Parameter extends _Element {
       this.nullable, this.required)
       : super(parameterElement);
 
-  String? get defaultValue {
-    var valCode = parameterElement.defaultValueCode;
-    return valCode;
+  bool get isNullable => nullable || type.isDynamic;
+
+  String? get defaultValue => parameterElement.defaultValueCode;
+
+  bool get hasDefaultValue {
+    var valCode = defaultValue;
+    return valCode != null && valCode.isNotEmpty;
   }
 }
 
@@ -1213,6 +1539,10 @@ class _Method extends _Element {
   Map<String, _Parameter> get namedParameters =>
       methodElement.type.namedParameters;
 
+  bool get hasRequiredNamedParameter => namedParameters.values
+      .where((m) => m.required || (!m.isNullable && !m.hasDefaultValue))
+      .isNotEmpty;
+
   String get normalParametersAsCode =>
       _buildParameterReflectionList(normalParameters,
           nullOnEmpty: true, required: true);
@@ -1283,9 +1613,17 @@ extension _DartTypeExtension on DartType {
 
     if (name == null) {
       name = getDisplayString(withNullability: false);
-      var idx = name.indexOf('<');
-      if (idx > 0) {
-        name = name.substring(0, idx);
+
+      var idx = name.indexOf('Function(');
+
+      if (idx == 0 ||
+          (idx > 0 && name.substring(idx - 1, idx).trim().isEmpty)) {
+        name = 'Function';
+      } else {
+        idx = name.indexOf('<');
+        if (idx > 0) {
+          name = name.substring(0, idx);
+        }
       }
     }
 
@@ -1485,7 +1823,7 @@ String _buildParameterReflectionList(Iterable<_Parameter>? o,
         .map((e) => "ParameterReflection( "
             "${e.type.typeAsCode} , "
             "'${e.name}' , "
-            "${e.nullable ? 'true' : 'false'} , "
+            "${e.isNullable ? 'true' : 'false'} , "
             "$required , "
             "${e.defaultValue ?? 'null'} , "
             "${e.annotationsAsListCode}"
@@ -1506,7 +1844,7 @@ String _buildNamedParameterReflectionMap(Map<String, _Parameter>? o,
       return "'$key': ParameterReflection( "
           "${value.type.typeAsCode} , "
           "'${e.value.name}' , "
-          "${e.value.nullable ? 'true' : 'false'} , "
+          "${e.value.isNullable ? 'true' : 'false'} , "
           "${e.value.required ? 'true' : 'false'} , "
           "${e.value.defaultValue ?? 'null'} , "
           "${e.value.annotationsAsListCode}"
