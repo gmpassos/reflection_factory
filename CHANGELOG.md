@@ -1,3 +1,8 @@
+## 1.0.18
+
+- `EnumReflection`: added `enumName` to extension.
+- Fix `siblingEnumReflectionFor` and `siblingEnumReflectionFor`.
+
 ## 1.0.17
 
 - JSON

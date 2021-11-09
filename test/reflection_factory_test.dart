@@ -280,8 +280,16 @@ void main() {
         expect(user!.name, isEmpty);
         expect(user.email, isNull);
         expect(user.password, isEmpty);
+        expect(user.axis, equals(TestEnumWithReflection.x));
 
         expect(user.toJson(), userReflection.createInstance()!.toJson());
+      }
+
+      {
+        expect(TestEnumWithReflection.x.enumName, equals('x'));
+        expect(TestEnumWithReflection.y.enumName, equals('y'));
+        expect(TestEnumWithReflection.z.enumName, equals('z'));
+        expect(TestEnumWithReflection.Z.enumName, equals('Z'));
       }
 
       expect(

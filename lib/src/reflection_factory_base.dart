@@ -15,7 +15,7 @@ import 'package:reflection_factory/src/reflection_factory_json.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.0.17';
+  static const String VERSION = '1.0.18';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -266,7 +266,7 @@ abstract class EnumReflection<O> extends Reflection<O>
 
     var enumReflectionForType =
         siblingsEnumReflection().where((c) => c.enumType == type).firstOrNull;
-    return enumReflectionForType as EnumReflection<T>;
+    return enumReflectionForType as EnumReflection<T>?;
   }
 
   /// Returns a `const` [List] of class annotations.
@@ -503,7 +503,7 @@ abstract class ClassReflection<O> extends Reflection<O>
 
     var classReflectionForType =
         siblingsClassReflection().where((c) => c.classType == type).firstOrNull;
-    return classReflectionForType as ClassReflection<T>;
+    return classReflectionForType as ClassReflection<T>?;
   }
 
   /// Returns a `const` [List] of class annotations.
