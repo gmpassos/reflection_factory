@@ -148,28 +148,8 @@ void main() {
             'name': 'FooInc'
           }));
 
-      expect(
-          JsonCodec().encode(TestCompanyWithReflection(
-              'FooInc', TestAddressWithReflection('State1', 'City1'), [
-            TestAddressWithReflection('State2', 'City2'),
-            TestAddressWithReflection('State3', 'City3')
-          ])),
-          equals(
-              '{"extraAddresses":[{"state":"State2","city":"City2"},{"state":"State3","city":"City3"}],"extraNames":[],"mainAddress":{"state":"State1","city":"City1"},"name":"FooInc"}'));
-
-      expect(
-          JsonCodec().encode(TestDataWithReflection(
-              'file', Uint8List.fromList(utf8.encode('Hello!')),
-              id: BigInt.two)),
-          equals(
-              '{"bytes":"data:application/octet-stream;base64,SGVsbG8h","domain":null,"id":2,"name":"file"}'));
-
-      expect(
-          JsonCodec().encode(TestDataWithReflection(
-              'file', Uint8List.fromList(utf8.encode('Hi!')),
-              domain: TestDomainWithReflection('foo', 'com'), id: BigInt.two)),
-          equals(
-              '{"bytes":"data:application/octet-stream;base64,SGkh","domain":"foo.com","id":2,"name":"file"}'));
+      expect(JsonCodec().toJson(TestOpAWithReflection(10)),
+          equals({'type': 'a', 'value': 10}));
     });
 
     test('fromJson', () async {
@@ -420,6 +400,29 @@ void main() {
           JsonCodec(maskField: (f) => f.contains('pass'), maskText: 'x')
               .encode({'a': 1, 'pass': 123456}),
           equals('{"a":1,"pass":"x"}'));
+
+      expect(
+          JsonCodec().encode(TestCompanyWithReflection(
+              'FooInc', TestAddressWithReflection('State1', 'City1'), [
+            TestAddressWithReflection('State2', 'City2'),
+            TestAddressWithReflection('State3', 'City3')
+          ])),
+          equals(
+              '{"extraAddresses":[{"state":"State2","city":"City2"},{"state":"State3","city":"City3"}],"extraNames":[],"mainAddress":{"state":"State1","city":"City1"},"name":"FooInc"}'));
+
+      expect(
+          JsonCodec().encode(TestDataWithReflection(
+              'file', Uint8List.fromList(utf8.encode('Hello!')),
+              id: BigInt.two)),
+          equals(
+              '{"bytes":"data:application/octet-stream;base64,SGVsbG8h","domain":null,"id":2,"name":"file"}'));
+
+      expect(
+          JsonCodec().encode(TestDataWithReflection(
+              'file', Uint8List.fromList(utf8.encode('Hi!')),
+              domain: TestDomainWithReflection('foo', 'com'), id: BigInt.two)),
+          equals(
+              '{"bytes":"data:application/octet-stream;base64,SGkh","domain":"foo.com","id":2,"name":"file"}'));
     });
 
     test('decode', () async {

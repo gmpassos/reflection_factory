@@ -10,6 +10,7 @@
   - Added `getBestConstructorFor`, that selects the constructor capable to create an instance with provided parameters.
   - Added `fromJson` and `fromJsonEncoded`.
   - Added `createInstanceWithBestConstructor` and `createInstanceFromMap`.
+  - Support for supper classes.
 - Generating `ClassFoo$fromJson` and `ClassFoo$fromJsonEncoded`.
 - Optimized some operations.
 - Fixed `TypeReflection` for `Function`.

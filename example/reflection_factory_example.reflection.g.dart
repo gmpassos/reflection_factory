@@ -100,6 +100,9 @@ class User$reflection extends ClassReflection<User> {
   List<Reflection> siblingsReflection() => _siblingsReflection();
 
   @override
+  List<Type> get supperTypes => const <Type>[];
+
+  @override
   bool get hasMethodToJson => false;
 
   @override

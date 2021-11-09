@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -638,7 +640,39 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       this.reflectionExtensionName, this.languageVersion,
       {this.verbose = false})
       : className = _classElement.name {
-    _classElement.visitChildren(this);
+    scan(_classElement);
+  }
+
+  final Set<ClassElement> supperTypes = <ClassElement>{};
+
+  final Queue<ClassElement> _visitingClassStack = Queue<ClassElement>();
+
+  ClassElement? get _visitingClass => _visitingClassStack.last;
+
+  void scan(ClassElement classElement) {
+    try {
+      _visitingClassStack.addLast(classElement);
+
+      if (classElement != _classElement) {
+        supperTypes.add(classElement);
+      }
+
+      classElement.visitChildren(this);
+
+      for (var t in classElement.allSupertypes) {
+        var superClass = t.element;
+        if (superClass.isDartCoreObject) {
+          continue;
+        }
+
+        scan(superClass);
+      }
+    } finally {
+      var c = _visitingClassStack.removeLast();
+      if (c != classElement) {
+        throw StateError('_visitingClassStack error!');
+      }
+    }
   }
 
   @override
@@ -723,7 +757,18 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       return super.visitConstructorElement(element);
     }
 
-    constructors.add(element);
+    if (_visitingClass == _classElement) {
+      _addWithUniqueName(constructors, element);
+    }
+  }
+
+  static bool _addWithUniqueName(Set<Element> set, Element element) {
+    if (set.where((e) => e.name == element.name).isEmpty) {
+      set.add(element);
+      return true;
+    }
+
+    return false;
   }
 
   final Set<MethodElement> staticMethods = <MethodElement>{};
@@ -769,9 +814,9 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     }
 
     if (element.isStatic) {
-      staticMethods.add(element);
+      _addWithUniqueName(staticMethods, element);
     } else {
-      methods.add(element);
+      _addWithUniqueName(methods, element);
     }
 
     return super.visitMethodElement(element);
@@ -805,9 +850,9 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     }
 
     if (element.isStatic) {
-      staticFields.add(element);
+      _addWithUniqueName(staticFields, element);
     } else {
-      fields.add(element);
+      _addWithUniqueName(fields, element);
     }
 
     return super.visitFieldElement(element);
@@ -898,6 +943,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('\n  @override\n');
     str.write(
         '  List<Reflection> siblingsReflection() => _siblingsReflection();\n\n');
+
+    str.write('\n  @override\n');
+    str.write(
+        '  List<Type> get supperTypes => const <Type>[${supperTypes.map((e) => e.name).join(', ')}];\n\n');
 
     _buildCallMethodToJson(str);
 

@@ -510,6 +510,9 @@ abstract class ClassReflection<O> extends Reflection<O>
   @override
   List<Object> get classAnnotations;
 
+  /// Returns a list of supper types.
+  List<Type> get supperTypes;
+
   /// Returns `true` if the class has a default constructor.
   bool get hasDefaultConstructor;
 

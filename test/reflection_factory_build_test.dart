@@ -126,7 +126,67 @@ void main() {
         onLog: (msg) {
           print(msg);
         },
-        //packageConfig: packageConfig,
+      );
+    });
+
+    test('EnableReflection[super class]', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'foo.reflection.g.dart';
+          
+          @EnableReflection()
+          abstract class Op {
+            final String type;
+            Op(this.type);
+          }
+          
+          @EnableReflection()
+          class OpA extends Op {
+            int value;
+            OpA(this.value) : super('a');
+          }
+          
+        '''
+      };
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        reader: await PackageAssetReader.currentIsolate(),
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of 'foo.dart'"),
+            ),
+            allOf([
+              contains('Op\$reflection'),
+              contains('Op\$reflectionExtension'),
+              contains('OpA\$reflection'),
+              contains('OpA\$reflectionExtension'),
+            ]),
+            allOf(
+                contains('Object? toJson() => reflection.toJson()'),
+                contains(
+                    'Map<String, dynamic>? toJsonMap() => reflection.toJsonMap()')),
+            allOf(
+              contains("case 'type':"),
+              contains("case 'value':"),
+              contains("fieldsNames => const <String>['type', 'value']"),
+            ),
+          )),
+        },
+        onLog: (msg) {
+          print(msg);
+        },
       );
     });
 
@@ -288,7 +348,6 @@ void main() {
         onLog: (msg) {
           print(msg);
         },
-        //packageConfig: packageConfig,
       );
     });
   });

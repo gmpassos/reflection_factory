@@ -184,7 +184,10 @@ void main() {
             TestAddressWithReflection,
             TestCompanyWithReflection,
             TestDataWithReflection,
-            TestDomainWithReflection
+            TestDomainWithReflection,
+            TestOpWithReflection,
+            TestOpAWithReflection,
+            TestOpBWithReflection,
           ]));
 
       expect(
@@ -226,6 +229,8 @@ void main() {
               .getRegisterClassReflection(TestUserWithReflection)!
               .classType,
           equals(TestUserWithReflection));
+
+      expect(userReflection.supperTypes, isEmpty);
 
       expect(userReflection.constructorsNames, equals(['', 'fields']));
 
@@ -566,6 +571,26 @@ void main() {
               .withObject(user2)
               .invoke([1.1]),
           isTrue);
+
+      var opReflection = TestOpWithReflection$reflection.staticInstance;
+      var opAReflection = TestOpAWithReflection$reflection.staticInstance;
+      var opBWithReflection$reflection =
+          TestOpBWithReflection$reflection.staticInstance;
+
+      expect(opReflection.supperTypes, isEmpty);
+      expect(opAReflection.supperTypes, equals([TestOpWithReflection]));
+      expect(opBWithReflection$reflection.supperTypes,
+          equals([TestOpWithReflection]));
+
+      expect(opReflection.fieldsNames, equals(['type']));
+      expect(opAReflection.fieldsNames, equals(['type', 'value']));
+      expect(
+          opBWithReflection$reflection.fieldsNames, equals(['amount', 'type']));
+
+      expect(opReflection.methodsNames, equals(['isEmptyType']));
+      expect(opAReflection.methodsNames, equals(['isEmptyType', 'methodA']));
+      expect(opBWithReflection$reflection.methodsNames,
+          equals(['isEmptyType', 'methodB']));
 
       expect(
           userReflection.toJson(),

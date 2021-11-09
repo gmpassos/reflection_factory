@@ -227,3 +227,32 @@ class TestDomainWithReflection {
   @override
   String toString() => '$name.$suffix';
 }
+
+@EnableReflection()
+class TestOpWithReflection {
+  final String type;
+
+  TestOpWithReflection(this.type);
+
+  TestOpWithReflection.empty() : this('');
+
+  bool isEmptyType() => type.isEmpty;
+}
+
+@EnableReflection()
+class TestOpAWithReflection extends TestOpWithReflection {
+  int value;
+
+  TestOpAWithReflection(this.value) : super('a');
+
+  bool methodA() => true;
+}
+
+@EnableReflection()
+class TestOpBWithReflection extends TestOpWithReflection {
+  int amount;
+
+  TestOpBWithReflection(this.amount) : super('b');
+
+  bool methodB() => false;
+}
