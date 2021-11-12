@@ -15,7 +15,7 @@ import 'package:reflection_factory/src/reflection_factory_json.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.0.18';
+  static const String VERSION = '1.0.19';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -1019,10 +1019,11 @@ abstract class ClassReflection<O> extends Reflection<O>
       if (o != null) return o;
     }
 
+    // `class.field` to `map.key`:
     var fieldsResolved = _resolveFieldsNames(fieldNameResolver, map);
 
     var fieldsNamesInMap =
-        fieldsNames.where((f) => map.containsKey(f)).toList();
+        fieldsNames.where((f) => fieldsResolved.containsKey(f)).toList();
 
     var canSetFromMap = true;
     for (var f in fieldsNamesInMap) {
@@ -1082,6 +1083,7 @@ abstract class ClassReflection<O> extends Reflection<O>
     return o;
   }
 
+  /// Returns a mapping from [fieldsNames] to [map] keys.
   Map<String, String> _resolveFieldsNames(
       FieldNameResolver fieldNameResolver, Map<String, Object?> map) {
     var entries = fieldsNames.map((f) {

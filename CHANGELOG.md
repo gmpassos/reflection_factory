@@ -1,3 +1,7 @@
+## 1.0.19
+
+- Fix small bug at `createInstanceFromMap` for field resolution.
+
 ## 1.0.18
 
 - `EnumReflection`: added `enumName` to extension.
