@@ -1,3 +1,5 @@
+@TestOn('vm')
+
 import 'package:build_test/build_test.dart';
 import 'package:reflection_factory/src/reflection_factory_base.dart';
 import 'package:reflection_factory/src/reflection_factory_builder.dart';
@@ -12,7 +14,7 @@ void main() {
   group('ReflectionBuilder', () {
     setUp(() {});
 
-    test('EnableReflection', () async {
+    test('EnableReflection: User', () async {
       var builder = ReflectionBuilder(verbose: true);
 
       var sourceAssets = {
@@ -39,7 +41,7 @@ void main() {
             bool enabled ;
             
             
-            User(this.email, this.pass, {this.enabled = true});
+            User(this.email, {required this.pass, this.enabled = true});
             
             @TestAnnotation(['field', 'eMail'])
             String? get eMail => email;
@@ -102,8 +104,10 @@ void main() {
                   'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
               contains("part of 'foo.dart'"),
             ),
-            contains('User\$reflection'),
-            contains('User\$reflectionExtension'),
+            allOf(
+              contains('User\$reflection'),
+              contains('User\$reflectionExtension'),
+            ),
             matches(RegExp(
                 r"'ignoreCase':\s*ParameterReflection\(\s*TypeReflection.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*false\s*,\s*null\s*\)")),
             allOf(
@@ -121,6 +125,60 @@ void main() {
               contains("case 'getfield':"),
               contains("case 'setfield':"),
             ),
+          )),
+        },
+        onLog: (msg) {
+          print(msg);
+        },
+      );
+    });
+
+    test('EnableReflection: Domain', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'foo.reflection.g.dart';
+          
+          @EnableReflection()
+          class Domain {
+            final String name;
+            final String suffix;
+          
+            Domain(this.name, this.suffix);
+          
+            Domain.named({required this.name, this.suffix = 'net'});
+          }
+        
+        '''
+      };
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        reader: await PackageAssetReader.currentIsolate(),
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of 'foo.dart'"),
+            ),
+            allOf(
+              contains('Domain\$reflection'),
+              contains('Domain\$reflectionExtension'),
+            ),
+            matches(RegExp(
+                r"'suffix':\s*ParameterReflection\(\s*TypeReflection.tString\s*,\s*'suffix'\s*,\s*false\s*,\s*false\s*,\s*'net'\s*,\s*null\s*\)")),
+            allOf(
+                contains('Object? toJson() => reflection.toJson()'),
+                contains(
+                    'Map<String, dynamic>? toJsonMap() => reflection.toJsonMap()')),
           )),
         },
         onLog: (msg) {

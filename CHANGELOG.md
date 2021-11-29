@@ -1,3 +1,10 @@
+## 1.0.20
+
+- Added `TypeInfo` to perform type checking and handle other `Type` operations
+  needed for reflection use. 
+- Fix constructors with nullable named parameters.
+- Fix constructors with `required` named parameters.
+
 ## 1.0.19
 
 - Fix small bug at `createInstanceFromMap` for field resolution.

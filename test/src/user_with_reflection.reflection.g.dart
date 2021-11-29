@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.19
+// BUILDER: reflection_factory/1.0.20
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -100,7 +100,7 @@ class TestAddressWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.19');
+  Version get reflectionFactoryVersion => Version.parse('1.0.20');
 
   @override
   TestAddressWithReflection$reflection withObject(
@@ -321,7 +321,7 @@ class TestCompanyWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.19');
+  Version get reflectionFactoryVersion => Version.parse('1.0.20');
 
   @override
   TestCompanyWithReflection$reflection withObject(
@@ -571,7 +571,7 @@ class TestDataWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.19');
+  Version get reflectionFactoryVersion => Version.parse('1.0.20');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -795,7 +795,7 @@ class TestDomainWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.19');
+  Version get reflectionFactoryVersion => Version.parse('1.0.20');
 
   @override
   TestDomainWithReflection$reflection withObject(
@@ -827,7 +827,7 @@ class TestDomainWithReflection$reflection
       null;
 
   @override
-  List<String> get constructorsNames => const <String>['', 'parse'];
+  List<String> get constructorsNames => const <String>['', 'named', 'parse'];
 
   @override
   ConstructorReflection<TestDomainWithReflection>? constructor<R>(
@@ -850,6 +850,22 @@ class TestDomainWithReflection$reflection
             ],
             null,
             null,
+            null);
+      case 'named':
+        return ConstructorReflection<TestDomainWithReflection>(
+            this,
+            TestDomainWithReflection,
+            'named',
+            () => ({required String name, String suffix = 'net'}) =>
+                TestDomainWithReflection.named(name: name, suffix: suffix),
+            null,
+            null,
+            const <String, ParameterReflection>{
+              'name': ParameterReflection(
+                  TypeReflection.tString, 'name', false, true, null, null),
+              'suffix': ParameterReflection(
+                  TypeReflection.tString, 'suffix', false, false, 'net', null)
+            },
             null);
       case 'parse':
         return ConstructorReflection<TestDomainWithReflection>(
@@ -1031,7 +1047,7 @@ class TestEnumWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.19');
+  Version get reflectionFactoryVersion => Version.parse('1.0.20');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -1091,7 +1107,7 @@ class TestOpAWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.19');
+  Version get reflectionFactoryVersion => Version.parse('1.0.20');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -1189,7 +1205,7 @@ class TestOpAWithReflection$reflection
           obj,
           false,
           false,
-          null,
+          [override, override],
         );
       case 'type':
         return FieldReflection<TestOpAWithReflection, T>(
@@ -1310,7 +1326,7 @@ class TestOpBWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.19');
+  Version get reflectionFactoryVersion => Version.parse('1.0.20');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -1353,10 +1369,10 @@ class TestOpBWithReflection$reflection
             this,
             TestOpBWithReflection,
             '',
-            () => (int amount) => TestOpBWithReflection(amount),
+            () => (double amount) => TestOpBWithReflection(amount),
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tInt, 'amount', false, true, null, null)
+                  TypeReflection.tDouble, 'amount', false, true, null, null)
             ],
             null,
             null,
@@ -1386,7 +1402,7 @@ class TestOpBWithReflection$reflection
   Object? callMethodToJson([TestOpBWithReflection? obj]) => null;
 
   @override
-  List<String> get fieldsNames => const <String>['amount', 'type'];
+  List<String> get fieldsNames => const <String>['amount', 'type', 'value'];
 
   @override
   FieldReflection<TestOpBWithReflection, T>? field<T>(String fieldName,
@@ -1400,11 +1416,11 @@ class TestOpBWithReflection$reflection
         return FieldReflection<TestOpBWithReflection, T>(
           this,
           TestOpBWithReflection,
-          TypeReflection.tInt,
+          TypeReflection.tDouble,
           'amount',
           false,
           (o) => () => o!.amount as T,
-          (o) => (T? v) => o!.amount = v as int,
+          (o) => (T? v) => o!.amount = v as double,
           obj,
           false,
           false,
@@ -1422,6 +1438,20 @@ class TestOpBWithReflection$reflection
           obj,
           false,
           true,
+          null,
+        );
+      case 'value':
+        return FieldReflection<TestOpBWithReflection, T>(
+          this,
+          TestOpWithReflection,
+          TypeReflection.tDynamic,
+          'value',
+          true,
+          (o) => () => o!.value as T,
+          (o) => (T? v) => o!.value = v as dynamic,
+          obj,
+          false,
+          false,
           null,
         );
       default:
@@ -1529,7 +1559,7 @@ class TestOpWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.19');
+  Version get reflectionFactoryVersion => Version.parse('1.0.20');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -1574,10 +1604,13 @@ class TestOpWithReflection$reflection
             this,
             TestOpWithReflection,
             '',
-            () => (String type) => TestOpWithReflection(type),
+            () => (String type, dynamic value) =>
+                TestOpWithReflection(type, value),
             const <ParameterReflection>[
               ParameterReflection(
-                  TypeReflection.tString, 'type', false, true, null, null)
+                  TypeReflection.tString, 'type', false, true, null, null),
+              ParameterReflection(
+                  TypeReflection.tDynamic, 'value', true, true, null, null)
             ],
             null,
             null,
@@ -1617,7 +1650,7 @@ class TestOpWithReflection$reflection
   Object? callMethodToJson([TestOpWithReflection? obj]) => null;
 
   @override
-  List<String> get fieldsNames => const <String>['type'];
+  List<String> get fieldsNames => const <String>['type', 'value'];
 
   @override
   FieldReflection<TestOpWithReflection, T>? field<T>(String fieldName,
@@ -1639,6 +1672,20 @@ class TestOpWithReflection$reflection
           obj,
           false,
           true,
+          null,
+        );
+      case 'value':
+        return FieldReflection<TestOpWithReflection, T>(
+          this,
+          TestOpWithReflection,
+          TypeReflection.tDynamic,
+          'value',
+          true,
+          (o) => () => o!.value as T,
+          (o) => (T? v) => o!.value = v as dynamic,
+          obj,
+          false,
+          false,
           null,
         );
       default:
@@ -1751,7 +1798,7 @@ class TestUserWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.19');
+  Version get reflectionFactoryVersion => Version.parse('1.0.20');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>

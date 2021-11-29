@@ -1,3 +1,5 @@
+@TestOn('vm')
+
 import 'dart:io';
 
 import 'package:path/path.dart' as pack_path;

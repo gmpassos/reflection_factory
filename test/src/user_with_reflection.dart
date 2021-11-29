@@ -206,6 +206,8 @@ class TestDomainWithReflection {
 
   TestDomainWithReflection(this.name, this.suffix);
 
+  TestDomainWithReflection.named({required this.name, this.suffix = 'net'});
+
   factory TestDomainWithReflection.parse(String s) {
     var parts = s.split('.');
     return TestDomainWithReflection(parts[0], parts[1]);
@@ -229,37 +231,44 @@ class TestDomainWithReflection {
 }
 
 @EnableReflection()
-class TestOpWithReflection {
+class TestOpWithReflection<T> {
   static int statifField = 1;
   static bool staticMethod() => true;
 
   final String type;
+  T? value;
 
-  TestOpWithReflection(this.type);
+  TestOpWithReflection(this.type, this.value);
 
-  TestOpWithReflection.empty() : this('');
+  TestOpWithReflection.empty() : this('', null);
 
   bool isEmptyType() => type.isEmpty;
 }
 
 @EnableReflection()
-class TestOpAWithReflection extends TestOpWithReflection {
+class TestOpAWithReflection extends TestOpWithReflection<int> {
   static int statifFieldA = 2;
 
-  int value;
+  @override
+  int get value => super.value!;
 
-  TestOpAWithReflection(this.value) : super('a');
+  @override
+  set value(int? v) => super.value = v ?? 0;
+
+  TestOpAWithReflection(int value) : super('a', value);
 
   bool methodA() => true;
 }
 
 @EnableReflection()
-class TestOpBWithReflection extends TestOpWithReflection {
+class TestOpBWithReflection extends TestOpWithReflection<double> {
   static bool staticMethodB() => false;
 
-  int amount;
+  double get amount => value!;
 
-  TestOpBWithReflection(this.amount) : super('b');
+  set amount(double v) => value = v;
+
+  TestOpBWithReflection(double amount) : super('b', amount);
 
   Set<T> methodB<T>() => <T>{};
 }
