@@ -1711,8 +1711,10 @@ extension _DartTypeExtension on DartType {
 
   bool get isParameterType => this is TypeParameterType;
 
+  bool get isResolvableType => !isParameterType;
+
   String get typeNameResolvable {
-    var name = isParameterType ? 'dynamic' : typeName;
+    var name = !isResolvableType ? 'dynamic' : typeName;
     return name;
   }
 
@@ -1768,8 +1770,20 @@ extension _DartTypeExtension on DartType {
   }
 
   String get typeNameAsCode {
-    if (this is VoidType) {
+    var self = this;
+    if (self is VoidType) {
       return 'null';
+    }
+
+    if (self is FunctionType) {
+      var alias = self.alias;
+      if (alias != null && alias.typeArguments.isEmpty) {
+        var name = alias.element.name;
+        return name;
+      } else {
+        var functionType = self.getDisplayString(withNullability: false);
+        return functionType;
+      }
     }
 
     var name = typeNameResolvable;
@@ -1783,7 +1797,7 @@ extension _DartTypeExtension on DartType {
   }
 
   String get typeNameAsNullableCode =>
-      isNullable && !isDynamic && !isParameterType
+      isNullable && !isDynamic && isResolvableType
           ? '$typeNameAsCode?'
           : typeNameAsCode;
 

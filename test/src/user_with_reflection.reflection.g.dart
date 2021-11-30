@@ -840,15 +840,23 @@ class TestDomainWithReflection$reflection
             this,
             TestDomainWithReflection,
             '',
-            () => (String name, String suffix) =>
-                TestDomainWithReflection(name, suffix),
+            () => (String name, String suffix,
+                    [DomainFunction? domainFunction,
+                    bool Function()? extraFunction]) =>
+                TestDomainWithReflection(
+                    name, suffix, domainFunction, extraFunction),
             const <ParameterReflection>[
               ParameterReflection(
                   TypeReflection.tString, 'name', false, true, null, null),
               ParameterReflection(
                   TypeReflection.tString, 'suffix', false, true, null, null)
             ],
-            null,
+            const <ParameterReflection>[
+              ParameterReflection(TypeReflection.tFunction, 'domainFunction',
+                  true, false, null, null),
+              ParameterReflection(TypeReflection.tFunction, 'extraFunction',
+                  true, false, null, null)
+            ],
             null,
             null);
       case 'named':
@@ -856,11 +864,23 @@ class TestDomainWithReflection$reflection
             this,
             TestDomainWithReflection,
             'named',
-            () => ({required String name, String suffix = 'net'}) =>
-                TestDomainWithReflection.named(name: name, suffix: suffix),
+            () => (
+                    {required String name,
+                    String suffix = 'net',
+                    DomainFunction? domainFunction,
+                    bool Function()? extraFunction}) =>
+                TestDomainWithReflection.named(
+                    name: name,
+                    suffix: suffix,
+                    domainFunction: domainFunction,
+                    extraFunction: extraFunction),
             null,
             null,
             const <String, ParameterReflection>{
+              'domainFunction': ParameterReflection(TypeReflection.tFunction,
+                  'domainFunction', true, false, null, null),
+              'extraFunction': ParameterReflection(TypeReflection.tFunction,
+                  'extraFunction', true, false, null, null),
               'name': ParameterReflection(
                   TypeReflection.tString, 'name', false, true, null, null),
               'suffix': ParameterReflection(
@@ -908,7 +928,13 @@ class TestDomainWithReflection$reflection
   }
 
   @override
-  List<String> get fieldsNames => const <String>['hashCode', 'name', 'suffix'];
+  List<String> get fieldsNames => const <String>[
+        'domainFunction',
+        'extraFunction',
+        'hashCode',
+        'name',
+        'suffix'
+      ];
 
   @override
   FieldReflection<TestDomainWithReflection, T>? field<T>(String fieldName,
@@ -940,6 +966,34 @@ class TestDomainWithReflection$reflection
           'suffix',
           false,
           (o) => () => o!.suffix as T,
+          null,
+          obj,
+          false,
+          true,
+          null,
+        );
+      case 'domainfunction':
+        return FieldReflection<TestDomainWithReflection, T>(
+          this,
+          TestDomainWithReflection,
+          TypeReflection.tFunction,
+          'domainFunction',
+          true,
+          (o) => () => o!.domainFunction as T,
+          null,
+          obj,
+          false,
+          true,
+          null,
+        );
+      case 'extrafunction':
+        return FieldReflection<TestDomainWithReflection, T>(
+          this,
+          TestDomainWithReflection,
+          TypeReflection.tFunction,
+          'extraFunction',
+          true,
+          (o) => () => o!.extraFunction as T,
           null,
           obj,
           false,
@@ -1227,22 +1281,22 @@ class TestOpAWithReflection$reflection
   }
 
   @override
-  List<String> get staticFieldsNames => const <String>['statifFieldA'];
+  List<String> get staticFieldsNames => const <String>['staticFieldA'];
 
   @override
   FieldReflection<TestOpAWithReflection, T>? staticField<T>(String fieldName) {
     var lc = fieldName.trim().toLowerCase();
 
     switch (lc) {
-      case 'statiffielda':
+      case 'staticfielda':
         return FieldReflection<TestOpAWithReflection, T>(
           this,
           TestOpAWithReflection,
           TypeReflection.tInt,
-          'statifFieldA',
+          'staticFieldA',
           false,
-          (o) => () => TestOpAWithReflection.statifFieldA as T,
-          (o) => (T? v) => TestOpAWithReflection.statifFieldA = v as int,
+          (o) => () => TestOpAWithReflection.staticFieldA as T,
+          (o) => (T? v) => TestOpAWithReflection.staticFieldA = v as int,
           null,
           true,
           false,
@@ -1694,22 +1748,22 @@ class TestOpWithReflection$reflection
   }
 
   @override
-  List<String> get staticFieldsNames => const <String>['statifField'];
+  List<String> get staticFieldsNames => const <String>['staticField'];
 
   @override
   FieldReflection<TestOpWithReflection, T>? staticField<T>(String fieldName) {
     var lc = fieldName.trim().toLowerCase();
 
     switch (lc) {
-      case 'statiffield':
+      case 'staticfield':
         return FieldReflection<TestOpWithReflection, T>(
           this,
           TestOpWithReflection,
           TypeReflection.tInt,
-          'statifField',
+          'staticField',
           false,
-          (o) => () => TestOpWithReflection.statifField as T,
-          (o) => (T? v) => TestOpWithReflection.statifField = v as int,
+          (o) => () => TestOpWithReflection.staticField as T,
+          (o) => (T? v) => TestOpWithReflection.staticField = v as int,
           null,
           true,
           false,

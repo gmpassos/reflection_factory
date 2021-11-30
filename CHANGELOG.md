@@ -2,8 +2,9 @@
 
 - Added `TypeInfo` to perform type checking and handle other `Type` operations
   needed for reflection use. 
-- Fix constructors with nullable named parameters.
-- Fix constructors with `required` named parameters.
+- Fixed constructors with nullable named parameters.
+- Fixed constructors with `required` named parameters.
+- Fixed fields/parameters with `Function` `typedef` alias.
 
 ## 1.0.19
 

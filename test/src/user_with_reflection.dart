@@ -199,14 +199,23 @@ class TestDataWithReflection {
       ListEquality<int>().hash(bytes);
 }
 
+typedef DomainFunction = bool Function(int x);
+
 @EnableReflection()
 class TestDomainWithReflection {
   final String name;
   final String suffix;
+  final DomainFunction? domainFunction;
+  final bool Function()? extraFunction;
 
-  TestDomainWithReflection(this.name, this.suffix);
+  TestDomainWithReflection(this.name, this.suffix,
+      [this.domainFunction, this.extraFunction]);
 
-  TestDomainWithReflection.named({required this.name, this.suffix = 'net'});
+  TestDomainWithReflection.named(
+      {required this.name,
+      this.suffix = 'net',
+      this.domainFunction,
+      this.extraFunction});
 
   factory TestDomainWithReflection.parse(String s) {
     var parts = s.split('.');
@@ -232,7 +241,8 @@ class TestDomainWithReflection {
 
 @EnableReflection()
 class TestOpWithReflection<T> {
-  static int statifField = 1;
+  static int staticField = 1;
+
   static bool staticMethod() => true;
 
   final String type;
@@ -247,7 +257,7 @@ class TestOpWithReflection<T> {
 
 @EnableReflection()
 class TestOpAWithReflection extends TestOpWithReflection<int> {
-  static int statifFieldA = 2;
+  static int staticFieldA = 2;
 
   @override
   int get value => super.value!;

@@ -143,14 +143,19 @@ void main() {
         
           part 'foo.reflection.g.dart';
           
+          typedef Fx = bool Function(int x);
+          
           @EnableReflection()
           class Domain {
             final String name;
             final String suffix;
           
-            Domain(this.name, this.suffix);
+            final Fx? fx;
+            final bool Function()? extra;
           
-            Domain.named({required this.name, this.suffix = 'net'});
+            Domain(this.name, this.suffix, [this.fx, this.extra]);
+          
+            Domain.named({required this.name, this.suffix = 'net', Fx? fx, this.extra}) : fx = fx;
           }
         
         '''

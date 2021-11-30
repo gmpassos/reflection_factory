@@ -583,7 +583,14 @@ void main() {
       var domainReflection = TestDomainWithReflection$reflection.staticInstance;
 
       expect(
-          domainReflection.fieldsNames, equals(['hashCode', 'name', 'suffix']));
+          domainReflection.fieldsNames,
+          equals([
+            'domainFunction',
+            'extraFunction',
+            'hashCode',
+            'name',
+            'suffix'
+          ]));
       expect(domainReflection.methodsNames, equals(['toJson', 'toString']));
       expect(
           domainReflection.constructorsNames, equals(['', 'named', 'parse']));
@@ -591,7 +598,8 @@ void main() {
       {
         var constructor = domainReflection.constructor('named')!;
 
-        expect(constructor.allParametersNames, equals(['name', 'suffix']));
+        expect(constructor.allParametersNames,
+            equals(['domainFunction', 'extraFunction', 'name', 'suffix']));
 
         var parameterName = constructor.namedParameters['name']!;
         var parameterSuffix = constructor.namedParameters['suffix']!;
@@ -629,8 +637,8 @@ void main() {
               .map((e) => e.name),
           equals(['value']));
 
-      expect(opReflection.staticFieldsNames, equals(['statifField']));
-      expect(opAReflection.staticFieldsNames, equals(['statifFieldA']));
+      expect(opReflection.staticFieldsNames, equals(['staticField']));
+      expect(opAReflection.staticFieldsNames, equals(['staticFieldA']));
       expect(opBReflection.staticFieldsNames, isEmpty);
 
       expect(opReflection.methodsNames, equals(['isEmptyType']));
