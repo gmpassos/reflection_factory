@@ -201,6 +201,8 @@ class TestDataWithReflection {
 
 typedef DomainFunction = bool Function(int x);
 
+typedef TypedFunction<T> = bool Function(T x);
+
 @EnableReflection()
 class TestDomainWithReflection {
   final String name;
@@ -221,6 +223,8 @@ class TestDomainWithReflection {
     var parts = s.split('.');
     return TestDomainWithReflection(parts[0], parts[1]);
   }
+
+  bool typedFunction<T>(TypedFunction<T> f, T x) => f(x);
 
   @override
   bool operator ==(Object other) =>

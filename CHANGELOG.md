@@ -1,7 +1,8 @@
 ## 1.0.20
 
 - Added `TypeInfo` to perform type checking and handle other `Type` operations
-  needed for reflection use. 
+  needed for reflection use.
+- Improved `TypeReflection` for `Function` types. 
 - Fixed constructors with nullable named parameters.
 - Fixed constructors with `required` named parameters.
 - Fixed fields/parameters with `Function` `typedef` alias.

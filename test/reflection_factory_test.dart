@@ -591,7 +591,8 @@ void main() {
             'name',
             'suffix'
           ]));
-      expect(domainReflection.methodsNames, equals(['toJson', 'toString']));
+      expect(domainReflection.methodsNames,
+          equals(['toJson', 'toString', 'typedFunction']));
       expect(
           domainReflection.constructorsNames, equals(['', 'named', 'parse']));
 
@@ -611,6 +612,24 @@ void main() {
         expect(parameterSuffix.required, isFalse);
         expect(parameterSuffix.nullable, isFalse);
         expect(parameterSuffix.type, equals(TypeReflection.tString));
+      }
+
+      {
+        var method = domainReflection.method('typedFunction')!;
+
+        expect(method.parametersLength, equals(2));
+        expect(method.allParametersNames, equals(['f', 'x']));
+
+        var parameterF = method.normalParameters[0];
+        var parameterX = method.normalParameters[1];
+
+        expect(parameterF.name, equals('f'));
+        expect(parameterF.type.type, equals(TypedFunction));
+        expect(parameterF.type.argumentsLength, equals(1));
+
+        expect(parameterX.name, equals('x'));
+        expect(parameterX.type.type, equals(dynamic));
+        expect(parameterX.type.argumentsLength, equals(0));
       }
 
       var opReflection = TestOpWithReflection$reflection.staticInstance;

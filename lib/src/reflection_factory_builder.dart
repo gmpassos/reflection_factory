@@ -1706,6 +1706,16 @@ class _Field extends _Element {
   }
 }
 
+extension _ListDartTypeExtension on List<DartType> {
+  String get typesAsCode => map((e) {
+        if (!e.hasTypeArguments && !e.isNullable) {
+          return e.typeNameAsCode;
+        } else {
+          return e.typeAsCode;
+        }
+      }).join(', ');
+}
+
 extension _DartTypeExtension on DartType {
   bool get isNullable => nullabilitySuffix == NullabilitySuffix.question;
 
@@ -1802,8 +1812,26 @@ extension _DartTypeExtension on DartType {
           : typeNameAsCode;
 
   String get typeAsCode {
-    if (this is VoidType) {
+    var self = this;
+
+    if (self is VoidType) {
       return 'null';
+    }
+
+    if (self is FunctionType) {
+      var alias = self.alias;
+      if (alias != null) {
+        var name = alias.element.name;
+        List<DartType> arguments = alias.typeArguments;
+
+        if (arguments.isEmpty) {
+          return 'TypeReflection($name)';
+        } else {
+          return 'TypeReflection($name, [${arguments.typesAsCode}])';
+        }
+      } else {
+        return 'TypeReflection.tFunction';
+      }
     }
 
     var name = typeNameResolvable;
@@ -1819,13 +1847,7 @@ extension _DartTypeExtension on DartType {
         }
       }
 
-      return 'TypeReflection($name, [${arguments.map((e) {
-        if (!e.hasTypeArguments && !e.isNullable) {
-          return e.typeNameAsCode;
-        } else {
-          return e.typeAsCode;
-        }
-      }).join(', ')}])';
+      return 'TypeReflection($name, [${arguments.typesAsCode}])';
     } else {
       var constName = _getTypeReflectionConstantName(name);
       if (constName != null) {

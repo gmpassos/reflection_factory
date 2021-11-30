@@ -852,8 +852,8 @@ class TestDomainWithReflection$reflection
                   TypeReflection.tString, 'suffix', false, true, null, null)
             ],
             const <ParameterReflection>[
-              ParameterReflection(TypeReflection.tFunction, 'domainFunction',
-                  true, false, null, null),
+              ParameterReflection(TypeReflection(DomainFunction),
+                  'domainFunction', true, false, null, null),
               ParameterReflection(TypeReflection.tFunction, 'extraFunction',
                   true, false, null, null)
             ],
@@ -877,8 +877,13 @@ class TestDomainWithReflection$reflection
             null,
             null,
             const <String, ParameterReflection>{
-              'domainFunction': ParameterReflection(TypeReflection.tFunction,
-                  'domainFunction', true, false, null, null),
+              'domainFunction': ParameterReflection(
+                  TypeReflection(DomainFunction),
+                  'domainFunction',
+                  true,
+                  false,
+                  null,
+                  null),
               'extraFunction': ParameterReflection(TypeReflection.tFunction,
                   'extraFunction', true, false, null, null),
               'name': ParameterReflection(
@@ -976,7 +981,7 @@ class TestDomainWithReflection$reflection
         return FieldReflection<TestDomainWithReflection, T>(
           this,
           TestDomainWithReflection,
-          TypeReflection.tFunction,
+          TypeReflection(DomainFunction),
           'domainFunction',
           true,
           (o) => () => o!.domainFunction as T,
@@ -1029,7 +1034,8 @@ class TestDomainWithReflection$reflection
   }
 
   @override
-  List<String> get methodsNames => const <String>['toJson', 'toString'];
+  List<String> get methodsNames =>
+      const <String>['toJson', 'toString', 'typedFunction'];
 
   @override
   MethodReflection<TestDomainWithReflection, R>? method<R>(String methodName,
@@ -1039,6 +1045,25 @@ class TestDomainWithReflection$reflection
     var lc = methodName.trim().toLowerCase();
 
     switch (lc) {
+      case 'typedfunction':
+        return MethodReflection<TestDomainWithReflection, R>(
+            this,
+            TestDomainWithReflection,
+            'typedFunction',
+            TypeReflection.tBool,
+            false,
+            (o) => o!.typedFunction,
+            obj,
+            false,
+            const <ParameterReflection>[
+              ParameterReflection(TypeReflection(TypedFunction, [dynamic]), 'f',
+                  false, true, null, null),
+              ParameterReflection(
+                  TypeReflection.tDynamic, 'x', false, true, null, null)
+            ],
+            null,
+            null,
+            null);
       case 'tojson':
         return MethodReflection<TestDomainWithReflection, R>(
             this,
