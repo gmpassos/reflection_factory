@@ -1453,6 +1453,11 @@ class _Parameter extends _Element {
     var valCode = defaultValue;
     return valCode != null && valCode.isNotEmpty;
   }
+
+  @override
+  String toString() {
+    return '_Parameter{type: $type, name: $name, nullable: $nullable, required: $required, parameterElement: $parameterElement, parameterIndex: $parameterIndex}';
+  }
 }
 
 class _Constructor<T> extends _Element {
@@ -1506,7 +1511,8 @@ class _Constructor<T> extends _Element {
     for (var i = 0; i < normalParameters.length; ++i) {
       var p = normalParameters[i];
       if (i > 0) s.write(', ');
-      s.write(p.type.toString());
+
+      s.write(p.type.typeNameAsNullableCode);
       s.write(' ');
       s.write(p.name);
     }
@@ -1519,7 +1525,7 @@ class _Constructor<T> extends _Element {
       for (var i = 0; i < optionalParameters.length; ++i) {
         var p = optionalParameters[i];
         if (i > 0) s.write(',');
-        s.write(p.type.toString());
+        s.write(p.type.typeNameAsNullableCode);
         s.write(' ');
         s.write(p.name);
         var defVal = p.defaultValue;
@@ -1537,7 +1543,12 @@ class _Constructor<T> extends _Element {
       for (var e in namedParameters.entries) {
         var p = e.value;
         if (i > 0) s.write(', ');
-        s.write(p.type.toString());
+
+        if (p.required) {
+          s.write('required ');
+        }
+
+        s.write(p.type.typeNameAsNullableCode);
         s.write(' ');
         s.write(p.name);
         var defVal = p.defaultValue;
@@ -1695,13 +1706,25 @@ class _Field extends _Element {
   }
 }
 
+extension _ListDartTypeExtension on List<DartType> {
+  String get typesAsCode => map((e) {
+        if (!e.hasTypeArguments && !e.isNullable) {
+          return e.typeNameAsCode;
+        } else {
+          return e.typeAsCode;
+        }
+      }).join(', ');
+}
+
 extension _DartTypeExtension on DartType {
   bool get isNullable => nullabilitySuffix == NullabilitySuffix.question;
 
-  bool get isRequired => element?.hasRequired ?? false;
+  bool get isParameterType => this is TypeParameterType;
+
+  bool get isResolvableType => !isParameterType;
 
   String get typeNameResolvable {
-    var name = this is TypeParameterType ? 'dynamic' : typeName;
+    var name = !isResolvableType ? 'dynamic' : typeName;
     return name;
   }
 
@@ -1757,8 +1780,20 @@ extension _DartTypeExtension on DartType {
   }
 
   String get typeNameAsCode {
-    if (this is VoidType) {
+    var self = this;
+    if (self is VoidType) {
       return 'null';
+    }
+
+    if (self is FunctionType) {
+      var alias = self.alias;
+      if (alias != null && alias.typeArguments.isEmpty) {
+        var name = alias.element.name;
+        return name;
+      } else {
+        var functionType = self.getDisplayString(withNullability: false);
+        return functionType;
+      }
     }
 
     var name = typeNameResolvable;
@@ -1772,11 +1807,31 @@ extension _DartTypeExtension on DartType {
   }
 
   String get typeNameAsNullableCode =>
-      isNullable ? '$typeNameAsCode?' : typeNameAsCode;
+      isNullable && !isDynamic && isResolvableType
+          ? '$typeNameAsCode?'
+          : typeNameAsCode;
 
   String get typeAsCode {
-    if (this is VoidType) {
+    var self = this;
+
+    if (self is VoidType) {
       return 'null';
+    }
+
+    if (self is FunctionType) {
+      var alias = self.alias;
+      if (alias != null) {
+        var name = alias.element.name;
+        List<DartType> arguments = alias.typeArguments;
+
+        if (arguments.isEmpty) {
+          return 'TypeReflection($name)';
+        } else {
+          return 'TypeReflection($name, [${arguments.typesAsCode}])';
+        }
+      } else {
+        return 'TypeReflection.tFunction';
+      }
     }
 
     var name = typeNameResolvable;
@@ -1792,13 +1847,7 @@ extension _DartTypeExtension on DartType {
         }
       }
 
-      return 'TypeReflection($name, [${arguments.map((e) {
-        if (!e.hasTypeArguments && !e.isNullable) {
-          return e.typeNameAsCode;
-        } else {
-          return e.typeAsCode;
-        }
-      }).join(', ')}])';
+      return 'TypeReflection($name, [${arguments.typesAsCode}])';
     } else {
       var constName = _getTypeReflectionConstantName(name);
       if (constName != null) {
@@ -1881,17 +1930,19 @@ extension _FunctionTypeExtension on FunctionType {
 
   Map<String, _Parameter> get namedParameters {
     var map = <String, _Parameter>{};
-    var i = 0;
-    for (var e in namedParameterTypes.entries) {
-      var key = e.key;
-      var value = e.value;
-      var idx = normalParameterNames.length + i;
+    var normalParametersLength = normalParameterNames.length;
+    var namedParametersLength = namedParameterTypes.length;
+
+    for (var i = 0; i < namedParametersLength; ++i) {
+      var idx = normalParametersLength + i;
       var p = parameters[idx];
-      var parameter =
-          _Parameter(p, idx, value, key, value.isNullable, value.isRequired);
+      var key = p.name;
+      var type = p.type;
+      var required = p.isRequiredNamed;
+      var parameter = _Parameter(p, idx, type, key, type.isNullable, required);
       map[key] = parameter;
-      i++;
     }
+
     return map;
   }
 }

@@ -199,17 +199,32 @@ class TestDataWithReflection {
       ListEquality<int>().hash(bytes);
 }
 
+typedef DomainFunction = bool Function(int x);
+
+typedef TypedFunction<T> = bool Function(T x);
+
 @EnableReflection()
 class TestDomainWithReflection {
   final String name;
   final String suffix;
+  final DomainFunction? domainFunction;
+  final bool Function()? extraFunction;
 
-  TestDomainWithReflection(this.name, this.suffix);
+  TestDomainWithReflection(this.name, this.suffix,
+      [this.domainFunction, this.extraFunction]);
+
+  TestDomainWithReflection.named(
+      {required this.name,
+      this.suffix = 'net',
+      this.domainFunction,
+      this.extraFunction});
 
   factory TestDomainWithReflection.parse(String s) {
     var parts = s.split('.');
     return TestDomainWithReflection(parts[0], parts[1]);
   }
+
+  bool typedFunction<T>(TypedFunction<T> f, T x) => f(x);
 
   @override
   bool operator ==(Object other) =>
@@ -229,37 +244,45 @@ class TestDomainWithReflection {
 }
 
 @EnableReflection()
-class TestOpWithReflection {
-  static int statifField = 1;
+class TestOpWithReflection<T> {
+  static int staticField = 1;
+
   static bool staticMethod() => true;
 
   final String type;
+  T? value;
 
-  TestOpWithReflection(this.type);
+  TestOpWithReflection(this.type, this.value);
 
-  TestOpWithReflection.empty() : this('');
+  TestOpWithReflection.empty() : this('', null);
 
   bool isEmptyType() => type.isEmpty;
 }
 
 @EnableReflection()
-class TestOpAWithReflection extends TestOpWithReflection {
-  static int statifFieldA = 2;
+class TestOpAWithReflection extends TestOpWithReflection<int> {
+  static int staticFieldA = 2;
 
-  int value;
+  @override
+  int get value => super.value!;
 
-  TestOpAWithReflection(this.value) : super('a');
+  @override
+  set value(int? v) => super.value = v ?? 0;
+
+  TestOpAWithReflection(int value) : super('a', value);
 
   bool methodA() => true;
 }
 
 @EnableReflection()
-class TestOpBWithReflection extends TestOpWithReflection {
+class TestOpBWithReflection extends TestOpWithReflection<double> {
   static bool staticMethodB() => false;
 
-  int amount;
+  double get amount => value!;
 
-  TestOpBWithReflection(this.amount) : super('b');
+  set amount(double v) => value = v;
+
+  TestOpBWithReflection(double amount) : super('b', amount);
 
   Set<T> methodB<T>() => <T>{};
 }

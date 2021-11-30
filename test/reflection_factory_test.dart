@@ -580,6 +580,58 @@ void main() {
               .invoke([1.1]),
           isTrue);
 
+      var domainReflection = TestDomainWithReflection$reflection.staticInstance;
+
+      expect(
+          domainReflection.fieldsNames,
+          equals([
+            'domainFunction',
+            'extraFunction',
+            'hashCode',
+            'name',
+            'suffix'
+          ]));
+      expect(domainReflection.methodsNames,
+          equals(['toJson', 'toString', 'typedFunction']));
+      expect(
+          domainReflection.constructorsNames, equals(['', 'named', 'parse']));
+
+      {
+        var constructor = domainReflection.constructor('named')!;
+
+        expect(constructor.allParametersNames,
+            equals(['domainFunction', 'extraFunction', 'name', 'suffix']));
+
+        var parameterName = constructor.namedParameters['name']!;
+        var parameterSuffix = constructor.namedParameters['suffix']!;
+
+        expect(parameterName.required, isTrue);
+        expect(parameterName.nullable, isFalse);
+        expect(parameterName.type, equals(TypeReflection.tString));
+
+        expect(parameterSuffix.required, isFalse);
+        expect(parameterSuffix.nullable, isFalse);
+        expect(parameterSuffix.type, equals(TypeReflection.tString));
+      }
+
+      {
+        var method = domainReflection.method('typedFunction')!;
+
+        expect(method.parametersLength, equals(2));
+        expect(method.allParametersNames, equals(['f', 'x']));
+
+        var parameterF = method.normalParameters[0];
+        var parameterX = method.normalParameters[1];
+
+        expect(parameterF.name, equals('f'));
+        expect(parameterF.type.type, equals(TypedFunction));
+        expect(parameterF.type.argumentsLength, equals(1));
+
+        expect(parameterX.name, equals('x'));
+        expect(parameterX.type.type, equals(dynamic));
+        expect(parameterX.type.argumentsLength, equals(0));
+      }
+
       var opReflection = TestOpWithReflection$reflection.staticInstance;
       var opAReflection = TestOpAWithReflection$reflection.staticInstance;
       var opBReflection = TestOpBWithReflection$reflection.staticInstance;
@@ -588,9 +640,9 @@ void main() {
       expect(opAReflection.supperTypes, equals([TestOpWithReflection]));
       expect(opBReflection.supperTypes, equals([TestOpWithReflection]));
 
-      expect(opReflection.fieldsNames, equals(['type']));
+      expect(opReflection.fieldsNames, equals(['type', 'value']));
       expect(opAReflection.fieldsNames, equals(['type', 'value']));
-      expect(opBReflection.fieldsNames, equals(['amount', 'type']));
+      expect(opBReflection.fieldsNames, equals(['amount', 'type', 'value']));
 
       expect(
           opAReflection
@@ -604,8 +656,8 @@ void main() {
               .map((e) => e.name),
           equals(['value']));
 
-      expect(opReflection.staticFieldsNames, equals(['statifField']));
-      expect(opAReflection.staticFieldsNames, equals(['statifFieldA']));
+      expect(opReflection.staticFieldsNames, equals(['staticField']));
+      expect(opAReflection.staticFieldsNames, equals(['staticFieldA']));
       expect(opBReflection.staticFieldsNames, isEmpty);
 
       expect(opReflection.methodsNames, equals(['isEmptyType']));

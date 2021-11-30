@@ -15,7 +15,7 @@ import 'package:reflection_factory/src/reflection_factory_json.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.0.19';
+  static const String VERSION = '1.0.20';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -1288,9 +1288,9 @@ class TypeReflection {
   static const TypeReflection tFutureOrInt =
       TypeReflection(FutureOr, [TypeReflection.tInt]);
 
-  static String? getConstantName(String type,
+  static String? getConstantName(String typeName,
       [List<String> args = const <String>[]]) {
-    switch (type) {
+    switch (typeName) {
       case 'Object':
         return 'tObject';
       case 'dynamic':
@@ -1421,6 +1421,11 @@ class TypeReflection {
     }
   }
 
+  static List<TypeReflection> toList(Iterable<Object> list,
+      {bool growable = false}) {
+    return list.map((e) => TypeReflection.from(e)).toList(growable: growable);
+  }
+
   /// The Dart [Type].
   final Type type;
 
@@ -1428,8 +1433,7 @@ class TypeReflection {
   ///
   /// - If [arguments] is provided, also checks [equalsArgumentsTypes].
   bool isOfType(Type type, [List<Type>? arguments]) {
-    return this.type == type &&
-        (arguments == null || equalsArgumentsTypes(arguments));
+    return typeInfo.isOf(type, arguments);
   }
 
   /// The [Type] arguments.
@@ -1437,26 +1441,55 @@ class TypeReflection {
   /// Example: `Map<String, int>` will return `[String, int]`.
   final List<Object>? _arguments;
 
-  const TypeReflection(this.type, [this._arguments]);
+  // Internal [TypeInfo] to avoid unnecessary instantiation.
+  final TypeInfo? _typeInfo;
+
+  const TypeReflection(this.type, [this._arguments]) : _typeInfo = null;
+
+  const TypeReflection._(this.type, [this._arguments, this._typeInfo]);
 
   factory TypeReflection.from(Object o) {
     if (o is TypeReflection) {
       return o;
     } else if (o is Type) {
-      return TypeReflection(o);
+      return TypeReflection._(o, null, TypeInfo.from(o));
+    } else if (o is TypeInfo) {
+      return TypeReflection._(o.type, toList(o.arguments), o);
     } else if (o is List<Type>) {
       var t = o[0];
       if (o.length > 1) {
         var args = o.sublist(1).map((e) => TypeReflection.from(e)).toList();
-        return TypeReflection(t, args);
+        return TypeReflection._(t, args, TypeInfo.from(t, args));
       } else {
-        return TypeReflection(t);
+        return TypeReflection._(t, null, TypeInfo.from(t));
       }
     } else {
       throw ArgumentError("Invalid type: $o");
     }
   }
 
+  static final Expando<TypeInfo> _typeReflectionToTypeInfo =
+      Expando('TypeReflection_to_TypeInfo');
+
+  static TypeInfo _toTypeInfo(TypeReflection typeReflection) {
+    var typeInfo = _typeReflectionToTypeInfo[typeReflection];
+    if (typeInfo == null) {
+      typeInfo = TypeInfo.from(typeReflection, typeReflection._arguments);
+      _typeReflectionToTypeInfo[typeReflection] = typeInfo;
+    }
+    return typeInfo;
+  }
+
+  /// Returns a [TypeInfo] of this instance.
+  TypeInfo get typeInfo => _typeInfo ?? _toTypeInfo(this);
+
+  /// Returns the [arguments] length.
+  int get argumentsLength {
+    var arguments = _arguments;
+    return arguments != null ? arguments.length : 0;
+  }
+
+  /// Returns the arguments of this type.
   List<TypeReflection> get arguments {
     var arguments = _arguments;
     return arguments == null
@@ -1471,39 +1504,25 @@ class TypeReflection {
 
   /// Returns `true` if [arguments] have equals [types].
   bool equalsArgumentsTypes(List<Type> types) {
-    var argumentsObj = _arguments;
-    if (argumentsObj == null || argumentsObj.isEmpty) {
+    if (!hasArguments) {
       return types.isEmpty;
     }
 
-    if (argumentsObj.length != types.length) {
-      return false;
-    }
-
-    return _listEqualityType.equals(
-        arguments.map((e) => e.type).toList(), types);
+    return typeInfo.equalsArgumentsTypes(types);
   }
 
   /// Returns `true` if [type] is `String`, `int`, `double`, `num` or `bool`.
-  bool get isPrimitiveType {
-    return type == String ||
-        type == int ||
-        type == double ||
-        type == num ||
-        type == bool;
-  }
+  bool get isPrimitiveType =>
+      isStringType || isIntType || isDoubleType || isNumType || isBoolType;
 
   /// Returns `true` if [type] is a collection ([List], [Iterable], [Map] or [Set]).
-  bool get isCollectionType =>
-      isListType || isIterableType || isMapType || isSetType;
+  bool get isCollectionType => typeInfo.isCollection;
 
   /// Returns `true` if [type] is `Map`.
-  bool get isMapType => type == Map;
+  bool get isMapType => typeInfo.isMap;
 
   /// Returns `true` if [type] is `Iterable`.
-  bool get isIterableType {
-    return type == List || type == Iterable || type == Set;
-  }
+  bool get isIterableType => typeInfo.isIterable;
 
   /// Returns `true` if [type] is `int`.
   bool get isIntType => type == int;
@@ -1530,13 +1549,13 @@ class TypeReflection {
   bool get isDynamicType => type == dynamic;
 
   /// Returns `true` if [type] is `Object` or `dynamic`.
-  bool get isObjectOrDynamicType => type == Object || type == dynamic;
+  bool get isObjectOrDynamicType => isObjectType || isDynamicType;
 
   /// Returns `true` if [type] is a [List].
-  bool get isListType => type == List;
+  bool get isListType => typeInfo.isList;
 
   /// Returns `true` if [type] is a [Set].
-  bool get isSetType => type == Set;
+  bool get isSetType => typeInfo.isSet;
 
   /// Returns `true` if [type] [isPrimitiveType] or [isCollection].
   bool get isBasicType => isPrimitiveType || isCollectionType;
@@ -1560,8 +1579,7 @@ class TypeReflection {
       identical(this, other) ||
       other is TypeReflection &&
           runtimeType == other.runtimeType &&
-          type == other.type &&
-          _listEqualityTypeReflection.equals(arguments, other.arguments);
+          typeInfo == other.typeInfo;
 
   @override
   int get hashCode =>
@@ -1569,11 +1587,11 @@ class TypeReflection {
 
   @override
   String toString() {
-    if (hasArguments) {
-      return '$type<${arguments.join(', ')}>';
-    } else {
-      return '$type';
-    }
+    var typeStr = type.toString();
+    var idx = typeStr.indexOf('<');
+    if (idx > 0) typeStr = typeStr.substring(0, idx);
+
+    return hasArguments ? '$typeStr<${arguments.join(',')}>' : typeStr;
   }
 }
 
@@ -1977,16 +1995,25 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
   }
 
   /// Returns `true` if [parameters] is equals to [normalParameters].
-  bool equalsNormalParametersTypes(List<Type> parameters) =>
-      _listEqualityType.equals(normalParametersTypes, parameters);
+  bool equalsNormalParametersTypes(List<Type> parameters,
+          {bool equivalency = false}) =>
+      equivalency
+          ? TypeInfo.equivalentTypeList(normalParametersTypes, parameters)
+          : TypeInfo.equalsTypeList(normalParametersTypes, parameters);
 
   /// Returns `true` if [parameters] is equals to [optionalParameters].
-  bool equalsOptionalParametersTypes(List<Type> parameters) =>
-      _listEqualityType.equals(optionalParametersTypes, parameters);
+  bool equalsOptionalParametersTypes(List<Type> parameters,
+          {bool equivalency = false}) =>
+      equivalency
+          ? TypeInfo.equivalentTypeList(optionalParametersTypes, parameters)
+          : TypeInfo.equalsTypeList(optionalParametersTypes, parameters);
 
   /// Returns `true` if [parameters] is equals to [namedParameters].
-  bool equalsNamedParametersTypes(Map<String, Type> parameters) =>
-      _mapEqualityType.equals(namedParametersTypes, parameters);
+  bool equalsNamedParametersTypes(Map<String, Type> parameters,
+          {bool equivalency = false}) =>
+      equivalency
+          ? _mapEquivalencyType.equals(namedParametersTypes, parameters)
+          : _mapEqualityType.equals(namedParametersTypes, parameters);
 
   /// Creates a [MethodInvocation] using [map] entries as parameters.
   MethodInvocation<O> methodInvocationFromMap(Map<String, dynamic> map,
@@ -2302,5 +2329,8 @@ class MethodInvocation<T> {
 final ListEquality<TypeReflection> _listEqualityTypeReflection =
     ListEquality<TypeReflection>();
 
-final ListEquality<Type> _listEqualityType = ListEquality<Type>();
-final MapEquality<String, Type> _mapEqualityType = MapEquality<String, Type>();
+final MapEquality<String, Type> _mapEqualityType =
+    MapEquality<String, Type>(values: TypeEquality());
+
+final MapEquality<String, Type> _mapEquivalencyType =
+    MapEquality<String, Type>(values: TypeEquivalency());
