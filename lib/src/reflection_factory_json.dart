@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert' as dart_convert;
 import 'dart:typed_data';
 
-import 'package:base_codecs/base_codecs.dart';
+import 'package:base_codecs/base_codecs.dart' as base_codecs;
 import 'package:mime/mime.dart';
 
 import 'reflection_factory_base.dart';
@@ -101,17 +101,25 @@ typedef JsonFieldMatcher = bool Function(String key);
 typedef ToEncodableJson = Object? Function(
     Object? object, JsonEncoder jsonEncoder);
 
-typedef ToEncodableJsonProvider = ToEncodableJson? Function(Object identifier);
+typedef ToEncodableJsonProvider = ToEncodableJson? Function(Object object);
+
+typedef JsonValueDecoder<O> = O? Function(
+    Object? o, Type type, JsonDecoder jsonDecoder);
+
+typedef JsonValueDecoderProvider<O> = JsonValueDecoder<O>? Function(
+    Type type, Object? value);
 
 typedef JsomMapDecoder<O> = O? Function(
     Map<String, Object?> map, JsonDecoder jsonDecoder);
 
-typedef JsomMapDecoderProvider = JsomMapDecoder? Function(Object identifier);
+typedef JsomMapDecoderProvider = JsomMapDecoder? Function(
+    Type type, Map<String, Object?> map);
 
 typedef JsomMapDecoderAsync<O> = FutureOr<O?> Function(
     Map<String, Object?> map, JsonDecoder jsonDecoder);
 
-typedef JsomMapDecoderAsyncProvider = JsomMapDecoderAsync? Function(Type type);
+typedef JsomMapDecoderAsyncProvider = JsomMapDecoderAsync? Function(
+    Type type, Map<String, Object?> map);
 
 typedef IterableCaster = Object? Function(Iterable value, TypeReflection type);
 
@@ -127,6 +135,7 @@ class JsonCodec {
       bool removeNullFields = false,
       ToEncodableJsonProvider? toEncodableProvider,
       ToEncodableJson? toEncodable,
+      JsonValueDecoderProvider? jsonValueDecoderProvider,
       JsomMapDecoderProvider? jsomMapDecoderProvider,
       JsomMapDecoder? jsomMapDecoder,
       JsomMapDecoderAsyncProvider? jsomMapDecoderAsyncProvider,
@@ -148,8 +157,13 @@ class JsonCodec {
     return JsonCodec._(
         _JsonEncoder(maskField, maskText, removeField, removeNullFields,
             toEncodableProvider, toEncodable),
-        _JsonDecoder(jsomMapDecoderProvider, jsomMapDecoder,
-            jsomMapDecoderAsyncProvider, jsomMapDecoderAsync, iterableCaster));
+        _JsonDecoder(
+            jsonValueDecoderProvider,
+            jsomMapDecoderProvider,
+            jsomMapDecoder,
+            jsomMapDecoderAsyncProvider,
+            jsomMapDecoderAsync,
+            iterableCaster));
   }
 
   /// The [JsonEncoder] of this instance.
@@ -247,6 +261,7 @@ abstract class JsonConverter<S, T> implements dart_convert.Converter<S, T> {
   static bool isValidEntityType(Type type) {
     return type != dynamic &&
         type != Object &&
+        type != DateTime &&
         !isCollectionType(type) &&
         !isPrimitiveType(type);
   }
@@ -342,23 +357,15 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
       return null;
     } else if (o is String || o is num || o is bool) {
       return o;
-    } else if (o is DateTime) {
-      return _dateTimeToJson(o);
-    } else if (o is Uint8List) {
-      return _uint8ListToJson(o, fieldName);
-    } else if (o is BigInt) {
-      return _bigIntToJson(o);
-    } else if (o is Enum) {
-      return _enumToJson(o);
     } else if (o is Map) {
       return mapToJson(o);
     } else if (o is Set) {
-      return _iterableToJson(o, fieldName).toList();
+      return _iterableToJson(o, fieldName);
     } else if (o is Iterable) {
-      return _iterableToJson(o, fieldName).toList();
+      return _iterableToJson(o, fieldName);
     } else {
-      var entityJson = _entityToJson(o);
-      var json = _valueToJson(entityJson, fieldName: fieldName);
+      var objectJson = _objectToJson(o, fieldName);
+      var json = _valueToJson(objectJson, fieldName: fieldName);
       return json;
     }
   }
@@ -375,12 +382,21 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
     var mimeType =
         jsonMimeTypeResolver.lookupDynamic(fieldName, headerBytes: o);
 
+    if (mimeType == 'application/octet-stream') {
+      var hex = base_codecs.hex.encode(o);
+      return 'hex:$hex';
+    }
+
     var base64 = dart_convert.base64.encode(o);
     return 'data:$mimeType;base64,$base64';
   }
 
-  Iterable<Object?> _iterableToJson(Iterable<dynamic> o, String? fieldName) {
-    return o.map((e) => _valueToJson(e, fieldName: fieldName));
+  Object? _iterableToJson(Iterable<dynamic> o, String? fieldName) {
+    if (o is Uint8List) {
+      return _uint8ListToJson(o, fieldName);
+    }
+
+    return o.map((e) => _valueToJson(e, fieldName: fieldName)).toList();
   }
 
   @override
@@ -436,9 +452,8 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
     return _valueToJson(o, fieldName: k);
   }
 
-  Object? _entityToJson(dynamic o) {
+  Object? _objectToJson(dynamic o, String? fieldName) {
     var toEncodableProvider = this.toEncodableProvider;
-
     if (toEncodableProvider != null) {
       var encoder = toEncodableProvider(o);
 
@@ -459,6 +474,16 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
       } catch (_) {
         return _entityToJsonDefault(o);
       }
+    }
+
+    if (o is DateTime) {
+      return _dateTimeToJson(o);
+    } else if (o is Uint8List) {
+      return _uint8ListToJson(o, fieldName);
+    } else if (o is BigInt) {
+      return _bigIntToJson(o);
+    } else if (o is Enum) {
+      return _enumToJson(o);
     }
 
     var oType = o.runtimeType;
@@ -514,7 +539,8 @@ abstract class JsonDecoder extends JsonConverter<String, Object?> {
   static final JsonDecoder defaultDecoder = _JsonDecoder._defaultDecoder;
 
   factory JsonDecoder(
-      {JsomMapDecoderProvider? jsomMapDecoderProvider,
+      {JsonValueDecoderProvider? jsonValueDecoderProvider,
+      JsomMapDecoderProvider? jsomMapDecoderProvider,
       JsomMapDecoder? jsomMapDecoder,
       JsomMapDecoderAsyncProvider? jsomMapDecoderAsyncProvider,
       JsomMapDecoderAsync? jsomMapDecoderAsync,
@@ -527,8 +553,13 @@ abstract class JsonDecoder extends JsonConverter<String, Object?> {
       return defaultDecoder;
     }
 
-    return _JsonDecoder._(jsomMapDecoderProvider, jsomMapDecoder,
-        jsomMapDecoderAsyncProvider, jsomMapDecoderAsync, iterableCaster);
+    return _JsonDecoder._(
+        jsonValueDecoderProvider,
+        jsomMapDecoderProvider,
+        jsomMapDecoder,
+        jsomMapDecoderAsyncProvider,
+        jsomMapDecoderAsync,
+        iterableCaster);
   }
 
   /// Converts [o] to [type].
@@ -567,15 +598,17 @@ abstract class JsonDecoder extends JsonConverter<String, Object?> {
 class _JsonDecoder extends dart_convert.Converter<String, Object?>
     implements JsonDecoder {
   static final _JsonDecoder _defaultDecoder =
-      _JsonDecoder._(null, null, null, null, null);
+      _JsonDecoder._(null, null, null, null, null, null);
 
   factory _JsonDecoder(
+      JsonValueDecoderProvider? jsonValueDecoderProvider,
       JsomMapDecoderProvider? jsomMapDecoderProvider,
       JsomMapDecoder? jsomMapDecoder,
       JsomMapDecoderAsyncProvider? jsomMapDecoderAsyncProvider,
       JsomMapDecoderAsync? jsomMapDecoderAsync,
       IterableCaster? iterableCaster) {
-    if (jsomMapDecoderProvider == null &&
+    if (jsonValueDecoderProvider == null &&
+        jsomMapDecoderProvider == null &&
         jsomMapDecoder == null &&
         jsomMapDecoderAsyncProvider == null &&
         jsomMapDecoderAsync == null &&
@@ -583,9 +616,16 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       return _defaultDecoder;
     }
 
-    return _JsonDecoder._(jsomMapDecoderProvider, jsomMapDecoder,
-        jsomMapDecoderAsyncProvider, jsomMapDecoderAsync, iterableCaster);
+    return _JsonDecoder._(
+        jsonValueDecoderProvider,
+        jsomMapDecoderProvider,
+        jsomMapDecoder,
+        jsomMapDecoderAsyncProvider,
+        jsomMapDecoderAsync,
+        iterableCaster);
   }
+
+  final JsonValueDecoderProvider? jsonValueDecoderProvider;
 
   final JsomMapDecoderProvider? jsomMapDecoderProvider;
   final JsomMapDecoder? jsomMapDecoder;
@@ -596,6 +636,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
   final IterableCaster? iterableCaster;
 
   _JsonDecoder._(
+      this.jsonValueDecoderProvider,
       this.jsomMapDecoderProvider,
       this.jsomMapDecoder,
       this.jsomMapDecoderAsyncProvider,
@@ -711,9 +752,12 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
         } else if (encoding.isEmpty) {
           return Uint8List.fromList(dart_convert.utf8.encode(data));
         }
+      } else if (o.startsWith('hex:')) {
+        var hex = o.substring(4);
+        return base_codecs.hex.decode(hex);
       } else {
         try {
-          return base16Decode(o);
+          return base_codecs.base16Decode(o);
         } catch (_) {
           try {
             return dart_convert.base64.decode(o);
@@ -829,7 +873,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
   O _entityFromJsonMap<O>(Type type, Map<String, Object?> map) {
     var jsomMapDecoderProvider = this.jsomMapDecoderProvider;
     if (jsomMapDecoderProvider != null) {
-      var fromJsonMap = jsomMapDecoderProvider(type);
+      var fromJsonMap = jsomMapDecoderProvider(type, map);
       if (fromJsonMap != null) {
         return fromJsonMap(map, this);
       }
@@ -855,6 +899,14 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
   }
 
   O _entityFromJsonString<O>(Type type, String s) {
+    var jsonValueDecoderProvider = this.jsonValueDecoderProvider;
+    if (jsonValueDecoderProvider != null) {
+      var valueDecoder = jsonValueDecoderProvider(type, s);
+      if (valueDecoder != null) {
+        return valueDecoder(s, type, this) as O;
+      }
+    }
+
     var enumReflection = ReflectionFactory().getRegisterEnumReflection(type);
 
     if (enumReflection != null) {
@@ -879,10 +931,19 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       return obj;
     }
 
-    throw UnsupportedError("Can't find registered Reflection for type: $type");
+    throw UnsupportedError(
+        "Can't find registered Reflection for type: $type > $s");
   }
 
   O _entityFromJsonValue<O>(Type type, Object value) {
+    var jsonValueDecoderProvider = this.jsonValueDecoderProvider;
+    if (jsonValueDecoderProvider != null) {
+      var valueDecoder = jsonValueDecoderProvider(type, value);
+      if (valueDecoder != null) {
+        return valueDecoder(value, type, this) as O;
+      }
+    }
+
     if (!JsonConverter.isValidEntityType(type)) {
       return value as O;
     }
@@ -972,7 +1033,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
   FutureOr<O> _entityFromJsonMapAsync<O>(Type type, Map<String, Object?> map) {
     var jsomMapDecoderAsyncProvider = this.jsomMapDecoderAsyncProvider;
     if (jsomMapDecoderAsyncProvider != null) {
-      var fromJsonMapAsync = jsomMapDecoderAsyncProvider(type);
+      var fromJsonMapAsync = jsomMapDecoderAsyncProvider(type, map);
       if (fromJsonMapAsync != null) {
         var futureOr = fromJsonMapAsync(map, this);
         return _castFutureOr<O>(futureOr);

@@ -415,14 +415,44 @@ void main() {
               'file', Uint8List.fromList(utf8.encode('Hello!')),
               id: BigInt.two)),
           equals(
-              '{"bytes":"data:application/octet-stream;base64,SGVsbG8h","domain":null,"id":2,"name":"file"}'));
+              '{"bytes":"hex:48656C6C6F21","domain":null,"id":2,"name":"file"}'));
 
       expect(
           JsonCodec().encode(TestDataWithReflection(
               'file', Uint8List.fromList(utf8.encode('Hi!')),
               domain: TestDomainWithReflection('foo', 'com'), id: BigInt.two)),
           equals(
-              '{"bytes":"data:application/octet-stream;base64,SGkh","domain":"foo.com","id":2,"name":"file"}'));
+              '{"bytes":"hex:486921","domain":"foo.com","id":2,"name":"file"}'));
+
+      {
+        var jsonCodec = JsonCodec(toEncodableProvider: (o) {
+          if (o is DateTime) {
+            return (o, j) => 'date:$o';
+          }
+          return null;
+        }, jsonValueDecoderProvider: (t, v) {
+          if (t == DateTime || '$v'.startsWith('date:')) {
+            return (o, t, j) {
+              var s = '$o';
+              var idx = s.indexOf(':');
+              var dateStr = s.substring(idx + 1);
+              return DateTime.parse(dateStr).toUtc();
+            };
+          }
+          return null;
+        });
+
+        var json = jsonCodec
+            .encode({'x': 123, 'date': DateTime.utc(2021, 10, 11, 20, 21, 22)});
+
+        expect(
+            json, equals('{"x":123,"date":"date:2021-10-11 20:21:22.000Z"}'));
+
+        var decoded = jsonCodec.decode(json);
+
+        expect(decoded,
+            equals({'x': 123, 'date': DateTime.utc(2021, 10, 11, 20, 21, 22)}));
+      }
     });
 
     test('decode', () async {
@@ -456,8 +486,7 @@ void main() {
           equals(TestAddressWithReflection('State3', 'City3')));
 
       expect(
-          JsonCodec(jsomMapDecoderAsyncProvider: (identifier) {
-            var type = identifier is Type ? identifier : identifier.runtimeType;
+          JsonCodec(jsomMapDecoderAsyncProvider: (type, map) {
             var classReflection =
                 ReflectionFactory().getRegisterClassReflection(type)!;
             return (m, j) {
