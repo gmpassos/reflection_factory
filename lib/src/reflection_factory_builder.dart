@@ -8,11 +8,11 @@ import 'package:build/build.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:reflection_factory/src/reflection_factory_base.dart';
 
 import 'analyzer/library.dart';
 import 'analyzer/type_checker.dart';
 import 'reflection_factory_annotation.dart';
+import 'reflection_factory_base.dart';
 
 /// The reflection builder.
 class ReflectionBuilder implements Builder {

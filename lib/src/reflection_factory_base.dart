@@ -9,13 +9,15 @@ import 'package:collection/collection.dart'
         MapEquality,
         equalsIgnoreAsciiCase;
 import 'package:pub_semver/pub_semver.dart';
-import 'package:reflection_factory/reflection_factory.dart';
-import 'package:reflection_factory/src/reflection_factory_json.dart';
+
+import 'reflection_factory_annotation.dart';
+import 'reflection_factory_json.dart';
+import 'reflection_factory_type.dart';
 
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.0.20';
+  static const String VERSION = '1.0.21';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -260,7 +262,7 @@ abstract class EnumReflection<O> extends Reflection<O>
   /// Returns a [List] of siblings [ClassReflection] (declared in the same code unit).
   List<EnumReflection> siblingsEnumReflection();
 
-  /// Returns a [siblingsClassReflection] for [type], [obj] or [T].
+  /// Returns a [siblingsEnumReflection] for [type], [obj] or [T].
   EnumReflection<T>? siblingEnumReflectionFor<T>({T? obj, Type? type}) {
     type ??= obj?.runtimeType ?? T;
 
@@ -988,6 +990,10 @@ abstract class ClassReflection<O> extends Reflection<O>
     constructor ??= getBestConstructorFor(
         optionalParameters: fieldsOptional,
         nullableParameters: fieldsNotPresent,
+        presentParameters: presentParameters);
+
+    constructor ??= getBestConstructorFor(
+        optionalParameters: fieldsOptional,
         presentParameters: presentParameters);
 
     if (constructor == null) return null;

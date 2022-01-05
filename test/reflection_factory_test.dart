@@ -178,6 +178,88 @@ void main() {
           isTrue);
 
       expect(
+          TestUserWithReflection$reflection.staticInstance
+              .fromJson({'name': 'Foo', 'email': 'a@a.com', 'password': '123'}),
+          equals(TestUserWithReflection.fields('Foo', 'a@a.com', '123')));
+
+      expect(
+          TestUserWithReflection.fields('Foo', 'a@a.com', '123').toJsonMap(),
+          equals({
+            'axis': 'x',
+            'email': 'a@a.com',
+            'enabled': true,
+            'isEnabled': true,
+            'level': null,
+            'name': 'Foo',
+            'password': '123'
+          }));
+
+      expect(
+          TestUserWithReflection.fields('Foo', 'a@a.com', '123').toJson(),
+          equals({
+            'axis': 'x',
+            'email': 'a@a.com',
+            'enabled': true,
+            'isEnabled': true,
+            'level': null,
+            'name': 'Foo',
+            'password': '123'
+          }));
+
+      expect(
+          TestUserWithReflection.fields('Foo', 'a@a.com', '123')
+              .toJsonFromFields(),
+          equals({
+            'axis': 'x',
+            'email': 'a@a.com',
+            'enabled': true,
+            'isEnabled': true,
+            'level': null,
+            'name': 'Foo',
+            'password': '123'
+          }));
+
+      expect(TestUserWithReflection$reflection.staticInstance.hasFinalField,
+          isTrue);
+
+      expect(TestUserWithReflection$reflection.staticInstance.hasMethodToJson,
+          isFalse);
+
+      expect(
+          TestUserWithReflection$reflection
+              .staticInstance.hasDefaultConstructor,
+          isTrue);
+
+      expect(
+          TestUserWithReflection$reflection.staticInstance.hasEmptyConstructor,
+          isFalse);
+
+      expect(
+          TestUserWithReflection$reflection
+              .staticInstance.hasFieldWithoutSetter,
+          isTrue);
+
+      expect(
+          TestUserWithReflection$reflection
+              .staticInstance.hasNoRequiredArgsConstructor,
+          isFalse);
+
+      expect(
+          TestUserWithReflection$reflection.staticInstance
+              .siblingsClassReflection(),
+          isNotEmpty);
+
+      expect(
+          TestUserWithReflection$reflection.staticInstance
+              .siblingClassReflectionFor<TestUserWithReflection>(),
+          isNotNull);
+
+      expect(
+          TestUserWithReflection$reflection.staticInstance
+              .siblingReflectionFor<TestUserWithReflection>(),
+          isNotNull);
+
+      expect(
           userReflection.siblingsClassReflection().map((e) => e.classType),
           equals([
             TestUserWithReflection,
@@ -203,6 +285,48 @@ void main() {
           TestEnumWithReflection$from('Z'), equals(TestEnumWithReflection.Z));
 
       expect(TestEnumWithReflection$from('w'), isNull);
+
+      expect(TestEnumWithReflection.x.reflection.enumName,
+          equals('TestEnumWithReflection'));
+
+      expect(TestEnumWithReflection.x.reflection.name(), equals('x'));
+      expect(TestEnumWithReflection.Z.reflection.name(), equals('Z'));
+
+      expect(TestEnumWithReflection.x.reflection.toJson(), equals('x'));
+
+      expect(
+          TestEnumWithReflection.x.reflection.toJsonEncoded(), equals('"x"'));
+
+      expect(TestEnumWithReflection.x.reflection.toJsonMap(),
+          equals({'name': 'x', 'index': 0}));
+
+      expect(TestEnumWithReflection$reflection.staticInstance.fromJson('x'),
+          equals(TestEnumWithReflection.x));
+
+      expect(
+          TestEnumWithReflection$reflection.staticInstance
+              .fromJsonEncoded('"Z"'),
+          equals(TestEnumWithReflection.Z));
+
+      expect(
+          TestEnumWithReflection$reflection.staticInstance.siblingsReflection(),
+          isNotEmpty);
+
+      expect(
+          TestEnumWithReflection$reflection.staticInstance
+              .siblingsEnumReflection()
+              .length,
+          equals(1));
+
+      expect(
+          TestEnumWithReflection$reflection.staticInstance
+              .siblingEnumReflectionFor<TestEnumWithReflection>(),
+          isNotNull);
+
+      expect(
+          TestEnumWithReflection$reflection.staticInstance
+              .getIndex(TestEnumWithReflection.Z),
+          equals(3));
 
       expect(TestEnumWithReflection$reflection().values,
           equals(TestEnumWithReflection.values));

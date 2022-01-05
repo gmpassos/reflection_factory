@@ -1,3 +1,8 @@
+## 1.0.21
+
+- Improve JSON codec customization.
+- Improve `createInstanceWithBestConstructor`.
+
 ## 1.0.20
 
 - Added `TypeInfo` to perform type checking and handle other `Type` operations
