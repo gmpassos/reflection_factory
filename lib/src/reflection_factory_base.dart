@@ -992,6 +992,10 @@ abstract class ClassReflection<O> extends Reflection<O>
         nullableParameters: fieldsNotPresent,
         presentParameters: presentParameters);
 
+    constructor ??= getBestConstructorFor(
+        optionalParameters: fieldsOptional,
+        presentParameters: presentParameters);
+
     if (constructor == null) return null;
 
     var methodInvocation = constructor.methodInvocationFromMap(map,

@@ -1,6 +1,7 @@
 ## 1.0.21
 
 - Improve JSON codec customization.
+- Improve `createInstanceWithBestConstructor`.
 
 ## 1.0.20
 
