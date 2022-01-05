@@ -9,8 +9,10 @@ import 'package:collection/collection.dart'
         MapEquality,
         equalsIgnoreAsciiCase;
 import 'package:pub_semver/pub_semver.dart';
-import 'package:reflection_factory/reflection_factory.dart';
-import 'package:reflection_factory/src/reflection_factory_json.dart';
+
+import 'reflection_factory_annotation.dart';
+import 'reflection_factory_json.dart';
+import 'reflection_factory_type.dart';
 
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
