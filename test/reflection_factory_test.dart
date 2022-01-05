@@ -178,6 +178,21 @@ void main() {
           isTrue);
 
       expect(
+          TestUserWithReflection$reflection.staticInstance
+              .siblingsClassReflection(),
+          isNotEmpty);
+
+      expect(
+          TestUserWithReflection$reflection.staticInstance
+              .siblingClassReflectionFor<TestUserWithReflection>(),
+          isNotNull);
+
+      expect(
+          TestUserWithReflection$reflection.staticInstance
+              .siblingReflectionFor<TestUserWithReflection>(),
+          isNotNull);
+
+      expect(
           userReflection.siblingsClassReflection().map((e) => e.classType),
           equals([
             TestUserWithReflection,
@@ -209,6 +224,21 @@ void main() {
 
       expect(TestEnumWithReflection.x.reflection.name(), equals('x'));
       expect(TestEnumWithReflection.Z.reflection.name(), equals('Z'));
+
+      expect(
+          TestEnumWithReflection$reflection.staticInstance.siblingsReflection(),
+          isNotEmpty);
+
+      expect(
+          TestEnumWithReflection$reflection.staticInstance
+              .siblingsEnumReflection()
+              .length,
+          equals(1));
+
+      expect(
+          TestEnumWithReflection$reflection.staticInstance
+              .siblingEnumReflectionFor<TestEnumWithReflection>(),
+          isNotNull);
 
       expect(
           TestEnumWithReflection$reflection.staticInstance
