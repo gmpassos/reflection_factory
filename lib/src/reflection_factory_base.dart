@@ -260,7 +260,7 @@ abstract class EnumReflection<O> extends Reflection<O>
   /// Returns a [List] of siblings [ClassReflection] (declared in the same code unit).
   List<EnumReflection> siblingsEnumReflection();
 
-  /// Returns a [siblingsClassReflection] for [type], [obj] or [T].
+  /// Returns a [siblingsEnumReflection] for [type], [obj] or [T].
   EnumReflection<T>? siblingEnumReflectionFor<T>({T? obj, Type? type}) {
     type ??= obj?.runtimeType ?? T;
 

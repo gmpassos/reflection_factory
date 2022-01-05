@@ -204,6 +204,17 @@ void main() {
 
       expect(TestEnumWithReflection$from('w'), isNull);
 
+      expect(TestEnumWithReflection.x.reflection.enumName,
+          equals('TestEnumWithReflection'));
+
+      expect(TestEnumWithReflection.x.reflection.name(), equals('x'));
+      expect(TestEnumWithReflection.Z.reflection.name(), equals('Z'));
+
+      expect(
+          TestEnumWithReflection$reflection.staticInstance
+              .getIndex(TestEnumWithReflection.Z),
+          equals(3));
+
       expect(TestEnumWithReflection$reflection().values,
           equals(TestEnumWithReflection.values));
 

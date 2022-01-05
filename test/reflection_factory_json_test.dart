@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:base_codecs/base_codecs.dart';
+import 'package:data_serializer/data_serializer.dart';
 import 'package:reflection_factory/reflection_factory.dart';
 import 'package:test/test.dart';
 
@@ -416,6 +417,15 @@ void main() {
               id: BigInt.two)),
           equals(
               '{"bytes":"hex:48656C6C6F21","domain":null,"id":2,"name":"file"}'));
+
+      expect(
+          JsonCodec().encode(TestDataWithReflection(
+              'file',
+              '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da636460f85f0f0002870180eb47ba920000000049454e44ae426082'
+                  .decodeHex(),
+              id: BigInt.two)),
+          equals(
+              '{"bytes":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==","domain":null,"id":2,"name":"file"}'));
 
       expect(
           JsonCodec().encode(TestDataWithReflection(
