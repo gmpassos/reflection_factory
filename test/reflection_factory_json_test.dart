@@ -129,6 +129,7 @@ void main() {
             if (obj is TestUserWithReflection) {
               return (o, j) => o is TestUserWithReflection ? o.email : null;
             }
+            return null;
           }).toJson(
               TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')),
           equals('joe@mail.com'));

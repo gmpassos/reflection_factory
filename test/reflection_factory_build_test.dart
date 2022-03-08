@@ -1,5 +1,4 @@
 @TestOn('vm')
-
 import 'package:build_test/build_test.dart';
 import 'package:reflection_factory/src/reflection_factory_base.dart';
 import 'package:reflection_factory/src/reflection_factory_builder.dart';
@@ -413,6 +412,62 @@ void main() {
             contains('UserRefExt'),
             contains('BridgeExt'),
           ))
+        },
+        onLog: (msg) {
+          print(msg);
+        },
+      );
+    });
+
+    test('ClassProxy: SimpleAPI', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'foo.reflection.g.dart';
+          
+          @ClassProxy('SimpleAPI')
+          class SimpleAPIProxy implements ClassProxyListener {
+          }
+          
+          class SimpleAPI {
+            final String name;
+            
+            SimpleAPI(this.name);
+            
+            int computeSum(int a, int b) => a + b ;
+            
+            Future<int> computeMultiply(int a, int b) async => a * b ;
+            
+            @override
+            String toString() => 'SimpleAPI{ name: \$name }';
+          }
+        
+        '''
+      };
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        reader: await PackageAssetReader.currentIsolate(),
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of 'foo.dart'"),
+            ),
+            allOf(
+              contains('SimpleAPI\$reflectionProxy'),
+              contains('int computeSum(int a, int b) {'),
+              contains('Future<int> computeMultiply(int a, int b) {'),
+            ),
+          )),
         },
         onLog: (msg) {
           print(msg);

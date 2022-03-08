@@ -32,6 +32,11 @@ class TestUserSimple {
   }
 
   bool hasEmail() => email != null && email!.isNotEmpty;
+
+  @override
+  String toString() {
+    return 'TestUserSimple{name: $name, email: $email}';
+  }
 }
 
 class TestAnnotation {

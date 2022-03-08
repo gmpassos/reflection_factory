@@ -890,7 +890,7 @@ void main() {
           equals(['version', 'withReflection']));
 
       expect(userReflection.methodsNames,
-          equals(['checkThePassword', 'hasEmail']));
+          equals(['checkThePassword', 'hasEmail', 'toString']));
       expect(userReflection.staticMethodsNames, equals(['isVersion']));
 
       expect(userReflection.getField('name'), equals('Joe'));
@@ -999,11 +999,11 @@ void main() {
           }).invoke(method.method),
           isTrue);
 
-      expect(userReflection.allMethods().whereNoParameters().length, equals(1));
+      expect(userReflection.allMethods().whereNoParameters().length, equals(2));
 
       expect(
           userReflection.allMethods().whereParametersTypes().map((e) => e.name),
-          ['checkThePassword', 'hasEmail']);
+          ['checkThePassword', 'hasEmail', 'toString']);
 
       expect(
           userReflection.allMethods().whereParametersTypes(
@@ -1024,7 +1024,7 @@ void main() {
           userReflection
               .allMethods()
               .whereParametersTypes(optionalParameters: []).map((e) => e.name),
-          ['checkThePassword', 'hasEmail']);
+          ['checkThePassword', 'hasEmail', 'toString']);
 
       expect(
           userReflection.allMethods().whereParametersTypes(
@@ -1050,7 +1050,7 @@ void main() {
           equals(['checkThePassword']));
 
       expect(userReflection.allMethods().whereAnnotated().map((e) => e.name),
-          equals(['checkThePassword']));
+          equals(['checkThePassword', 'toString']));
 
       expect(
           userReflection
@@ -1083,6 +1083,20 @@ void main() {
 
       expect(userStaticReflection.getStaticField('version'), equals(1.0));
       expect(userStaticReflection.getStaticField('withReflection'), isFalse);
+    });
+
+    test('Proxy', () {
+      var proxy = TestUserSimpleProxy();
+
+      expect(proxy.checkThePassword('pass123', ignoreCase: true), isTrue);
+      expect(proxy.hasEmail(), isFalse);
+
+      expect(
+          proxy.calls,
+          equals([
+            'TestUserSimpleProxy{calls: 0} -> checkThePassword( {password: pass123, ignoreCase: true} )',
+            'TestUserSimpleProxy{calls: 1} -> hasEmail( {} )',
+          ]));
     });
   });
 }

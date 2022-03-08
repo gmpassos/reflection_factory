@@ -1,3 +1,8 @@
+## 1.0.22
+
+- Added `ClassProxy`:
+  - Allows generation of a class proxy without directly depending on the target class. 
+
 ## 1.0.21
 
 - Improve JSON codec customization.

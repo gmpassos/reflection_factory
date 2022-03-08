@@ -32,6 +32,8 @@ class ReflectionBuilder implements Builder {
   static const TypeChecker typeEnableReflection =
       TypeChecker.fromRuntime(EnableReflection);
 
+  static const TypeChecker typeClassProxy = TypeChecker.fromRuntime(ClassProxy);
+
   @override
   Future<void> build(BuildStep buildStep) async {
     var inputLib = await buildStep.inputLibrary;
@@ -70,11 +72,11 @@ class ReflectionBuilder implements Builder {
 
     fullCode.write("part of '${inputId.pathSegments.last}';\n\n");
 
-    var codeKeys = codeTable.keys.toList();
+    var codeKeys = codeTable.allKeys.toList();
     _sortCodeKeys(codeKeys);
 
     for (var key in codeKeys) {
-      var code = codeTable[key]!;
+      var code = codeTable.get(key)!;
       if (code.trim().isNotEmpty) {
         fullCode.write(code);
       }
@@ -100,9 +102,9 @@ class ReflectionBuilder implements Builder {
     }
   }
 
-  Future<Map<String, String>> _buildCodeTable(
+  Future<_CodeTable> _buildCodeTable(
       BuildStep buildStep, LibraryReader libraryReader) async {
-    var codeTable = <String, String>{};
+    var codeTable = _CodeTable();
 
     var annotatedReflectionBridge =
         libraryReader.annotatedWith(typeReflectionBridge).toList();
@@ -110,7 +112,7 @@ class ReflectionBuilder implements Builder {
     for (var annotated in annotatedReflectionBridge) {
       if (annotated.element.kind == ElementKind.CLASS) {
         var codes = await _reflectionBridge(buildStep, annotated);
-        codeTable.addAll(codes);
+        codeTable.addAllClasses(codes);
       }
     }
 
@@ -134,7 +136,7 @@ class ReflectionBuilder implements Builder {
           reflectionExtensionName,
         );
 
-        codeTable.addAll(codes);
+        codeTable.addAllClasses(codes);
       } else if (annotated.element.kind == ElementKind.ENUM) {
         var enumElement = annotated.element;
 
@@ -145,7 +147,17 @@ class ReflectionBuilder implements Builder {
           reflectionExtensionName,
         );
 
-        codeTable.addAll(codes);
+        codeTable.addAllClasses(codes);
+      }
+    }
+
+    var annotatedClassProxy =
+        libraryReader.annotatedWith(typeClassProxy).toList();
+
+    for (var annotated in annotatedClassProxy) {
+      if (annotated.element.kind == ElementKind.CLASS) {
+        var codes = await _classProxy(buildStep, annotated);
+        codeTable.addProxies(codes);
       }
     }
 
@@ -167,6 +179,79 @@ class ReflectionBuilder implements Builder {
   String _parseCodeKey(String s) {
     var idx = s.indexOf(r'$');
     return idx >= 0 ? s.substring(idx + 1) : s;
+  }
+
+  Future<Map<String, String>> _classProxy(
+      BuildStep buildStep, AnnotatedElement annotated) async {
+    var annotation = annotated.annotation;
+    var annotatedClass = annotated.element as ClassElement;
+
+    var className = annotation.peek('className')!.stringValue;
+    var libraryName = annotation.peek('libraryName')!.stringValue;
+    var reflectionProxyName =
+        annotation.peek('reflectionProxyName')!.stringValue;
+
+    print('** ClassProxy:\n'
+        '  -- Target Class Name: $className\n');
+
+    if (reflectionProxyName.isNotEmpty) {
+      print('  -- reflectionProxyName: $reflectionProxyName\n');
+    }
+
+    var codeTable = <String, String>{};
+
+    var candidateClasses =
+        await _findClassElement(buildStep, className, libraryName);
+
+    if (candidateClasses.isEmpty) {
+      throw StateError(
+          "** Can't find a class with name `$className` to generate a `ClassProxy`!");
+    } else if (candidateClasses.length > 1) {
+      throw StateError(
+          "** Found many candidate classes with name `$className`: $candidateClasses");
+    }
+
+    var classElement = candidateClasses.first;
+
+    var classTree = _ClassTree(
+      classElement,
+      '?%',
+      '?%',
+      reflectionProxyName,
+      classElement.library.languageVersion.effective,
+      verbose: verbose,
+    );
+
+    if (verbose) {
+      print(classTree);
+    }
+
+    codeTable.putIfAbsent(classTree.reflectionProxyClass,
+        () => classTree.buildReflectionProxyClass(annotatedClass));
+
+    return codeTable;
+  }
+
+  Future<List<ClassElement>> _findClassElement(
+      BuildStep buildStep, String className, String libraryName) async {
+    var libraries = await buildStep.resolver.libraries.toList();
+
+    var candidateClasses = <ClassElement>[];
+
+    for (var lib in libraries) {
+      var classesElements = lib.topLevelElements.whereType<ClassElement>();
+
+      var element =
+          classesElements.firstWhereOrNull((e) => e.name == className);
+      if (element != null) {
+        if (libraryName.isEmpty || element.library.name == libraryName) {
+          candidateClasses.add(element);
+          break;
+        }
+      }
+    }
+
+    return candidateClasses;
   }
 
   Future<Map<String, String>> _reflectionBridge(
@@ -207,13 +292,14 @@ class ReflectionBuilder implements Builder {
 
       var classLibrary = await _getElementLibrary(buildStep, classElement);
 
-      var reflectionClassName = reflectionExtensionNames[classType] ?? '';
+      var reflectionClassName = reflectionClassNames[classType] ?? '';
       var reflectionExtensionName = reflectionExtensionNames[classType] ?? '';
 
       var classTree = _ClassTree(
         classElement,
         reflectionClassName,
         reflectionExtensionName,
+        '?%',
         classLibrary.languageVersion.effective,
         verbose: verbose,
       );
@@ -320,6 +406,7 @@ class ReflectionBuilder implements Builder {
       classElement,
       reflectionClassName,
       reflectionExtensionName,
+      '?%',
       classLibrary.languageVersion.effective,
       verbose: verbose,
     );
@@ -347,13 +434,16 @@ class ReflectionBuilder implements Builder {
     return library;
   }
 
-  String _buildSiblingsClassReflection(Map<String, String> codeTable) {
+  String _buildSiblingsClassReflection(_CodeTable codeTable) {
+    if (codeTable.reflectionClassesIsEmpty) return '';
+
     var str = StringBuffer();
 
     str.write('List<Reflection> _listSiblingsReflection() => ');
     str.write('<Reflection>[');
 
-    for (var c in codeTable.keys.where((e) => e.endsWith(r'$reflection'))) {
+    for (var c in codeTable.reflectionClassesKeys
+        .where((e) => e.endsWith(r'$reflection'))) {
       str.write(c);
       str.write('(), ');
     }
@@ -375,6 +465,53 @@ class ReflectionBuilder implements Builder {
 
     var code = str.toString();
     return code;
+  }
+}
+
+class _CodeTable {
+  final Map<String, String> _reflectionClasses = <String, String>{};
+  final Map<String, String> _reflectionProxies = <String, String>{};
+
+  bool get reflectionClassesIsEmpty => _reflectionClasses.isEmpty;
+
+  bool get isEmpty => _reflectionClasses.isEmpty && _reflectionProxies.isEmpty;
+
+  Iterable<String> get reflectionClassesKeys => _reflectionClasses.keys;
+
+  Iterable<String> get reflectionProxiesKeys => _reflectionClasses.keys;
+
+  Iterable<String> get allKeys =>
+      <String>[..._reflectionClasses.keys, ..._reflectionProxies.keys];
+
+  void _checkKey(String key) {
+    var code = get(key);
+    if (code != null) {
+      throw StateError("Key `$key` already exists in the code table!");
+    }
+  }
+
+  String? get(String key) => _reflectionClasses[key] ?? _reflectionProxies[key];
+
+  void addClass(String key, String code) {
+    _checkKey(key);
+    _reflectionClasses[key] = code;
+  }
+
+  void addAllClasses(Map<String, String> codes) {
+    for (var e in codes.entries) {
+      addClass(e.key, e.value);
+    }
+  }
+
+  void addProxy(String key, String code) {
+    _checkKey(key);
+    _reflectionProxies[key] = code;
+  }
+
+  void addProxies(Map<String, String> codes) {
+    for (var e in codes.entries) {
+      addProxy(e.key, e.value);
+    }
   }
 }
 
@@ -406,6 +543,16 @@ String _buildReflectionExtensionName(
   }
 
   return '$className\$reflectionExtension';
+}
+
+String _buildReflectionProxyClassName(
+    String className, String reflectionProxyClassName) {
+  reflectionProxyClassName = reflectionProxyClassName.trim();
+  if (reflectionProxyClassName.isNotEmpty) {
+    return reflectionProxyClassName;
+  }
+
+  return '$className\$reflectionProxy';
 }
 
 class _EnumTree<T> extends RecursiveElementVisitor<T> {
@@ -447,6 +594,7 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
     }
 
     fields.add(element);
+    return null;
   }
 
   List<String> get fieldsNames => fields.map((e) => e.name).toList();
@@ -636,6 +784,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   final String reflectionClassName;
   final String reflectionExtensionName;
+  final String reflectionProxyClassName;
 
   final Version languageVersion;
 
@@ -643,8 +792,12 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   final String className;
 
-  _ClassTree(this._classElement, this.reflectionClassName,
-      this.reflectionExtensionName, this.languageVersion,
+  _ClassTree(
+      this._classElement,
+      this.reflectionClassName,
+      this.reflectionExtensionName,
+      this.reflectionProxyClassName,
+      this.languageVersion,
       {this.verbose = false})
       : className = _classElement.name {
     scan(_classElement);
@@ -704,6 +857,9 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   String get reflectionExtension =>
       _buildReflectionExtensionName(className, reflectionExtensionName);
+
+  String get reflectionProxyClass =>
+      _buildReflectionProxyClassName(className, reflectionProxyClassName);
 
   final Set<ConstructorElement> constructors = <ConstructorElement>{};
 
@@ -769,6 +925,8 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     if (!_isVisitingSupperClass) {
       _addWithUniqueName(constructors, element);
     }
+
+    return null;
   }
 
   static bool _addWithUniqueName(Set<Element> set, Element element) {
@@ -1366,6 +1524,70 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     }
 
     str.write('}\n\n');
+
+    if (entriesCount > 0) {
+      codeBuffer.write(str);
+    }
+  }
+
+  String buildReflectionProxyClass(ClassElement proxyClass) {
+    if (_implementsType(proxyClass, 'ClassProxyListener')) {
+      throw StateError(
+          "`ClassProxy` is being used in a class that is not implementing `ClassProxyListener`: ${proxyClass.name}");
+    }
+
+    var str = StringBuffer();
+
+    str.write('extension $reflectionProxyClass on ${proxyClass.name} {\n');
+
+    _buildClassProxyMethods(str);
+
+    str.write('}\n\n');
+
+    return str.toString();
+  }
+
+  bool _implementsType(ClassElement classElement, String typeName) {
+    return classElement.supertype?.typeName != typeName &&
+        classElement.interfaces.where((e) => e.typeName == typeName).isEmpty;
+  }
+
+  void _buildClassProxyMethods(StringBuffer codeBuffer) {
+    var str = StringBuffer();
+
+    var entriesCount = 0;
+
+    var methods = this.methods.where((e) => !e.isStatic).toList();
+
+    for (var method in methods) {
+      if (method.name == 'toString') continue;
+
+      var methodSignature = method.toString();
+
+      str.write(methodSignature);
+
+      str.write(' {\n');
+      str.write(
+          "  var ret = onCall(this, '${method.name}', <String,dynamic>{\n");
+
+      for (var p in method.parameters) {
+        var name = p.name;
+        str.write("  '${p.name}': $name,\n");
+      }
+
+      str.write("  });\n");
+
+      if (method.returnType.isDartAsyncFuture) {
+        str.write(
+            '  return ret is Future ? ret as Future<dynamic> : Future<dynamic>.value(ret) ;\n');
+      } else {
+        str.write('  return ret as dynamic ;\n');
+      }
+
+      str.write('}\n\n');
+
+      entriesCount++;
+    }
 
     if (entriesCount > 0) {
       codeBuffer.write(str);

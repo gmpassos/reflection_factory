@@ -46,6 +46,29 @@ class ReflectionBridge {
   });
 }
 
+/// Informs that a class will be a proxy to a target class with [className],
+/// without directly depending on the target class.
+///
+/// - If [libraryName] is defined, ensures that the target class if from the correct library.
+/// - [reflectionProxyName] is the name of the generated proxy.
+@Target({TargetKind.classType})
+class ClassProxy {
+  final String className;
+  final String libraryName;
+  final String reflectionProxyName;
+
+  const ClassProxy(this.className,
+      {this.libraryName = '', this.reflectionProxyName = ''});
+}
+
+/// Interface that a proxy class (annotated with [ClassProxy]) should implement
+/// to list for proxy calls.
+abstract class ClassProxyListener<T> {
+  /// Calls made through a [ClassProxy] will be intercepted by [onCall] implementation.
+  Object? onCall(
+      T instance, String methodName, Map<String, dynamic> parameters);
+}
+
 abstract class JsonAnnotation {
   const JsonAnnotation();
 }
