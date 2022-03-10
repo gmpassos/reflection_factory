@@ -1,10 +1,12 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.22
+// BUILDER: reflection_factory/1.0.23
 // BUILD COMMAND: dart run build_runner build
 //
 
 // ignore_for_file: unnecessary_const
+// ignore_for_file: unnecessary_cast
+// ignore_for_file: unnecessary_type_check
 
 part of 'reflection_factory_example.dart';
 
@@ -32,7 +34,7 @@ class User$reflection extends ClassReflection<User> {
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.22');
+  Version get reflectionFactoryVersion => Version.parse('1.0.23');
 
   @override
   User$reflection withObject([User? obj]) => User$reflection(obj);
@@ -44,6 +46,13 @@ class User$reflection extends ClassReflection<User> {
 
   static User$reflection get staticInstance =>
       _withoutObjectInstance ??= User$reflection();
+
+  static bool _boot = false;
+  static void boot() {
+    if (_boot) return;
+    _boot = true;
+    User$reflection.staticInstance;
+  }
 
   @override
   bool get hasDefaultConstructor => false;

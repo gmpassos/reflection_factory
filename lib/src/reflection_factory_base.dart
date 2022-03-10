@@ -17,7 +17,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.0.22';
+  static const String VERSION = '1.0.23';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -153,6 +153,18 @@ abstract class Reflection<O> {
     return null;
   }
 
+  /// Cast [set] to [classType] if [type] == [classType] or return `null`.
+  Set? castSet(Set set, Type type) {
+    if (type == reflectedType) {
+      if (set is Set<O>) {
+        return set;
+      } else {
+        return Set<O>.from(set);
+      }
+    }
+    return null;
+  }
+
   /// Cast [itr] to [classType] if [type] == [classType] or return `null`.
   Iterable? castIterable(Iterable itr, Type type) {
     if (type == reflectedType) {
@@ -162,6 +174,75 @@ abstract class Reflection<O> {
         return itr.cast<O>();
       }
     }
+    return null;
+  }
+
+  /// Cast [map] values to [classType] if [type] == [classType] or return `null`.
+  Map? castMap(Map map, TypeInfo typeInfo) {
+    if (!typeInfo.isMap) {
+      return map;
+    }
+
+    var keyType = typeInfo.argumentType(0) ?? TypeInfo.tDynamic;
+    var valueType = typeInfo.argumentType(1) ?? TypeInfo.tDynamic;
+
+    if (keyType.isString) {
+      if (valueType.type == reflectedType) {
+        if (map is Map<String, O>) {
+          return map;
+        } else {
+          return map.map((key, value) => MapEntry<String, O>(key, value));
+        }
+      } else if (valueType.isDynamic) {
+        return map.map((key, value) => MapEntry<String, dynamic>(key, value));
+      } else if (valueType.isObject) {
+        return map.map((key, value) => MapEntry<String, Object>(key, value));
+      }
+    } else if (keyType.isObject) {
+      if (valueType.type == reflectedType) {
+        if (map is Map<Object, O>) {
+          return map;
+        } else {
+          return map.map((key, value) => MapEntry<Object, O>(key, value));
+        }
+      } else if (valueType.isDynamic) {
+        return map.map((key, value) => MapEntry<Object, dynamic>(key, value));
+      } else if (valueType.isObject) {
+        return map.map((key, value) => MapEntry<Object, Object>(key, value));
+      }
+    } else if (keyType.isDynamic) {
+      if (valueType.type == reflectedType) {
+        if (map is Map<dynamic, O>) {
+          return map;
+        } else {
+          return map.map((key, value) => MapEntry<dynamic, O>(key, value));
+        }
+      } else if (valueType.isDynamic) {
+        return map.map((key, value) => MapEntry<dynamic, dynamic>(key, value));
+      } else if (valueType.isObject) {
+        return map.map((key, value) => MapEntry<dynamic, Object>(key, value));
+      }
+    }
+
+    return null;
+  }
+
+  /// Cast [o] to a collection represented by [typeInfo].
+  Object? castCollection(dynamic o, TypeInfo typeInfo) {
+    if (o == null) return null;
+
+    var mainType = typeInfo.argumentType(0) ?? typeInfo;
+
+    if (typeInfo.isSet) {
+      return castSet(o, mainType.type);
+    } else if (typeInfo.isList) {
+      return castList(o, mainType.type);
+    } else if (typeInfo.isIterable) {
+      return castIterable(o, mainType.type);
+    } else if (typeInfo.isMap) {
+      return castMap(o, typeInfo);
+    }
+
     return null;
   }
 
@@ -903,7 +984,7 @@ abstract class ClassReflection<O> extends Reflection<O>
 
     var map = Map<String, dynamic>.fromEntries(entries);
 
-    jsonEncoder ??= JsonEncoder.defaultDecoder;
+    jsonEncoder ??= JsonEncoder.defaultEncoder;
     return jsonEncoder.toJson(map);
   }
 
@@ -912,7 +993,7 @@ abstract class ClassReflection<O> extends Reflection<O>
   String toJsonEncoded(
       {O? obj, JsonEncoder? jsonEncoder, bool pretty = false}) {
     obj ??= object;
-    jsonEncoder ??= JsonEncoder.defaultDecoder;
+    jsonEncoder ??= JsonEncoder.defaultEncoder;
     return jsonEncoder.encode(obj, pretty: pretty);
   }
 
@@ -1227,6 +1308,7 @@ class ParameterReflection {
 class TypeReflection {
   static const TypeReflection tObject = TypeReflection(Object);
   static const TypeReflection tDynamic = TypeReflection(dynamic);
+  static final TypeReflection tVoid = TypeReflection.from(TypeInfo.tVoid);
   static const TypeReflection tString = TypeReflection(String);
   static const TypeReflection tDouble = TypeReflection(double);
   static const TypeReflection tInt = TypeReflection(int);
@@ -1806,7 +1888,8 @@ class _AbsentParameterValue {
 }
 
 /// Base class fro methods and constructors.
-abstract class FunctionReflection<O, R> extends ElementReflection<O> {
+abstract class FunctionReflection<O, R> extends ElementReflection<O>
+    implements Comparable<FunctionReflection> {
   /// The name of this method.
   final String name;
 
@@ -1892,11 +1975,20 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
       optionalParameters.length +
       namedParameters.length;
 
+  /// Returns the amount of positional parameters ([normalParameters] + [optionalParameters]).
+  int get positionalParametersLength =>
+      normalParameters.length + optionalParameters.length;
+
   /// Returns `true` if this methods has no arguments/parameters.
   bool get hasNoParameters =>
       normalParameters.isEmpty &&
       optionalParameters.isEmpty &&
       namedParameters.isEmpty;
+
+  /// Returns the amount of required parameters.
+  int get requiredParametersLength =>
+      normalParameters.length +
+      namedParameters.values.where((p) => p.required).length;
 
   List<TypeReflection>? _normalParametersTypeReflection;
 
@@ -2125,6 +2217,19 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O> {
           '  - namedArguments: $namedArguments\n');
       rethrow;
     }
+  }
+
+  @override
+  int compareTo(FunctionReflection other) {
+    var cmp = normalParameters.length.compareTo(other.normalParameters.length);
+    if (cmp == 0) {
+      cmp =
+          optionalParameters.length.compareTo(other.optionalParameters.length);
+      if (cmp == 0) {
+        cmp = namedParameters.length.compareTo(other.namedParameters.length);
+      }
+    }
+    return cmp;
   }
 }
 

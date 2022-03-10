@@ -1,10 +1,12 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.22
+// BUILDER: reflection_factory/1.0.23
 // BUILD COMMAND: dart run build_runner build
 //
 
 // ignore_for_file: unnecessary_const
+// ignore_for_file: unnecessary_cast
+// ignore_for_file: unnecessary_type_check
 
 part of 'user_reflection_bridge.dart';
 
@@ -33,7 +35,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.22');
+  Version get reflectionFactoryVersion => Version.parse('1.0.23');
 
   @override
   TestUserSimple$reflection withObject([TestUserSimple? obj]) =>
@@ -47,6 +49,13 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
 
   static TestUserSimple$reflection get staticInstance =>
       _withoutObjectInstance ??= TestUserSimple$reflection();
+
+  static bool _boot = false;
+  static void boot() {
+    if (_boot) return;
+    _boot = true;
+    TestUserSimple$reflection.staticInstance;
+  }
 
   @override
   bool get hasDefaultConstructor => false;
@@ -369,18 +378,51 @@ extension TestUserSimple$reflectionExtension on TestUserSimple {
   Object? toJsonFromFields() => reflection.toJsonFromFields();
 }
 
-extension TestUserSimple$reflectionProxy on TestUserSimpleProxy {
+extension TestUserSimpleProxy$reflectionProxy on TestUserSimpleProxy {
   bool checkThePassword(String password, {bool ignoreCase = false}) {
-    var ret = onCall(this, 'checkThePassword', <String, dynamic>{
-      'password': password,
-      'ignoreCase': ignoreCase,
-    });
+    var ret = onCall(
+        this,
+        'checkThePassword',
+        <String, dynamic>{
+          'password': password,
+          'ignoreCase': ignoreCase,
+        },
+        TypeReflection.tBool);
     return ret as dynamic;
   }
 
   bool hasEmail() {
-    var ret = onCall(this, 'hasEmail', <String, dynamic>{});
+    var ret =
+        onCall(this, 'hasEmail', <String, dynamic>{}, TypeReflection.tBool);
     return ret as dynamic;
+  }
+}
+
+extension TestUserSimpleProxyAsync$reflectionProxy on TestUserSimpleProxyAsync {
+  Future<bool> checkThePassword(String password, {bool ignoreCase = false}) {
+    var ret = onCall(
+        this,
+        'checkThePassword',
+        <String, dynamic>{
+          'password': password,
+          'ignoreCase': ignoreCase,
+        },
+        TypeReflection.tFutureBool);
+    return ret is Future<bool>
+        ? ret as Future<bool>
+        : (ret is Future
+            ? ret.then((v) => v as bool)
+            : Future<bool>.value(ret as dynamic));
+  }
+
+  Future<bool> hasEmail() {
+    var ret = onCall(
+        this, 'hasEmail', <String, dynamic>{}, TypeReflection.tFutureBool);
+    return ret is Future<bool>
+        ? ret as Future<bool>
+        : (ret is Future
+            ? ret.then((v) => v as bool)
+            : Future<bool>.value(ret as dynamic));
   }
 }
 

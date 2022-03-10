@@ -1,5 +1,7 @@
 import 'package:meta/meta_meta.dart';
 
+import 'reflection_factory_base.dart';
+
 /// Enables reflection for a class.
 @Target({TargetKind.classType, TargetKind.enumType})
 class EnableReflection {
@@ -55,18 +57,27 @@ class ReflectionBridge {
 class ClassProxy {
   final String className;
   final String libraryName;
+  final String libraryPath;
   final String reflectionProxyName;
+  final bool alwaysReturnFuture;
+  final Set<Type> traverseReturnTypes;
+  final Set<String> ignoreMethods;
 
   const ClassProxy(this.className,
-      {this.libraryName = '', this.reflectionProxyName = ''});
+      {this.libraryName = '',
+      this.libraryPath = '',
+      this.reflectionProxyName = '',
+      this.ignoreMethods = const <String>{},
+      this.alwaysReturnFuture = false,
+      this.traverseReturnTypes = const <Type>{}});
 }
 
 /// Interface that a proxy class (annotated with [ClassProxy]) should implement
 /// to list for proxy calls.
 abstract class ClassProxyListener<T> {
   /// Calls made through a [ClassProxy] will be intercepted by [onCall] implementation.
-  Object? onCall(
-      T instance, String methodName, Map<String, dynamic> parameters);
+  Object? onCall(T instance, String methodName, Map<String, dynamic> parameters,
+      TypeReflection? returnType);
 }
 
 abstract class JsonAnnotation {

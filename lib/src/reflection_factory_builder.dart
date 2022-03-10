@@ -1,8 +1,11 @@
 import 'dart:collection';
 
+import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:analyzer/dart/element/visitor.dart';
 import 'package:build/build.dart';
 import 'package:collection/collection.dart';
@@ -68,7 +71,9 @@ class ReflectionBuilder implements Builder {
     fullCode.write('// BUILD COMMAND: dart run build_runner build\n');
     fullCode.write('// \n\n');
 
-    fullCode.write('// ignore_for_file: unnecessary_const\n\n');
+    fullCode.write('// ignore_for_file: unnecessary_const\n');
+    fullCode.write('// ignore_for_file: unnecessary_cast\n');
+    fullCode.write('// ignore_for_file: unnecessary_type_check\n\n');
 
     fullCode.write("part of '${inputId.pathSegments.last}';\n\n");
 
@@ -188,24 +193,31 @@ class ReflectionBuilder implements Builder {
 
     var className = annotation.peek('className')!.stringValue;
     var libraryName = annotation.peek('libraryName')!.stringValue;
+    var libraryPath = annotation.peek('libraryPath')!.stringValue;
     var reflectionProxyName =
         annotation.peek('reflectionProxyName')!.stringValue;
+    var alwaysReturnFuture = annotation.peek('alwaysReturnFuture')!.boolValue;
+    var traverseReturnTypes = annotation.peek('traverseReturnTypes')!.setValue;
+    var ignoreMethods = annotation.peek('ignoreMethods')!.setValue;
+
+    if (reflectionProxyName.isEmpty) {
+      reflectionProxyName = annotatedClass.name;
+    }
 
     print('** ClassProxy:\n'
-        '  -- Target Class Name: $className\n');
-
-    if (reflectionProxyName.isNotEmpty) {
-      print('  -- reflectionProxyName: $reflectionProxyName\n');
-    }
+        '  -- Target Class Name: $className\n'
+        '  -- Always Return Future: $alwaysReturnFuture\n'
+        '  -- reflectionProxyName: $reflectionProxyName\n'
+        '  -- traverseReturnTypes: $traverseReturnTypes\n');
 
     var codeTable = <String, String>{};
 
     var candidateClasses =
-        await _findClassElement(buildStep, className, libraryName);
+        await _findClassElement(buildStep, className, libraryName, libraryPath);
 
     if (candidateClasses.isEmpty) {
       throw StateError(
-          "** Can't find a class with name `$className` to generate a `ClassProxy`!");
+          "** Can't find a class with name `$className` to generate a `ClassProxy`! libraryName: `$libraryName` ; libraryPath: `$libraryPath`.");
     } else if (candidateClasses.length > 1) {
       throw StateError(
           "** Found many candidate classes with name `$className`: $candidateClasses");
@@ -226,27 +238,57 @@ class ReflectionBuilder implements Builder {
       print(classTree);
     }
 
-    codeTable.putIfAbsent(classTree.reflectionProxyClass,
-        () => classTree.buildReflectionProxyClass(annotatedClass));
+    codeTable.putIfAbsent(
+        classTree.reflectionProxyExtension,
+        () => classTree.buildReflectionProxyClass(annotatedClass,
+            alwaysReturnFuture, traverseReturnTypes, ignoreMethods));
 
     return codeTable;
   }
 
-  Future<List<ClassElement>> _findClassElement(
-      BuildStep buildStep, String className, String libraryName) async {
-    var libraries = await buildStep.resolver.libraries.toList();
+  Future<List<ClassElement>> _findClassElement(BuildStep buildStep,
+      String className, String libraryName, String libraryPath) async {
+    var inputLibrary = await buildStep.inputLibrary;
+    var mainLibraries = <LibraryElement>[inputLibrary];
+    var resolverLibraries = await buildStep.resolver.libraries.toList();
 
-    var candidateClasses = <ClassElement>[];
+    if (libraryPath.isNotEmpty) {
+      libraryPath =
+          libraryPath.replaceAll(RegExp(r'^(?:package:)?/*'), '').trim();
+      var result =
+          await inputLibrary.session.getLibraryByUri('package:$libraryPath');
 
-    for (var lib in libraries) {
-      var classesElements = lib.topLevelElements.whereType<ClassElement>();
+      if (result is LibraryElementResult) {
+        var libraryElement = result.element;
+        mainLibraries.add(libraryElement);
+      }
+    }
 
-      var element =
-          classesElements.firstWhereOrNull((e) => e.name == className);
-      if (element != null) {
-        if (libraryName.isEmpty || element.library.name == libraryName) {
-          candidateClasses.add(element);
-          break;
+    if (libraryName.isNotEmpty) {
+      var library = await buildStep.resolver.findLibraryByName(libraryName);
+      if (library != null) {
+        mainLibraries.add(library);
+      }
+    }
+
+    var mainLibrariesExported =
+        mainLibraries.expand((e) => e.exportedLibraries).toList();
+
+    var allLibraries = <LibraryElement>{
+      ...mainLibraries,
+      ...resolverLibraries,
+      ...mainLibrariesExported
+    }.toList();
+
+    var candidateClasses =
+        allLibraries.allUsedClasses.where((c) => c.name == className).toList();
+
+    if (candidateClasses.length > 1) {
+      if (libraryName.isNotEmpty) {
+        var targetClass = candidateClasses
+            .firstWhereOrNull((e) => e.library.name == libraryName);
+        if (targetClass != null) {
+          return <ClassElement>[targetClass];
         }
       }
     }
@@ -468,6 +510,34 @@ class ReflectionBuilder implements Builder {
   }
 }
 
+extension _LibraryElementExtension on LibraryElement {
+  Iterable<ClassElement> get exportedClasses =>
+      topLevelElements.whereType<ClassElement>();
+
+  Iterable<LibraryElement> get allExports =>
+      exports.map((e) => e.exportedLibrary).whereNotNull();
+
+  Iterable<ClassElement> get allExportedClasses =>
+      allExports.expand((e) => e.exportedClasses);
+
+  Iterable<ClassElement> get allImportedClasses => units.expand(
+      (e) => e.library.importedLibraries.expand((e) => e.exportedClasses));
+
+  Iterable<ClassElement> get allUnitsClasses =>
+      units.expand((e) => e.library.topLevelElements.whereType<ClassElement>());
+}
+
+extension IterableLibraryElementExtension on Iterable<LibraryElement> {
+  Set<ClassElement> get allUsedClasses => <ClassElement>{
+        ...expand((l) => l.exportedClasses),
+        ...expand((l) => l.allExportedClasses),
+        ...expand((l) =>
+            l.allExportedClasses.expand((e) => e.library.allUnitsClasses)),
+        ...expand((l) =>
+            l.allExportedClasses.expand((e) => e.library.allImportedClasses)),
+      };
+}
+
 class _CodeTable {
   final Map<String, String> _reflectionClasses = <String, String>{};
   final Map<String, String> _reflectionProxies = <String, String>{};
@@ -543,16 +613,6 @@ String _buildReflectionExtensionName(
   }
 
   return '$className\$reflectionExtension';
-}
-
-String _buildReflectionProxyClassName(
-    String className, String reflectionProxyClassName) {
-  reflectionProxyClassName = reflectionProxyClassName.trim();
-  if (reflectionProxyClassName.isNotEmpty) {
-    return reflectionProxyClassName;
-  }
-
-  return '$className\$reflectionProxy';
 }
 
 class _EnumTree<T> extends RecursiveElementVisitor<T> {
@@ -664,6 +724,13 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
 
     str.write(
         '  static $reflectionClass get staticInstance => _withoutObjectInstance ??= $reflectionClass();\n\n');
+
+    str.write('  static bool _boot = false;'
+        '  static void boot() {\n'
+        '    if (_boot) return;\n'
+        '    _boot = true;\n'
+        '    $reflectionClass.staticInstance ;\n'
+        '}');
 
     var classElement = _Element(_enumElement);
 
@@ -784,7 +851,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   final String reflectionClassName;
   final String reflectionExtensionName;
-  final String reflectionProxyClassName;
+  final String reflectionProxyName;
 
   final Version languageVersion;
 
@@ -796,7 +863,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       this._classElement,
       this.reflectionClassName,
       this.reflectionExtensionName,
-      this.reflectionProxyClassName,
+      this.reflectionProxyName,
       this.languageVersion,
       {this.verbose = false})
       : className = _classElement.name {
@@ -858,8 +925,8 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
   String get reflectionExtension =>
       _buildReflectionExtensionName(className, reflectionExtensionName);
 
-  String get reflectionProxyClass =>
-      _buildReflectionProxyClassName(className, reflectionProxyClassName);
+  String get reflectionProxyExtension =>
+      '$reflectionProxyName\$reflectionProxy';
 
   final Set<ConstructorElement> constructors = <ConstructorElement>{};
 
@@ -1089,6 +1156,13 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     str.write(
         '  static $reflectionClass get staticInstance => _withoutObjectInstance ??= $reflectionClass();\n\n');
+
+    str.write('  static bool _boot = false;'
+        '  static void boot() {\n'
+        '    if (_boot) return;\n'
+        '    _boot = true;\n'
+        '    $reflectionClass.staticInstance ;\n'
+        '}');
 
     _buildConstructors(str);
 
@@ -1530,58 +1604,126 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     }
   }
 
-  String buildReflectionProxyClass(ClassElement proxyClass) {
-    if (_implementsType(proxyClass, 'ClassProxyListener')) {
+  String buildReflectionProxyClass(
+      ClassElement proxyClass,
+      bool alwaysReturnFuture,
+      Set<DartObject> traverseReturnTypes,
+      Set<DartObject> ignoreMethods) {
+    if (!_implementsType(proxyClass, 'ClassProxyListener')) {
       throw StateError(
           "`ClassProxy` is being used in a class that is not implementing `ClassProxyListener`: ${proxyClass.name}");
     }
 
     var str = StringBuffer();
 
-    str.write('extension $reflectionProxyClass on ${proxyClass.name} {\n');
+    str.write('extension $reflectionProxyExtension on ${proxyClass.name} {\n');
 
-    _buildClassProxyMethods(str);
+    var typeProvider = proxyClass.library.typeProvider;
+
+    _buildClassProxyMethods(
+        str,
+        alwaysReturnFuture,
+        traverseReturnTypes.map((e) => e.toTypeValue()!).toSet(),
+        ignoreMethods.map((e) => e.toStringValue()!).toSet(),
+        typeProvider);
 
     str.write('}\n\n');
 
     return str.toString();
   }
 
-  bool _implementsType(ClassElement classElement, String typeName) {
-    return classElement.supertype?.typeName != typeName &&
-        classElement.interfaces.where((e) => e.typeName == typeName).isEmpty;
-  }
-
-  void _buildClassProxyMethods(StringBuffer codeBuffer) {
+  void _buildClassProxyMethods(
+      StringBuffer codeBuffer,
+      bool alwaysReturnFuture,
+      Set<DartType> traverseReturnTypes,
+      Set<String> ignoreMethods,
+      TypeProvider typeProvider) {
     var str = StringBuffer();
+
+    var traverseReturnInterfaceTypes =
+        traverseReturnTypes.map((e) => e.interfaceType).whereNotNull().toSet();
 
     var entriesCount = 0;
 
     var methods = this.methods.where((e) => !e.isStatic).toList();
 
     for (var method in methods) {
-      if (method.name == 'toString') continue;
-
-      var methodSignature = method.toString();
-
-      str.write(methodSignature);
-
-      str.write(' {\n');
-      str.write(
-          "  var ret = onCall(this, '${method.name}', <String,dynamic>{\n");
-
-      for (var p in method.parameters) {
-        var name = p.name;
-        str.write("  '${p.name}': $name,\n");
+      var methodName = method.name;
+      if (methodName == 'toString' || ignoreMethods.contains(methodName)) {
+        continue;
       }
 
-      str.write("  });\n");
+      var proxyMethod = _ProxyMethod.fromMethodElement(method);
 
-      if (method.returnType.isDartAsyncFuture) {
-        str.write(
-            '  return ret is Future ? ret as Future<dynamic> : Future<dynamic>.value(ret) ;\n');
+      if (proxyMethod.isReturningFuture) {
+        var arg = proxyMethod.returnTypeArgument;
+
+        if (arg != null &&
+            (traverseReturnTypes.contains(arg) ||
+                traverseReturnInterfaceTypes.contains(arg.interfaceType))) {
+          proxyMethod = proxyMethod
+              .traverseReturnType()
+              .traverseReturnType()
+              .returningFuture(typeProvider);
+        }
+      } else if (traverseReturnTypes.contains(proxyMethod.returnType) ||
+          traverseReturnInterfaceTypes
+              .contains(proxyMethod.returnType.interfaceType)) {
+        proxyMethod = proxyMethod.traverseReturnType();
+      }
+
+      if (alwaysReturnFuture && !proxyMethod.isReturningFuture) {
+        proxyMethod = proxyMethod.returningFuture(typeProvider);
+      }
+
+      str.write(proxyMethod.signature);
+
+      str.write(' {\n');
+
+      var returnTypeAsCode = proxyMethod.returnType.typeAsCode;
+
+      var call = StringBuffer();
+
+      call.write("onCall( this, '${proxyMethod.name}', <String,dynamic>{\n");
+      for (var p in method.parameters) {
+        var name = p.name;
+        call.write("  '${p.name}': $name,\n");
+      }
+      call.write("  }, $returnTypeAsCode );\n");
+
+      if (!proxyMethod.isReturningVoid) {
+        str.write('  var ret = ');
+        str.write(call);
+
+        if (proxyMethod.isReturningFuture) {
+          var acceptsNull = proxyMethod.returnAcceptsNull;
+
+          var futureType = proxyMethod.returnTypeArgument;
+
+          var futureTypeStr = futureType != null && futureType.isVoid
+              ? 'dynamic'
+              : (futureType?.fullTypeNameResolvable() ?? 'dynamic');
+
+          var returnTypeNullableStr = proxyMethod.returnTypeNameResolvable();
+
+          var returnTypeStr = returnTypeNullableStr.endsWith('?')
+              ? returnTypeNullableStr.substring(
+                  0, returnTypeNullableStr.length - 1)
+              : returnTypeNullableStr;
+
+          if (acceptsNull) {
+            str.write('  if (ret == null) return null;\n');
+          }
+
+          str.write(
+              '  return ret is $returnTypeNullableStr ? ret as $returnTypeNullableStr : '
+              '( ret is Future ? ret.then((v) => v as $futureTypeStr) : $returnTypeStr.value(ret as dynamic) '
+              ');\n');
+        } else {
+          str.write('  return ret as dynamic ;\n');
+        }
       } else {
-        str.write('  return ret as dynamic ;\n');
+        str.write(call);
       }
 
       str.write('}\n\n');
@@ -1592,6 +1734,77 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     if (entriesCount > 0) {
       codeBuffer.write(str);
     }
+  }
+
+  bool _implementsType(Object typeElement, String typeName) {
+    List<InterfaceType> supertypes;
+
+    if (typeElement is ClassElement) {
+      supertypes = typeElement.allSupertypes;
+    } else if (typeElement is InterfaceType) {
+      supertypes = typeElement.allSupertypes;
+    } else {
+      return false;
+    }
+
+    if (supertypes.isEmpty) return false;
+
+    if (supertypes.any((e) => e.typeName == typeName)) return true;
+
+    return supertypes.any((e) => _implementsType(e, typeName));
+  }
+}
+
+class _ProxyMethod {
+  final String name;
+
+  final DartType returnType;
+  final String parameters;
+
+  _ProxyMethod(this.name, this.returnType, this.parameters);
+
+  factory _ProxyMethod.fromMethodElement(MethodElement method) {
+    var methodSign = method.toString();
+    var idx = methodSign.indexOf('(');
+    var parameters = methodSign.substring(idx);
+
+    return _ProxyMethod(method.name, method.returnType, parameters);
+  }
+
+  bool get returnAcceptsNull => returnType.isNullable;
+
+  bool get isReturningVoid => returnType.isVoid;
+
+  bool get isReturningFuture => returnType.isDartAsyncFuture;
+
+  String get returnTypeAsString =>
+      returnType.getDisplayString(withNullability: true);
+
+  String returnTypeNameResolvable({bool withNullability = true}) =>
+      returnType.fullTypeNameResolvable(withNullability: withNullability);
+
+  DartType? get returnTypeArgument {
+    if (!returnType.hasTypeArguments) return null;
+
+    var args = returnType.resolvedTypeArguments;
+    if (args.isEmpty) return null;
+
+    return args[0];
+  }
+
+  String get signature => '${returnTypeNameResolvable()} $name$parameters';
+
+  _ProxyMethod returningFuture(TypeProvider typeProvider) {
+    if (returnType.isDartAsyncFuture) return this;
+
+    var retType = typeProvider.futureType(returnType);
+    return _ProxyMethod(name, retType, parameters);
+  }
+
+  _ProxyMethod traverseReturnType() {
+    var arg = returnTypeArgument;
+    if (arg == null) return this;
+    return _ProxyMethod(name, arg, parameters);
   }
 }
 
@@ -1950,6 +2163,19 @@ extension _DartTypeExtension on DartType {
     return name;
   }
 
+  String fullTypeNameResolvable({bool withNullability = true}) {
+    var name = typeNameResolvable;
+    if (!hasTypeArguments) {
+      return withNullability && isNullable ? '$name?' : name;
+    }
+
+    var args = resolvedTypeArguments
+        .map((e) => e.fullTypeNameResolvable(withNullability: withNullability))
+        .join(',');
+
+    return withNullability && isNullable ? '$name<$args>?' : '$name<$args>';
+  }
+
   String get typeName {
     var name = element?.name;
 
@@ -1970,6 +2196,14 @@ extension _DartTypeExtension on DartType {
     }
 
     return name;
+  }
+
+  InterfaceType? get interfaceType {
+    var element = this.element;
+    if (element is ClassElement) {
+      return element.thisType;
+    }
+    return null;
   }
 
   bool get hasTypeArguments {
@@ -2004,7 +2238,7 @@ extension _DartTypeExtension on DartType {
   String get typeNameAsCode {
     var self = this;
     if (self is VoidType) {
-      return 'null';
+      return 'TypeReflection.tVoid';
     }
 
     if (self is FunctionType) {
@@ -2037,7 +2271,7 @@ extension _DartTypeExtension on DartType {
     var self = this;
 
     if (self is VoidType) {
-      return 'null';
+      return 'TypeReflection.tVoid';
     }
 
     if (self is FunctionType) {
@@ -2069,7 +2303,9 @@ extension _DartTypeExtension on DartType {
         }
       }
 
-      return 'TypeReflection($name, [${arguments.typesAsCode}])';
+      var argsCode = arguments.typesAsCode;
+
+      return 'TypeReflection($name, [$argsCode])';
     } else {
       var constName = _getTypeReflectionConstantName(name);
       if (constName != null) {

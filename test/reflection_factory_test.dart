@@ -360,6 +360,11 @@ void main() {
 
       expect(userReflection.allConstructors().length, equals(2));
 
+      expect(
+          (userReflection.allConstructors().toList()..sort())
+              .map((e) => e.name),
+          equals(['', 'fields']));
+
       {
         var constructorDefault = userReflection.constructor('');
         expect(constructorDefault, isNotNull);
@@ -374,6 +379,10 @@ void main() {
         expect(constructorDefault.normalParameters, isEmpty);
         expect(constructorDefault.optionalParameters, isEmpty);
         expect(constructorDefault.namedParameters, isEmpty);
+
+        expect(constructorDefault.parametersLength, equals(0));
+        expect(constructorDefault.positionalParametersLength, equals(0));
+        expect(constructorDefault.requiredParametersLength, equals(0));
       }
 
       {
@@ -390,6 +399,24 @@ void main() {
         expect(constructorFields.optionalParameters, isEmpty);
         expect(constructorFields.namedParameters.keys,
             equals(['axis', 'enabled', 'level']));
+
+        expect(constructorFields.parametersLength, equals(6));
+        expect(constructorFields.positionalParametersLength, equals(3));
+        expect(constructorFields.requiredParametersLength, equals(3));
+
+        expect(constructorFields.getParameterByName('name'), isNotNull);
+        expect(constructorFields.getParameterByName('enabled'), isNotNull);
+        expect(constructorFields.getParameterByName('foo'), isNull);
+
+        expect(constructorFields.getParameterByIndex(0)?.name, equals('name'));
+        expect(constructorFields.getParameterByIndex(1)?.name, equals('email'));
+        expect(
+            constructorFields.getParameterByIndex(2)?.name, equals('password'));
+        expect(constructorFields.getParameterByIndex(3)?.name, equals('axis'));
+        expect(
+            constructorFields.getParameterByIndex(4)?.name, equals('enabled'));
+        expect(constructorFields.getParameterByIndex(5)?.name, equals('level'));
+        expect(constructorFields.getParameterByIndex(6)?.name, isNull);
       }
 
       {
@@ -644,9 +671,15 @@ void main() {
       var allMethods = userReflection.allMethods();
       expect(allMethods.toNames(),
           equals(['checkPassword', 'getField', 'setField']));
-      expect(allMethods.toReturnTypeReflections(),
-          equals([TypeReflection.tBool, TypeReflection.tDynamic, null]));
-      expect(allMethods.toReturnTypes(), equals([bool, dynamic, null]));
+      expect(
+          allMethods.toReturnTypeReflections(),
+          equals([
+            TypeReflection.tBool,
+            TypeReflection.tDynamic,
+            TypeReflection.tVoid
+          ]));
+      expect(allMethods.toReturnTypes(),
+          equals([bool, dynamic, TypeInfo.tVoid.type]));
       expect(allMethods.whereStatic(), isEmpty);
 
       var allStaticMethods = userReflection.allStaticMethods();
@@ -1094,8 +1127,22 @@ void main() {
       expect(
           proxy.calls,
           equals([
-            'TestUserSimpleProxy{calls: 0} -> checkThePassword( {password: pass123, ignoreCase: true} )',
-            'TestUserSimpleProxy{calls: 1} -> hasEmail( {} )',
+            'TestUserSimpleProxy{calls: 0} -> checkThePassword( {password: pass123, ignoreCase: true} ) -> bool',
+            'TestUserSimpleProxy{calls: 1} -> hasEmail( {} ) -> bool',
+          ]));
+    });
+
+    test('Proxy (async)', () async {
+      var proxy = TestUserSimpleProxyAsync();
+
+      expect(await proxy.checkThePassword('pass123', ignoreCase: true), isTrue);
+      expect(await proxy.hasEmail(), isFalse);
+
+      expect(
+          proxy.calls,
+          equals([
+            'TestUserSimpleProxyAsync{calls: 0} -> checkThePassword( {password: pass123, ignoreCase: true} ) -> Future<bool>',
+            'TestUserSimpleProxyAsync{calls: 1} -> hasEmail( {} ) -> Future<bool>',
           ]));
     });
   });

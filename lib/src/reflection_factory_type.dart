@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 
 import 'reflection_factory_base.dart';
+import 'reflection_factory_json.dart';
 
 typedef TypeElementParser<T> = T? Function(Object? o);
 
@@ -444,6 +445,7 @@ enum BasicDartType {
   dateTime,
   mapEntry,
   future,
+  voidType,
 }
 
 class _TypeWrapper {
@@ -466,6 +468,7 @@ class _TypeWrapper {
 
     if (type == tObject) return BasicDartType.object;
     if (type == tDynamic) return BasicDartType.dynamic;
+    if (type == tVoid) return BasicDartType.voidType;
 
     if (type == tMap || object is Map) return BasicDartType.map;
     if (type == tSet || object is Set) return BasicDartType.set;
@@ -494,6 +497,7 @@ class _TypeWrapper {
   static final Type tFutureOr = FutureOr;
   static final Type tObject = Object;
   static final Type tDynamic = dynamic;
+  static final Type tVoid = <void>[].listType; // Is there a better way?
 
   static Type detectType(Type type, [Object? object]) {
     if (type == tString || object is String) return tString;
@@ -506,6 +510,7 @@ class _TypeWrapper {
 
     if (type == tObject) return tObject;
     if (type == tDynamic) return tDynamic;
+    if (type == tVoid) return tVoid;
 
     if (type == tMap || object is Map) return tMap;
     if (type == tSet || object is Set) return tSet;
@@ -539,6 +544,9 @@ class _TypeWrapper {
 
   /// Returns `true` if [type] is `dynamic` or `Object`.
   bool get isDynamicOrObject => isDynamic || isObject;
+
+  /// Returns `true` if [type] is `void`.
+  bool get isVoid => basicDartType == BasicDartType.voidType;
 
   /// Returns `true` if [type] is `bool`.
   bool get isBool => basicDartType == BasicDartType.bool;
@@ -712,22 +720,23 @@ class TypeInfo {
   static bool equivalentTypeInfoList(List<TypeInfo> a, List<TypeInfo> b) =>
       _listEquivalencyTypeInfo.equals(a, b);
 
-  static final TypeInfo tString = TypeInfo._(String);
-  static final TypeInfo tBool = TypeInfo._(bool);
-  static final TypeInfo tInt = TypeInfo._(int);
-  static final TypeInfo tDouble = TypeInfo._(double);
-  static final TypeInfo tNum = TypeInfo._(num);
-  static final TypeInfo tBigInt = TypeInfo._(BigInt);
+  static final TypeInfo tString = TypeInfo._(_TypeWrapper.tString);
+  static final TypeInfo tBool = TypeInfo._(_TypeWrapper.tBool);
+  static final TypeInfo tInt = TypeInfo._(_TypeWrapper.tInt);
+  static final TypeInfo tDouble = TypeInfo._(_TypeWrapper.tDouble);
+  static final TypeInfo tNum = TypeInfo._(_TypeWrapper.tNum);
+  static final TypeInfo tBigInt = TypeInfo._(_TypeWrapper.tBigInt);
 
-  static final TypeInfo tList = TypeInfo._(List);
-  static final TypeInfo tSet = TypeInfo._(Set);
-  static final TypeInfo tMap = TypeInfo._(Map);
-  static final TypeInfo tIterable = TypeInfo._(Iterable);
+  static final TypeInfo tList = TypeInfo._(_TypeWrapper.tList);
+  static final TypeInfo tSet = TypeInfo._(_TypeWrapper.tSet);
+  static final TypeInfo tMap = TypeInfo._(_TypeWrapper.tMap);
+  static final TypeInfo tIterable = TypeInfo._(_TypeWrapper.tIterable);
 
-  static final TypeInfo tFuture = TypeInfo._(Future);
+  static final TypeInfo tFuture = TypeInfo._(_TypeWrapper.tFuture);
 
-  static final TypeInfo tObject = TypeInfo._(Object);
-  static final TypeInfo tDynamic = TypeInfo._(dynamic);
+  static final TypeInfo tObject = TypeInfo._(_TypeWrapper.tObject);
+  static final TypeInfo tDynamic = TypeInfo._(_TypeWrapper.tDynamic);
+  static final TypeInfo tVoid = TypeInfo._(_TypeWrapper.tVoid);
 
   final _TypeWrapper _typeWrapper;
 
@@ -786,6 +795,7 @@ class TypeInfo {
 
     if (type == _TypeWrapper.tObject) return tObject;
     if (type == _TypeWrapper.tDynamic) return tDynamic;
+    if (type == _TypeWrapper.tVoid) return tVoid;
 
     if (arguments == null || arguments.isEmpty) {
       if (type == _TypeWrapper.tList || object is List) return tList;
@@ -891,6 +901,19 @@ class TypeInfo {
 
       return null;
     }
+  }
+
+  /// Same as [parse] but if `this` [isFuture] it will traverse
+  /// to the [Future] argument.
+  T? parseTraversingFuture<T>(Object? value, [T? def]) {
+    if (isFuture) {
+      var argument = argumentType(0);
+      if (argument != null) {
+        return argument.parse(value);
+      }
+    }
+
+    return parse(value);
   }
 
   /// Returns `true` if [type] is primitive ([bool], [int], [double], [num] or [String]).
@@ -1039,8 +1062,68 @@ class TypeInfo {
 
     return hasArguments ? '$typeStr<${arguments.join(',')}>' : typeStr;
   }
+
+  Object? fromJson(dynamic json) {
+    if (isPrimitiveType) {
+      return parse(json);
+    } else if (isIterable) {
+      var list = TypeParser.parseList(json);
+      if (list == null) return null;
+
+      if (hasArguments) {
+        var arg = argumentType(0);
+        if (arg != null) {
+          list = list.map((e) => arg.fromJson(e)).toList();
+        }
+      }
+
+      return castCollection(list);
+    } else if (isMap) {
+      var map = TypeParser.parseMap(json);
+      if (map == null) return null;
+
+      if (hasArguments) {
+        var arg0 = argumentType(0);
+        var arg1 = argumentType(1);
+        if (arg0 != null && arg1 != null) {
+          map = map.map((key, value) =>
+              MapEntry(arg0.fromJson(key), arg1.fromJson(value)));
+        }
+      }
+
+      return castCollection(map);
+    } else {
+      var classReflection =
+          ReflectionFactory().getRegisterClassReflection(type);
+
+      if (classReflection != null) {
+        return classReflection.fromJson(json);
+      }
+
+      return JsonCodec.defaultCodec.fromJson(json, type: type);
+    }
+  }
+
+  /// Casts [o] to this collection type if a [ReflectionFactory] is registered
+  /// for it.
+  Object castCollection(Object o) {
+    var mainType = isCollection ? (argumentType(0) ?? this) : this;
+
+    var classReflection =
+        ReflectionFactory().getRegisterClassReflection(mainType.type);
+
+    if (classReflection != null) {
+      return classReflection.castCollection(o, this) ?? o;
+    }
+
+    return o;
+  }
 }
 
 final TypeInfoListEquality _listEqualityTypeInfo = TypeInfoListEquality();
 final TypeInfoListEquivalency _listEquivalencyTypeInfo =
     TypeInfoListEquivalency();
+
+extension _ListExtension<T> on List<T> {
+  Type get listType => T;
+}

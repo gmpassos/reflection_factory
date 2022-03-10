@@ -45,6 +45,54 @@ class AB {
   String toString() => 'AB{a: $a, b: $b}';
 }
 
+class Time {
+  final int hour;
+
+  final int minute;
+
+  final int second;
+
+  Time(this.hour, this.minute, this.second);
+
+  factory Time.parse(String s) {
+    var parts = s.split(':');
+    return Time(
+      int.parse(parts[0].trim()),
+      int.parse(parts[1].trim()),
+      int.parse(parts[2].trim()),
+    );
+  }
+
+  factory Time.fromMap(Map map) => Time(
+        map['hour'] ?? map['h'],
+        map['minute'] ?? map['min'] ?? map['m'],
+        map['second'] ?? map['sec'] ?? map['s'],
+      );
+
+  @override
+  String toString() {
+    return '$hour:$minute:$second';
+  }
+
+  Map<String, int> toMap() => {
+        'hour': hour,
+        'minute': minute,
+        'second': second,
+      };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Time &&
+          runtimeType == other.runtimeType &&
+          hour == other.hour &&
+          minute == other.minute &&
+          second == other.second;
+
+  @override
+  int get hashCode => hour.hashCode ^ minute.hashCode ^ second.hashCode;
+}
+
 void main() {
   group('JSON', () {
     test('castListType', () {
@@ -383,7 +431,7 @@ void main() {
     test('encode', () async {
       expect(JsonCodec().encode({'a': 1, 'b': 2}), equals('{"a":1,"b":2}'));
 
-      expect(JsonEncoder.defaultDecoder.convert({'a': 1, 'b': 2}),
+      expect(JsonEncoder.defaultEncoder.convert({'a': 1, 'b': 2}),
           equals('{"a":1,"b":2}'));
 
       expect(
@@ -509,6 +557,57 @@ void main() {
           }).decodeAsync('{"state":"State4","city":"City4"}',
               type: TestAddressWithReflection),
           equals(TestAddressWithReflection('STATE4', 'CITY4')));
+    });
+
+    test('encode/decode', () {
+      var jsonCodec = JsonCodec.defaultCodec;
+
+      var t1 = Time(10, 11, 12);
+
+      var json1 = jsonCodec.encode(t1);
+      expect(json1, equals('"10:11:12"'));
+
+      var m1 = {'id': 123, 'time': Time(20, 21, 22)};
+
+      var json2 = jsonCodec.encode(m1);
+      expect(json2, equals('{"id":123,"time":"20:21:22"}'));
+
+      expect(() => jsonCodec.decode(json1, type: Time),
+          throwsA(isA<UnsupportedError>()));
+
+      expect(jsonCodec.decode(json2), equals({'id': 123, 'time': '20:21:22'}));
+
+      var l1 = [Time(1, 2, 3), Time(11, 12, 13)];
+      var json3 = jsonCodec.encode(l1);
+      expect(json3, equals('["1:2:3","11:12:13"]'));
+
+      JsonDecoder.registerTypeDecoder(Time, (json) {
+        if (json is String) {
+          return Time.parse(json);
+        } else if (json is Map) {
+          return Time.fromMap(json);
+        } else {
+          return null;
+        }
+      });
+
+      var t2 = jsonCodec.decode(json1, type: Time);
+      expect(t2, equals(t1));
+
+      expect(
+          () => jsonCodec.decode(json2, type: Time), throwsA(isA<TypeError>()));
+
+      var l2 = jsonCodec.decode(json3, type: Time);
+      expect(l2, equals(l1));
+
+      JsonEncoder.registerTypeToEncodable(Time, (o, e) => (o as Time).toMap());
+
+      var json4 = jsonCodec.encode(t1);
+      expect(json4, equals('{"hour":10,"minute":11,"second":12}'));
+
+      expect(jsonCodec.decode(json4, type: Time), equals(Time(10, 11, 12)));
+
+      expect(JsonDecoder.removeTypeDecoder(Time), isNotNull);
     });
 
     test('encodeToBytes/decodeFromBytes', () async {

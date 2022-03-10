@@ -126,7 +126,7 @@ typedef IterableCaster = Object? Function(Iterable value, TypeReflection type);
 /// JSON codec integrated with [ReflectionFactory].
 class JsonCodec {
   static final JsonCodec defaultCodec =
-      JsonCodec._(JsonEncoder.defaultDecoder, JsonDecoder.defaultDecoder);
+      JsonCodec._(JsonEncoder.defaultEncoder, JsonDecoder.defaultDecoder);
 
   factory JsonCodec(
       {JsonFieldMatcher? maskField,
@@ -267,8 +267,23 @@ abstract class JsonConverter<S, T> implements dart_convert.Converter<S, T> {
   }
 }
 
+typedef JsonTypeToEncodable<T> = Object? Function(T object);
+
 abstract class JsonEncoder extends JsonConverter<Object?, String> {
-  static final JsonEncoder defaultDecoder = _JsonEncoder._defaultEncoder;
+  static final Map<Type, ToEncodableJson> _registeredTypeToEncodable =
+      <Type, ToEncodableJson>{};
+
+  static void registerTypeToEncodable(Type type, ToEncodableJson toEncodable) {
+    _registeredTypeToEncodable[type] = toEncodable;
+  }
+
+  static ToEncodableJson? getTypeToEncodable(Type type) =>
+      _registeredTypeToEncodable[type];
+
+  static ToEncodableJson? removeTypeToEncodable(Type type) =>
+      _registeredTypeToEncodable.remove(type);
+
+  static final JsonEncoder defaultEncoder = _JsonEncoder._defaultEncoder;
 
   factory JsonEncoder(
       {JsonFieldMatcher? maskField,
@@ -282,7 +297,7 @@ abstract class JsonEncoder extends JsonConverter<Object?, String> {
         !removeNullFields &&
         toEncodableProvider == null &&
         toEncodable == null) {
-      return defaultDecoder;
+      return defaultEncoder;
     }
 
     return _JsonEncoder._(maskField, maskText, removeField, removeNullFields,
@@ -466,7 +481,8 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
       }
     }
 
-    var toEncodable = this.toEncodable;
+    var toEncodable =
+        this.toEncodable ?? JsonEncoder.getTypeToEncodable(o.runtimeType);
 
     if (toEncodable != null) {
       try {
@@ -535,7 +551,22 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
   }
 }
 
+typedef JsonTypeDecoder<T> = T? Function(Object? json);
+
 abstract class JsonDecoder extends JsonConverter<String, Object?> {
+  static final Map<Type, JsonTypeDecoder> _registeredTypeDecoders =
+      <Type, JsonTypeDecoder>{};
+
+  static void registerTypeDecoder(Type type, JsonTypeDecoder decoder) {
+    _registeredTypeDecoders[type] = decoder;
+  }
+
+  static JsonTypeDecoder? getTypeDecoder(Type type) =>
+      _registeredTypeDecoders[type];
+
+  static JsonTypeDecoder? removeTypeDecoder(Type type) =>
+      _registeredTypeDecoders.remove(type);
+
   static final JsonDecoder defaultDecoder = _JsonDecoder._defaultDecoder;
 
   factory JsonDecoder(
@@ -655,7 +686,9 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       return _parseBytes(o) as O?;
     } else if (type == BigInt) {
       return _parseBigInt(o) as O?;
-    } else if (o is Map) {
+    }
+
+    if (o is Map) {
       var map = o is Map<String, Object>
           ? o
           : o.map((k, v) => MapEntry(k.toString(), v));
@@ -883,7 +916,15 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     if (jsomMapDecoder != null) {
       var obj = jsomMapDecoder(map, this);
       if (obj != null) {
-        return obj;
+        return obj as O;
+      }
+    }
+
+    var typeDecoder = JsonDecoder.getTypeDecoder(type);
+    if (typeDecoder != null) {
+      var obj = typeDecoder(map);
+      if (obj != null) {
+        return obj as O;
       }
     }
 
@@ -907,6 +948,18 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       }
     }
 
+    var typeDecoder = JsonDecoder.getTypeDecoder(type);
+    if (typeDecoder != null) {
+      var obj = typeDecoder(s);
+      if (obj != null) {
+        return obj as O;
+      }
+    }
+
+    if (!JsonConverter.isValidEntityType(type)) {
+      return s as O;
+    }
+
     var enumReflection = ReflectionFactory().getRegisterEnumReflection(type);
 
     if (enumReflection != null) {
@@ -923,12 +976,27 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
               (c) => c.parametersWhere((p) => p.type.isStringType).isNotEmpty)
           .toList();
 
-      var constructorsParamString =
-          constructors.where((c) => c.parametersLength == 1).toList();
+      var constructorsParamString = constructors
+          .where((c) =>
+              c.positionalParametersLength >= 1 &&
+              c.normalParameters.length <= 1)
+          .toList()
+        ..sort();
+
+      if (constructorsParamString.isEmpty) {
+        throw UnsupportedError(
+            "Can't find constructor to instantiate type: $type > $s");
+      }
 
       var c = constructorsParamString.first;
-      var obj = c.invoke([s]);
-      return obj;
+
+      try {
+        var obj = c.invoke([s]);
+        return obj;
+      } catch (e) {
+        throw UnsupportedError(
+            "Error invoking type `$type` constructor: $c > $s");
+      }
     }
 
     throw UnsupportedError(
@@ -941,6 +1009,14 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       var valueDecoder = jsonValueDecoderProvider(type, value);
       if (valueDecoder != null) {
         return valueDecoder(value, type, this) as O;
+      }
+    }
+
+    var typeDecoder = JsonDecoder.getTypeDecoder(type);
+    if (typeDecoder != null) {
+      var obj = typeDecoder(value);
+      if (obj != null) {
+        return obj as O;
       }
     }
 
@@ -981,8 +1057,11 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
             .toList();
 
         constructors = constructorsWithParamObject
-            .where((c) => c.parametersLength == 1)
-            .toList();
+            .where((c) =>
+                c.positionalParametersLength >= 1 &&
+                c.normalParameters.length <= 1)
+            .toList()
+          ..sort();
       }
 
       if (constructors.isNotEmpty) {
@@ -1045,6 +1124,14 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       var futureOr = jsomMapDecoderAsync(map, this);
       if (futureOr != null) {
         return _castFutureOr<O>(futureOr);
+      }
+    }
+
+    var typeDecoder = JsonDecoder.getTypeDecoder(type);
+    if (typeDecoder != null) {
+      var obj = typeDecoder(map);
+      if (obj != null) {
+        return _castFutureOr<O>(obj);
       }
     }
 

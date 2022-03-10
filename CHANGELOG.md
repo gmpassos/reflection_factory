@@ -1,3 +1,11 @@
+## 1.0.23
+
+- `ClassProxy`:
+  - Fix target class resolution issue. Added `libraryPath`. 
+  - Added extra configuration: `alwaysReturnFuture`,`traverseReturnTypes`, `ignoreMethods`.
+- Improve `JsonEncoder` and `JsonDecoder`:
+  - Added `registerTypeToEncodable` and `registerTypeDecoder`. 
+
 ## 1.0.22
 
 - Added `ClassProxy`:
