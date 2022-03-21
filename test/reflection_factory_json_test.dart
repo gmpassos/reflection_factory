@@ -198,6 +198,43 @@ void main() {
             'name': 'FooInc'
           }));
 
+      expect(<dynamic>[
+        TestAddressWithReflection('State2', 'City2'),
+        TestAddressWithReflection('State3', 'City3')
+      ], isNot(isA<List<TestAddressWithReflection>>()));
+
+      expect(
+          TestAddressWithReflection$reflection.staticInstance
+              .castCollection(<dynamic>[
+            TestAddressWithReflection('State2', 'City2'),
+            TestAddressWithReflection('State3', 'City3')
+          ], TypeInfo.fromType(List, [TestAddressWithReflection])),
+          isA<List<TestAddressWithReflection>>());
+
+      expect(
+          TestAddressWithReflection$reflection.staticInstance
+              .castCollection(<dynamic>[
+            TestAddressWithReflection('State2', 'City2'),
+            TestAddressWithReflection('State3', 'City3')
+          ], TypeInfo.fromType(Iterable, [TestAddressWithReflection])),
+          isA<Iterable<TestAddressWithReflection>>());
+
+      expect(
+          TestAddressWithReflection$reflection.staticInstance
+              .castCollection(<dynamic>{
+            TestAddressWithReflection('State2', 'City2'),
+            TestAddressWithReflection('State3', 'City3')
+          }, TypeInfo.fromType(Set, [TestAddressWithReflection])),
+          isA<Set<TestAddressWithReflection>>());
+
+      expect(
+          TestAddressWithReflection$reflection.staticInstance
+              .castCollection(<Object, dynamic>{
+            'a': TestAddressWithReflection('State2', 'City2'),
+            'b': TestAddressWithReflection('State3', 'City3')
+          }, TypeInfo.fromType(Map, [String, TestAddressWithReflection])),
+          isA<Map<String, TestAddressWithReflection>>());
+
       expect(JsonCodec().toJson(TestOpAWithReflection(10)),
           equals({'type': 'a', 'value': 10}));
     });

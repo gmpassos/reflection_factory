@@ -446,6 +446,8 @@ void main() {
             
             Future<int?>? computeMultiply(int a, int b) async => a * b ;
             
+            FutureOr<int?>? computeDivide(int a, int b) => a / b ;
+            
             @override
             String toString() => 'SimpleAPI{ name: \$name }';
           }
@@ -472,6 +474,7 @@ void main() {
               contains('int compute() {'),
               contains('int computeSum(int a, int b) {'),
               contains('Future<int?>? computeMultiply(int a, int b) {'),
+              contains('FutureOr<int?>? computeDivide(int a, int b) {'),
             ),
           )),
         },
@@ -508,6 +511,8 @@ void main() {
             
             Future<int?>? computeMultiply(int a, int b) async => a * b ;
             
+            FutureOr<int?> computeDivide(int a, int b) => a / b ;
+            
             @override
             String toString() => 'SimpleAPI{ name: \$name }';
           }
@@ -534,6 +539,7 @@ void main() {
               contains('Future<int> compute() {'),
               contains('Future<int> computeSum(int a, int b) {'),
               contains('Future<int?>? computeMultiply(int a, int b) {'),
+              contains('Future<int?> computeDivide(int a, int b) {'),
             ),
           )),
         },

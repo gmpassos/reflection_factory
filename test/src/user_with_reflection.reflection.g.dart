@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.23
+// BUILDER: reflection_factory/1.0.24
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -102,7 +102,7 @@ class TestAddressWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.23');
+  Version get reflectionFactoryVersion => Version.parse('1.0.24');
 
   @override
   TestAddressWithReflection$reflection withObject(
@@ -117,6 +117,9 @@ class TestAddressWithReflection$reflection
 
   static TestAddressWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestAddressWithReflection$reflection();
+
+  @override
+  TestAddressWithReflection$reflection getStaticInstance() => staticInstance;
 
   static bool _boot = false;
   static void boot() {
@@ -330,7 +333,7 @@ class TestCompanyWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.23');
+  Version get reflectionFactoryVersion => Version.parse('1.0.24');
 
   @override
   TestCompanyWithReflection$reflection withObject(
@@ -345,6 +348,9 @@ class TestCompanyWithReflection$reflection
 
   static TestCompanyWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestCompanyWithReflection$reflection();
+
+  @override
+  TestCompanyWithReflection$reflection getStaticInstance() => staticInstance;
 
   static bool _boot = false;
   static void boot() {
@@ -587,7 +593,7 @@ class TestDataWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.23');
+  Version get reflectionFactoryVersion => Version.parse('1.0.24');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -601,6 +607,9 @@ class TestDataWithReflection$reflection
 
   static TestDataWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestDataWithReflection$reflection();
+
+  @override
+  TestDataWithReflection$reflection getStaticInstance() => staticInstance;
 
   static bool _boot = false;
   static void boot() {
@@ -818,7 +827,7 @@ class TestDomainWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.23');
+  Version get reflectionFactoryVersion => Version.parse('1.0.24');
 
   @override
   TestDomainWithReflection$reflection withObject(
@@ -833,6 +842,9 @@ class TestDomainWithReflection$reflection
 
   static TestDomainWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestDomainWithReflection$reflection();
+
+  @override
+  TestDomainWithReflection$reflection getStaticInstance() => staticInstance;
 
   static bool _boot = false;
   static void boot() {
@@ -1156,7 +1168,7 @@ class TestEnumWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.23');
+  Version get reflectionFactoryVersion => Version.parse('1.0.24');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -1170,6 +1182,9 @@ class TestEnumWithReflection$reflection
 
   static TestEnumWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestEnumWithReflection$reflection();
+
+  @override
+  TestEnumWithReflection$reflection getStaticInstance() => staticInstance;
 
   static bool _boot = false;
   static void boot() {
@@ -1223,7 +1238,7 @@ class TestOpAWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.23');
+  Version get reflectionFactoryVersion => Version.parse('1.0.24');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -1237,6 +1252,9 @@ class TestOpAWithReflection$reflection
 
   static TestOpAWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestOpAWithReflection$reflection();
+
+  @override
+  TestOpAWithReflection$reflection getStaticInstance() => staticInstance;
 
   static bool _boot = false;
   static void boot() {
@@ -1449,7 +1467,7 @@ class TestOpBWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.23');
+  Version get reflectionFactoryVersion => Version.parse('1.0.24');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -1463,6 +1481,9 @@ class TestOpBWithReflection$reflection
 
   static TestOpBWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestOpBWithReflection$reflection();
+
+  @override
+  TestOpBWithReflection$reflection getStaticInstance() => staticInstance;
 
   static bool _boot = false;
   static void boot() {
@@ -1689,7 +1710,7 @@ class TestOpWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.23');
+  Version get reflectionFactoryVersion => Version.parse('1.0.24');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -1703,6 +1724,9 @@ class TestOpWithReflection$reflection
 
   static TestOpWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestOpWithReflection$reflection();
+
+  @override
+  TestOpWithReflection$reflection getStaticInstance() => staticInstance;
 
   static bool _boot = false;
   static void boot() {
@@ -1935,7 +1959,7 @@ class TestUserWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.23');
+  Version get reflectionFactoryVersion => Version.parse('1.0.24');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
@@ -1949,6 +1973,9 @@ class TestUserWithReflection$reflection
 
   static TestUserWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestUserWithReflection$reflection();
+
+  @override
+  TestUserWithReflection$reflection getStaticInstance() => staticInstance;
 
   static bool _boot = false;
   static void boot() {

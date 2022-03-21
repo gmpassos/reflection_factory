@@ -725,6 +725,10 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
     str.write(
         '  static $reflectionClass get staticInstance => _withoutObjectInstance ??= $reflectionClass();\n\n');
 
+    str.write('  @override\n');
+    str.write(
+        '   $reflectionClass getStaticInstance() => staticInstance ;\n\n');
+
     str.write('  static bool _boot = false;'
         '  static void boot() {\n'
         '    if (_boot) return;\n'
@@ -1156,6 +1160,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     str.write(
         '  static $reflectionClass get staticInstance => _withoutObjectInstance ??= $reflectionClass();\n\n');
+
+    str.write('  @override\n');
+    str.write(
+        '   $reflectionClass getStaticInstance() => staticInstance ;\n\n');
 
     str.write('  static bool _boot = false;'
         '  static void boot() {\n'
@@ -1666,6 +1674,17 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
               .traverseReturnType()
               .returningFuture(typeProvider);
         }
+      } else if (proxyMethod.isReturningFutureOr) {
+        var arg = proxyMethod.returnTypeArgument;
+
+        if (arg != null &&
+            (traverseReturnTypes.contains(arg) ||
+                traverseReturnInterfaceTypes.contains(arg.interfaceType))) {
+          proxyMethod = proxyMethod
+              .traverseReturnType()
+              .traverseReturnType()
+              .returningFutureOr(typeProvider);
+        }
       } else if (traverseReturnTypes.contains(proxyMethod.returnType) ||
           traverseReturnInterfaceTypes
               .contains(proxyMethod.returnType.interfaceType)) {
@@ -1673,7 +1692,12 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       }
 
       if (alwaysReturnFuture && !proxyMethod.isReturningFuture) {
-        proxyMethod = proxyMethod.returningFuture(typeProvider);
+        if (proxyMethod.isReturningFutureOr) {
+          proxyMethod =
+              proxyMethod.traverseReturnType().returningFuture(typeProvider);
+        } else {
+          proxyMethod = proxyMethod.returningFuture(typeProvider);
+        }
       }
 
       str.write(proxyMethod.signature);
@@ -1777,6 +1801,8 @@ class _ProxyMethod {
 
   bool get isReturningFuture => returnType.isDartAsyncFuture;
 
+  bool get isReturningFutureOr => returnType.isDartAsyncFutureOr;
+
   String get returnTypeAsString =>
       returnType.getDisplayString(withNullability: true);
 
@@ -1798,6 +1824,13 @@ class _ProxyMethod {
     if (returnType.isDartAsyncFuture) return this;
 
     var retType = typeProvider.futureType(returnType);
+    return _ProxyMethod(name, retType, parameters);
+  }
+
+  _ProxyMethod returningFutureOr(TypeProvider typeProvider) {
+    if (returnType.isDartAsyncFutureOr) return this;
+
+    var retType = typeProvider.futureOrType(returnType);
     return _ProxyMethod(name, retType, parameters);
   }
 

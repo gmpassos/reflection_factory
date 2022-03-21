@@ -7,7 +7,8 @@ import 'package:collection/collection.dart'
         IterableNullableExtension,
         ListEquality,
         MapEquality,
-        equalsIgnoreAsciiCase;
+        equalsIgnoreAsciiCase,
+        binarySearch;
 import 'package:pub_semver/pub_semver.dart';
 
 import 'reflection_factory_annotation.dart';
@@ -17,7 +18,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.0.23';
+  static const String VERSION = '1.0.24';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -149,7 +150,12 @@ abstract class Reflection<O> {
       } else {
         return List<O>.from(list);
       }
+    } else if (type == dynamic) {
+      return List<dynamic>.from(list);
+    } else if (type == Object) {
+      return List<Object>.from(list);
     }
+
     return null;
   }
 
@@ -161,7 +167,12 @@ abstract class Reflection<O> {
       } else {
         return Set<O>.from(set);
       }
+    } else if (type == dynamic) {
+      return Set<dynamic>.from(set);
+    } else if (type == Object) {
+      return Set<Object>.from(set);
     }
+
     return null;
   }
 
@@ -173,7 +184,12 @@ abstract class Reflection<O> {
       } else {
         return itr.cast<O>();
       }
+    } else if (type == dynamic) {
+      return itr.cast<dynamic>();
+    } else if (type == Object) {
+      return itr.cast<Object>();
     }
+
     return null;
   }
 
@@ -191,36 +207,45 @@ abstract class Reflection<O> {
         if (map is Map<String, O>) {
           return map;
         } else {
-          return map.map((key, value) => MapEntry<String, O>(key, value));
+          return map
+              .map<String, O>((key, value) => MapEntry<String, O>(key, value));
         }
       } else if (valueType.isDynamic) {
-        return map.map((key, value) => MapEntry<String, dynamic>(key, value));
+        return map.map<String, dynamic>(
+            (key, value) => MapEntry<String, dynamic>(key, value));
       } else if (valueType.isObject) {
-        return map.map((key, value) => MapEntry<String, Object>(key, value));
+        return map.map<String, Object>(
+            (key, value) => MapEntry<String, Object>(key, value));
       }
     } else if (keyType.isObject) {
       if (valueType.type == reflectedType) {
         if (map is Map<Object, O>) {
           return map;
         } else {
-          return map.map((key, value) => MapEntry<Object, O>(key, value));
+          return map
+              .map<Object, O>((key, value) => MapEntry<Object, O>(key, value));
         }
       } else if (valueType.isDynamic) {
-        return map.map((key, value) => MapEntry<Object, dynamic>(key, value));
+        return map.map<Object, dynamic>(
+            (key, value) => MapEntry<Object, dynamic>(key, value));
       } else if (valueType.isObject) {
-        return map.map((key, value) => MapEntry<Object, Object>(key, value));
+        return map.map<Object, Object>(
+            (key, value) => MapEntry<Object, Object>(key, value));
       }
     } else if (keyType.isDynamic) {
       if (valueType.type == reflectedType) {
         if (map is Map<dynamic, O>) {
           return map;
         } else {
-          return map.map((key, value) => MapEntry<dynamic, O>(key, value));
+          return map.map<dynamic, O>(
+              (key, value) => MapEntry<dynamic, O>(key, value));
         }
       } else if (valueType.isDynamic) {
-        return map.map((key, value) => MapEntry<dynamic, dynamic>(key, value));
+        return map.map<dynamic, dynamic>(
+            (key, value) => MapEntry<dynamic, dynamic>(key, value));
       } else if (valueType.isObject) {
-        return map.map((key, value) => MapEntry<dynamic, Object>(key, value));
+        return map.map<dynamic, Object>(
+            (key, value) => MapEntry<dynamic, Object>(key, value));
       }
     }
 
@@ -309,6 +334,9 @@ abstract class EnumReflection<O> extends Reflection<O>
   /// Returns a new instances without an [object] instance.
   @override
   EnumReflection<O> withoutObjectInstance() => hasObject ? withObject() : this;
+
+  /// Returns the `staticInstance` of the generated [EnumReflection].
+  EnumReflection<O> getStaticInstance();
 
   /// Returns the Dart language [Version] of the reflected code.
   @override
@@ -542,6 +570,9 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// Returns a new instances without an [object] instance.
   @override
   ClassReflection<O> withoutObjectInstance() => hasObject ? withObject() : this;
+
+  /// Returns the `staticInstance` of the generated [ClassReflection].
+  ClassReflection<O> getStaticInstance();
 
   /// Called automatically when instantiated.
   /// Registers this reflection into [ReflectionFactory].
@@ -1045,37 +1076,14 @@ abstract class ClassReflection<O> extends Reflection<O>
     return null;
   }
 
+  /// Creates an instance with the constructor returned by [getBestConstructorForMap],
+  /// using [map] entries.
   O? createInstanceWithBestConstructor(Map<String, Object?> map,
       {FieldNameResolver? fieldNameResolver,
       FieldValueResolver? fieldValueResolver}) {
-    var fieldsResolved = _resolveFieldsNames(
-        fieldNameResolver ?? _defaultFieldNameResolver, map);
-
-    var fieldsNotPresent = fieldsNamesWhere(
-        (f) => f.isEntityField && !fieldsResolved.containsKey(f.name)).toList();
-
-    var fieldsRequired =
-        fieldsNamesWhere((f) => f.isEntityField && !f.hasSetter).toList();
-
-    var fieldsOptional = fieldsNamesWhere(
-        (f) => f.isEntityField && !fieldsRequired.contains(f.name)).toList();
-
-    var presentParameters = fieldsResolved.keys.toList();
-
-    var constructor = getBestConstructorFor(
-        requiredParameters: fieldsRequired,
-        optionalParameters: fieldsOptional,
-        nullableParameters: fieldsNotPresent,
-        presentParameters: presentParameters);
-
-    constructor ??= getBestConstructorFor(
-        optionalParameters: fieldsOptional,
-        nullableParameters: fieldsNotPresent,
-        presentParameters: presentParameters);
-
-    constructor ??= getBestConstructorFor(
-        optionalParameters: fieldsOptional,
-        presentParameters: presentParameters);
+    var constructor = getBestConstructorForMap(map,
+        fieldNameResolver: fieldNameResolver,
+        fieldValueResolver: fieldValueResolver);
 
     if (constructor == null) return null;
 
@@ -1092,6 +1100,58 @@ abstract class ClassReflection<O> extends Reflection<O>
           '  - methodInvocation: $methodInvocation\n');
       rethrow;
     }
+  }
+
+  Map<_KeyParametersNames, ConstructorReflection<O>?>?
+      _getBestConstructorForMapCache;
+
+  /// Returns the best constructor to instantiate with [map] entries.
+  ConstructorReflection<O>? getBestConstructorForMap(Map<String, Object?> map,
+      {FieldNameResolver? fieldNameResolver,
+      FieldValueResolver? fieldValueResolver}) {
+    var fieldsResolved = _resolveFieldsNames(
+        fieldNameResolver ?? _defaultFieldNameResolver, map);
+
+    var presentParameters = fieldsResolved.keys.toList();
+
+    var key = _KeyParametersNames(presentParameters);
+
+    var cache = getStaticInstance()._getBestConstructorForMapCache ??=
+        <_KeyParametersNames, ConstructorReflection<O>?>{};
+
+    return cache.putIfAbsent(key, () {
+      key.sort();
+      return _getBestConstructorForMapImpl(presentParameters);
+    });
+  }
+
+  ConstructorReflection<O>? _getBestConstructorForMapImpl(
+      List<String> presentParameters) {
+    var fieldsNotPresent = fieldsNamesWhere(
+        (f) => f.isEntityField && !presentParameters.contains(f.name)).toList();
+
+    var fieldsRequired =
+        fieldsNamesWhere((f) => f.isEntityField && !f.hasSetter).toList();
+
+    var fieldsOptional = fieldsNamesWhere(
+        (f) => f.isEntityField && !fieldsRequired.contains(f.name)).toList();
+
+    var constructor = getBestConstructorFor(
+        requiredParameters: fieldsRequired,
+        optionalParameters: fieldsOptional,
+        nullableParameters: fieldsNotPresent,
+        presentParameters: presentParameters);
+
+    constructor ??= getBestConstructorFor(
+        optionalParameters: fieldsOptional,
+        nullableParameters: fieldsNotPresent,
+        presentParameters: presentParameters);
+
+    constructor ??= getBestConstructorFor(
+        optionalParameters: fieldsOptional,
+        presentParameters: presentParameters);
+
+    return constructor;
   }
 
   O? createInstanceFromMap(Map<String, Object?> map,
@@ -1191,6 +1251,71 @@ abstract class ClassReflection<O> extends Reflection<O>
             '}' +
         (object != null ? '<$object>' : '');
   }
+
+  /// Dispose internal caches.
+  void disposeCache() {
+    var cache = getStaticInstance()._getBestConstructorForMapCache;
+    cache?.clear();
+  }
+}
+
+class _KeyParametersNames {
+  final List<String> _fields;
+
+  _KeyParametersNames(this._fields);
+
+  bool _sorted = false;
+
+  void sort() {
+    _fields.sort();
+    _sorted = true;
+  }
+
+  bool equalsFields(_KeyParametersNames other) {
+    if (_sorted) {
+      return _equalsFieldsImpl(other);
+    } else if (other._sorted) {
+      return _equalsFieldsImpl(other);
+    } else {
+      throw StateError('One of the instances should be sorted');
+    }
+  }
+
+  bool _equalsFieldsImpl(_KeyParametersNames other) {
+    var length = _fields.length;
+
+    var otherFields = other._fields;
+    if (otherFields.length != length) return false;
+
+    if (other._sorted) {
+      var fields = _fields;
+
+      for (var i = 0; i < length; ++i) {
+        var o1 = fields[i];
+        var o2 = otherFields[i];
+        if (o1 != o2) return false;
+      }
+
+      return true;
+    } else {
+      for (var i = 0; i < length; ++i) {
+        var o = otherFields[i];
+        if (binarySearch(_fields, o) < 0) return false;
+      }
+
+      return true;
+    }
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _KeyParametersNames &&
+          runtimeType == other.runtimeType &&
+          equalsFields(other);
+
+  @override
+  int get hashCode => _fields.length;
 }
 
 /// A simple element of type [T] [resolver].

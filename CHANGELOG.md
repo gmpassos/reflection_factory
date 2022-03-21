@@ -1,15 +1,28 @@
+## 1.0.24
+
+- `ClassProxy`:
+    - Fix proxy generation for methods that returns `FutureOr`.
+- `ClassReflection`:
+    - Optimize `createInstanceWithBestConstructor` and `getBestConstructorForMap`.
+- source_span: ^1.8.2
+- path: ^1.8.1
+- collection: ^1.16.0
+- build: ^2.2.1
+- analyzer: ^3.3.1
+- dart_style: ^2.2.1
+
 ## 1.0.23
 
 - `ClassProxy`:
-  - Fix target class resolution issue. Added `libraryPath`. 
-  - Added extra configuration: `alwaysReturnFuture`,`traverseReturnTypes`, `ignoreMethods`.
+    - Fix target class resolution issue. Added `libraryPath`.
+    - Added extra configuration: `alwaysReturnFuture`,`traverseReturnTypes`, `ignoreMethods`.
 - Improve `JsonEncoder` and `JsonDecoder`:
-  - Added `registerTypeToEncodable` and `registerTypeDecoder`. 
+    - Added `registerTypeToEncodable` and `registerTypeDecoder`.
 
 ## 1.0.22
 
 - Added `ClassProxy`:
-  - Allows generation of a class proxy without directly depending on the target class. 
+    - Allows generation of a class proxy without directly depending on the target class.
 
 ## 1.0.21
 
@@ -18,9 +31,8 @@
 
 ## 1.0.20
 
-- Added `TypeInfo` to perform type checking and handle other `Type` operations
-  needed for reflection use.
-- Improved `TypeReflection` for `Function` types. 
+- Added `TypeInfo` to perform type checking and handle other `Type` operations needed for reflection use.
+- Improved `TypeReflection` for `Function` types.
 - Fixed constructors with nullable named parameters.
 - Fixed constructors with `required` named parameters.
 - Fixed fields/parameters with `Function` `typedef` alias.
@@ -37,17 +49,18 @@
 ## 1.0.17
 
 - JSON
-  - Better JSON handling and reflection integration.
-  - Encoding/decoding to/from bytes (`Uint8List`).
-  - `@JsonField`: to hide a field or to force it as a json field.
-- Added support for enums: `EnumReflection` 
+    - Better JSON handling and reflection integration.
+    - Encoding/decoding to/from bytes (`Uint8List`).
+    - `@JsonField`: to hide a field or to force it as a json field.
+- Added support for enums: `EnumReflection`
 - `ClassReflection`:
-  - Support for supper classes.
-  - Added `createInstanceWithNoRequiredArgsConstructor` as another way to create an instance without arguments.
-  - Added `getBestConstructorFor`, that selects the constructor capable to create an instance with provided parameters.
-  - Added `fromJson` and `fromJsonEncoded`.
-  - Added `createInstanceWithBestConstructor` and `createInstanceFromMap`.
-  - Added `declaringType`.
+    - Support for supper classes.
+    - Added `createInstanceWithNoRequiredArgsConstructor` as another way to create an instance without arguments.
+    - Added `getBestConstructorFor`, that selects the constructor capable to create an instance with provided
+      parameters.
+    - Added `fromJson` and `fromJsonEncoded`.
+    - Added `createInstanceWithBestConstructor` and `createInstanceFromMap`.
+    - Added `declaringType`.
 - Generating `ClassFoo$fromJson` and `ClassFoo$fromJsonEncoded`.
 - Optimized some operations.
 - Fixed `TypeReflection` for `Function`.
@@ -57,8 +70,8 @@
 ## 1.0.16
 
 - `ClassReflection`:
-  - `withoutObjectInstance`: now always returns the same instance.
-  - Added `reflectionFactoryVersion`.
+    - `withoutObjectInstance`: now always returns the same instance.
+    - Added `reflectionFactoryVersion`.
 
 ## 1.0.15
 
@@ -68,14 +81,14 @@
 ## 1.0.14
 
 - `ClassReflection`:
-  - Added `siblingsClassReflection` and `withoutObjectInstance`.
-  - `register` now triggers registration of all sibling `ClassReflection`.
+    - Added `siblingsClassReflection` and `withoutObjectInstance`.
+    - `register` now triggers registration of all sibling `ClassReflection`.
 - Using standard Dart coverage.
 - coverage: ^1.0.3
 
 ## 1.0.13
 
-- Allow call to `field` without an object. Useful to get the field type before instantiate an object. 
+- Allow call to `field` without an object. Useful to get the field type before instantiate an object.
 
 ## 1.0.12
 
@@ -104,15 +117,15 @@
 ## 1.0.7
 
 - `TypeReflection`:
-  - Added `isOfType`.
+    - Added `isOfType`.
 - `FunctionReflection` (`MethodReflection`, `ConstructorReflection`):
-  - `methodInvocation(parametersProvider)` now accepts a `ParameterReflection`,
-    not only a `String` with the parameter name.
+    - `methodInvocation(parametersProvider)` now accepts a `ParameterReflection`, not only a `String` with the parameter
+      name.
 
 ## 1.0.6
 
 - `ClassReflection`:
-  - Added: `fieldsWhere`, `staticFieldsWhere`, `methodsWhere`, `staticMethodsWhere`.
+    - Added: `fieldsWhere`, `staticFieldsWhere`, `methodsWhere`, `staticMethodsWhere`.
 - `TypeReflection`:
 - Added: `isPrimitiveType`, `isCollectionType`, `isMapType`, `isIterableType`,
   `isNumericType`, `isIntType`, `isDoubleType`, `isBoolType`, `isStringType`.
@@ -121,17 +134,17 @@
 
 - Added support for class constructors.
 - Added `TypeReflection`:
-  - Allows handling of Type generics/arguments.
+    - Allows handling of Type generics/arguments.
 - Added extensions:
-  - `IterableTypeReflectionExtension`, `IterableParameterReflectionExtension`, `IterableFieldReflectionExtension`.
+    - `IterableTypeReflectionExtension`, `IterableParameterReflectionExtension`, `IterableFieldReflectionExtension`.
 
 ## 1.0.4
 
 - Added `ElementResolver`:
 - `ClassReflection`:
-  - Added resolvers:
-    `fieldResolver`, `staticFieldResolver`, `methodResolver`, `staticMethodResolver`.
-  - Optimized `toJson` to resolve faster `MethodReflection` of `obj.toJson`. 
+    - Added resolvers:
+      `fieldResolver`, `staticFieldResolver`, `methodResolver`, `staticMethodResolver`.
+    - Optimized `toJson` to resolve faster `MethodReflection` of `obj.toJson`.
 - Changed `FieldReflection` to allow `withObject`.
 - Changed `MethodReflection` to allow `withObject`.
 - Added `ReflectionFactory.toJsonEncodable`.
@@ -141,24 +154,24 @@
 ## 1.0.3
 
 - Annotation reflection:
-  - Support for classes, fields, methods and method parameters.
+    - Support for classes, fields, methods and method parameters.
 
 ## 1.0.2
 
 - `ClassReflection`:
-  - Added: `allMethods`, `allStaticMethods`
+    - Added: `allMethods`, `allStaticMethods`
 - `MethodReflection`:
-  - Methods parameters now are defined with `ParameterReflection`.
-  - `returnType`: fixed for `void`.
-  - `method`: exposed, not private anymore.
-  - Added:
-    - `equalsNormalParametersTypes`, `equalsOptionalParametersTypes`, `equalsNamedParametersTypes`.
-    - `methodInvocation`, `methodInvocationFromMap`.
-- `MethodInvocation`: class to represent an invocation. 
+    - Methods parameters now are defined with `ParameterReflection`.
+    - `returnType`: fixed for `void`.
+    - `method`: exposed, not private anymore.
+    - Added:
+        - `equalsNormalParametersTypes`, `equalsOptionalParametersTypes`, `equalsNamedParametersTypes`.
+        - `methodInvocation`, `methodInvocationFromMap`.
+- `MethodInvocation`: class to represent an invocation.
 - Builder:
-  - Now generates documentation of generated extension methods.
-  - Better handling of parameters and fields with `ParameterReflection`.
-    - Now knows if a parameter is `required`. 
+    - Now generates documentation of generated extension methods.
+    - Better handling of parameters and fields with `ParameterReflection`.
+        - Now knows if a parameter is `required`.
 - Improved API documentation.
 - Improved tests.
 - collection: ^1.15.0
@@ -166,19 +179,19 @@
 ## 1.0.1
 
 - @EnableReflection:
-  - Added `reflectionClassName`, `reflectionExtensionName`.
+    - Added `reflectionClassName`, `reflectionExtensionName`.
 - @ReflectionBridge:
-  - Added `bridgeExtensionName`, `reflectionClassNames`, `reflectionExtensionNames`.
+    - Added `bridgeExtensionName`, `reflectionClassNames`, `reflectionExtensionNames`.
 - Builder:
-  - `MethodReflection`:
-    - Added method parameters names to normal and optional parameters. 
-  - Optimize generated code.
-  - Improved console output and verbose mode. 
+    - `MethodReflection`:
+        - Added method parameters names to normal and optional parameters.
+    - Optimize generated code.
+    - Improved console output and verbose mode.
 - Improved tests.
 
 ## 1.0.0
 
 - Support for Class reflection:
-  - FieldReflection
-  - MethodReflection
+    - FieldReflection
+    - MethodReflection
 - Initial version.
