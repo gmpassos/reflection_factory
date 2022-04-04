@@ -1000,7 +1000,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     }
 
     throw UnsupportedError(
-        "Can't find registered Reflection for type: $type > $s");
+        "Can't find registered JsonDecoder or Reflection for type: $type > $s");
   }
 
   O _entityFromJsonValue<O>(Type type, Object value) {

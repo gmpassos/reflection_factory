@@ -61,15 +61,19 @@ class ClassProxy {
   final String reflectionProxyName;
   final bool alwaysReturnFuture;
   final Set<Type> traverseReturnTypes;
+  final Set<Type> ignoreParametersTypes;
   final Set<String> ignoreMethods;
 
-  const ClassProxy(this.className,
-      {this.libraryName = '',
-      this.libraryPath = '',
-      this.reflectionProxyName = '',
-      this.ignoreMethods = const <String>{},
-      this.alwaysReturnFuture = false,
-      this.traverseReturnTypes = const <Type>{}});
+  const ClassProxy(
+    this.className, {
+    this.libraryName = '',
+    this.libraryPath = '',
+    this.reflectionProxyName = '',
+    this.ignoreMethods = const <String>{},
+    this.alwaysReturnFuture = false,
+    this.traverseReturnTypes = const <Type>{},
+    this.ignoreParametersTypes = const <Type>{},
+  });
 }
 
 /// Interface that a proxy class (annotated with [ClassProxy]) should implement

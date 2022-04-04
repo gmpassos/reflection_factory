@@ -1,3 +1,7 @@
+## 1.0.25
+
+- `ClassProxy`: added `ignoreParametersTypes`.
+
 ## 1.0.24
 
 - `ClassProxy`:

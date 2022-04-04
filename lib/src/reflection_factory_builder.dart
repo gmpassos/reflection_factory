@@ -198,6 +198,8 @@ class ReflectionBuilder implements Builder {
         annotation.peek('reflectionProxyName')!.stringValue;
     var alwaysReturnFuture = annotation.peek('alwaysReturnFuture')!.boolValue;
     var traverseReturnTypes = annotation.peek('traverseReturnTypes')!.setValue;
+    var ignoreParametersTypes =
+        annotation.peek('ignoreParametersTypes')!.setValue;
     var ignoreMethods = annotation.peek('ignoreMethods')!.setValue;
 
     if (reflectionProxyName.isEmpty) {
@@ -208,7 +210,8 @@ class ReflectionBuilder implements Builder {
         '  -- Target Class Name: $className\n'
         '  -- Always Return Future: $alwaysReturnFuture\n'
         '  -- reflectionProxyName: $reflectionProxyName\n'
-        '  -- traverseReturnTypes: $traverseReturnTypes\n');
+        '  -- traverseReturnTypes: $traverseReturnTypes\n'
+        '  -- ignoreParametersTypes: $ignoreParametersTypes\n');
 
     var codeTable = <String, String>{};
 
@@ -240,8 +243,12 @@ class ReflectionBuilder implements Builder {
 
     codeTable.putIfAbsent(
         classTree.reflectionProxyExtension,
-        () => classTree.buildReflectionProxyClass(annotatedClass,
-            alwaysReturnFuture, traverseReturnTypes, ignoreMethods));
+        () => classTree.buildReflectionProxyClass(
+            annotatedClass,
+            alwaysReturnFuture,
+            traverseReturnTypes,
+            ignoreParametersTypes,
+            ignoreMethods));
 
     return codeTable;
   }
@@ -1616,6 +1623,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       ClassElement proxyClass,
       bool alwaysReturnFuture,
       Set<DartObject> traverseReturnTypes,
+      Set<DartObject> ignoreParametersTypes,
       Set<DartObject> ignoreMethods) {
     if (!_implementsType(proxyClass, 'ClassProxyListener')) {
       throw StateError(
@@ -1632,6 +1640,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         str,
         alwaysReturnFuture,
         traverseReturnTypes.map((e) => e.toTypeValue()!).toSet(),
+        ignoreParametersTypes.map((e) => e.toTypeValue()!).toSet(),
         ignoreMethods.map((e) => e.toStringValue()!).toSet(),
         typeProvider);
 
@@ -1644,6 +1653,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       StringBuffer codeBuffer,
       bool alwaysReturnFuture,
       Set<DartType> traverseReturnTypes,
+      Set<DartType> ignoreParametersTypes,
       Set<String> ignoreMethods,
       TypeProvider typeProvider) {
     var str = StringBuffer();
@@ -1700,7 +1710,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         }
       }
 
-      str.write(proxyMethod.signature);
+      str.write(proxyMethod.signature(ignoreParametersTypes));
 
       str.write(' {\n');
 
@@ -1783,17 +1793,24 @@ class _ProxyMethod {
   final String name;
 
   final DartType returnType;
-  final String parameters;
+  final List<ParameterElement> parameters;
 
   _ProxyMethod(this.name, this.returnType, this.parameters);
 
   factory _ProxyMethod.fromMethodElement(MethodElement method) {
-    var methodSign = method.toString();
-    var idx = methodSign.indexOf('(');
-    var parameters = methodSign.substring(idx);
-
-    return _ProxyMethod(method.name, method.returnType, parameters);
+    return _ProxyMethod(
+        method.name, method.returnType, method.parameters.toList());
   }
+
+  List<ParameterElement> get positionalParameters => parameters
+      .where((p) => p.isPositional && !p.isOptionalPositional)
+      .toList();
+
+  List<ParameterElement> get positionalOptionalParameters =>
+      parameters.where((p) => p.isOptionalPositional).toList();
+
+  List<ParameterElement> get namedParameters =>
+      parameters.where((p) => p.isNamed).toList();
 
   bool get returnAcceptsNull => returnType.isNullable;
 
@@ -1818,7 +1835,59 @@ class _ProxyMethod {
     return args[0];
   }
 
-  String get signature => '${returnTypeNameResolvable()} $name$parameters';
+  String signature(Set<DartType> ignoreParametersTypes) {
+    String parametersStr = parametersSignature(ignoreParametersTypes);
+    var methodStr = '${returnTypeNameResolvable()} $name($parametersStr)';
+    return methodStr;
+  }
+
+  String parametersSignature(Set<DartType> ignoreParametersTypes) {
+    var positionalParameters = this.positionalParameters;
+    var positionalOptionalParameters = this.positionalOptionalParameters;
+    var namedParameters = this.namedParameters;
+
+    var parametersStr = StringBuffer();
+
+    if (positionalParameters.isNotEmpty) {
+      _writeParameters(
+          parametersStr, positionalParameters, ignoreParametersTypes);
+    }
+
+    if (positionalOptionalParameters.isNotEmpty) {
+      if (parametersStr.isNotEmpty) {
+        parametersStr.write(', ');
+      }
+
+      parametersStr.write('[ ');
+      _writeParameters(
+          parametersStr, positionalOptionalParameters, ignoreParametersTypes);
+      parametersStr.write(' ]');
+    }
+
+    if (namedParameters.isNotEmpty) {
+      if (parametersStr.isNotEmpty) {
+        parametersStr.write(', ');
+      }
+
+      parametersStr.write('{ ');
+      _writeParameters(parametersStr, namedParameters, ignoreParametersTypes);
+      parametersStr.write(' }');
+    }
+
+    return parametersStr.toString();
+  }
+
+  void _writeParameters(StringBuffer parametersStr,
+      List<ParameterElement> parameters, Set<DartType> ignoreParametersTypes) {
+    for (int i = 0; i < parameters.length; i++) {
+      var e = parameters[i];
+
+      if (ignoreParametersTypes.containsType(e.type)) continue;
+
+      if (i > 0) parametersStr.write(', ');
+      parametersStr.write(e.getDisplayString(withNullability: true));
+    }
+  }
 
   _ProxyMethod returningFuture(TypeProvider typeProvider) {
     if (returnType.isDartAsyncFuture) return this;
@@ -2171,6 +2240,22 @@ class _Field extends _Element {
         'const: $isConst, '
         'allowSetter: $allowSetter '
         '}<$fieldElement>';
+  }
+}
+
+extension _IterableExtension on Iterable<DartType> {
+  bool containsType(DartType dartType) {
+    var dartTypeName = dartType.typeName;
+
+    for (var t in this) {
+      if (!t.isResolvableType) continue;
+
+      if (t.typeName == dartTypeName) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
 

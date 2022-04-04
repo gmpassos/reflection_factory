@@ -429,7 +429,7 @@ void main() {
         
           part 'foo.reflection.g.dart';
           
-          @ClassProxy('SimpleAPI')
+          @ClassProxy('SimpleAPI', ignoreParametersTypes: {Future})
           class SimpleAPIProxy implements ClassProxyListener {
           }
           
@@ -442,11 +442,11 @@ void main() {
             
             int compute() => 1;
             
-            int computeSum(int a, int b) => a + b ;
+            int computeSum(int a, int? b) => a + (b ?? 0) ;
             
             Future<int?>? computeMultiply(int a, int b) async => a * b ;
             
-            FutureOr<int?>? computeDivide(int a, int b) => a / b ;
+            FutureOr<int?>? computeDivide(int a, int b, Future future) => a / b ;
             
             @override
             String toString() => 'SimpleAPI{ name: \$name }';
@@ -472,7 +472,7 @@ void main() {
               contains('SimpleAPIProxy\$reflectionProxy'),
               contains('void nothing() {'),
               contains('int compute() {'),
-              contains('int computeSum(int a, int b) {'),
+              contains('int computeSum(int a, int? b) {'),
               contains('Future<int?>? computeMultiply(int a, int b) {'),
               contains('FutureOr<int?>? computeDivide(int a, int b) {'),
             ),
