@@ -448,6 +448,8 @@ void main() {
             
             FutureOr<int?>? computeDivide(int a, int b, Future future) => a / b ;
             
+            int computeSum3(int a, {int? b, int? c}) => a + (b ?? 0) + (c ?? 0) ;
+            
             @override
             String toString() => 'SimpleAPI{ name: \$name }';
           }
@@ -473,6 +475,7 @@ void main() {
               contains('void nothing() {'),
               contains('int compute() {'),
               contains('int computeSum(int a, int? b) {'),
+              contains('int computeSum3(int a, {int? b, int? c}) {'),
               contains('Future<int?>? computeMultiply(int a, int b) {'),
               contains('FutureOr<int?>? computeDivide(int a, int b) {'),
             ),

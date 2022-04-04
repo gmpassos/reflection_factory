@@ -18,7 +18,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.0.24';
+  static const String VERSION = '1.0.25';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 

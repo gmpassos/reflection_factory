@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.24
+// BUILDER: reflection_factory/1.0.25
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -35,7 +35,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.24');
+  Version get reflectionFactoryVersion => Version.parse('1.0.25');
 
   @override
   TestUserSimple$reflection withObject([TestUserSimple? obj]) =>

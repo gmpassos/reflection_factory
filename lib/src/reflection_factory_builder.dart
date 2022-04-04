@@ -1885,7 +1885,11 @@ class _ProxyMethod {
       if (ignoreParametersTypes.containsType(e.type)) continue;
 
       if (i > 0) parametersStr.write(', ');
-      parametersStr.write(e.getDisplayString(withNullability: true));
+      var pStr = e.getDisplayString(withNullability: true);
+      if (pStr.startsWith('{') || pStr.startsWith('[')) {
+        pStr = pStr.substring(1, pStr.length - 1).trim();
+      }
+      parametersStr.write(pStr);
     }
   }
 
