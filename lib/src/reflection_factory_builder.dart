@@ -1720,6 +1720,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
       call.write("onCall( this, '${proxyMethod.name}', <String,dynamic>{\n");
       for (var p in method.parameters) {
+        if (ignoreParametersTypes.containsType(p.type)) continue;
         var name = p.name;
         call.write("  '${p.name}': $name,\n");
       }

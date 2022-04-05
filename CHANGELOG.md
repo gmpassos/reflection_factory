@@ -1,3 +1,7 @@
+## 1.0.26
+
+- Fix `ClassProxy.ignoreParametersTypes`.
+
 ## 1.0.25
 
 - `ClassProxy`: added `ignoreParametersTypes`.

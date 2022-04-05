@@ -469,15 +469,20 @@ void main() {
               contains(
                   'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
               contains("part of 'foo.dart'"),
+              contains('SimpleAPIProxy\$reflectionProxy'),
             ),
             allOf(
-              contains('SimpleAPIProxy\$reflectionProxy'),
               contains('void nothing() {'),
               contains('int compute() {'),
               contains('int computeSum(int a, int? b) {'),
-              contains('int computeSum3(int a, {int? b, int? c}) {'),
               contains('Future<int?>? computeMultiply(int a, int b) {'),
               contains('FutureOr<int?>? computeDivide(int a, int b) {'),
+              contains('int computeSum3(int a, {int? b, int? c}) {'),
+              matches(RegExp(
+                  "onCall(\nthis,\n'computeSum3',\n<String, dynamic>{\n'a': a,\n'b': b,\n'c': c,\n},"
+                      .replaceAll('\n', r'\s+')
+                      .replaceAll('(', r'\(')
+                      .replaceAll(')', r'\)'))),
             ),
           )),
         },
