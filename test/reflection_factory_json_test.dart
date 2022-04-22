@@ -659,5 +659,74 @@ void main() {
       expect(await JsonCodec().decodeFromBytesAsync(Future.value(jsonBytes2)),
           equals({'a': 1, 'b': 2}));
     });
+
+    test('entity', () async {
+      TestUserWithReflection$reflection.boot();
+      var user1 =
+          TestUserWithReflection.fields('joe', 'joe@mail.com', '123', id: 101);
+
+      var jsonCodec = JsonCodec();
+
+      {
+        var encodedJson = jsonCodec.encode(user1);
+
+        expect(
+            encodedJson,
+            equals(
+                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"level":null,"name":"joe","password":"123"}'));
+      }
+
+      {
+        var encodedJson = jsonCodec.encode([user1, user1]);
+
+        print(encodedJson);
+
+        expect(
+            encodedJson,
+            equals('['
+                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"level":null,"name":"joe","password":"123"},'
+                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"level":null,"name":"joe","password":"123"}'
+                ']'));
+
+        var decoded =
+            jsonCodec.decode(encodedJson, type: TestUserWithReflection) as List;
+
+        print(decoded);
+
+        expect(decoded[0], isA<TestUserWithReflection>());
+        expect(decoded[1], isA<TestUserWithReflection>());
+
+        expect(identical(decoded[0], decoded[1]), isFalse);
+
+        expect(jsonCodec.encode([user1, user1]), equals(encodedJson));
+      }
+
+      {
+        var encodedJson =
+            jsonCodec.encode([user1, user1], duplicatedEntitiesAsID: true);
+
+        print(encodedJson);
+
+        expect(
+            encodedJson,
+            equals('['
+                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"level":null,"name":"joe","password":"123"},'
+                '101'
+                ']'));
+
+        var decoded = jsonCodec.decode(encodedJson,
+            type: TestUserWithReflection, duplicatedEntitiesAsID: true) as List;
+
+        print(decoded);
+
+        expect(decoded[0], isA<TestUserWithReflection>());
+        expect(decoded[1], isA<TestUserWithReflection>());
+
+        expect(identical(decoded[0], decoded[1]), isTrue);
+
+        expect(jsonCodec.encode([user1, user1], duplicatedEntitiesAsID: true),
+            equals(encodedJson));
+      }
+    });
   });
 }

@@ -155,7 +155,8 @@ void main() {
               .hasRegisterClassReflection(TestUserWithReflection),
           isFalse);
 
-      var user = TestUserWithReflection.fields('Joe', 'joe@mail.com', '123');
+      var user =
+          TestUserWithReflection.fields('Joe', 'joe@mail.com', '123', id: 1001);
 
       var userReflection = user.reflection;
 
@@ -188,6 +189,21 @@ void main() {
             'axis': 'x',
             'email': 'a@a.com',
             'enabled': true,
+            'id': null,
+            'isEnabled': true,
+            'level': null,
+            'name': 'Foo',
+            'password': '123'
+          }));
+
+      expect(
+          TestUserWithReflection.fields('Foo', 'a@a.com', '123', id: 1001)
+              .toJsonMap(),
+          equals({
+            'axis': 'x',
+            'email': 'a@a.com',
+            'enabled': true,
+            'id': 1001,
             'isEnabled': true,
             'level': null,
             'name': 'Foo',
@@ -200,6 +216,7 @@ void main() {
             'axis': 'x',
             'email': 'a@a.com',
             'enabled': true,
+            'id': null,
             'isEnabled': true,
             'level': null,
             'name': 'Foo',
@@ -213,6 +230,7 @@ void main() {
             'axis': 'x',
             'email': 'a@a.com',
             'enabled': true,
+            'id': null,
             'isEnabled': true,
             'level': null,
             'name': 'Foo',
@@ -398,9 +416,9 @@ void main() {
         expect(constructorFields.normalParameters.length, equals(3));
         expect(constructorFields.optionalParameters, isEmpty);
         expect(constructorFields.namedParameters.keys,
-            equals(['axis', 'enabled', 'level']));
+            equals(['axis', 'enabled', 'id', 'level']));
 
-        expect(constructorFields.parametersLength, equals(6));
+        expect(constructorFields.parametersLength, equals(7));
         expect(constructorFields.positionalParametersLength, equals(3));
         expect(constructorFields.requiredParametersLength, equals(3));
 
@@ -415,8 +433,9 @@ void main() {
         expect(constructorFields.getParameterByIndex(3)?.name, equals('axis'));
         expect(
             constructorFields.getParameterByIndex(4)?.name, equals('enabled'));
-        expect(constructorFields.getParameterByIndex(5)?.name, equals('level'));
-        expect(constructorFields.getParameterByIndex(6)?.name, isNull);
+        expect(constructorFields.getParameterByIndex(5)?.name, equals('id'));
+        expect(constructorFields.getParameterByIndex(6)?.name, equals('level'));
+        expect(constructorFields.getParameterByIndex(7)?.name, isNull);
       }
 
       {
@@ -450,6 +469,7 @@ void main() {
             'email',
             'enabled',
             'hashCode',
+            'id',
             'isEnabled',
             'isNotEnabled',
             'level',
@@ -464,10 +484,10 @@ void main() {
               .allFields()
               .where((e) => e.hasSetter)
               .map((e) => e.name),
-          equals(['axis', 'email', 'enabled', 'level', 'password']));
+          equals(['axis', 'email', 'enabled', 'id', 'level', 'password']));
 
       expect(userReflection.fieldsWhere((f) => f.nullable).map((f) => f.name),
-          equals(['email', 'level']));
+          equals(['email', 'id', 'level']));
 
       expect(
           userReflection
@@ -641,6 +661,7 @@ void main() {
             'email',
             'enabled',
             'hashCode',
+            'id',
             'isEnabled',
             'isNotEnabled',
             'level',
@@ -648,13 +669,15 @@ void main() {
             'password'
           ]));
       expect(allFields.whereFinal().toNames(), equals(['name']));
-      expect(allFields.whereNullable().toNames(), equals(['email', 'level']));
+      expect(allFields.whereNullable().toNames(),
+          equals(['email', 'id', 'level']));
       expect(
           allFields.toTypes(),
           equals([
             TestEnumWithReflection,
             String,
             bool,
+            int,
             int,
             bool,
             bool,
@@ -843,6 +866,7 @@ void main() {
             'axis': 'x',
             'email': 'joe@mail.net',
             'enabled': true,
+            'id': 1001,
             'isEnabled': true,
             'level': null,
             'name': 'Joe',
@@ -851,7 +875,7 @@ void main() {
       expect(
           userReflection.toJsonEncoded(),
           equals(
-              '{"axis":"x","email":"joe@mail.net","enabled":true,"isEnabled":true,"level":null,"name":"Joe","password":"abc"}'));
+              '{"axis":"x","email":"joe@mail.net","enabled":true,"id":1001,"isEnabled":true,"level":null,"name":"Joe","password":"abc"}'));
 
       expect(
           ReflectionFactory.toJsonEncodable(user),
@@ -859,6 +883,7 @@ void main() {
             'axis': 'x',
             'email': 'joe@mail.net',
             'enabled': true,
+            'id': 1001,
             'isEnabled': true,
             'level': null,
             'name': 'Joe',
@@ -866,7 +891,7 @@ void main() {
           }));
 
       var userDecoded = TestUserWithReflection$fromJsonEncoded(
-          '{"axis":"y","email":null,"enabled":false,"isEnabled":false,"level":123,"name":"Joe","password":"abc"}');
+          '{"axis":"y","email":null,"enabled":false,"id":1002,"isEnabled":false,"level":123,"name":"Joe","password":"abc"}');
 
       expect(
           ReflectionFactory.toJsonEncodable(userDecoded),
@@ -874,6 +899,7 @@ void main() {
             'axis': 'y',
             'email': null,
             'enabled': false,
+            'id': 1002,
             'isEnabled': false,
             'level': 123,
             'name': 'Joe',

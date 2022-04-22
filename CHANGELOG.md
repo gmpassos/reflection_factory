@@ -1,3 +1,8 @@
+## 1.0.27
+
+- Fix JSON `DateTime` parsing when encoded as an `int`.
+- JSON encoder/decoder can reference already encoded entities by ID through `JsonEntityCache`.
+
 ## 1.0.26
 
 - Fix `ClassProxy.ignoreParametersTypes`.

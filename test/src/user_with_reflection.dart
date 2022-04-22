@@ -20,6 +20,8 @@ class TestUserWithReflection {
 
   static bool isVersion(double ver) => version == ver;
 
+  int? id;
+
   final String name;
 
   String? email;
@@ -33,7 +35,10 @@ class TestUserWithReflection {
   int? level;
 
   TestUserWithReflection.fields(this.name, this.email, this.password,
-      {this.enabled = true, this.axis = TestEnumWithReflection.x, this.level});
+      {this.enabled = true,
+      this.axis = TestEnumWithReflection.x,
+      this.level,
+      this.id});
 
   TestUserWithReflection()
       : this.fields(

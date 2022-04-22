@@ -18,7 +18,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.0.26';
+  static const String VERSION = '1.0.27';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -1425,7 +1425,7 @@ class ParameterReflection {
 
   @override
   String toString() {
-    return 'ParameterReflection{type: $type${nullable ? '?' : ''}, name: $name${required ? ', required' : ''}';
+    return 'ParameterReflection{type: $type${nullable ? '?' : ''}, name: $name${required ? ', required' : ''}}';
   }
 }
 

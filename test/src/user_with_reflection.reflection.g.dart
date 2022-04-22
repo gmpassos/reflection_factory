@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.26
+// BUILDER: reflection_factory/1.0.27
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -102,7 +102,7 @@ class TestAddressWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.26');
+  Version get reflectionFactoryVersion => Version.parse('1.0.27');
 
   @override
   TestAddressWithReflection$reflection withObject(
@@ -333,7 +333,7 @@ class TestCompanyWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.26');
+  Version get reflectionFactoryVersion => Version.parse('1.0.27');
 
   @override
   TestCompanyWithReflection$reflection withObject(
@@ -593,7 +593,7 @@ class TestDataWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.26');
+  Version get reflectionFactoryVersion => Version.parse('1.0.27');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -827,7 +827,7 @@ class TestDomainWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.26');
+  Version get reflectionFactoryVersion => Version.parse('1.0.27');
 
   @override
   TestDomainWithReflection$reflection withObject(
@@ -1168,7 +1168,7 @@ class TestEnumWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.26');
+  Version get reflectionFactoryVersion => Version.parse('1.0.27');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -1238,7 +1238,7 @@ class TestOpAWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.26');
+  Version get reflectionFactoryVersion => Version.parse('1.0.27');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -1467,7 +1467,7 @@ class TestOpBWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.26');
+  Version get reflectionFactoryVersion => Version.parse('1.0.27');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -1710,7 +1710,7 @@ class TestOpWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.26');
+  Version get reflectionFactoryVersion => Version.parse('1.0.27');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -1959,7 +1959,7 @@ class TestUserWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.26');
+  Version get reflectionFactoryVersion => Version.parse('1.0.27');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
@@ -2016,9 +2016,10 @@ class TestUserWithReflection$reflection
             () => (String name, String? email, String password,
                     {bool enabled = true,
                     TestEnumWithReflection axis = TestEnumWithReflection.x,
-                    int? level}) =>
+                    int? level,
+                    int? id}) =>
                 TestUserWithReflection.fields(name, email, password,
-                    enabled: enabled, axis: axis, level: level),
+                    enabled: enabled, axis: axis, level: level, id: id),
             const <ParameterReflection>[
               ParameterReflection(
                   TypeReflection.tString, 'name', false, true, null, null),
@@ -2038,6 +2039,8 @@ class TestUserWithReflection$reflection
                   null),
               'enabled': ParameterReflection(
                   TypeReflection.tBool, 'enabled', false, false, true, null),
+              'id': ParameterReflection(
+                  TypeReflection.tInt, 'id', true, false, null, null),
               'level': ParameterReflection(
                   TypeReflection.tInt, 'level', true, false, null, null)
             },
@@ -2082,6 +2085,7 @@ class TestUserWithReflection$reflection
         'email',
         'enabled',
         'hashCode',
+        'id',
         'isEnabled',
         'isNotEnabled',
         'level',
@@ -2097,6 +2101,20 @@ class TestUserWithReflection$reflection
     var lc = fieldName.trim().toLowerCase();
 
     switch (lc) {
+      case 'id':
+        return FieldReflection<TestUserWithReflection, T>(
+          this,
+          TestUserWithReflection,
+          TypeReflection.tInt,
+          'id',
+          true,
+          (o) => () => o!.id as T,
+          (o) => (T? v) => o!.id = v as int?,
+          obj,
+          false,
+          false,
+          null,
+        );
       case 'name':
         return FieldReflection<TestUserWithReflection, T>(
           this,
