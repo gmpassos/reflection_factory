@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.27
+// BUILDER: reflection_factory/1.0.28
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -11,11 +11,227 @@
 part of 'user_reflection_bridge.dart';
 
 // ignore: non_constant_identifier_names
+TestAddress TestAddress$fromJson(Map<String, Object?> map) =>
+    TestAddress$reflection.staticInstance.fromJson(map);
+// ignore: non_constant_identifier_names
+TestAddress TestAddress$fromJsonEncoded(String jsonEncoded) =>
+    TestAddress$reflection.staticInstance.fromJsonEncoded(jsonEncoded);
+// ignore: non_constant_identifier_names
 TestUserSimple TestUserSimple$fromJson(Map<String, Object?> map) =>
     TestUserSimple$reflection.staticInstance.fromJson(map);
 // ignore: non_constant_identifier_names
 TestUserSimple TestUserSimple$fromJsonEncoded(String jsonEncoded) =>
     TestUserSimple$reflection.staticInstance.fromJsonEncoded(jsonEncoded);
+
+class TestAddress$reflection extends ClassReflection<TestAddress> {
+  TestAddress$reflection([TestAddress? object]) : super(TestAddress, object);
+
+  static bool _registered = false;
+  @override
+  void register() {
+    if (!_registered) {
+      _registered = true;
+      super.register();
+      _registerSiblingsReflection();
+    }
+  }
+
+  @override
+  Version get languageVersion => Version.parse('2.13.0');
+
+  @override
+  Version get reflectionFactoryVersion => Version.parse('1.0.28');
+
+  @override
+  TestAddress$reflection withObject([TestAddress? obj]) =>
+      TestAddress$reflection(obj);
+
+  static TestAddress$reflection? _withoutObjectInstance;
+  @override
+  TestAddress$reflection withoutObjectInstance() => _withoutObjectInstance ??=
+      super.withoutObjectInstance() as TestAddress$reflection;
+
+  static TestAddress$reflection get staticInstance =>
+      _withoutObjectInstance ??= TestAddress$reflection();
+
+  @override
+  TestAddress$reflection getStaticInstance() => staticInstance;
+
+  static bool _boot = false;
+  static void boot() {
+    if (_boot) return;
+    _boot = true;
+    TestAddress$reflection.staticInstance;
+  }
+
+  @override
+  bool get hasDefaultConstructor => false;
+  @override
+  TestAddress? createInstanceWithDefaultConstructor() => null;
+
+  @override
+  bool get hasEmptyConstructor => false;
+  @override
+  TestAddress? createInstanceWithEmptyConstructor() => null;
+  @override
+  bool get hasNoRequiredArgsConstructor => false;
+  @override
+  TestAddress? createInstanceWithNoRequiredArgsConstructor() => null;
+
+  @override
+  List<String> get constructorsNames => const <String>[''];
+
+  @override
+  ConstructorReflection<TestAddress>? constructor<R>(String constructorName) {
+    var lc = constructorName.trim().toLowerCase();
+
+    switch (lc) {
+      case '':
+        return ConstructorReflection<TestAddress>(
+            this,
+            TestAddress,
+            '',
+            () => (String state, String city) => TestAddress(state, city),
+            const <ParameterReflection>[
+              ParameterReflection(
+                  TypeReflection.tString, 'state', false, true, null, null),
+              ParameterReflection(
+                  TypeReflection.tString, 'city', false, true, null, null)
+            ],
+            null,
+            null,
+            null);
+      default:
+        return null;
+    }
+  }
+
+  @override
+  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+
+  @override
+  List<ClassReflection> siblingsClassReflection() =>
+      _siblingsReflection().whereType<ClassReflection>().toList();
+
+  @override
+  List<Reflection> siblingsReflection() => _siblingsReflection();
+
+  @override
+  List<Type> get supperTypes => const <Type>[];
+
+  @override
+  bool get hasMethodToJson => true;
+
+  @override
+  Object? callMethodToJson([TestAddress? obj]) {
+    obj ??= object;
+    return obj?.toJson();
+  }
+
+  @override
+  List<String> get fieldsNames => const <String>['city', 'hashCode', 'state'];
+
+  @override
+  FieldReflection<TestAddress, T>? field<T>(String fieldName,
+      [TestAddress? obj]) {
+    obj ??= object;
+
+    var lc = fieldName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'state':
+        return FieldReflection<TestAddress, T>(
+          this,
+          TestAddress,
+          TypeReflection.tString,
+          'state',
+          false,
+          (o) => () => o!.state as T,
+          null,
+          obj,
+          false,
+          true,
+          null,
+        );
+      case 'city':
+        return FieldReflection<TestAddress, T>(
+          this,
+          TestAddress,
+          TypeReflection.tString,
+          'city',
+          false,
+          (o) => () => o!.city as T,
+          null,
+          obj,
+          false,
+          true,
+          null,
+        );
+      case 'hashcode':
+        return FieldReflection<TestAddress, T>(
+          this,
+          TestAddress,
+          TypeReflection.tInt,
+          'hashCode',
+          false,
+          (o) => () => o!.hashCode as T,
+          null,
+          obj,
+          false,
+          false,
+          [override],
+        );
+      default:
+        return null;
+    }
+  }
+
+  @override
+  List<String> get staticFieldsNames => const <String>[];
+
+  @override
+  FieldReflection<TestAddress, T>? staticField<T>(String fieldName) {
+    return null;
+  }
+
+  @override
+  List<String> get methodsNames => const <String>['toJson'];
+
+  @override
+  MethodReflection<TestAddress, R>? method<R>(String methodName,
+      [TestAddress? obj]) {
+    obj ??= object;
+
+    var lc = methodName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'tojson':
+        return MethodReflection<TestAddress, R>(
+            this,
+            TestAddress,
+            'toJson',
+            TypeReflection.tMapStringDynamic,
+            false,
+            (o) => o!.toJson,
+            obj,
+            false,
+            null,
+            null,
+            null,
+            null);
+      default:
+        return null;
+    }
+  }
+
+  @override
+  List<String> get staticMethodsNames => const <String>[];
+
+  @override
+  MethodReflection<TestAddress, R>? staticMethod<R>(String methodName) {
+    return null;
+  }
+}
 
 class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   TestUserSimple$reflection([TestUserSimple? object])
@@ -35,7 +251,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.27');
+  Version get reflectionFactoryVersion => Version.parse('1.0.28');
 
   @override
   TestUserSimple$reflection withObject([TestUserSimple? obj]) =>
@@ -348,6 +564,35 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   }
 }
 
+extension TestAddress$reflectionExtension on TestAddress {
+  /// Returns a [ClassReflection] for type [TestAddress]. (Generated by [ReflectionFactory])
+  ClassReflection<TestAddress> get reflection => TestAddress$reflection(this);
+
+  /// Returns a JSON [Map] for type [TestAddress]. (Generated by [ReflectionFactory])
+  Map<String, dynamic>? toJsonMap() => reflection.toJsonMap();
+
+  /// Returns an encoded JSON [String] for type [TestAddress]. (Generated by [ReflectionFactory])
+  String toJsonEncoded({bool pretty = false}) =>
+      reflection.toJsonEncoded(pretty: pretty);
+
+  /// Returns a JSON for type [TestAddress] using the class fields. (Generated by [ReflectionFactory])
+  Object? toJsonFromFields() => reflection.toJsonFromFields();
+}
+
+extension TestAddressReflectionBridge$reflectionExtension
+    on TestAddressReflectionBridge {
+  /// Returns a [ClassReflection] for type [T] or [obj]. (Generated by [ReflectionFactory])
+  ClassReflection<T> reflection<T>([T? obj]) {
+    switch (T) {
+      case TestAddress:
+        return TestAddress$reflection(obj as TestAddress?)
+            as ClassReflection<T>;
+      default:
+        throw UnsupportedError('<$runtimeType> No reflection for Type: $T');
+    }
+  }
+}
+
 extension TestUserReflectionBridge$reflectionExtension
     on TestUserReflectionBridge {
   /// Returns a [ClassReflection] for type [T] or [obj]. (Generated by [ReflectionFactory])
@@ -431,6 +676,7 @@ extension TestUserSimpleProxyAsync$reflectionProxy on TestUserSimpleProxyAsync {
 
 List<Reflection> _listSiblingsReflection() => <Reflection>[
       TestUserSimple$reflection(),
+      TestAddress$reflection(),
     ];
 
 List<Reflection>? _siblingsReflectionList;
