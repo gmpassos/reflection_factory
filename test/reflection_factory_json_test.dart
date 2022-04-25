@@ -94,6 +94,50 @@ class Time {
 }
 
 void main() {
+  group('JsonAnnotation', () {
+    test('JsonField', () {
+      expect(JsonField.hidden().isHidden, isTrue);
+      expect(JsonField.hidden().isVisible, isFalse);
+
+      expect(JsonField.visible().isVisible, isTrue);
+      expect(JsonField.visible().isHidden, isFalse);
+    });
+
+    test('JsonFieldAlias', () {
+      expect(JsonFieldAlias('abc').isValid, isTrue);
+      expect(JsonFieldAlias('a').isValid, isTrue);
+      expect(JsonFieldAlias('b').isValid, isTrue);
+
+      expect(JsonFieldAlias('').isValid, isFalse);
+      expect(JsonFieldAlias(' ').isValid, isFalse);
+      expect(JsonFieldAlias(' abc ').isValid, isFalse);
+      expect(JsonFieldAlias(' ab-c ').isValid, isFalse);
+
+      expect(JsonFieldAlias('123').isValid, isFalse);
+      expect(JsonFieldAlias('1').isValid, isFalse);
+      expect(JsonFieldAlias('1a').isValid, isFalse);
+      expect(JsonFieldAlias('1abc').isValid, isFalse);
+
+      expect(
+          [JsonFieldAlias('abc'), JsonFieldAlias('123'), JsonFieldAlias('def')]
+              .validNames,
+          equals(['abc', 'def']));
+
+      expect(
+          [JsonFieldAlias('abc'), JsonFieldAlias('123'), JsonFieldAlias('abc')]
+              .alias,
+          equals('abc'));
+
+      expect(
+          () => [
+                JsonFieldAlias('abc'),
+                JsonFieldAlias('123'),
+                JsonFieldAlias('def')
+              ].alias,
+          throwsA(isA<StateError>()));
+    });
+  });
+
   group('JSON', () {
     test('castListType', () {
       expect(<dynamic>['a', 'b'], isNot(isA<List<String>>()));
@@ -662,8 +706,12 @@ void main() {
 
     test('entity', () async {
       TestUserWithReflection$reflection.boot();
+
       var user1 =
           TestUserWithReflection.fields('joe', 'joe@mail.com', '123', id: 101);
+
+      var user2 = TestUserWithReflection.fields('joe', 'joe@mail.com', '123',
+          axis: TestEnumWithReflection.z, level: 999, enabled: false);
 
       var jsonCodec = JsonCodec();
 
@@ -673,7 +721,33 @@ void main() {
         expect(
             encodedJson,
             equals(
-                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"level":null,"name":"joe","password":"123"}'));
+                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"}'));
+
+        var decodedUser1 =
+            jsonCodec.decode(encodedJson, type: TestUserWithReflection);
+        expect(jsonCodec.encode(decodedUser1), equals(encodedJson));
+
+        var encodedUser1b =
+            '{"axis":"x","email":"joe2@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe","passphrase":"123456"}';
+        var decodedUser1b = jsonCodec.decode(encodedUser1b,
+            type: TestUserWithReflection) as TestUserWithReflection;
+        expect(decodedUser1b.email, equals('joe2@mail.com'));
+        expect(decodedUser1b.password, equals('123456'));
+        expect(jsonCodec.encode(decodedUser1b),
+            equals(encodedUser1b.replaceFirst('passphrase', 'password')));
+      }
+
+      {
+        var encodedJson = jsonCodec.encode(user2);
+
+        expect(
+            encodedJson,
+            equals(
+                '{"axis":"z","email":"joe@mail.com","enabled":false,"id":null,"isEnabled":false,"theLevel":999,"name":"joe","password":"123"}'));
+
+        var decodedUser2 = jsonCodec.decode(encodedJson,
+            type: TestUserWithReflection) as TestUserWithReflection;
+        expect(jsonCodec.encode(decodedUser2), equals(encodedJson));
       }
 
       {
@@ -684,8 +758,8 @@ void main() {
         expect(
             encodedJson,
             equals('['
-                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"level":null,"name":"joe","password":"123"},'
-                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"level":null,"name":"joe","password":"123"}'
+                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"},'
+                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"}'
                 ']'));
 
         var decoded =
@@ -710,7 +784,7 @@ void main() {
         expect(
             encodedJson,
             equals('['
-                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"level":null,"name":"joe","password":"123"},'
+                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"},'
                 '101'
                 ']'));
 

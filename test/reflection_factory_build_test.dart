@@ -1,4 +1,5 @@
 @TestOn('vm')
+@Tags(['build', 'slow'])
 import 'package:build_test/build_test.dart';
 import 'package:reflection_factory/src/reflection_factory_base.dart';
 import 'package:reflection_factory/src/reflection_factory_builder.dart';

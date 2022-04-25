@@ -7,6 +7,9 @@ part 'user_reflection_bridge.reflection.g.dart';
 @ReflectionBridge([TestUserSimple])
 class TestUserReflectionBridge {}
 
+@ReflectionBridge([TestAddress])
+class TestAddressReflectionBridge {}
+
 @ClassProxy('TestUserSimple')
 class TestUserSimpleProxy implements ClassProxyListener {
   final List<String> calls = <String>[];

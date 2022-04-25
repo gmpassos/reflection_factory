@@ -165,6 +165,9 @@ void main() {
       expect(userReflection.reflectionFactoryVersion.toString(),
           equals(ReflectionFactory.VERSION));
 
+      expect(userReflection.hasJsonNameAlias, isTrue);
+      expect(userReflection.canCreateInstanceWithoutArguments, isTrue);
+
       expect(
           identical(userReflection.withoutObjectInstance(),
               userReflection.withoutObjectInstance()),
@@ -191,7 +194,7 @@ void main() {
             'enabled': true,
             'id': null,
             'isEnabled': true,
-            'level': null,
+            'theLevel': null,
             'name': 'Foo',
             'password': '123'
           }));
@@ -205,7 +208,7 @@ void main() {
             'enabled': true,
             'id': 1001,
             'isEnabled': true,
-            'level': null,
+            'theLevel': null,
             'name': 'Foo',
             'password': '123'
           }));
@@ -218,7 +221,7 @@ void main() {
             'enabled': true,
             'id': null,
             'isEnabled': true,
-            'level': null,
+            'theLevel': null,
             'name': 'Foo',
             'password': '123'
           }));
@@ -232,7 +235,55 @@ void main() {
             'enabled': true,
             'id': null,
             'isEnabled': true,
-            'level': null,
+            'theLevel': null,
+            'name': 'Foo',
+            'password': '123'
+          }));
+
+      expect(
+          TestUserWithReflection$reflection.staticInstance
+              .createInstanceFromMap({
+            'axis': TestEnumWithReflection.y,
+            'email': 'b@a.com',
+            'enabled': true,
+            'id': null,
+            'isEnabled': true,
+            'theLevel': null,
+            'name': 'Foo',
+            'password': '123'
+          })?.toJsonFromFields(),
+          equals({
+            'axis': 'y',
+            'email': 'b@a.com',
+            'enabled': true,
+            'id': null,
+            'isEnabled': true,
+            'theLevel': null,
+            'name': 'Foo',
+            'password': '123'
+          }));
+
+      expect(
+          TestUserWithReflection$reflection.staticInstance
+              .createInstanceFromMap({
+            'axis': TestEnumWithReflection.y,
+            'email': 'b@a.com',
+            'enabled': true,
+            'id': null,
+            'isEnabled': true,
+            'theLevel': null,
+            'name': 'Foo',
+            'password': '123',
+            'extraField1': 123456,
+            'extraField2': 123456,
+          })?.toJsonFromFields(),
+          equals({
+            'axis': 'y',
+            'email': 'b@a.com',
+            'enabled': true,
+            'id': null,
+            'isEnabled': true,
+            'theLevel': null,
             'name': 'Foo',
             'password': '123'
           }));
@@ -427,9 +478,20 @@ void main() {
         expect(constructorFields.getParameterByName('foo'), isNull);
 
         expect(constructorFields.getParameterByIndex(0)?.name, equals('name'));
+
         expect(constructorFields.getParameterByIndex(1)?.name, equals('email'));
+        expect(constructorFields.getParameterByIndex(1)?.jsonName,
+            equals('email'));
+        expect(constructorFields.getParameterByIndex(1)?.hasJsonNameAlias,
+            isFalse);
+
+        expect(constructorFields.getParameterByIndex(2)?.name,
+            equals('passphrase'));
+        expect(constructorFields.getParameterByIndex(2)?.jsonName,
+            equals('password'));
         expect(
-            constructorFields.getParameterByIndex(2)?.name, equals('password'));
+            constructorFields.getParameterByIndex(2)?.hasJsonNameAlias, isTrue);
+
         expect(constructorFields.getParameterByIndex(3)?.name, equals('axis'));
         expect(
             constructorFields.getParameterByIndex(4)?.name, equals('enabled'));
@@ -513,7 +575,7 @@ void main() {
           isEmpty);
 
       expect(userReflection.methodsNames,
-          equals(['checkPassword', 'getField', 'setField']));
+          equals(['checkPassword', 'getField', 'setField', 'toString']));
       expect(userReflection.allMethods().map((e) => e.name),
           equals(userReflection.methodsNames));
 
@@ -529,7 +591,11 @@ void main() {
               .map((e) => e.name),
           equals(['getField']));
 
-      expect(userReflection.methodsWhere((m) => m.hasNoParameters), isEmpty);
+      expect(
+          userReflection
+              .methodsWhere((m) => m.hasNoParameters)
+              .map((e) => e.name),
+          ['toString']);
 
       expect(userReflection.staticMethodsNames, equals(['isVersion']));
       expect(userReflection.allStaticMethods().map((e) => e.name),
@@ -693,16 +759,18 @@ void main() {
 
       var allMethods = userReflection.allMethods();
       expect(allMethods.toNames(),
-          equals(['checkPassword', 'getField', 'setField']));
+          equals(['checkPassword', 'getField', 'setField', 'toString']));
       expect(
           allMethods.toReturnTypeReflections(),
           equals([
             TypeReflection.tBool,
             TypeReflection.tDynamic,
-            TypeReflection.tVoid
+            TypeReflection.tVoid,
+            TypeReflection.tString
           ]));
+
       expect(allMethods.toReturnTypes(),
-          equals([bool, dynamic, TypeInfo.tVoid.type]));
+          equals([bool, dynamic, TypeInfo.tVoid.type, String]));
       expect(allMethods.whereStatic(), isEmpty);
 
       var allStaticMethods = userReflection.allStaticMethods();
@@ -868,14 +936,14 @@ void main() {
             'enabled': true,
             'id': 1001,
             'isEnabled': true,
-            'level': null,
+            'theLevel': null,
             'name': 'Joe',
             'password': 'abc'
           }));
       expect(
           userReflection.toJsonEncoded(),
           equals(
-              '{"axis":"x","email":"joe@mail.net","enabled":true,"id":1001,"isEnabled":true,"level":null,"name":"Joe","password":"abc"}'));
+              '{"axis":"x","email":"joe@mail.net","enabled":true,"id":1001,"isEnabled":true,"theLevel":null,"name":"Joe","password":"abc"}'));
 
       expect(
           ReflectionFactory.toJsonEncodable(user),
@@ -885,7 +953,7 @@ void main() {
             'enabled': true,
             'id': 1001,
             'isEnabled': true,
-            'level': null,
+            'theLevel': null,
             'name': 'Joe',
             'password': 'abc'
           }));
@@ -901,7 +969,7 @@ void main() {
             'enabled': false,
             'id': 1002,
             'isEnabled': false,
-            'level': 123,
+            'theLevel': 123,
             'name': 'Joe',
             'password': 'abc'
           }));
@@ -924,8 +992,18 @@ void main() {
       expect(userStaticReflection.getStaticField('version'), equals(1.1));
       expect(userStaticReflection.getStaticField('withReflection'), isTrue);
 
+      //TestAddressWithReflection$reflection.staticInstance;
+
       var address = TestAddressWithReflection('CA', 'Los Angeles');
-      expect(address.reflection, isNotNull);
+      var addressReflection = address.reflection;
+
+      expect(addressReflection, isNotNull);
+      expect(addressReflection.hasJsonNameAlias, isFalse);
+      expect(addressReflection.canCreateInstanceWithoutArguments, isTrue);
+      expect(
+          addressReflection.fieldsNames, equals(['city', 'hashCode', 'state']));
+      expect(addressReflection.methodsNames, equals(['toJson']));
+      expect(addressReflection.constructorsNames, equals(['', 'empty']));
 
       expect(ReflectionFactory.toJsonEncodable(address),
           equals({'state': 'CA', 'city': 'Los Angeles'}));
@@ -1142,6 +1220,31 @@ void main() {
 
       expect(userStaticReflection.getStaticField('version'), equals(1.0));
       expect(userStaticReflection.getStaticField('withReflection'), isFalse);
+
+      var addressStaticReflection =
+          TestAddressReflectionBridge().reflection<TestAddress>();
+
+      expect(addressStaticReflection.hasJsonNameAlias, isFalse);
+      expect(
+          addressStaticReflection.canCreateInstanceWithoutArguments, isFalse);
+
+      expect(addressStaticReflection.fieldsNames,
+          equals(['city', 'hashCode', 'state']));
+      expect(addressStaticReflection.methodsNames, equals(['toJson']));
+      expect(addressStaticReflection.constructorsNames, equals(['']));
+
+      expect(addressStaticReflection.toJson(TestAddress('NY', 'New York')),
+          equals({'state': 'NY', 'city': 'New York'}));
+
+      expect(
+          addressStaticReflection
+              .toJsonFromFields(TestAddress('NY', 'Buffalo')),
+          equals({'state': 'NY', 'city': 'Buffalo'}));
+
+      expect(
+          addressStaticReflection.createInstanceFromMap(
+              {'state': 'NY', 'city': 'Yonkers'})?.toJson(),
+          equals({'state': 'NY', 'city': 'Yonkers'}));
     });
 
     test('Proxy', () {

@@ -1,3 +1,8 @@
+## 1.0.28
+
+- Fix `createInstanceFromMap` when there's no constructor without arguments.
+- New annotation `JsonFieldAlias`.
+
 ## 1.0.27
 
 - Fix JSON `DateTime` parsing when encoded as an `int`.

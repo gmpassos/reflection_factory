@@ -105,3 +105,41 @@ class JsonField extends JsonAnnotation {
   /// Returns `true` if the annotated field should be visible from JSON.
   bool get isVisible => !_hidden;
 }
+
+/// Defines the JSON field name.
+/// - If used in a constructor parameter, defines the corresponding JSON field.
+@Target({TargetKind.parameter, TargetKind.field, TargetKind.getter})
+class JsonFieldAlias extends JsonAnnotation {
+  final String name;
+
+  const JsonFieldAlias(this.name);
+
+  static final RegExp _nameFormat = RegExp(r'^[a-zA-Z_]\w*$');
+
+  bool get isValid {
+    var n = name.trim();
+    if (n.isEmpty || n != name) return false;
+    return _nameFormat.hasMatch(name);
+  }
+}
+
+extension IterableJsonFieldAliasExtension on Iterable<JsonFieldAlias> {
+  Iterable<JsonFieldAlias> get valid => where((a) => a.isValid);
+
+  Iterable<String> get validNames => valid.map((a) => a.name);
+
+  String? get alias {
+    String? name;
+    for (var a in validNames) {
+      if (name == null) {
+        name = a;
+      } else if (name == a) {
+        continue;
+      } else {
+        throw StateError("Multiple JSON field aliases: "
+            "${where((a) => a.isValid).map((a) => a.name).toList()}");
+      }
+    }
+    return name;
+  }
+}

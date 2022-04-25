@@ -32,13 +32,16 @@ class TestUserWithReflection {
 
   TestEnumWithReflection axis;
 
+  @JsonFieldAlias('theLevel')
   int? level;
 
-  TestUserWithReflection.fields(this.name, this.email, this.password,
+  TestUserWithReflection.fields(
+      this.name, this.email, @JsonFieldAlias('password') String passphrase,
       {this.enabled = true,
       this.axis = TestEnumWithReflection.x,
       this.level,
-      this.id});
+      this.id})
+      : password = passphrase.trim();
 
   TestUserWithReflection()
       : this.fields(
@@ -112,6 +115,11 @@ class TestUserWithReflection {
       password.hashCode ^
       enabled.hashCode ^
       axis.hashCode;
+
+  @override
+  String toString() {
+    return 'TestUserWithReflection{id: $id, name: $name, email: $email, password: $password, enabled: $enabled, axis: $axis, level: $level}';
+  }
 }
 
 @EnableReflection()

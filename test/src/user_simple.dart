@@ -68,8 +68,6 @@ class TestAddress {
 
   TestAddress(this.state, this.city);
 
-  TestAddress.empty() : this('', '');
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
