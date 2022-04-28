@@ -1,3 +1,8 @@
+## 1.0.29
+
+- `ClassReflection`:
+  - Add parameter `duplicatedEntitiesAsID` to JSON related methods. 
+
 ## 1.0.28
 
 - Fix `createInstanceFromMap` when there's no constructor without arguments.

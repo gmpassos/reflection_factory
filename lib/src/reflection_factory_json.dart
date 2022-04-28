@@ -631,7 +631,7 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
 
     if (classReflection != null) {
       try {
-        var json = classReflection.toJson(o, this);
+        var json = classReflection.toJson(o, this, duplicatedEntitiesAsID);
         _cacheEntity(o, duplicatedEntitiesAsID);
         return json;
       } catch (_) {

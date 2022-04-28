@@ -704,7 +704,7 @@ void main() {
           equals({'a': 1, 'b': 2}));
     });
 
-    test('entity', () async {
+    test('entity TestUserWithReflection', () async {
       TestUserWithReflection$reflection.boot();
 
       var user1 =
@@ -762,17 +762,33 @@ void main() {
                 '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"}'
                 ']'));
 
-        var decoded =
-            jsonCodec.decode(encodedJson, type: TestUserWithReflection) as List;
+        {
+          var decoded = jsonCodec.decode(encodedJson,
+              type: TestUserWithReflection) as List;
 
-        print(decoded);
+          print(decoded);
 
-        expect(decoded[0], isA<TestUserWithReflection>());
-        expect(decoded[1], isA<TestUserWithReflection>());
+          expect(decoded[0], isA<TestUserWithReflection>());
+          expect(decoded[1], isA<TestUserWithReflection>());
 
-        expect(identical(decoded[0], decoded[1]), isFalse);
+          expect(identical(decoded[0], decoded[1]), isFalse);
 
-        expect(jsonCodec.encode([user1, user1]), equals(encodedJson));
+          expect(jsonCodec.encode([user1, user1]), equals(encodedJson));
+        }
+
+        {
+          var decoded = JsonCodec(forceDuplicatedEntitiesAsID: true)
+              .decode(encodedJson, type: TestUserWithReflection) as List;
+
+          print(decoded);
+
+          expect(decoded[0], isA<TestUserWithReflection>());
+          expect(decoded[1], isA<TestUserWithReflection>());
+
+          expect(identical(decoded[0], decoded[1]), isTrue);
+
+          expect(jsonCodec.encode([user1, user1]), equals(encodedJson));
+        }
       }
 
       {
@@ -800,6 +816,127 @@ void main() {
 
         expect(jsonCodec.encode([user1, user1], duplicatedEntitiesAsID: true),
             equals(encodedJson));
+      }
+    });
+
+    test('entity TestTransactionWithReflection', () async {
+      TestUserWithReflection$reflection.boot();
+      TestTransactionWithReflection$reflection.boot();
+
+      var user1 =
+          TestUserWithReflection.fields('joe', 'joe@mail.com', '123', id: 1001);
+      var user2 = TestUserWithReflection.fields(
+          'smith', 'smith@mail.com', '456',
+          id: 1002);
+
+      var jsonCodec = JsonCodec();
+
+      var transaction1 = TestTransactionWithReflection.fromTo(10, user1, user2);
+
+      {
+        var encodedJson =
+            jsonCodec.encode(transaction1, duplicatedEntitiesAsID: true);
+
+        print(encodedJson);
+
+        expect(
+            encodedJson,
+            equals('{"amount":10,'
+                '"fromUser":{"axis":"x","email":"joe@mail.com","enabled":true,"id":1001,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"},'
+                '"toUser":{"axis":"x","email":"smith@mail.com","enabled":true,"id":1002,"isEnabled":true,"theLevel":null,"name":"smith","password":"456"}}'));
+
+        {
+          var decoded =
+              jsonCodec.decode(encodedJson, type: TestTransactionWithReflection)
+                  as TestTransactionWithReflection;
+
+          print(decoded);
+
+          expect(decoded.fromUser, isA<TestUserWithReflection>());
+          expect(decoded.toUser, isA<TestUserWithReflection>());
+
+          expect(decoded.fromUser.id, equals(1001));
+          expect(decoded.toUser.id, equals(1002));
+
+          expect(jsonCodec.encode(decoded), equals(encodedJson));
+        }
+      }
+
+      var transaction2 = TestTransactionWithReflection.fromTo(20, user1, user1);
+
+      {
+        var encodedJson =
+            jsonCodec.encode(transaction2, duplicatedEntitiesAsID: true);
+
+        print(encodedJson);
+
+        expect(
+            encodedJson,
+            equals('{"amount":20,'
+                '"fromUser":{"axis":"x","email":"joe@mail.com","enabled":true,"id":1001,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"},'
+                '"toUser":1001}'));
+
+        {
+          var decoded = jsonCodec.decode(encodedJson,
+              type: TestTransactionWithReflection,
+              duplicatedEntitiesAsID: true) as TestTransactionWithReflection;
+
+          print(decoded);
+
+          expect(decoded.fromUser, isA<TestUserWithReflection>());
+          expect(decoded.toUser, isA<TestUserWithReflection>());
+
+          expect(decoded.fromUser.id, equals(1001));
+          expect(decoded.toUser.id, equals(1001));
+
+          expect(jsonCodec.encode(decoded, duplicatedEntitiesAsID: true),
+              equals(encodedJson));
+        }
+
+        {
+          var encodedJson = '{"amount":20,'
+              '"fromUser":1001,'
+              '"toUser":{"axis":"x","email":"joe@mail.com","enabled":true,"id":1001,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"}'
+              '}';
+
+          var decoded = jsonCodec.decode(encodedJson,
+              type: TestTransactionWithReflection,
+              duplicatedEntitiesAsID: true) as TestTransactionWithReflection;
+
+          print(decoded);
+
+          expect(decoded.fromUser, isA<TestUserWithReflection>());
+          expect(decoded.toUser, isA<TestUserWithReflection>());
+
+          expect(decoded.fromUser.id, equals(1001));
+          expect(decoded.toUser.id, equals(1001));
+        }
+
+        {
+          var encodedJson = '{"amount":20,'
+              '"fromUser":404,'
+              '"toUser":{"axis":"x","email":"joe@mail.com","enabled":true,"id":1001,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"}'
+              '}';
+
+          expect(
+              () => jsonCodec.decode(encodedJson,
+                  type: TestTransactionWithReflection,
+                  duplicatedEntitiesAsID: true),
+              throwsA(isA<TypeError>()));
+        }
+
+        {
+          var encodedJson = '{"amount":20,'
+              '"fromUser":400,'
+              '"toUser":404'
+              '}';
+
+          expect(
+              () => jsonCodec.decode(encodedJson,
+                  type: TestTransactionWithReflection,
+                  duplicatedEntitiesAsID: true),
+              throwsA(isA<TypeError>()));
+        }
       }
     });
   });

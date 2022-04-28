@@ -339,6 +339,7 @@ void main() {
             TestOpWithReflection,
             TestOpAWithReflection,
             TestOpBWithReflection,
+            TestTransactionWithReflection,
           ]));
 
       expect(
@@ -1237,8 +1238,8 @@ void main() {
           equals({'state': 'NY', 'city': 'New York'}));
 
       expect(
-          addressStaticReflection
-              .toJsonFromFields(TestAddress('NY', 'Buffalo')),
+          addressStaticReflection.toJsonFromFields(
+              obj: TestAddress('NY', 'Buffalo')),
           equals({'state': 'NY', 'city': 'Buffalo'}));
 
       expect(

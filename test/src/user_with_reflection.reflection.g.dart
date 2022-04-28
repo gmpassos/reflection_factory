@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.0.28
+// BUILDER: reflection_factory/1.0.29
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -74,6 +74,15 @@ TestOpWithReflection TestOpWithReflection$fromJson(Map<String, Object?> map) =>
 TestOpWithReflection TestOpWithReflection$fromJsonEncoded(String jsonEncoded) =>
     TestOpWithReflection$reflection.staticInstance.fromJsonEncoded(jsonEncoded);
 // ignore: non_constant_identifier_names
+TestTransactionWithReflection TestTransactionWithReflection$fromJson(
+        Map<String, Object?> map) =>
+    TestTransactionWithReflection$reflection.staticInstance.fromJson(map);
+// ignore: non_constant_identifier_names
+TestTransactionWithReflection TestTransactionWithReflection$fromJsonEncoded(
+        String jsonEncoded) =>
+    TestTransactionWithReflection$reflection.staticInstance
+        .fromJsonEncoded(jsonEncoded);
+// ignore: non_constant_identifier_names
 TestUserWithReflection TestUserWithReflection$fromJson(
         Map<String, Object?> map) =>
     TestUserWithReflection$reflection.staticInstance.fromJson(map);
@@ -102,7 +111,7 @@ class TestAddressWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.28');
+  Version get reflectionFactoryVersion => Version.parse('1.0.29');
 
   @override
   TestAddressWithReflection$reflection withObject(
@@ -333,7 +342,7 @@ class TestCompanyWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.28');
+  Version get reflectionFactoryVersion => Version.parse('1.0.29');
 
   @override
   TestCompanyWithReflection$reflection withObject(
@@ -593,7 +602,7 @@ class TestDataWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.28');
+  Version get reflectionFactoryVersion => Version.parse('1.0.29');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -827,7 +836,7 @@ class TestDomainWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.28');
+  Version get reflectionFactoryVersion => Version.parse('1.0.29');
 
   @override
   TestDomainWithReflection$reflection withObject(
@@ -1168,7 +1177,7 @@ class TestEnumWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.28');
+  Version get reflectionFactoryVersion => Version.parse('1.0.29');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -1238,7 +1247,7 @@ class TestOpAWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.28');
+  Version get reflectionFactoryVersion => Version.parse('1.0.29');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -1467,7 +1476,7 @@ class TestOpBWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.28');
+  Version get reflectionFactoryVersion => Version.parse('1.0.29');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -1710,7 +1719,7 @@ class TestOpWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.28');
+  Version get reflectionFactoryVersion => Version.parse('1.0.29');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -1940,6 +1949,210 @@ class TestOpWithReflection$reflection
   }
 }
 
+class TestTransactionWithReflection$reflection
+    extends ClassReflection<TestTransactionWithReflection> {
+  TestTransactionWithReflection$reflection(
+      [TestTransactionWithReflection? object])
+      : super(TestTransactionWithReflection, object);
+
+  static bool _registered = false;
+  @override
+  void register() {
+    if (!_registered) {
+      _registered = true;
+      super.register();
+      _registerSiblingsReflection();
+    }
+  }
+
+  @override
+  Version get languageVersion => Version.parse('2.13.0');
+
+  @override
+  Version get reflectionFactoryVersion => Version.parse('1.0.29');
+
+  @override
+  TestTransactionWithReflection$reflection withObject(
+          [TestTransactionWithReflection? obj]) =>
+      TestTransactionWithReflection$reflection(obj);
+
+  static TestTransactionWithReflection$reflection? _withoutObjectInstance;
+  @override
+  TestTransactionWithReflection$reflection withoutObjectInstance() =>
+      _withoutObjectInstance ??= super.withoutObjectInstance()
+          as TestTransactionWithReflection$reflection;
+
+  static TestTransactionWithReflection$reflection get staticInstance =>
+      _withoutObjectInstance ??= TestTransactionWithReflection$reflection();
+
+  @override
+  TestTransactionWithReflection$reflection getStaticInstance() =>
+      staticInstance;
+
+  static bool _boot = false;
+  static void boot() {
+    if (_boot) return;
+    _boot = true;
+    TestTransactionWithReflection$reflection.staticInstance;
+  }
+
+  @override
+  bool get hasDefaultConstructor => false;
+  @override
+  TestTransactionWithReflection? createInstanceWithDefaultConstructor() => null;
+
+  @override
+  bool get hasEmptyConstructor => false;
+  @override
+  TestTransactionWithReflection? createInstanceWithEmptyConstructor() => null;
+  @override
+  bool get hasNoRequiredArgsConstructor => false;
+  @override
+  TestTransactionWithReflection?
+      createInstanceWithNoRequiredArgsConstructor() => null;
+
+  @override
+  List<String> get constructorsNames => const <String>['fromTo'];
+
+  @override
+  ConstructorReflection<TestTransactionWithReflection>? constructor<R>(
+      String constructorName) {
+    var lc = constructorName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'fromto':
+        return ConstructorReflection<TestTransactionWithReflection>(
+            this,
+            TestTransactionWithReflection,
+            'fromTo',
+            () => (int amount, TestUserWithReflection fromUser,
+                    TestUserWithReflection toUser) =>
+                TestTransactionWithReflection.fromTo(amount, fromUser, toUser),
+            const <ParameterReflection>[
+              ParameterReflection(
+                  TypeReflection.tInt, 'amount', false, true, null, null),
+              ParameterReflection(TypeReflection(TestUserWithReflection),
+                  'fromUser', false, true, null, null),
+              ParameterReflection(TypeReflection(TestUserWithReflection),
+                  'toUser', false, true, null, null)
+            ],
+            null,
+            null,
+            null);
+      default:
+        return null;
+    }
+  }
+
+  @override
+  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+
+  @override
+  List<ClassReflection> siblingsClassReflection() =>
+      _siblingsReflection().whereType<ClassReflection>().toList();
+
+  @override
+  List<Reflection> siblingsReflection() => _siblingsReflection();
+
+  @override
+  List<Type> get supperTypes => const <Type>[];
+
+  @override
+  bool get hasMethodToJson => false;
+
+  @override
+  Object? callMethodToJson([TestTransactionWithReflection? obj]) => null;
+
+  @override
+  List<String> get fieldsNames =>
+      const <String>['amount', 'fromUser', 'toUser'];
+
+  @override
+  FieldReflection<TestTransactionWithReflection, T>? field<T>(String fieldName,
+      [TestTransactionWithReflection? obj]) {
+    obj ??= object;
+
+    var lc = fieldName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'fromuser':
+        return FieldReflection<TestTransactionWithReflection, T>(
+          this,
+          TestTransactionWithReflection,
+          TypeReflection(TestUserWithReflection),
+          'fromUser',
+          false,
+          (o) => () => o!.fromUser as T,
+          null,
+          obj,
+          false,
+          true,
+          null,
+        );
+      case 'touser':
+        return FieldReflection<TestTransactionWithReflection, T>(
+          this,
+          TestTransactionWithReflection,
+          TypeReflection(TestUserWithReflection),
+          'toUser',
+          false,
+          (o) => () => o!.toUser as T,
+          null,
+          obj,
+          false,
+          true,
+          null,
+        );
+      case 'amount':
+        return FieldReflection<TestTransactionWithReflection, T>(
+          this,
+          TestTransactionWithReflection,
+          TypeReflection.tInt,
+          'amount',
+          false,
+          (o) => () => o!.amount as T,
+          null,
+          obj,
+          false,
+          true,
+          null,
+        );
+      default:
+        return null;
+    }
+  }
+
+  @override
+  List<String> get staticFieldsNames => const <String>[];
+
+  @override
+  FieldReflection<TestTransactionWithReflection, T>? staticField<T>(
+      String fieldName) {
+    return null;
+  }
+
+  @override
+  List<String> get methodsNames => const <String>[];
+
+  @override
+  MethodReflection<TestTransactionWithReflection, R>? method<R>(
+      String methodName,
+      [TestTransactionWithReflection? obj]) {
+    obj ??= object;
+
+    return null;
+  }
+
+  @override
+  List<String> get staticMethodsNames => const <String>[];
+
+  @override
+  MethodReflection<TestTransactionWithReflection, R>? staticMethod<R>(
+      String methodName) {
+    return null;
+  }
+}
+
 class TestUserWithReflection$reflection
     extends ClassReflection<TestUserWithReflection> {
   TestUserWithReflection$reflection([TestUserWithReflection? object])
@@ -1959,7 +2172,7 @@ class TestUserWithReflection$reflection
   Version get languageVersion => Version.parse('2.13.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.0.28');
+  Version get reflectionFactoryVersion => Version.parse('1.0.29');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
@@ -2417,14 +2630,18 @@ extension TestAddressWithReflection$reflectionExtension
       TestAddressWithReflection$reflection(this);
 
   /// Returns a JSON [Map] for type [TestAddressWithReflection]. (Generated by [ReflectionFactory])
-  Map<String, dynamic>? toJsonMap() => reflection.toJsonMap();
+  Map<String, dynamic>? toJsonMap({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestAddressWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded({bool pretty = false}) =>
-      reflection.toJsonEncoded(pretty: pretty);
+  String toJsonEncoded(
+          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonEncoded(
+          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns a JSON for type [TestAddressWithReflection] using the class fields. (Generated by [ReflectionFactory])
-  Object? toJsonFromFields() => reflection.toJsonFromFields();
+  Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
+      .toJsonFromFields(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 }
 
 extension TestCompanyWithReflection$reflectionExtension
@@ -2434,17 +2651,22 @@ extension TestCompanyWithReflection$reflectionExtension
       TestCompanyWithReflection$reflection(this);
 
   /// Returns a JSON for type [TestCompanyWithReflection]. (Generated by [ReflectionFactory])
-  Object? toJson() => reflection.toJson();
+  Object? toJson({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJson(null, null, duplicatedEntitiesAsID);
 
   /// Returns a JSON [Map] for type [TestCompanyWithReflection]. (Generated by [ReflectionFactory])
-  Map<String, dynamic>? toJsonMap() => reflection.toJsonMap();
+  Map<String, dynamic>? toJsonMap({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestCompanyWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded({bool pretty = false}) =>
-      reflection.toJsonEncoded(pretty: pretty);
+  String toJsonEncoded(
+          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonEncoded(
+          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns a JSON for type [TestCompanyWithReflection] using the class fields. (Generated by [ReflectionFactory])
-  Object? toJsonFromFields() => reflection.toJsonFromFields();
+  Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
+      .toJsonFromFields(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 }
 
 extension TestDataWithReflection$reflectionExtension on TestDataWithReflection {
@@ -2453,17 +2675,22 @@ extension TestDataWithReflection$reflectionExtension on TestDataWithReflection {
       TestDataWithReflection$reflection(this);
 
   /// Returns a JSON for type [TestDataWithReflection]. (Generated by [ReflectionFactory])
-  Object? toJson() => reflection.toJson();
+  Object? toJson({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJson(null, null, duplicatedEntitiesAsID);
 
   /// Returns a JSON [Map] for type [TestDataWithReflection]. (Generated by [ReflectionFactory])
-  Map<String, dynamic>? toJsonMap() => reflection.toJsonMap();
+  Map<String, dynamic>? toJsonMap({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestDataWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded({bool pretty = false}) =>
-      reflection.toJsonEncoded(pretty: pretty);
+  String toJsonEncoded(
+          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonEncoded(
+          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns a JSON for type [TestDataWithReflection] using the class fields. (Generated by [ReflectionFactory])
-  Object? toJsonFromFields() => reflection.toJsonFromFields();
+  Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
+      .toJsonFromFields(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 }
 
 extension TestDomainWithReflection$reflectionExtension
@@ -2473,14 +2700,18 @@ extension TestDomainWithReflection$reflectionExtension
       TestDomainWithReflection$reflection(this);
 
   /// Returns a JSON [Map] for type [TestDomainWithReflection]. (Generated by [ReflectionFactory])
-  Map<String, dynamic>? toJsonMap() => reflection.toJsonMap();
+  Map<String, dynamic>? toJsonMap({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestDomainWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded({bool pretty = false}) =>
-      reflection.toJsonEncoded(pretty: pretty);
+  String toJsonEncoded(
+          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonEncoded(
+          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns a JSON for type [TestDomainWithReflection] using the class fields. (Generated by [ReflectionFactory])
-  Object? toJsonFromFields() => reflection.toJsonFromFields();
+  Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
+      .toJsonFromFields(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 }
 
 extension TestEnumWithReflection$reflectionExtension on TestEnumWithReflection {
@@ -2508,17 +2739,22 @@ extension TestOpAWithReflection$reflectionExtension on TestOpAWithReflection {
       TestOpAWithReflection$reflection(this);
 
   /// Returns a JSON for type [TestOpAWithReflection]. (Generated by [ReflectionFactory])
-  Object? toJson() => reflection.toJson();
+  Object? toJson({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJson(null, null, duplicatedEntitiesAsID);
 
   /// Returns a JSON [Map] for type [TestOpAWithReflection]. (Generated by [ReflectionFactory])
-  Map<String, dynamic>? toJsonMap() => reflection.toJsonMap();
+  Map<String, dynamic>? toJsonMap({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestOpAWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded({bool pretty = false}) =>
-      reflection.toJsonEncoded(pretty: pretty);
+  String toJsonEncoded(
+          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonEncoded(
+          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns a JSON for type [TestOpAWithReflection] using the class fields. (Generated by [ReflectionFactory])
-  Object? toJsonFromFields() => reflection.toJsonFromFields();
+  Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
+      .toJsonFromFields(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 }
 
 extension TestOpBWithReflection$reflectionExtension on TestOpBWithReflection {
@@ -2527,17 +2763,22 @@ extension TestOpBWithReflection$reflectionExtension on TestOpBWithReflection {
       TestOpBWithReflection$reflection(this);
 
   /// Returns a JSON for type [TestOpBWithReflection]. (Generated by [ReflectionFactory])
-  Object? toJson() => reflection.toJson();
+  Object? toJson({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJson(null, null, duplicatedEntitiesAsID);
 
   /// Returns a JSON [Map] for type [TestOpBWithReflection]. (Generated by [ReflectionFactory])
-  Map<String, dynamic>? toJsonMap() => reflection.toJsonMap();
+  Map<String, dynamic>? toJsonMap({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestOpBWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded({bool pretty = false}) =>
-      reflection.toJsonEncoded(pretty: pretty);
+  String toJsonEncoded(
+          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonEncoded(
+          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns a JSON for type [TestOpBWithReflection] using the class fields. (Generated by [ReflectionFactory])
-  Object? toJsonFromFields() => reflection.toJsonFromFields();
+  Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
+      .toJsonFromFields(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 }
 
 extension TestOpWithReflection$reflectionExtension on TestOpWithReflection {
@@ -2546,17 +2787,47 @@ extension TestOpWithReflection$reflectionExtension on TestOpWithReflection {
       TestOpWithReflection$reflection(this);
 
   /// Returns a JSON for type [TestOpWithReflection]. (Generated by [ReflectionFactory])
-  Object? toJson() => reflection.toJson();
+  Object? toJson({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJson(null, null, duplicatedEntitiesAsID);
 
   /// Returns a JSON [Map] for type [TestOpWithReflection]. (Generated by [ReflectionFactory])
-  Map<String, dynamic>? toJsonMap() => reflection.toJsonMap();
+  Map<String, dynamic>? toJsonMap({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestOpWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded({bool pretty = false}) =>
-      reflection.toJsonEncoded(pretty: pretty);
+  String toJsonEncoded(
+          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonEncoded(
+          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns a JSON for type [TestOpWithReflection] using the class fields. (Generated by [ReflectionFactory])
-  Object? toJsonFromFields() => reflection.toJsonFromFields();
+  Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
+      .toJsonFromFields(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+}
+
+extension TestTransactionWithReflection$reflectionExtension
+    on TestTransactionWithReflection {
+  /// Returns a [ClassReflection] for type [TestTransactionWithReflection]. (Generated by [ReflectionFactory])
+  ClassReflection<TestTransactionWithReflection> get reflection =>
+      TestTransactionWithReflection$reflection(this);
+
+  /// Returns a JSON for type [TestTransactionWithReflection]. (Generated by [ReflectionFactory])
+  Object? toJson({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJson(null, null, duplicatedEntitiesAsID);
+
+  /// Returns a JSON [Map] for type [TestTransactionWithReflection]. (Generated by [ReflectionFactory])
+  Map<String, dynamic>? toJsonMap({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+
+  /// Returns an encoded JSON [String] for type [TestTransactionWithReflection]. (Generated by [ReflectionFactory])
+  String toJsonEncoded(
+          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonEncoded(
+          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+
+  /// Returns a JSON for type [TestTransactionWithReflection] using the class fields. (Generated by [ReflectionFactory])
+  Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
+      .toJsonFromFields(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 }
 
 extension TestUserWithReflection$reflectionExtension on TestUserWithReflection {
@@ -2565,17 +2836,22 @@ extension TestUserWithReflection$reflectionExtension on TestUserWithReflection {
       TestUserWithReflection$reflection(this);
 
   /// Returns a JSON for type [TestUserWithReflection]. (Generated by [ReflectionFactory])
-  Object? toJson() => reflection.toJson();
+  Object? toJson({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJson(null, null, duplicatedEntitiesAsID);
 
   /// Returns a JSON [Map] for type [TestUserWithReflection]. (Generated by [ReflectionFactory])
-  Map<String, dynamic>? toJsonMap() => reflection.toJsonMap();
+  Map<String, dynamic>? toJsonMap({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestUserWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded({bool pretty = false}) =>
-      reflection.toJsonEncoded(pretty: pretty);
+  String toJsonEncoded(
+          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonEncoded(
+          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns a JSON for type [TestUserWithReflection] using the class fields. (Generated by [ReflectionFactory])
-  Object? toJsonFromFields() => reflection.toJsonFromFields();
+  Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
+      .toJsonFromFields(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 }
 
 List<Reflection> _listSiblingsReflection() => <Reflection>[
@@ -2587,6 +2863,7 @@ List<Reflection> _listSiblingsReflection() => <Reflection>[
       TestOpWithReflection$reflection(),
       TestOpAWithReflection$reflection(),
       TestOpBWithReflection$reflection(),
+      TestTransactionWithReflection$reflection(),
       TestEnumWithReflection$reflection(),
     ];
 

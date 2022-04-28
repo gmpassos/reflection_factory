@@ -299,3 +299,14 @@ class TestOpBWithReflection extends TestOpWithReflection<double> {
 
   Set<T> methodB<T>() => <T>{};
 }
+
+@EnableReflection()
+class TestTransactionWithReflection {
+  final TestUserWithReflection fromUser;
+
+  final TestUserWithReflection toUser;
+
+  final int amount;
+
+  TestTransactionWithReflection.fromTo(this.amount, this.fromUser, this.toUser);
+}

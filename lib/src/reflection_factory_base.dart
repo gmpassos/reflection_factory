@@ -3,12 +3,13 @@ import 'dart:convert' as dart_convert;
 
 import 'package:collection/collection.dart'
     show
+        DeepCollectionEquality,
         IterableExtension,
         IterableNullableExtension,
         ListEquality,
         MapEquality,
-        equalsIgnoreAsciiCase,
-        binarySearch;
+        binarySearch,
+        equalsIgnoreAsciiCase;
 import 'package:pub_semver/pub_semver.dart';
 
 import 'reflection_factory_annotation.dart';
@@ -18,7 +19,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.0.28';
+  static const String VERSION = '1.0.29';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -298,7 +299,7 @@ abstract class Reflection<O> {
   Object? toJson([O? obj, JsonEncoder? jsonEncoder]);
 
   /// Returns a JSON [Map].
-  Map<String, Object?>? toJsonMap([O? obj, JsonEncoder? jsonEncoder]);
+  Map<String, Object?>? toJsonMap({O? obj, JsonEncoder? jsonEncoder});
 
   /// Returns a JSON encoded. See [toJson].
   String toJsonEncoded({O? obj, JsonEncoder? jsonEncoder, bool pretty = false});
@@ -486,7 +487,7 @@ abstract class EnumReflection<O> extends Reflection<O>
 
   /// Returns a enum instance as a JSON [Map].
   @override
-  Map<String, Object>? toJsonMap([O? obj, JsonEncoder? jsonEncoder]) {
+  Map<String, Object>? toJsonMap({O? obj, JsonEncoder? jsonEncoder}) {
     obj ??= object;
     if (obj == null) return null;
 
@@ -1001,7 +1002,11 @@ abstract class ClassReflection<O> extends Reflection<O>
   ///
   /// - If [obj] is not provided, uses [object] as instance.
   @override
-  Object? toJson([O? obj, JsonEncoder? jsonEncoder]) {
+  Object? toJson(
+      [O? obj, JsonEncoder? jsonEncoder, bool duplicatedEntitiesAsID = false]) {
+    obj ??= object;
+    if (obj == null) return null;
+
     if (hasMethodToJson) {
       var json = callMethodToJson(obj);
 
@@ -1012,7 +1017,10 @@ abstract class ClassReflection<O> extends Reflection<O>
       }
     }
 
-    return toJsonFromFields(obj, jsonEncoder);
+    return toJsonFromFields(
+        obj: obj,
+        jsonEncoder: jsonEncoder,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID);
   }
 
   /// Returns a JSON [Map].
@@ -1020,7 +1028,11 @@ abstract class ClassReflection<O> extends Reflection<O>
   ///
   /// - If [obj] is not provided, uses [object] as instance.
   @override
-  Map<String, dynamic>? toJsonMap([O? obj, JsonEncoder? jsonEncoder]) {
+  Map<String, dynamic>? toJsonMap(
+      {O? obj, JsonEncoder? jsonEncoder, bool duplicatedEntitiesAsID = false}) {
+    obj ??= object;
+    if (obj == null) return null;
+
     if (hasMethodToJson) {
       var json = callMethodToJson(obj);
 
@@ -1036,13 +1048,22 @@ abstract class ClassReflection<O> extends Reflection<O>
       }
     }
 
-    return toJsonFromFields(obj, jsonEncoder);
+    return toJsonFromFields(
+        obj: obj,
+        jsonEncoder: jsonEncoder,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID);
   }
 
   /// Returns a JSON [Map] from [fieldsNames], calling [getField] for each one.
   ///
   /// - If [obj] is not provided, uses [object] as instance.
-  Map<String, dynamic> toJsonFromFields([O? obj, JsonEncoder? jsonEncoder]) {
+  Map<String, dynamic> toJsonFromFields(
+      {O? obj, JsonEncoder? jsonEncoder, bool duplicatedEntitiesAsID = false}) {
+    obj ??= object;
+    if (obj == null) {
+      StateError("Null object!");
+    }
+
     var entries = fieldsWhere((f) => f.isEntityField, obj).map((f) {
       var val = f.get();
       var name = f.jsonName;
@@ -1052,16 +1073,22 @@ abstract class ClassReflection<O> extends Reflection<O>
     var map = Map<String, dynamic>.fromEntries(entries);
 
     jsonEncoder ??= JsonEncoder.defaultEncoder;
-    return jsonEncoder.toJson(map);
+    return jsonEncoder.toJson(map,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID);
   }
 
   /// Returns a JSON encoded. See [toJson].
   @override
   String toJsonEncoded(
-      {O? obj, JsonEncoder? jsonEncoder, bool pretty = false}) {
+      {O? obj,
+      JsonEncoder? jsonEncoder,
+      bool pretty = false,
+      bool duplicatedEntitiesAsID = false}) {
     obj ??= object;
+
     jsonEncoder ??= JsonEncoder.defaultEncoder;
-    return jsonEncoder.encode(obj, pretty: pretty);
+    return jsonEncoder.encode(obj,
+        pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
   }
 
   /// Returns a class instance from [json].
@@ -1075,7 +1102,8 @@ abstract class ClassReflection<O> extends Reflection<O>
       var map = json is Map<String, Object?>
           ? json
           : json.map((k, v) => MapEntry(k.toString(), v));
-      return JsonDecoder.defaultDecoder.fromJsonMap<O>(map, type: classType);
+      return JsonDecoder.defaultDecoder
+          .fromJsonMap<O>(map, type: classType, duplicatedEntitiesAsID: true);
     } else {
       throw StateError(
           "JSON needs to be a Map to decode a class object: $className");
@@ -1085,7 +1113,8 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// Returns a class instance from [jsonEncoded].
   @override
   O fromJsonEncoded(String jsonEncoded) {
-    return JsonDecoder.defaultDecoder.decode<O>(jsonEncoded, type: classType);
+    return JsonDecoder.defaultDecoder
+        .decode<O>(jsonEncoded, type: classType, duplicatedEntitiesAsID: true);
   }
 
   static String? _defaultFieldNameResolver(
@@ -1134,13 +1163,41 @@ abstract class ClassReflection<O> extends Reflection<O>
       var o = methodInvocation.invoke(constructor.constructor);
       return o;
     } catch (e) {
-      print('Error invoking>\n'
-          '  - constructor: $constructor\n'
-          '  - map: $map\n'
-          '  - methodInvocation: $methodInvocation\n'
-          '  - error: $e\n');
-      rethrow;
+      // Tries a second parameter resolution if some value was resolved.
+      // This will allow use of the  current cached entities in a `JsonEntityCache`
+      // (if used by `fieldValueResolver`).
+      var map2 = methodInvocation.parametersToMap();
+
+      if (!DeepCollectionEquality().equals(map, map2)) {
+        var methodInvocation2 = constructor.methodInvocationFromMap(map2,
+            reviver: fieldValueResolver,
+            nameResolver: fieldNameResolver,
+            jsonName: usesJsonNameAlias);
+
+        try {
+          var o = methodInvocation2.invoke(constructor.constructor);
+          return o;
+        } catch (e2) {
+          _showInvokeError(constructor, methodInvocation2, map2, e2);
+          rethrow;
+        }
+      } else {
+        _showInvokeError(constructor, methodInvocation, map, e);
+        rethrow;
+      }
     }
+  }
+
+  void _showInvokeError(
+      ConstructorReflection constructor,
+      MethodInvocation methodInvocation,
+      Map<String, dynamic> map,
+      Object? error) {
+    print('Error invoking>\n'
+        '  - constructor: $constructor\n'
+        '  - map: $map\n'
+        '  - methodInvocation: $methodInvocation\n'
+        '  - error: $error\n');
   }
 
   Map<_KeyParametersNames, ConstructorReflection<O>?>?
@@ -2446,16 +2503,21 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
   /// Creates a [MethodInvocation] using [parametersProvider].
   MethodInvocation<O> methodInvocation(
       Object? Function(ParameterReflection parameter) parametersProvider) {
-    var normalParameters =
-        this.normalParameters.map(parametersProvider).toList();
+    var normalParameters = this
+        .normalParameters
+        .map((p) => MapEntry<String, Object?>(p.name, parametersProvider(p)))
+        .toList();
 
-    var optionalParameters =
-        this.optionalParameters.map(parametersProvider).toList();
+    var optionalParameters = this
+        .optionalParameters
+        .map((p) => MapEntry<String, Object?>(p.name, parametersProvider(p)))
+        .toList();
 
     while (optionalParameters.isNotEmpty) {
       var lastIndex = optionalParameters.length - 1;
 
-      var value = optionalParameters[lastIndex];
+      var entry = optionalParameters[lastIndex];
+      var value = entry.value;
       var isAbsent = absentParameterValue == value;
       if (value != null && !isAbsent) break;
 
@@ -2476,7 +2538,7 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
     _removeAbsentParameterValue(normalParameters);
     _removeAbsentParameterValue(optionalParameters);
 
-    Map<String, dynamic> namedParameters =
+    var namedParameters =
         Map<String, dynamic>.fromEntries(this.namedParameters.entries.map((e) {
       var p = e.value;
 
@@ -2498,16 +2560,32 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
       }
     }).whereType<MapEntry<String, dynamic>>());
 
-    return MethodInvocation<O>(classReflection.classType, name,
-        normalParameters, optionalParameters, namedParameters);
+    var normalParametersValues = normalParameters.map((e) => e.value).toList();
+    var optionalParametersValues =
+        optionalParameters.map((e) => e.value).toList();
+
+    var positionalParametersNames = <String>[
+      ...normalParameters.map((e) => e.key),
+      ...optionalParameters.map((e) => e.key),
+    ];
+
+    return MethodInvocation<O>.withPositionalParametersNames(
+      classReflection.classType,
+      name,
+      positionalParametersNames,
+      normalParametersValues,
+      optionalParametersValues,
+      namedParameters,
+    );
   }
 
-  void _removeAbsentParameterValue(List<Object?> parameters) {
+  void _removeAbsentParameterValue(List<MapEntry<String, Object?>> parameters) {
     for (var i = parameters.length - 1; i >= 0; --i) {
-      var value = parameters[i];
+      var entry = parameters[i];
+      var value = entry.value;
       var isAbsent = absentParameterValue == value;
       if (isAbsent) {
-        parameters[i] = null;
+        parameters[i] = MapEntry<String, Object?>(entry.key, null);
       }
     }
   }
@@ -2706,7 +2784,18 @@ class MethodInvocation<T> {
   /// The named parameters of the related method.
   final Map<String, dynamic>? namedParameters;
 
+  /// The list of positional parameters names.
+  /// - Needed for [parametersToMap].
+  final List<String>? positionalParametersNames;
+
   MethodInvocation(this.classType, this.methodName, this.normalParameters,
+      [this.optionalParameters, this.namedParameters])
+      : positionalParametersNames = null;
+
+  /// Constructor with [positionalParametersNames].
+  /// See [parametersToMap].
+  MethodInvocation.withPositionalParametersNames(this.classType,
+      this.methodName, this.positionalParametersNames, this.normalParameters,
       [this.optionalParameters, this.namedParameters]);
 
   /// The positional arguments, derived from [normalParameters] and [optionalParameters].
@@ -2739,6 +2828,40 @@ class MethodInvocation<T> {
   /// Invokes the [Function] [f] with [positionalArguments] and [namedArguments].
   R invoke<R>(Function f) =>
       Function.apply(f, positionalArguments, namedArguments);
+
+  /// Return all parameters as a [Map] with of parameters names and values.
+  ///
+  /// See [positionalParametersNames].
+  Map<String, dynamic> parametersToMap() {
+    var map = <String, dynamic>{...?namedParameters};
+
+    var positionalParametersNames =
+        this.positionalParametersNames ?? <String>[];
+
+    for (var i = 0; i < normalParameters.length; ++i) {
+      var val = normalParameters[i];
+      var name = i < positionalParametersNames.length
+          ? positionalParametersNames[i]
+          : 'arg_$i';
+      map[name] = val;
+    }
+
+    var optionalParameters = this.optionalParameters;
+    if (optionalParameters != null) {
+      var pIdxOffset = normalParameters.length;
+
+      for (var i = 0; i < optionalParameters.length; ++i) {
+        var val = optionalParameters[i];
+        var pIdx = pIdxOffset + i;
+        var name = pIdx < positionalParametersNames.length
+            ? positionalParametersNames[pIdx]
+            : 'arg_$pIdx';
+        map[name] = val;
+      }
+    }
+
+    return map;
+  }
 
   @override
   String toString() {
