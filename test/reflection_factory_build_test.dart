@@ -111,15 +111,16 @@ void main() {
             matches(RegExp(
                 r"'ignoreCase':\s*ParameterReflection\(\s*TypeReflection.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*false\s*,\s*null\s*\)")),
             allOf(
-                contains(
-                    "TestAnnotation(['static method', 'version checker'])"),
-                contains("TestAnnotation(['method', 'password checker'])"),
-                contains("TestAnnotation(['static field', 'version'])"),
-                contains("TestAnnotation(['field', 'email'])"),
-                contains("TestAnnotation(['parameter', 'pass'])"),
-                isNot(contains('Object? toJson() => reflection.toJson()')),
-                contains(
-                    'Map<String, dynamic>? toJsonMap() => reflection.toJsonMap()')),
+              contains("TestAnnotation(['static method', 'version checker'])"),
+              contains("TestAnnotation(['method', 'password checker'])"),
+              contains("TestAnnotation(['static field', 'version'])"),
+              contains("TestAnnotation(['field', 'email'])"),
+              contains("TestAnnotation(['parameter', 'pass'])"),
+              isNot(matches(RegExp(
+                  r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\('))),
+              matches(RegExp(
+                  r'Map<String, dynamic>\?\s+toJsonMap\(\{bool duplicatedEntitiesAsID = false\}\)\s+=>\s+reflection.toJsonMap\(duplicatedEntitiesAsID: duplicatedEntitiesAsID\)')),
+            ),
             allOf(
               contains("case 'tojson':"),
               contains("case 'getfield':"),
@@ -181,9 +182,12 @@ void main() {
             matches(RegExp(
                 r"'suffix':\s*ParameterReflection\(\s*TypeReflection.tString\s*,\s*'suffix'\s*,\s*false\s*,\s*false\s*,\s*'net'\s*,\s*null\s*\)")),
             allOf(
-                contains('Object? toJson() => reflection.toJson()'),
-                contains(
-                    'Map<String, dynamic>? toJsonMap() => reflection.toJsonMap()')),
+                matches(RegExp(
+                    r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\(')),
+                matches(RegExp(
+                    r'Object\?\s+toJson\(\{bool duplicatedEntitiesAsID = false\}\)\s+=>\s+reflection.toJson\(null, null, duplicatedEntitiesAsID\)')),
+                matches(RegExp(
+                    r'Map<String, dynamic>\?\s+toJsonMap\(\{bool duplicatedEntitiesAsID = false\}\)\s+=>\s+reflection.toJsonMap\(duplicatedEntitiesAsID: duplicatedEntitiesAsID\)'))),
           )),
         },
         onLog: (msg) {
@@ -241,9 +245,11 @@ void main() {
               contains('OpA\$reflectionExtension'),
             ]),
             allOf(
-                contains('Object? toJson() => reflection.toJson()'),
-                contains(
-                    'Map<String, dynamic>? toJsonMap() => reflection.toJsonMap()')),
+              matches(RegExp(
+                  r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\(')),
+              matches(RegExp(
+                  r'Map<String, dynamic>\?\s+toJsonMap\(.*?\)\s+=>\s+reflection.toJsonMap\(')),
+            ),
             allOf(
               contains("case 'type':"),
               contains("case 'value':"),
@@ -304,9 +310,10 @@ void main() {
             contains("part of 'foo.dart'"),
             contains('RefUser'),
             contains('RefUserExt'),
-            contains('Object? toJson() => reflection.toJson()'),
-            contains(
-                'Map<String, dynamic>? toJsonMap() => reflection.toJsonMap()'),
+            matches(
+                RegExp(r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\(')),
+            matches(RegExp(
+                r'Map<String, dynamic>\?\s+toJsonMap\(.*?\)\s+=>\s+reflection.toJsonMap\(')),
           ))
         },
         onLog: (msg) {
