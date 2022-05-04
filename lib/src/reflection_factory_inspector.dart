@@ -27,7 +27,12 @@ class ReflectionInspector {
     var files = _listDartFiles();
 
     var generatedFiles =
-        files.where((f) => f.path.endsWith('.reflection.g.dart')).toList();
+        files.where((f) => f.path.endsWith('.g.dart')).where((f) {
+      var ps = pack_path.split(f.path);
+      return ps.last.endsWith('.reflection.g.dart') ||
+          (ps.length > 1 && ps[ps.length - 2] == 'reflection');
+    }).toList();
+
     files.removeWhere((f) => generatedFiles.contains(f));
 
     dartFiles = List<File>.unmodifiable(_toFilesList(files));
