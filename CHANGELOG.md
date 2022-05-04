@@ -1,3 +1,10 @@
+## 1.1.0
+
+- Changed possible generated reflection file path. Now it can generate: 
+  - Inside the directory: `reflection/{{file}}.g.dart`
+  - Or as a sibling file `{{file}}.reflection.g.dart` 
+- Added warning of absent `part` directive for the generated reflection file.
+
 ## 1.0.29
 
 - `ClassReflection`:

@@ -33,6 +33,9 @@ class LibraryReader {
     return type is ClassElement ? type : null;
   }
 
+  /// All the compilation unit of this element ([CompilationUnitElement]).
+  Iterable<CompilationUnitElement> get allParts => element.parts;
+
   /// All of the declarations in this library.
   Iterable<Element> get allElements => element.topLevelElements;
 

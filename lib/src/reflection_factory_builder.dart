@@ -10,6 +10,7 @@ import 'package:analyzer/dart/element/visitor.dart';
 import 'package:build/build.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:path/path.dart' as pack_path;
 import 'package:pub_semver/pub_semver.dart';
 
 import 'analyzer/library.dart';
@@ -26,7 +27,10 @@ class ReflectionBuilder implements Builder {
 
   @override
   final buildExtensions = const {
-    '.dart': ['.reflection.g.dart']
+    '{{dir}}/{{file}}.dart': [
+      '{{dir}}/reflection/{{file}}.g.dart',
+      '{{dir}}/{{file}}.reflection.g.dart'
+    ]
   };
 
   static const TypeChecker typeReflectionBridge =
@@ -54,11 +58,47 @@ class ReflectionBuilder implements Builder {
 
     var libraryReader = LibraryReader(inputLib);
 
+    var inputFile = inputId.pathSegments.last;
+
+    var allParts = _readReflectionPartDirectives(libraryReader, inputFile);
+    var siblingParts = allParts[0];
+    var subParts = allParts[1];
+
+    var isSiblingPart = siblingParts.isNotEmpty;
+    var isSubPart = subParts.isNotEmpty;
+
+    if (isSiblingPart && isSubPart) {
+      throw StateError(
+          "Can't generate multiple `reflection` files. Multiple reflection parts directives: $siblingParts AND $subParts");
+    }
+
     var codeTable = await _buildCodeTable(buildStep, libraryReader);
 
     if (codeTable.isEmpty) {
       return;
     }
+
+    var genSiblingId = inputId.changeExtension('.reflection.g.dart');
+    var genSubId =
+        inputId.changeExtension('.g.dart').withParentDirectory('reflection');
+
+    // No `part` directive!
+    if (siblingParts.isEmpty && subParts.isEmpty) {
+      var gParts = _readAllGParts(libraryReader);
+
+      var outputsPaths =
+          _reflectionPartDirectivesPaths(libraryReader, inputFile);
+      throw StateError(
+          "Code generated but NO reflection part directive was found for input file: $inputId\n"
+          "  > Can't generate ONE of the output files:\n"
+          "    -- $genSiblingId\n"
+          "    -- $genSubId\n"
+          "  > Please ADD one of the directives below to the input file:\n"
+          "${outputsPaths.map((p) => '    part \'$p\';').join('\n')}\n"
+          "  > Found part directives: $gParts");
+    }
+
+    var genId = isSiblingPart ? genSiblingId : genSubId;
 
     var siblingsClassReflection = _buildSiblingsClassReflection(codeTable);
 
@@ -75,7 +115,11 @@ class ReflectionBuilder implements Builder {
     fullCode.write('// ignore_for_file: unnecessary_cast\n');
     fullCode.write('// ignore_for_file: unnecessary_type_check\n\n');
 
-    fullCode.write("part of '${inputId.pathSegments.last}';\n\n");
+    if (isSiblingPart) {
+      fullCode.write("part of '$inputFile';\n\n");
+    } else {
+      fullCode.write("part of '../$inputFile';\n\n");
+    }
 
     var codeKeys = codeTable.allKeys.toList();
     _sortCodeKeys(codeKeys);
@@ -88,8 +132,6 @@ class ReflectionBuilder implements Builder {
     }
 
     fullCode.write(siblingsClassReflection);
-
-    var genId = inputId.changeExtension('.reflection.g.dart');
 
     var generatedCode = fullCode.toString();
 
@@ -105,6 +147,46 @@ class ReflectionBuilder implements Builder {
     if (verbose) {
       print('<<<\n$formattedCode\n>>>');
     }
+  }
+
+  List<List<String>> _readReflectionPartDirectives(
+      LibraryReader libraryReader, String inputFile) {
+    var outputsPaths = _reflectionPartDirectivesPaths(libraryReader, inputFile);
+    var outputFileSibling = outputsPaths[0];
+    var outputFileSub = outputsPaths[1];
+
+    var allGParts = _readAllGParts(libraryReader);
+
+    var siblingParts = allGParts
+        .where(
+            (p) => p == outputFileSibling || p.endsWith('/$outputFileSibling'))
+        .toList();
+
+    var subParts = allGParts
+        .where((p) => p == outputFileSub || p.endsWith('/$outputFileSub'))
+        .toList();
+
+    return [siblingParts, subParts];
+  }
+
+  List<String> _readAllGParts(LibraryReader libraryReader) {
+    return libraryReader.allParts
+        .map((e) => e.toString())
+        .where((e) => e.endsWith('.g.dart'))
+        .toList();
+  }
+
+  List<String> _reflectionPartDirectivesPaths(
+      LibraryReader libraryReader, String inputFile) {
+    var inputParts = pack_path.split(inputFile);
+
+    var inputFileName = inputParts.last;
+    var inputFileNameNoExt = pack_path.withoutExtension(inputFileName);
+
+    var outputFileSibling = "$inputFileNameNoExt.reflection.g.dart";
+    var outputFileSub = "reflection/$inputFileNameNoExt.g.dart";
+
+    return <String>[outputFileSibling, outputFileSub];
   }
 
   Future<_CodeTable> _buildCodeTable(
@@ -514,6 +596,16 @@ class ReflectionBuilder implements Builder {
 
     var code = str.toString();
     return code;
+  }
+}
+
+extension _AssetIdExtension on AssetId {
+  AssetId withParentDirectory(String parentDir) {
+    var ps = pack_path.split(path);
+    ps.insert(ps.length - 1, parentDir);
+    var p = pack_path.joinAll(ps);
+    var asset = AssetId(package, p);
+    return asset;
   }
 }
 
