@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:reflection_factory/reflection_factory.dart';
 
-part 'user_with_reflection.reflection.g.dart';
+part 'reflection/user_with_reflection.g.dart';
 
 @EnableReflection()
 enum TestEnumWithReflection {
