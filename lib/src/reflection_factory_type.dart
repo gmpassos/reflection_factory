@@ -232,7 +232,7 @@ class TypeParser {
     }
   }
 
-  static final RegExp _regExpNotNumber = RegExp(r'[^0-9\.\+\-eENna]');
+  static final RegExp _regExpNotNumber = RegExp(r'[^\d.+\-eENna]');
 
   /// Tries to parse an [int].
   /// - Returns [def] if [value] is invalid.
@@ -1063,7 +1063,7 @@ class TypeInfo {
     return hasArguments ? '$typeStr<${arguments.join(',')}>' : typeStr;
   }
 
-  Object? fromJson(dynamic json) {
+  Object? fromJson(dynamic json, {JsonDecoder? jsonDecoder}) {
     if (isPrimitiveType) {
       return parse(json);
     } else if (isIterable) {
@@ -1073,7 +1073,9 @@ class TypeInfo {
       if (hasArguments) {
         var arg = argumentType(0);
         if (arg != null) {
-          list = JsonCodec.defaultCodec.fromJsonList(list, type: arg.type);
+          jsonDecoder ??= JsonDecoder.defaultDecoder;
+          list = jsonDecoder.fromJsonList(list,
+              type: arg.type, duplicatedEntitiesAsID: true);
         }
       }
 
@@ -1086,8 +1088,12 @@ class TypeInfo {
         var arg0 = argumentType(0);
         var arg1 = argumentType(1);
         if (arg0 != null && arg1 != null) {
-          map = map.map((key, value) =>
-              MapEntry(arg0.fromJson(key), arg1.fromJson(value)));
+          jsonDecoder ??= JsonDecoder(
+              forceDuplicatedEntitiesAsID: true, autoResetEntityCache: false);
+
+          map = map.map((key, value) => MapEntry(
+              arg0.fromJson(key, jsonDecoder: jsonDecoder),
+              arg1.fromJson(value, jsonDecoder: jsonDecoder)));
         }
       }
 
@@ -1097,7 +1103,9 @@ class TypeInfo {
           ReflectionFactory().getRegisterClassReflection(type);
 
       if (classReflection != null) {
-        return classReflection.fromJson(json);
+        jsonDecoder ??= JsonDecoder.defaultDecoder;
+
+        return classReflection.fromJson(json, jsonDecoder: jsonDecoder);
       }
 
       return JsonCodec.defaultCodec.fromJson(json, type: type);

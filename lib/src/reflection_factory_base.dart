@@ -1093,7 +1093,7 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   /// Returns a class instance from [json].
   @override
-  O fromJson(Object? json) {
+  O fromJson(Object? json, {JsonDecoder? jsonDecoder}) {
     if (json == null) {
       throw StateError("Null JSON for class: $className");
     }
@@ -1102,8 +1102,11 @@ abstract class ClassReflection<O> extends Reflection<O>
       var map = json is Map<String, Object?>
           ? json
           : json.map((k, v) => MapEntry(k.toString(), v));
-      return JsonDecoder.defaultDecoder
-          .fromJsonMap<O>(map, type: classType, duplicatedEntitiesAsID: true);
+
+      jsonDecoder ??= JsonDecoder.defaultDecoder;
+
+      return jsonDecoder.fromJsonMap<O>(map,
+          type: classType, duplicatedEntitiesAsID: true);
     } else {
       throw StateError(
           "JSON needs to be a Map to decode a class object: $className");
