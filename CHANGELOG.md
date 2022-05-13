@@ -1,3 +1,8 @@
+## 1.1.1
+
+- `TypeInfo`:
+  - Fix `fromJson` when decoding a list with graph containing duplicated entities (referenced by ID).
+
 ## 1.1.0
 
 - Changed possible generated reflection file path. Now it can generate: 

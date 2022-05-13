@@ -1073,7 +1073,7 @@ class TypeInfo {
       if (hasArguments) {
         var arg = argumentType(0);
         if (arg != null) {
-          list = list.map((e) => arg.fromJson(e)).toList();
+          list = JsonCodec.defaultCodec.fromJsonList(list, type: arg.type);
         }
       }
 
