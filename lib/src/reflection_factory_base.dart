@@ -481,7 +481,7 @@ abstract class EnumReflection<O> extends Reflection<O>
       var name = getName(obj);
       return name;
     } else {
-      return jsonEncoder.toJson(obj);
+      return jsonEncoder.toJson(obj, autoResetEntityCache: false);
     }
   }
 
@@ -1003,7 +1003,10 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// - If [obj] is not provided, uses [object] as instance.
   @override
   Object? toJson(
-      [O? obj, JsonEncoder? jsonEncoder, bool duplicatedEntitiesAsID = false]) {
+      [O? obj,
+      JsonEncoder? jsonEncoder,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache]) {
     obj ??= object;
     if (obj == null) return null;
 
@@ -1011,7 +1014,9 @@ abstract class ClassReflection<O> extends Reflection<O>
       var json = callMethodToJson(obj);
 
       if (jsonEncoder != null) {
-        return jsonEncoder.toJson(json);
+        return jsonEncoder.toJson(json,
+            duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+            autoResetEntityCache: autoResetEntityCache);
       } else {
         return json;
       }
@@ -1020,7 +1025,8 @@ abstract class ClassReflection<O> extends Reflection<O>
     return toJsonFromFields(
         obj: obj,
         jsonEncoder: jsonEncoder,
-        duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Returns a JSON [Map].
@@ -1029,7 +1035,10 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// - If [obj] is not provided, uses [object] as instance.
   @override
   Map<String, dynamic>? toJsonMap(
-      {O? obj, JsonEncoder? jsonEncoder, bool duplicatedEntitiesAsID = false}) {
+      {O? obj,
+      JsonEncoder? jsonEncoder,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     obj ??= object;
     if (obj == null) return null;
 
@@ -1037,7 +1046,9 @@ abstract class ClassReflection<O> extends Reflection<O>
       var json = callMethodToJson(obj);
 
       if (jsonEncoder != null) {
-        json = jsonEncoder.toJson(json);
+        json = jsonEncoder.toJson(json,
+            duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+            autoResetEntityCache: autoResetEntityCache);
       }
 
       if (json is Map) {
@@ -1051,14 +1062,18 @@ abstract class ClassReflection<O> extends Reflection<O>
     return toJsonFromFields(
         obj: obj,
         jsonEncoder: jsonEncoder,
-        duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Returns a JSON [Map] from [fieldsNames], calling [getField] for each one.
   ///
   /// - If [obj] is not provided, uses [object] as instance.
   Map<String, dynamic> toJsonFromFields(
-      {O? obj, JsonEncoder? jsonEncoder, bool duplicatedEntitiesAsID = false}) {
+      {O? obj,
+      JsonEncoder? jsonEncoder,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     obj ??= object;
     if (obj == null) {
       StateError("Null object!");
@@ -1074,7 +1089,8 @@ abstract class ClassReflection<O> extends Reflection<O>
 
     jsonEncoder ??= JsonEncoder.defaultEncoder;
     return jsonEncoder.toJson(map,
-        duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Returns a JSON encoded. See [toJson].
@@ -1093,7 +1109,10 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   /// Returns a class instance from [json].
   @override
-  O fromJson(Object? json, {JsonDecoder? jsonDecoder}) {
+  O fromJson(Object? json,
+      {JsonDecoder? jsonDecoder,
+      bool duplicatedEntitiesAsID = true,
+      bool? autoResetEntityCache}) {
     if (json == null) {
       throw StateError("Null JSON for class: $className");
     }
@@ -1106,7 +1125,9 @@ abstract class ClassReflection<O> extends Reflection<O>
       jsonDecoder ??= JsonDecoder.defaultDecoder;
 
       return jsonDecoder.fromJsonMap<O>(map,
-          type: classType, duplicatedEntitiesAsID: true);
+          type: classType,
+          duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+          autoResetEntityCache: autoResetEntityCache);
     } else {
       throw StateError(
           "JSON needs to be a Map to decode a class object: $className");
@@ -1793,6 +1814,18 @@ class TypeReflection {
   /// The Dart [Type].
   final Type type;
 
+  /// Returns the [type] name.
+  String get typeName {
+    if (hasArguments && type == dynamic) {
+      return 'FutureOr';
+    }
+
+    var typeStr = type.toString();
+    var idx = typeStr.indexOf('<');
+    if (idx > 0) typeStr = typeStr.substring(0, idx);
+    return typeStr;
+  }
+
   /// Returns `true` if the parameter [type] is equals to field [type].
   ///
   /// - If [arguments] is provided, also checks [equalsArgumentsTypes].
@@ -1951,11 +1984,7 @@ class TypeReflection {
 
   @override
   String toString() {
-    var typeStr = type.toString();
-    var idx = typeStr.indexOf('<');
-    if (idx > 0) typeStr = typeStr.substring(0, idx);
-
-    return hasArguments ? '$typeStr<${arguments.join(',')}>' : typeStr;
+    return hasArguments ? '$typeName<${arguments.join(',')}>' : typeName;
   }
 }
 

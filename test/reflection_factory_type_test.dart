@@ -9,6 +9,63 @@ void main() {
     setUp(() {});
 
     test('basic', () async {
+      var t1 = TypeInfo(List);
+      var t2 = TypeInfo(List);
+
+      expect(t1.type, equals(t2.type));
+
+      var t3 = TypeInfo.from([]);
+      expect(t3.type, equals(t1.type));
+      expect(t3.isList, isTrue);
+      expect(t3.isSet, isFalse);
+      expect(t3.isIterable, isTrue);
+      expect(t3.isFuture, isFalse);
+      expect(t3.isFutureOr, isFalse);
+      expect(t3.isDynamic, isFalse);
+
+      var t4 = TypeInfo.from(<bool>{});
+      expect(t4.isSet, isTrue);
+      expect(t4.isList, isFalse);
+      expect(t4.isIterable, isTrue);
+      expect(t4.isFuture, isFalse);
+      expect(t4.isFutureOr, isFalse);
+      expect(t4.isDynamic, isFalse);
+
+      var t5 = TypeInfo.fromType(Future, [bool]);
+      expect(t5.isFuture, isTrue);
+      expect(t5.isFutureOr, isFalse);
+      expect(t5.isDynamic, isFalse);
+      expect(t5.arguments[0], equals(TypeInfo.tBool));
+
+      var t6 = TypeInfo.fromType(FutureOr, [bool]);
+      expect(t6.typeName, equals('FutureOr'));
+      expect(t6.isFutureOr, isTrue);
+      expect(t6.isFuture, isFalse);
+      expect(t6.arguments[0], equals(TypeInfo.tBool));
+      expect(t6.equivalentArgumentsTypes([bool]), isTrue);
+      expect(t6.equivalentArgumentsTypes([int]), isFalse);
+
+      var t7 = TypeInfo.fromType(Future, [bool]);
+      expect(t7.typeName, equals('Future'));
+      expect(t7.isFuture, isTrue);
+      expect(t7.isFutureOr, isFalse);
+      expect(t7.isVoid, isFalse);
+      expect(t7.arguments[0], equals(TypeInfo.tBool));
+      expect(t7.equivalentArgumentsTypes([bool]), isTrue);
+      expect(t7.equivalentArgumentsTypes([int]), isFalse);
+
+      var t8 = TypeInfo.fromType(Future);
+      expect(t8.isFuture, isTrue);
+      expect(t8.isFutureOr, isFalse);
+      expect(t8.isVoid, isFalse);
+      expect(t8.hasArguments, isFalse);
+      expect(t8.equivalentArgumentsTypes([]), isTrue);
+      expect(t8.equivalentArgumentsTypes([int]), isFalse);
+
+      expect(TypeInfo.tVoid.isVoid, isTrue);
+    });
+
+    test('from', () async {
       {
         var typeInfo = TypeInfo.from(123);
         expect(typeInfo.isInt, isTrue);
@@ -181,7 +238,8 @@ void main() {
 
         var typeInfo = typeReflection.typeInfo;
 
-        expect(typeInfo.isDynamic, isTrue);
+        expect(typeInfo.isFutureOr, isTrue);
+        expect(typeInfo.isDynamic, isFalse);
         expect(typeInfo.equalsArgumentsTypes([TestUserWithReflection]), isTrue);
       }
 
@@ -338,6 +396,198 @@ void main() {
         var m = t.parse<MapEntry>('a:1')!;
         expect(m.key, equals('a'));
         expect(m.value, equals('1'));
+      }
+    });
+
+    test('TypeInfo.fromJson', () async {
+      {
+        TestUserWithReflection$reflection.boot();
+
+        var typeListOfUser = TypeInfo.fromType(List, [TestUserWithReflection]);
+
+        var users = [
+          TestUserWithReflection.fields('joe', 'joe@mail.com', 'j123456',
+              id: 101),
+          TestUserWithReflection.fields('smith', 'smith@mail.com', 's123456',
+              id: 102)
+        ];
+
+        var usersJson = JsonEncoder.defaultEncoder
+            .toJson(users, duplicatedEntitiesAsID: true);
+
+        expect(
+            usersJson,
+            equals([
+              {
+                'axis': 'x',
+                'email': 'joe@mail.com',
+                'enabled': true,
+                'id': 101,
+                'isEnabled': true,
+                'theLevel': null,
+                'name': 'joe',
+                'password': 'j123456'
+              },
+              {
+                'axis': 'x',
+                'email': 'smith@mail.com',
+                'enabled': true,
+                'id': 102,
+                'isEnabled': true,
+                'theLevel': null,
+                'name': 'smith',
+                'password': 's123456'
+              }
+            ]));
+
+        var usersDecoded = typeListOfUser.fromJson(usersJson);
+
+        expect(
+            JsonEncoder.defaultEncoder
+                .toJson(usersDecoded, duplicatedEntitiesAsID: true),
+            equals([
+              {
+                'axis': 'x',
+                'email': 'joe@mail.com',
+                'enabled': true,
+                'id': 101,
+                'isEnabled': true,
+                'theLevel': null,
+                'name': 'joe',
+                'password': 'j123456'
+              },
+              {
+                'axis': 'x',
+                'email': 'smith@mail.com',
+                'enabled': true,
+                'id': 102,
+                'isEnabled': true,
+                'theLevel': null,
+                'name': 'smith',
+                'password': 's123456'
+              }
+            ]));
+      }
+
+      {
+        TestUserWithReflection$reflection.boot();
+
+        var typeListOfUser = TypeInfo.fromType(List, [TestUserWithReflection]);
+
+        var user1 = TestUserWithReflection.fields(
+            'joe', 'joe@mail.com', 'j123456',
+            id: 101);
+        var user2 = TestUserWithReflection.fields(
+            'smith', 'smith@mail.com', 's123456',
+            id: 102);
+
+        var users = [user1, user2, user1];
+
+        var usersJson = JsonEncoder.defaultEncoder
+            .toJson(users, duplicatedEntitiesAsID: true);
+
+        expect(
+            usersJson,
+            equals([
+              {
+                'axis': 'x',
+                'email': 'joe@mail.com',
+                'enabled': true,
+                'id': 101,
+                'isEnabled': true,
+                'theLevel': null,
+                'name': 'joe',
+                'password': 'j123456'
+              },
+              {
+                'axis': 'x',
+                'email': 'smith@mail.com',
+                'enabled': true,
+                'id': 102,
+                'isEnabled': true,
+                'theLevel': null,
+                'name': 'smith',
+                'password': 's123456'
+              },
+              101
+            ]));
+
+        var usersDecoded = typeListOfUser.fromJson(usersJson) as List;
+
+        expect(usersDecoded, equals([user1, user2, user1]));
+
+        expect(identical(usersDecoded[0], usersDecoded[1]), isFalse);
+        expect(identical(usersDecoded[0], usersDecoded[2]), isTrue);
+        expect(identical(usersDecoded[1], usersDecoded[2]), isFalse);
+
+        expect(
+            JsonEncoder.defaultEncoder
+                .toJson(usersDecoded, duplicatedEntitiesAsID: true),
+            equals([
+              {
+                'axis': 'x',
+                'email': 'joe@mail.com',
+                'enabled': true,
+                'id': 101,
+                'isEnabled': true,
+                'theLevel': null,
+                'name': 'joe',
+                'password': 'j123456'
+              },
+              {
+                'axis': 'x',
+                'email': 'smith@mail.com',
+                'enabled': true,
+                'id': 102,
+                'isEnabled': true,
+                'theLevel': null,
+                'name': 'smith',
+                'password': 's123456'
+              },
+              101
+            ]));
+      }
+
+      {
+        var typeMapOfUser =
+            TypeInfo.fromType(Map, [String, TestUserWithReflection]);
+
+        var users = <String, TestUserWithReflection>{
+          'a': TestUserWithReflection.fields('joe', 'j@mail', '123'),
+          'b': TestUserWithReflection.fields('smith', 's@mail', 'abc'),
+        };
+
+        var usersJson = JsonEncoder.defaultEncoder
+            .toJson(users, duplicatedEntitiesAsID: true);
+
+        expect(
+            usersJson,
+            equals({
+              'a': {
+                'axis': 'x',
+                'email': 'j@mail',
+                'enabled': true,
+                'id': null,
+                'isEnabled': true,
+                'theLevel': null,
+                'name': 'joe',
+                'password': '123'
+              },
+              'b': {
+                'axis': 'x',
+                'email': 's@mail',
+                'enabled': true,
+                'id': null,
+                'isEnabled': true,
+                'theLevel': null,
+                'name': 'smith',
+                'password': 'abc'
+              }
+            }));
+
+        var users2 = typeMapOfUser.fromJson(usersJson);
+
+        expect(users2, equals(users));
       }
     });
   });

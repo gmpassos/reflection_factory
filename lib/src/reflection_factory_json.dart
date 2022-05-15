@@ -194,89 +194,143 @@ class JsonCodec {
 
   /// Converts [o] to a JSON collection/data.
   /// - [maskField] when preset indicates if a field value should be masked with [maskText].
-  T? toJson<T>(Object? o, {bool duplicatedEntitiesAsID = false}) {
-    return encoder.toJson<T>(o, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+  T? toJson<T>(Object? o,
+      {bool duplicatedEntitiesAsID = false, bool? autoResetEntityCache}) {
+    return encoder.toJson<T>(o,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Converts [o] to [type].
-  O? fromJson<O>(Object? o, {Type? type, bool duplicatedEntitiesAsID = false}) {
+  O? fromJson<O>(Object? o,
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     return decoder.fromJson<O>(o,
-        type: type, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+        type: type,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Converts [o] to [type] allowing async calls ([Future] and [FutureOr]).
   FutureOr<O?> fromJsonAsync<O>(Object? o,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     return decoder.fromJsonAsync<O>(o,
-        type: type, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+        type: type,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Converts [o] to as [List] of [type].
   List<O?> fromJsonList<O>(Iterable o,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     return decoder.fromJsonList<O>(o,
-        type: type, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+        type: type,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Converts [o] to as [List] of [type] allowing async calls ([Future] and [FutureOr]).
   FutureOr<List<O?>> fromJsonListAsync<O>(FutureOr<Iterable> o,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     return decoder.fromJsonListAsync<O>(o,
-        type: type, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+        type: type,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Converts [map] to [type].
   O fromJsonMap<O>(Map<String, Object?> map,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     return decoder.fromJsonMap<O>(map,
-        type: type, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+        type: type,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Converts [map] to [type] allowing async calls ([Future] and [FutureOr]).
   FutureOr<O> fromJsonMapAsync<O>(FutureOr<Map<String, Object?>> map,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     return decoder.fromJsonMapAsync<O>(map,
-        type: type, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+        type: type,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Transforms [o] to an encoded JSON.
   /// - If [pretty] is `true` generates a pretty JSON, with indentation and line break.
   String encode(Object? o,
-      {bool pretty = false, bool duplicatedEntitiesAsID = false}) {
+      {bool pretty = false,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     return encoder.encode(o,
-        pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+        pretty: pretty,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Sames as [encode] but returns a [Uint8List].
   Uint8List encodeToBytes(Object? o,
-          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
+          {bool pretty = false,
+          bool duplicatedEntitiesAsID = false,
+          bool? autoResetEntityCache}) =>
       encoder.encodeToBytes(o,
-          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+          pretty: pretty,
+          duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+          autoResetEntityCache: autoResetEntityCache);
 
   /// Decodes [encodedJson] to a JSON collection/data.
   T decode<T>(String encodedJson,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     return decoder.decode<T>(encodedJson,
-        type: type, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+        type: type,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Sames as [decode] but from a [Uint8List].
   T decodeFromBytes<T>(Uint8List encodedJsonBytes,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     return decoder.decodeFromBytes<T>(encodedJsonBytes,
-        type: type, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+        type: type,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Decodes [encodedJson] to a JSON collection/data allowing async calls ([Future] and [FutureOr]).
-  FutureOr<T> decodeAsync<T>(FutureOr<String> encodedJson, {Type? type}) {
-    return decoder.decodeAsync<T>(encodedJson, type: type);
+  FutureOr<T> decodeAsync<T>(FutureOr<String> encodedJson,
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
+    return decoder.decodeAsync<T>(encodedJson,
+        type: type,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Sames as [decodeAsync] but from a [Uint8List].
   FutureOr<T> decodeFromBytesAsync<T>(FutureOr<Uint8List> encodedJsonBytes,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     return decoder.decodeFromBytesAsync<T>(encodedJsonBytes,
-        type: type, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+        type: type,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 }
 
@@ -356,22 +410,34 @@ abstract class JsonEncoder extends JsonConverter<Object?, String> {
         autoResetEntityCache);
   }
 
+  /// Returns `true` if the entity cache is automatically reset for each
+  /// encoding session.
+  bool get autoResetEntityCache;
+
+  /// Resets the entities cache used to resolve duplicated entities in the same tree.
+  void resetEntityCache();
+
   /// Converts [o] to a JSON collection/data.
   /// - [maskField] when preset indicates if a field value should be masked with [maskText].
-  T? toJson<T>(Object? o, {bool duplicatedEntitiesAsID = false});
+  T? toJson<T>(Object? o,
+      {bool duplicatedEntitiesAsID = false, bool? autoResetEntityCache});
 
   /// Converts [map] tree to a JSON.
   Map<String, dynamic> mapToJson(Map map,
-      {bool duplicatedEntitiesAsID = false});
+      {bool duplicatedEntitiesAsID = false, bool? autoResetEntityCache});
 
   /// Transforms [o] to an encoded JSON.
   /// - If [pretty] is `true` generates a pretty JSON, with indentation and line break.
   String encode(Object? o,
-      {bool pretty = false, bool duplicatedEntitiesAsID = false});
+      {bool pretty = false,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache});
 
   /// Sames as [encode] but returns a [Uint8List].
   Uint8List encodeToBytes(Object? o,
-      {bool pretty = false, bool duplicatedEntitiesAsID = false});
+      {bool pretty = false,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache});
 }
 
 class _JsonEncoder extends dart_convert.Converter<Object?, String>
@@ -426,6 +492,7 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
 
   final bool forceDuplicatedEntitiesAsID;
 
+  @override
   final bool autoResetEntityCache;
 
   _JsonEncoder._(
@@ -441,15 +508,25 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
   ) : entityCache = entityCache ?? JsonEntityCacheSimple();
 
   @override
-  T? toJson<T>(Object? o, {bool duplicatedEntitiesAsID = false}) {
-    _resetEntityCache();
+  void resetEntityCache() {
+    entityCache.clearCachedEntities();
+  }
+
+  @override
+  T? toJson<T>(Object? o,
+      {bool duplicatedEntitiesAsID = false, bool? autoResetEntityCache}) {
+    _resetEntityCache(autoResetEntityCache);
     var json = _valueToJson(o, null, duplicatedEntitiesAsID) as T;
-    _resetEntityCache();
+    _resetEntityCache(autoResetEntityCache);
     return json;
   }
 
-  void _resetEntityCache() {
-    if (autoResetEntityCache) {
+  void _resetEntityCache(bool? resetEntityCache) {
+    if (resetEntityCache != null) {
+      if (resetEntityCache) {
+        entityCache.clearCachedEntities();
+      }
+    } else if (autoResetEntityCache) {
       entityCache.clearCachedEntities();
     }
   }
@@ -506,10 +583,10 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
 
   @override
   Map<String, dynamic> mapToJson(Map map,
-      {bool duplicatedEntitiesAsID = false}) {
-    _resetEntityCache();
+      {bool duplicatedEntitiesAsID = false, bool? autoResetEntityCache}) {
+    _resetEntityCache(autoResetEntityCache);
     var obj = _mapToJsonImpl(map, duplicatedEntitiesAsID);
-    _resetEntityCache();
+    _resetEntityCache(autoResetEntityCache);
     return obj;
   }
 
@@ -631,7 +708,8 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
 
     if (classReflection != null) {
       try {
-        var json = classReflection.toJson(o, this, duplicatedEntitiesAsID);
+        var json =
+            classReflection.toJson(o, this, duplicatedEntitiesAsID, false);
         _cacheEntity(o, duplicatedEntitiesAsID);
         return json;
       } catch (_) {
@@ -656,8 +734,12 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
 
   @override
   String encode(Object? o,
-      {bool pretty = false, bool duplicatedEntitiesAsID = false}) {
-    var json = toJson(o, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+      {bool pretty = false,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
+    var json = toJson(o,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
 
     if (pretty) {
       return dart_convert.JsonEncoder.withIndent('  ').convert(json);
@@ -671,8 +753,12 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
 
   @override
   Uint8List encodeToBytes(Object? o,
-      {bool pretty = false, bool duplicatedEntitiesAsID = false}) {
-    var json = toJson(o, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+      {bool pretty = false,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
+    var json = toJson(o,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
 
     if (pretty) {
       return dart_convert.JsonUtf8Encoder('  ').convert(json).toUint8List();
@@ -734,44 +820,72 @@ abstract class JsonDecoder extends JsonConverter<String, Object?> {
         autoResetEntityCache);
   }
 
+  /// Returns `true` if the entity cache is automatically reset for each
+  /// decoding session.
+  bool get autoResetEntityCache;
+
+  /// Resets the entities cache used to resolve duplicated entities in the same tree.
+  void resetEntityCache();
+
   /// Converts [o] to [type].
-  O? fromJson<O>(Object? o, {Type? type, bool duplicatedEntitiesAsID = false});
+  O? fromJson<O>(Object? o,
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache});
 
   /// Converts [o] to [type] allowing async calls ([Future] and [FutureOr]).
   FutureOr<O?> fromJsonAsync<O>(Object? o,
-      {Type? type, bool duplicatedEntitiesAsID = false});
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache});
 
   /// Converts [o] to as [List] of [type].
   List<O?> fromJsonList<O>(Iterable o,
-      {Type? type, bool duplicatedEntitiesAsID = false});
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache});
 
   /// Converts [o] to as [List] of [type] allowing async calls ([Future] and [FutureOr]).
   FutureOr<List<O?>> fromJsonListAsync<O>(FutureOr<Iterable> o,
-      {Type? type, bool duplicatedEntitiesAsID = false});
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache});
 
   /// Converts [map] to [type].
   O fromJsonMap<O>(Map<String, Object?> map,
-      {Type? type, bool duplicatedEntitiesAsID = false});
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache});
 
   /// Converts [map] to [type] allowing async calls ([Future] and [FutureOr]).
   FutureOr<O> fromJsonMapAsync<O>(FutureOr<Map<String, Object?>> map,
-      {Type? type, bool duplicatedEntitiesAsID = false});
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache});
 
   /// Decodes [encodedJson] to a JSON collection/data.
   T decode<T>(String encodedJson,
-      {Type? type, bool duplicatedEntitiesAsID = false});
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache});
 
   /// Sames as [decode] but from a [Uint8List].
   T decodeFromBytes<T>(Uint8List encodedJsonBytes,
-      {Type? type, bool duplicatedEntitiesAsID = false});
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache});
 
   /// Decodes [encodedJson] to a JSON collection/data accepting async values.
   FutureOr<T> decodeAsync<T>(FutureOr<String> encodedJson,
-      {Type? type, bool duplicatedEntitiesAsID = false});
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache});
 
   /// Sames as [decodeAsync] but from a [Uint8List].
   FutureOr<T> decodeFromBytesAsync<T>(FutureOr<Uint8List> encodedJsonBytes,
-      {Type? type, bool duplicatedEntitiesAsID = false});
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache});
 }
 
 class _JsonDecoder extends dart_convert.Converter<String, Object?>
@@ -827,6 +941,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
   final bool forceDuplicatedEntitiesAsID;
 
+  @override
   final bool autoResetEntityCache;
 
   _JsonDecoder._(
@@ -842,10 +957,18 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
   ) : entityCache = entityCache ?? JsonEntityCacheSimple();
 
   @override
-  O? fromJson<O>(Object? o, {Type? type, bool duplicatedEntitiesAsID = false}) {
-    _resetEntityCache();
+  void resetEntityCache() {
+    entityCache.clearCachedEntities();
+  }
+
+  @override
+  O? fromJson<O>(Object? o,
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
+    _resetEntityCache(autoResetEntityCache);
     var obj = _fromJsonImpl<O>(o, type, duplicatedEntitiesAsID);
-    _resetEntityCache();
+    _resetEntityCache(autoResetEntityCache);
     return obj;
   }
 
@@ -881,19 +1004,22 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
   @override
   FutureOr<O?> fromJsonAsync<O>(Object? o,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
-    _resetEntityCache();
-    var obj = _fromJsonAsyncImpl<O>(o, type, duplicatedEntitiesAsID);
-    return _resetEntityCacheAsync(obj);
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
+    _resetEntityCache(autoResetEntityCache);
+    var obj = _fromJsonAsyncImpl<O>(
+        o, type, duplicatedEntitiesAsID, autoResetEntityCache);
+    return _resetEntityCacheAsync(obj, autoResetEntityCache);
   }
 
-  FutureOr<O?> _fromJsonAsyncImpl<O>(
-      Object? o, Type? type, bool duplicatedEntitiesAsID) {
+  FutureOr<O?> _fromJsonAsyncImpl<O>(Object? o, Type? type,
+      bool duplicatedEntitiesAsID, bool? autoResetEntityCache) {
     type ??= O;
 
     if (o is Future) {
-      return o.then((value) =>
-          _fromJsonAsyncImpl<O>(value, type, duplicatedEntitiesAsID));
+      return o.then((value) => _fromJsonAsyncImpl<O>(
+          value, type, duplicatedEntitiesAsID, autoResetEntityCache));
     } else if (JsonConverter.isPrimitiveType(type)) {
       return o as O?;
     } else if (type == DateTime) {
@@ -908,7 +1034,8 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
           : o.map((k, v) => MapEntry(k.toString(), v));
       return fromJsonMapAsync<O>(map, type: type);
     } else if (o is Iterable) {
-      return _fromJsonListAsyncImpl(o, type, duplicatedEntitiesAsID) as O?;
+      return _fromJsonListAsyncImpl(
+          o, type, duplicatedEntitiesAsID, autoResetEntityCache) as O?;
     } else if (o is String) {
       return _entityFromJsonString(type, o, duplicatedEntitiesAsID);
     } else {
@@ -1004,11 +1131,13 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
   @override
   List<O?> fromJsonList<O>(Iterable o,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     type ??= O;
-    _resetEntityCache();
+    _resetEntityCache(autoResetEntityCache);
     var list = _fromJsonListImpl<O>(o, type, duplicatedEntitiesAsID);
-    _resetEntityCache();
+    _resetEntityCache(autoResetEntityCache);
     return list;
   }
 
@@ -1021,42 +1150,47 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
   @override
   FutureOr<List<O?>> fromJsonListAsync<O>(FutureOr<Iterable> o,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     type ??= O;
 
     if (o is Future<Iterable>) {
       return o.then((value) {
-        _resetEntityCache();
-        var ret =
-            _fromJsonListAsyncImpl<O>(value, type, duplicatedEntitiesAsID);
-        return _resetEntityCacheAsync<List<O?>>(ret);
+        _resetEntityCache(autoResetEntityCache);
+        var ret = _fromJsonListAsyncImpl<O>(
+            value, type, duplicatedEntitiesAsID, autoResetEntityCache);
+        return _resetEntityCacheAsync<List<O?>>(ret, autoResetEntityCache);
       });
     }
 
-    _resetEntityCache();
-    var ret = _fromJsonListAsyncImpl<O>(o, type, duplicatedEntitiesAsID);
-    return _resetEntityCacheAsync<List<O?>>(ret);
+    _resetEntityCache(autoResetEntityCache);
+    var ret = _fromJsonListAsyncImpl<O>(
+        o, type, duplicatedEntitiesAsID, autoResetEntityCache);
+    return _resetEntityCacheAsync<List<O?>>(ret, autoResetEntityCache);
   }
 
-  FutureOr<List<O?>> _fromJsonListAsyncImpl<O>(
-      Iterable o, Type? type, bool duplicatedEntitiesAsID) {
+  FutureOr<List<O?>> _fromJsonListAsyncImpl<O>(Iterable o, Type? type,
+      bool duplicatedEntitiesAsID, bool? autoResetEntityCache) {
     var listAsync = o
-        .map((e) => _fromJsonAsyncImpl(e, type, duplicatedEntitiesAsID))
+        .map((e) => _fromJsonAsyncImpl(
+            e, type, duplicatedEntitiesAsID, autoResetEntityCache))
         .toList();
 
-    return _resolveListAsync<O>(listAsync);
+    return _resolveListAsync<O>(listAsync, autoResetEntityCache);
   }
 
-  FutureOr<List<O?>> _resolveListAsync<O>(List list) {
+  FutureOr<List<O?>> _resolveListAsync<O>(
+      List list, bool? autoResetEntityCache) {
     var hasFuture = _listHasFuture(list);
     if (hasFuture) {
       var listFutures = _listElementsToFuture(list);
       return Future.wait(listFutures).then((l) => l.cast<O?>()).then((value) {
-        _resetEntityCache();
+        _resetEntityCache(autoResetEntityCache);
         return value;
       });
     } else {
-      _resetEntityCache();
+      _resetEntityCache(autoResetEntityCache);
       return list.cast<O?>();
     }
   }
@@ -1104,27 +1238,34 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
   @override
   O fromJsonMap<O>(Map<String, Object?> map,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
-    _resetEntityCache();
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
+    _resetEntityCache(autoResetEntityCache);
     var obj = _fromJsonMapImpl<O>(map, type, duplicatedEntitiesAsID);
-    _resetEntityCache();
+    _resetEntityCache(autoResetEntityCache);
     return obj;
   }
 
-  void _resetEntityCache() {
-    if (autoResetEntityCache) {
+  void _resetEntityCache(bool? resetEntityCache) {
+    if (resetEntityCache != null) {
+      if (resetEntityCache) {
+        entityCache.clearCachedEntities();
+      }
+    } else if (autoResetEntityCache) {
       entityCache.clearCachedEntities();
     }
   }
 
-  FutureOr<O> _resetEntityCacheAsync<O>(FutureOr<O> o) {
+  FutureOr<O> _resetEntityCacheAsync<O>(
+      FutureOr<O> o, bool? autoResetEntityCache) {
     if (o is Future<O>) {
       return o.then((value) {
-        _resetEntityCache();
+        _resetEntityCache(autoResetEntityCache);
         return value;
       });
     } else {
-      _resetEntityCache();
+      _resetEntityCache(autoResetEntityCache);
       return o;
     }
   }
@@ -1375,21 +1516,23 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
   @override
   FutureOr<O> fromJsonMapAsync<O>(FutureOr<Map<String, Object?>> map,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     type ??= O;
 
     if (map is Future<Map<String, Object?>>) {
       return map.then((value) {
-        _resetEntityCache();
+        _resetEntityCache(autoResetEntityCache);
         var ret =
             _fromJsonMapAsyncImpl<O>(value, type!, duplicatedEntitiesAsID);
-        return _resetEntityCacheAsync<O>(ret);
+        return _resetEntityCacheAsync<O>(ret, autoResetEntityCache);
       });
     }
 
-    _resetEntityCache();
+    _resetEntityCache(autoResetEntityCache);
     var ret = _fromJsonMapAsyncImpl<O>(map, type, duplicatedEntitiesAsID);
-    return _resetEntityCacheAsync<O>(ret);
+    return _resetEntityCacheAsync<O>(ret, autoResetEntityCache);
   }
 
   FutureOr<O> _fromJsonMapAsyncImpl<O>(
@@ -1538,52 +1681,72 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
   @override
   T decode<T>(String encodedJson,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     type ??= T;
     var json = dart_convert.json.decode(encodedJson);
     return fromJson<T>(json,
-        type: type, duplicatedEntitiesAsID: duplicatedEntitiesAsID) as T;
+        type: type,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache) as T;
   }
 
   /// Sames as [decode] but from a [Uint8List].
   @override
   T decodeFromBytes<T>(Uint8List encodedJsonBytes,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     var encodedJson = dart_convert.utf8.decode(encodedJsonBytes);
     return decode<T>(encodedJson,
-        type: type, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+        type: type,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Decodes [encodedJson] to a JSON collection/data accepting async values.
   @override
   FutureOr<T> decodeAsync<T>(FutureOr<String> encodedJson,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     type ??= T;
 
     if (encodedJson is Future<String>) {
       return encodedJson.then((value) => decodeAsync<T>(value,
-          type: type, duplicatedEntitiesAsID: duplicatedEntitiesAsID));
+          type: type,
+          duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+          autoResetEntityCache: autoResetEntityCache));
     }
 
     var json = dart_convert.json.decode(encodedJson);
     return fromJsonAsync<T>(json,
-        type: type, duplicatedEntitiesAsID: duplicatedEntitiesAsID) as T;
+        type: type,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache) as T;
   }
 
   /// Sames as [decodeAsync] but from a [Uint8List].
   @override
   FutureOr<T> decodeFromBytesAsync<T>(FutureOr<Uint8List> encodedJsonBytes,
-      {Type? type, bool duplicatedEntitiesAsID = false}) {
+      {Type? type,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
     type ??= T;
 
     if (encodedJsonBytes is Future<Uint8List>) {
       return encodedJsonBytes.then((value) => decodeFromBytesAsync<T>(value,
-          type: type, duplicatedEntitiesAsID: duplicatedEntitiesAsID));
+          type: type,
+          duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+          autoResetEntityCache: autoResetEntityCache));
     }
 
     var encodedJson = dart_convert.utf8.decode(encodedJsonBytes);
     return decodeAsync<T>(encodedJson,
-        type: type, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+        type: type,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   @override

@@ -1,7 +1,14 @@
 ## 1.1.1
 
 - `TypeInfo`:
-  - Fix `fromJson` when decoding a list with graph containing duplicated entities (referenced by ID).
+  - Fix `fromJson` when decoding a list with a graph containing duplicated entities (referenced by ID).
+  - Added support for `FutureOr`.
+- `JsonCoder`/`JsonEncoder`/`JsonDecoder`:
+  - Allow override of `autoResetEntityCache` while encoding or decoding. 
+- Improved GitHub CI: added browser tests (chrome).
+- mime: ^1.0.2
+- analyzer: ^3.4.1
+- dart_style: ^2.2.3
 
 ## 1.1.0
 

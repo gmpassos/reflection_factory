@@ -445,6 +445,7 @@ enum BasicDartType {
   dateTime,
   mapEntry,
   future,
+  futureOr,
   voidType,
 }
 
@@ -453,11 +454,14 @@ class _TypeWrapper {
 
   final BasicDartType basicDartType;
 
-  _TypeWrapper(Type type, {BasicDartType? basicType, Object? object})
+  _TypeWrapper(Type type,
+      {BasicDartType? basicType, Object? object, bool? hasArguments})
       : type = detectType(type, object),
-        basicDartType = basicType ?? detectBasicType(type, object);
+        basicDartType =
+            basicType ?? detectBasicType(type, object, hasArguments);
 
-  static BasicDartType detectBasicType(Type type, [Object? object]) {
+  static BasicDartType detectBasicType(Type type,
+      [Object? object, bool? hasArguments]) {
     if (type == tString || object is String) return BasicDartType.string;
     if (type == tInt || object is int) return BasicDartType.int;
     if (type == tDouble || object is double) return BasicDartType.double;
@@ -467,7 +471,12 @@ class _TypeWrapper {
     if (type == tDateTime || object is DateTime) return BasicDartType.dateTime;
 
     if (type == tObject) return BasicDartType.object;
-    if (type == tDynamic) return BasicDartType.dynamic;
+    if (type == tDynamic) {
+      if (hasArguments != null && hasArguments) {
+        return BasicDartType.futureOr;
+      }
+      return BasicDartType.dynamic;
+    }
     if (type == tVoid) return BasicDartType.voidType;
 
     if (type == tMap || object is Map) return BasicDartType.map;
@@ -477,6 +486,10 @@ class _TypeWrapper {
     if (type == tMapEntry || object is MapEntry) return BasicDartType.mapEntry;
 
     if (type == tFuture || object is Future) return BasicDartType.future;
+
+    if (type == tFutureOr) {
+      return BasicDartType.futureOr;
+    }
 
     return BasicDartType.none;
   }
@@ -589,6 +602,9 @@ class _TypeWrapper {
 
   /// Returns `true` if [type] is a [Future].
   bool get isFuture => basicDartType == BasicDartType.future;
+
+  /// Returns `true` if [type] is a [FutureOr].
+  bool get isFutureOr => basicDartType == BasicDartType.futureOr;
 
   @override
   bool operator ==(Object other) =>
@@ -733,6 +749,8 @@ class TypeInfo {
   static final TypeInfo tIterable = TypeInfo._(_TypeWrapper.tIterable);
 
   static final TypeInfo tFuture = TypeInfo._(_TypeWrapper.tFuture);
+  static final TypeInfo tFutureOr = TypeInfo._wrapper(
+      _TypeWrapper(_TypeWrapper.tFutureOr, basicType: BasicDartType.futureOr));
 
   static final TypeInfo tObject = TypeInfo._(_TypeWrapper.tObject);
   static final TypeInfo tDynamic = TypeInfo._(_TypeWrapper.tDynamic);
@@ -743,6 +761,18 @@ class TypeInfo {
   /// The main [Type].
   Type get type => _typeWrapper.type;
 
+  /// Returns the [type] name.
+  String get typeName {
+    if (isFutureOr) {
+      return 'FutureOr';
+    }
+
+    var typeStr = type.toString();
+    var idx = typeStr.indexOf('<');
+    if (idx > 0) typeStr = typeStr.substring(0, idx);
+    return typeStr;
+  }
+
   /// The [type] arguments (generics).
   final List<TypeInfo> arguments;
 
@@ -751,9 +781,19 @@ class TypeInfo {
   TypeInfo(Type type, [Iterable<Object>? arguments])
       : this._(type, arguments, null);
 
-  TypeInfo._(Type type, [Iterable<Object>? arguments, Object? object])
-      : _typeWrapper = _TypeWrapper(type, object: object),
+  TypeInfo._(Type type,
+      [Iterable<Object>? arguments, Object? object, _TypeWrapper? typeWrapper])
+      : _typeWrapper = typeWrapper ??
+            _TypeWrapper(type,
+                object: object,
+                hasArguments: arguments != null && arguments.isNotEmpty),
         arguments = arguments == null || arguments.isEmpty
+            ? _emptyArguments
+            : List<TypeInfo>.unmodifiable(
+                arguments.map((o) => TypeInfo.from(o)));
+
+  TypeInfo._wrapper(this._typeWrapper, [Iterable<Object>? arguments])
+      : arguments = arguments == null || arguments.isEmpty
             ? _emptyArguments
             : List<TypeInfo>.unmodifiable(
                 arguments.map((o) => TypeInfo.from(o)));
@@ -794,7 +834,28 @@ class TypeInfo {
     if (type == _TypeWrapper.tBigInt || object is BigInt) return tBigInt;
 
     if (type == _TypeWrapper.tObject) return tObject;
-    if (type == _TypeWrapper.tDynamic) return tDynamic;
+
+    var hasArguments = arguments != null && arguments.isNotEmpty;
+
+    if (type == _TypeWrapper.tDynamic) {
+      // A FutureOr is a `dynamic` with arguments:
+      if (hasArguments) {
+        return TypeInfo._(_TypeWrapper.tFutureOr, arguments, object,
+            TypeInfo.tFutureOr._typeWrapper);
+      } else {
+        return tDynamic;
+      }
+    }
+
+    if (type == _TypeWrapper.tFuture) {
+      if (hasArguments) {
+        return TypeInfo._(_TypeWrapper.tFuture, arguments, object,
+            TypeInfo.tFuture._typeWrapper);
+      } else {
+        return TypeInfo.tFuture;
+      }
+    }
+
     if (type == _TypeWrapper.tVoid) return tVoid;
 
     if (arguments == null || arguments.isEmpty) {
@@ -980,6 +1041,12 @@ class TypeInfo {
   /// Returns `true` if [type] is a [Future].
   bool get isFuture => _typeWrapper.isFuture;
 
+  /// Returns `true` if [type] is a [FutureOr].
+  bool get isFutureOr => _typeWrapper.isFutureOr;
+
+  /// Returns `true` if [type] is `void`.
+  bool get isVoid => _typeWrapper.isVoid;
+
   /// Returns `true` if [type] is a [List] of entities.
   bool get isListEntity =>
       isList && hasArguments && !arguments.first.isPrimitiveType;
@@ -1056,14 +1123,19 @@ class TypeInfo {
 
   @override
   String toString() {
-    var typeStr = type.toString();
-    var idx = typeStr.indexOf('<');
-    if (idx > 0) typeStr = typeStr.substring(0, idx);
-
-    return hasArguments ? '$typeStr<${arguments.join(',')}>' : typeStr;
+    return hasArguments ? '$typeName<${arguments.join(',')}>' : typeName;
   }
 
-  Object? fromJson(dynamic json, {JsonDecoder? jsonDecoder}) {
+  Object? fromJson(dynamic json,
+      {JsonDecoder? jsonDecoder,
+      bool duplicatedEntitiesAsID = true,
+      bool? autoResetEntityCache}) {
+    return _fromJsonImpl(
+        json, jsonDecoder, duplicatedEntitiesAsID, autoResetEntityCache);
+  }
+
+  Object? _fromJsonImpl(dynamic json, JsonDecoder? jsonDecoder,
+      bool duplicatedEntitiesAsID, bool? autoResetEntityCache) {
     if (isPrimitiveType) {
       return parse(json);
     } else if (isIterable) {
@@ -1074,8 +1146,11 @@ class TypeInfo {
         var arg = argumentType(0);
         if (arg != null) {
           jsonDecoder ??= JsonDecoder.defaultDecoder;
+
           list = jsonDecoder.fromJsonList(list,
-              type: arg.type, duplicatedEntitiesAsID: true);
+              type: arg.type,
+              duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+              autoResetEntityCache: autoResetEntityCache);
         }
       }
 
@@ -1088,12 +1163,22 @@ class TypeInfo {
         var arg0 = argumentType(0);
         var arg1 = argumentType(1);
         if (arg0 != null && arg1 != null) {
-          jsonDecoder ??= JsonDecoder(
-              forceDuplicatedEntitiesAsID: true, autoResetEntityCache: false);
+          jsonDecoder ??= JsonDecoder.defaultDecoder;
 
           map = map.map((key, value) => MapEntry(
-              arg0.fromJson(key, jsonDecoder: jsonDecoder),
-              arg1.fromJson(value, jsonDecoder: jsonDecoder)));
+                arg0._fromJsonImpl(
+                    key, jsonDecoder, duplicatedEntitiesAsID, false),
+                arg1._fromJsonImpl(
+                    value, jsonDecoder, duplicatedEntitiesAsID, false),
+              ));
+
+          if (autoResetEntityCache != null) {
+            if (autoResetEntityCache) {
+              jsonDecoder.resetEntityCache();
+            }
+          } else if (jsonDecoder.autoResetEntityCache) {
+            jsonDecoder.resetEntityCache();
+          }
         }
       }
 
@@ -1105,11 +1190,19 @@ class TypeInfo {
       if (classReflection != null) {
         jsonDecoder ??= JsonDecoder.defaultDecoder;
 
-        return classReflection.fromJson(json, jsonDecoder: jsonDecoder);
+        return classReflection.fromJson(json,
+            jsonDecoder: jsonDecoder,
+            duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+            autoResetEntityCache: autoResetEntityCache);
       }
-
-      return JsonCodec.defaultCodec.fromJson(json, type: type);
     }
+
+    jsonDecoder ??= JsonDecoder.defaultDecoder;
+
+    return jsonDecoder.fromJson(json,
+        type: type,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
   }
 
   /// Casts [o] to this collection type if a [ReflectionFactory] is registered

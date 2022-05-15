@@ -8,10 +8,10 @@ environment:
 
 dependencies:
   build: ^2.2.1
-  analyzer: ^3.3.1
-  dart_style: ^2.2.1
+  analyzer: ^3.4.1
+  dart_style: ^2.2.3
   meta: ^1.7.0
-  mime: ^1.0.1
+  mime: ^1.0.2
   base_codecs: ^1.0.1
   pub_semver: ^2.0.0
   path: ^1.8.1
