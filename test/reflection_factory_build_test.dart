@@ -458,6 +458,10 @@ void main() {
             
             int computeSum3(int a, {int? b, int? c}) => a + (b ?? 0) + (c ?? 0) ;
             
+            R computeFunction<R>( R Function() callback ) => callback();
+            
+            Future<R> computeFunctionAsync<R>( FutureOr<R> Function() callback ) => callback(); 
+            
             @override
             String toString() => 'SimpleAPI{ name: \$name }';
           }
@@ -485,7 +489,11 @@ void main() {
               contains('int computeSum(int a, int? b) {'),
               contains('Future<int?>? computeMultiply(int a, int b) {'),
               contains('FutureOr<int?>? computeDivide(int a, int b) {'),
+            ),
+            allOf(
               contains('int computeSum3(int a, {int? b, int? c}) {'),
+              contains(
+                  'Future<R> computeFunctionAsync<R>(FutureOr<R> Function() callback) {'),
               matches(RegExp(
                   "onCall(\nthis,\n'computeSum3',\n<String, dynamic>{\n'a': a,\n'b': b,\n'c': c,\n},"
                       .replaceAll('\n', r'\s+')

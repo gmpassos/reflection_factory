@@ -1,3 +1,8 @@
+## 1.1.2
+
+- `ClassProxy`.
+  - Allow type parameters in generated proxy methods. 
+
 ## 1.1.1
 
 - `TypeInfo`:

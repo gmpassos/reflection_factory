@@ -1888,13 +1888,18 @@ class _ProxyMethod {
 
   final DartType returnType;
   final List<ParameterElement> parameters;
+  final List<TypeParameterElement> typeParameters;
 
-  _ProxyMethod(this.name, this.returnType, this.parameters);
+  _ProxyMethod(
+      this.name, this.returnType, this.parameters, this.typeParameters);
 
   factory _ProxyMethod.fromMethodElement(MethodElement method) {
-    return _ProxyMethod(
-        method.name, method.returnType, method.parameters.toList());
+    return _ProxyMethod(method.name, method.returnType,
+        method.parameters.toList(), method.typeParameters.toList());
   }
+
+  List<String> get typeParametersNames =>
+      typeParameters.map((e) => e.name).toList();
 
   List<ParameterElement> get positionalParameters => parameters
       .where((p) => p.isPositional && !p.isOptionalPositional)
@@ -1918,7 +1923,9 @@ class _ProxyMethod {
       returnType.getDisplayString(withNullability: true);
 
   String returnTypeNameResolvable({bool withNullability = true}) =>
-      returnType.fullTypeNameResolvable(withNullability: withNullability);
+      returnType.fullTypeNameResolvable(
+          withNullability: withNullability,
+          typeParameters: typeParametersNames);
 
   DartType? get returnTypeArgument {
     if (!returnType.hasTypeArguments) return null;
@@ -1930,9 +1937,29 @@ class _ProxyMethod {
   }
 
   String signature(Set<DartType> ignoreParametersTypes) {
-    String parametersStr = parametersSignature(ignoreParametersTypes);
-    var methodStr = '${returnTypeNameResolvable()} $name($parametersStr)';
+    var typeParametersStr = typeParametersSignature();
+    var parametersStr = parametersSignature(ignoreParametersTypes);
+    var returnTypeStr = returnTypeNameResolvable();
+    var methodStr = '$returnTypeStr $name$typeParametersStr($parametersStr)';
     return methodStr;
+  }
+
+  String typeParametersSignature() {
+    var parametersStr = StringBuffer();
+
+    for (var p in typeParameters) {
+      var pStr = p.getDisplayString(withNullability: true);
+      if (pStr.startsWith('{') || pStr.startsWith('[')) {
+        pStr = pStr.substring(1, pStr.length - 1).trim();
+      }
+      parametersStr.write(pStr);
+    }
+
+    if (parametersStr.isEmpty) {
+      return '';
+    }
+
+    return '<' + parametersStr.toString() + '>';
   }
 
   String parametersSignature(Set<DartType> ignoreParametersTypes) {
@@ -1991,20 +2018,25 @@ class _ProxyMethod {
     if (returnType.isDartAsyncFuture) return this;
 
     var retType = typeProvider.futureType(returnType);
-    return _ProxyMethod(name, retType, parameters);
+    return _ProxyMethod(name, retType, parameters, typeParameters);
   }
 
   _ProxyMethod returningFutureOr(TypeProvider typeProvider) {
     if (returnType.isDartAsyncFutureOr) return this;
 
     var retType = typeProvider.futureOrType(returnType);
-    return _ProxyMethod(name, retType, parameters);
+    return _ProxyMethod(name, retType, parameters, typeParameters);
   }
 
   _ProxyMethod traverseReturnType() {
     var arg = returnTypeArgument;
     if (arg == null) return this;
-    return _ProxyMethod(name, arg, parameters);
+    return _ProxyMethod(name, arg, parameters, typeParameters);
+  }
+
+  @override
+  String toString() {
+    return '_ProxyMethod{name: $name, returnType: $returnType, parameters: $parameters, typeParameters: $typeParameters}';
   }
 }
 
@@ -2374,19 +2406,32 @@ extension _DartTypeExtension on DartType {
 
   bool get isResolvableType => !isParameterType;
 
-  String get typeNameResolvable {
+  String get typeNameResolvable => resolveTypeName();
+
+  String resolveTypeName({Iterable<String>? typeParameters}) {
+    if (typeParameters != null &&
+        isParameterType &&
+        typeParameters.isNotEmpty) {
+      var name = typeName;
+      var nameResolved = typeParameters.contains(name) ? name : 'dynamic';
+      return nameResolved;
+    }
+
     var name = !isResolvableType ? 'dynamic' : typeName;
     return name;
   }
 
-  String fullTypeNameResolvable({bool withNullability = true}) {
-    var name = typeNameResolvable;
+  String fullTypeNameResolvable(
+      {bool withNullability = true, Iterable<String>? typeParameters}) {
+    var name = resolveTypeName(typeParameters: typeParameters);
+
     if (!hasTypeArguments) {
       return withNullability && isNullable ? '$name?' : name;
     }
 
     var args = resolvedTypeArguments
-        .map((e) => e.fullTypeNameResolvable(withNullability: withNullability))
+        .map((e) => e.fullTypeNameResolvable(
+            withNullability: withNullability, typeParameters: typeParameters))
         .join(',');
 
     return withNullability && isNullable ? '$name<$args>?' : '$name<$args>';
