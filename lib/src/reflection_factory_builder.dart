@@ -1959,7 +1959,7 @@ class _ProxyMethod {
       return '';
     }
 
-    return '<' + parametersStr.toString() + '>';
+    return '<$parametersStr>';
   }
 
   String parametersSignature(Set<DartType> ignoreParametersTypes) {
@@ -2676,7 +2676,7 @@ String _buildStringListCode(Iterable? o,
       l.sort();
       o = l;
     }
-    return 'const <String>[' + o.map((e) => "'$e'").join(', ') + ']';
+    return 'const <String>[${o.map((e) => "'$e'").join(', ')}]';
   }
 }
 

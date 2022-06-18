@@ -19,7 +19,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.1.2';
+  static const String VERSION = '1.2.0';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -540,10 +540,7 @@ abstract class EnumReflection<O> extends Reflection<O>
 
   @override
   String toString() {
-    return 'EnumReflection{ '
-            'enum: $enumName '
-            '}' +
-        (object != null ? '<$object>' : '');
+    return 'EnumReflection{ enum: $enumName }${object != null ? '<$object>' : ''}';
   }
 }
 
@@ -1399,10 +1396,7 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   @override
   String toString() {
-    return 'ClassReflection{ '
-            'class: $className '
-            '}' +
-        (object != null ? '<$object>' : '');
+    return 'ClassReflection{ class: $className }${object != null ? '<$object>' : ''}';
   }
 
   /// Dispose internal caches.
@@ -1720,7 +1714,7 @@ class TypeReflection {
             return 'tMap';
           }
 
-          var a = args[0] + ';' + args[1];
+          var a = '${args[0]};${args[1]}';
 
           switch (a) {
             case 'Object;Object':
@@ -2192,14 +2186,7 @@ class FieldReflection<O, T> extends ElementReflection<O>
 
   @override
   String toString() {
-    return 'FieldReflection{ '
-            'class: $className, '
-            'name: $name, '
-            'type: ${nullable ? '$type?' : '$type'}, '
-            'static: $isStatic, '
-            'final: $isFinal '
-            '}' +
-        (object != null ? '<$object>' : '');
+    return 'FieldReflection{ class: $className, name: $name, type: ${nullable ? '$type?' : '$type'}, static: $isStatic, final: $isFinal }${object != null ? '<$object>' : ''}';
   }
 }
 
@@ -2785,18 +2772,8 @@ class MethodReflection<O, R> extends FunctionReflection<O, R> {
   Function get _function => method;
 
   @override
-  String toString() {
-    return 'MethodReflection{ '
-            'class: $className, '
-            'name: $name, '
-            'returnType: ${returnNullable ? '$returnType?' : '$returnType'}, '
-            'static: $isStatic, '
-            'normalParameters: $normalParameters, '
-            'optionalParameters: $optionalParameters, '
-            'namedParameters: $namedParameters '
-            '}' +
-        (object != null ? '<$object>' : '');
-  }
+  String toString() =>
+      'MethodReflection{ class: $className, name: $name, returnType: ${returnNullable ? '$returnType?' : '$returnType'}, static: $isStatic, normalParameters: $normalParameters, optionalParameters: $optionalParameters, namedParameters: $namedParameters }${object != null ? '<$object>' : ''}';
 }
 
 /// Represents a method invocation parameters.

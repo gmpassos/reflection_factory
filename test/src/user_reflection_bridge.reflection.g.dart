@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.1.2
+// BUILDER: reflection_factory/1.2.0
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -37,10 +37,10 @@ class TestAddress$reflection extends ClassReflection<TestAddress> {
   }
 
   @override
-  Version get languageVersion => Version.parse('2.13.0');
+  Version get languageVersion => Version.parse('2.15.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.1.2');
+  Version get reflectionFactoryVersion => Version.parse('1.2.0');
 
   @override
   TestAddress$reflection withObject([TestAddress? obj]) =>
@@ -248,10 +248,10 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   }
 
   @override
-  Version get languageVersion => Version.parse('2.13.0');
+  Version get languageVersion => Version.parse('2.15.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.1.2');
+  Version get reflectionFactoryVersion => Version.parse('1.2.0');
 
   @override
   TestUserSimple$reflection withObject([TestUserSimple? obj]) =>

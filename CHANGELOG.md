@@ -1,3 +1,15 @@
+## 1.2.0
+
+- sdk: '>=2.15.0 <3.0.0'
+- analyzer: ^4.1.0
+- meta: ^1.8.0
+- path: ^1.8.2
+- build_runner: ^2.1.11
+- lints: ^2.0.0
+- pubspec: ^2.2.0
+- test: ^1.21.2
+- coverage: ^1.3.2
+
 ## 1.1.2
 
 - `ClassProxy`.
