@@ -34,7 +34,7 @@ class LibraryReader {
   }
 
   /// All the compilation unit of this element ([CompilationUnitElement]).
-  Iterable<CompilationUnitElement> get allParts => element.parts;
+  Iterable<PartElement> get allParts => element.parts2;
 
   /// All of the declarations in this library.
   Iterable<Element> get allElements => element.topLevelElements;

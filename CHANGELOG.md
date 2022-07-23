@@ -1,3 +1,19 @@
+## 1.2.1
+
+- Fix use of deprecated methods of package `analyzer`.
+- build: ^2.3.0
+- analyzer: ^4.3.0
+- pub_semver: ^2.1.1
+- yaml: ^3.1.1
+- source_span: ^1.9.1
+- build_runner: ^2.2.0
+- build_test: ^2.1.5
+- pubspec: ^2.3.0
+- data_serializer: ^1.0.7
+- dependency_validator: ^3.2.2
+- test: ^1.21.4
+- coverage: ^1.5.0
+
 ## 1.2.0
 
 - sdk: '>=2.15.0 <3.0.0'

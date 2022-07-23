@@ -170,10 +170,14 @@ class ReflectionBuilder implements Builder {
   }
 
   List<String> _readAllGParts(LibraryReader libraryReader) {
-    return libraryReader.allParts
-        .map((e) => e.toString())
-        .where((e) => e.endsWith('.g.dart'))
-        .toList();
+    var allPartsPaths = libraryReader.allParts.map((e) {
+      var uri = e.uri;
+      return uri is DirectiveUriWithRelativeUriString
+          ? uri.relativeUriString
+          : e.toString();
+    }).toList();
+
+    return allPartsPaths.where((e) => e.endsWith('.g.dart')).toList();
   }
 
   List<String> _reflectionPartDirectivesPaths(
@@ -614,7 +618,7 @@ extension _LibraryElementExtension on LibraryElement {
       topLevelElements.whereType<ClassElement>();
 
   Iterable<LibraryElement> get allExports =>
-      exports.map((e) => e.exportedLibrary).whereNotNull();
+      libraryExports.map((e) => e.exportedLibrary).whereNotNull();
 
   Iterable<ClassElement> get allExportedClasses =>
       allExports.expand((e) => e.exportedClasses);
@@ -2051,7 +2055,7 @@ class _Element {
       return null;
     }
 
-    var enclosingElement = element.enclosingElement;
+    var enclosingElement = element.enclosingElement2;
 
     if (enclosingElement is ClassElement) {
       return enclosingElement.thisType;
