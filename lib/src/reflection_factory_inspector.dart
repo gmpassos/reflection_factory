@@ -166,13 +166,27 @@ class ReflectionInspector {
 extension _FileExtension on File {
   bool get isDartFile => path.endsWith('.dart');
 
-  bool get isReflectionDartFile => path.endsWith('.reflection.g.dart');
+  bool get isReflectionDartFile {
+    if (path.endsWith('.reflection.g.dart')) return true;
+
+    var ps = pack_path.split(path);
+    return ps.length >= 2 &&
+        ps[ps.length - 2] == 'reflection' &&
+        ps.last.endsWith('.g.dart');
+  }
 
   static final RegExp _regExpDartExtension = RegExp(r'\.dart$');
 
   File? toReflectionDartFile() {
     if (!isDartFile) return null;
     if (isReflectionDartFile) return this;
+
+    var partPath = _dartFileReflectionPart(this);
+    if (partPath != null) {
+      var ps = partPath.split('/');
+      var genFile = File(pack_path.join(parent.path, pack_path.joinAll(ps)));
+      return genFile;
+    }
 
     var parts = pack_path.split(path);
     var fileName = parts.removeLast();
@@ -182,5 +196,18 @@ extension _FileExtension on File {
     parts.add(fileName2);
 
     return File(pack_path.joinAll(parts));
+  }
+
+  static final _regExpReflectionPart = RegExp(
+      r'''\n[ \t]*part\s+['"](?:\./)?(reflection/\w+\.g\.dart|/\w+\.reflection\.g\.dart)['"]\s*;''');
+
+  String? _dartFileReflectionPart(File e) {
+    var data = e.readAsStringSync();
+
+    var match = _regExpReflectionPart.firstMatch(data);
+    if (match == null) return null;
+
+    var partPath = match[1]!;
+    return partPath;
   }
 }

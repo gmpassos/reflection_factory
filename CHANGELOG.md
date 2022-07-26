@@ -1,3 +1,8 @@
+## 1.2.2
+
+- `ReflectionInspector`:
+  - Fix inspection for generated files in the subdirectory `reflection`.
+
 ## 1.2.1
 
 - Fix use of deprecated methods of package `analyzer`.
