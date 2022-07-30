@@ -19,7 +19,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.2.2';
+  static const String VERSION = '1.2.3';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -1605,6 +1605,7 @@ class TypeReflection {
   static const TypeReflection tInt = TypeReflection(int);
   static const TypeReflection tNum = TypeReflection(num);
   static const TypeReflection tBool = TypeReflection(bool);
+  static const TypeReflection tBigInt = TypeReflection(BigInt);
   static const TypeReflection tList = TypeReflection(List);
   static const TypeReflection tMap = TypeReflection(Map);
   static const TypeReflection tSet = TypeReflection(Set);
@@ -1682,6 +1683,8 @@ class TypeReflection {
         return 'tInt';
       case 'num':
         return 'tNum';
+      case 'BigInt':
+        return 'tBigInt';
       case 'bool':
         return 'tBool';
       case 'List':
@@ -1924,8 +1927,15 @@ class TypeReflection {
   /// Returns `true` if [type] is `num`.
   bool get isNumType => type == num;
 
+  /// Returns `true` if [type] is [BigInt].
+  bool get isBigInt => type == BigInt;
+
   /// Returns `true` if [type] is `int`, `double` or `num`.
-  bool get isNumericType => isIntType || isDoubleType || isNumType;
+  bool get isNumberType => isIntType || isDoubleType || isNumType;
+
+  /// Returns `true` if [type] is `int`, `double`, `num` or [BigInt].
+  /// See [isNumberType] and [isBigInt]
+  bool get isNumericType => isNumberType || isBigInt;
 
   /// Returns `true` if [type] is `bool`.
   bool get isBoolType => type == bool;

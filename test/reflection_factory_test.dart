@@ -110,16 +110,53 @@ void main() {
       expect(TypeReflection.tBool.isStringType, isFalse);
       expect(TypeReflection.tBool.isDoubleType, isFalse);
       expect(TypeReflection.tBool.isIntType, isFalse);
+      expect(TypeReflection.tBool.isNumberType, isFalse);
       expect(TypeReflection.tBool.isNumericType, isFalse);
       expect(TypeReflection.tBool.isBoolType, isTrue);
       expect(TypeReflection.tBool.isCollectionType, isFalse);
       expect(TypeReflection.tBool.isIterableType, isFalse);
       expect(TypeReflection.tBool.isMapType, isFalse);
 
+      expect(TypeReflection.tInt.isIntType, isTrue);
+      expect(TypeReflection.tInt.isDoubleType, isFalse);
+      expect(TypeReflection.tInt.isNumType, isFalse);
+      expect(TypeReflection.tInt.isBigInt, isFalse);
+      expect(TypeReflection.tInt.isNumberType, isTrue);
+      expect(TypeReflection.tInt.isNumericType, isTrue);
+
+      expect(TypeReflection.tDouble.isIntType, isFalse);
+      expect(TypeReflection.tDouble.isDoubleType, isTrue);
+      expect(TypeReflection.tDouble.isNumType, isFalse);
+      expect(TypeReflection.tDouble.isBigInt, isFalse);
+      expect(TypeReflection.tDouble.isNumberType, isTrue);
+      expect(TypeReflection.tDouble.isNumericType, isTrue);
+
+      expect(TypeReflection.tNum.isIntType, isFalse);
+      expect(TypeReflection.tNum.isDoubleType, isFalse);
+      expect(TypeReflection.tNum.isNumType, isTrue);
+      expect(TypeReflection.tNum.isBigInt, isFalse);
+      expect(TypeReflection.tNum.isNumberType, isTrue);
+      expect(TypeReflection.tNum.isNumericType, isTrue);
+
+      expect(TypeReflection.tBigInt.isIntType, isFalse);
+      expect(TypeReflection.tBigInt.isDoubleType, isFalse);
+      expect(TypeReflection.tBigInt.isNumType, isFalse);
+      expect(TypeReflection.tBigInt.isBigInt, isTrue);
+      expect(TypeReflection.tBigInt.isNumberType, isFalse);
+      expect(TypeReflection.tBigInt.isNumericType, isTrue);
+
+      expect(TypeReflection.tString.isIntType, isFalse);
+      expect(TypeReflection.tString.isDoubleType, isFalse);
+      expect(TypeReflection.tString.isNumType, isFalse);
+      expect(TypeReflection.tString.isBigInt, isFalse);
+      expect(TypeReflection.tString.isNumberType, isFalse);
+      expect(TypeReflection.tString.isNumericType, isFalse);
+
       expect(TypeReflection.tList.isPrimitiveType, isFalse);
       expect(TypeReflection.tList.isStringType, isFalse);
       expect(TypeReflection.tList.isDoubleType, isFalse);
       expect(TypeReflection.tList.isIntType, isFalse);
+      expect(TypeReflection.tList.isNumberType, isFalse);
       expect(TypeReflection.tList.isNumericType, isFalse);
       expect(TypeReflection.tList.isBoolType, isFalse);
       expect(TypeReflection.tList.isCollectionType, isTrue);
@@ -130,6 +167,7 @@ void main() {
       expect(TypeReflection.tMap.isStringType, isFalse);
       expect(TypeReflection.tMap.isDoubleType, isFalse);
       expect(TypeReflection.tMap.isIntType, isFalse);
+      expect(TypeReflection.tMap.isNumberType, isFalse);
       expect(TypeReflection.tMap.isNumericType, isFalse);
       expect(TypeReflection.tMap.isBoolType, isFalse);
       expect(TypeReflection.tMap.isCollectionType, isTrue);

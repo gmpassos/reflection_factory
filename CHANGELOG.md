@@ -1,3 +1,19 @@
+## 1.2.3
+
+- `JsonEntityCache`:
+  - Added instance `id`.
+  - Added `allowEntityFetch`.
+- `TypeInfo`:
+  - Added `equalsTypeAndArguments`.
+- `TypeReflection`:
+  - Added `isBigInt`.
+  - `isNumericType` renamed to `isNumberType`.
+  - Added `isNumericType` (`isNumericType` + `isBigInt`).
+- Added extension `TypeExtension`:
+  - method `isPrimitiveType`.
+- Added extension `GenericObjectExtension`:
+  - `isPrimitiveValue`, `isPrimitiveList`, `isPrimitiveMap`.
+
 ## 1.2.2
 
 - `ReflectionInspector`:

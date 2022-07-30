@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.2.2
+// BUILDER: reflection_factory/1.2.3
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -111,7 +111,7 @@ class TestAddressWithReflection$reflection
   Version get languageVersion => Version.parse('2.15.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.2');
+  Version get reflectionFactoryVersion => Version.parse('1.2.3');
 
   @override
   TestAddressWithReflection$reflection withObject(
@@ -342,7 +342,7 @@ class TestCompanyWithReflection$reflection
   Version get languageVersion => Version.parse('2.15.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.2');
+  Version get reflectionFactoryVersion => Version.parse('1.2.3');
 
   @override
   TestCompanyWithReflection$reflection withObject(
@@ -602,7 +602,7 @@ class TestDataWithReflection$reflection
   Version get languageVersion => Version.parse('2.15.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.2');
+  Version get reflectionFactoryVersion => Version.parse('1.2.3');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -674,7 +674,7 @@ class TestDataWithReflection$reflection
                   null,
                   null),
               'id': ParameterReflection(
-                  TypeReflection(BigInt), 'id', true, false, null, null)
+                  TypeReflection.tBigInt, 'id', true, false, null, null)
             },
             null);
       default:
@@ -731,7 +731,7 @@ class TestDataWithReflection$reflection
         return FieldReflection<TestDataWithReflection, T>(
           this,
           TestDataWithReflection,
-          TypeReflection(BigInt),
+          TypeReflection.tBigInt,
           'id',
           false,
           (o) => () => o!.id as T,
@@ -836,7 +836,7 @@ class TestDomainWithReflection$reflection
   Version get languageVersion => Version.parse('2.15.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.2');
+  Version get reflectionFactoryVersion => Version.parse('1.2.3');
 
   @override
   TestDomainWithReflection$reflection withObject(
@@ -1177,7 +1177,7 @@ class TestEnumWithReflection$reflection
   Version get languageVersion => Version.parse('2.15.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.2');
+  Version get reflectionFactoryVersion => Version.parse('1.2.3');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -1247,7 +1247,7 @@ class TestOpAWithReflection$reflection
   Version get languageVersion => Version.parse('2.15.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.2');
+  Version get reflectionFactoryVersion => Version.parse('1.2.3');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -1476,7 +1476,7 @@ class TestOpBWithReflection$reflection
   Version get languageVersion => Version.parse('2.15.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.2');
+  Version get reflectionFactoryVersion => Version.parse('1.2.3');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -1719,7 +1719,7 @@ class TestOpWithReflection$reflection
   Version get languageVersion => Version.parse('2.15.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.2');
+  Version get reflectionFactoryVersion => Version.parse('1.2.3');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -1969,7 +1969,7 @@ class TestTransactionWithReflection$reflection
   Version get languageVersion => Version.parse('2.15.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.2');
+  Version get reflectionFactoryVersion => Version.parse('1.2.3');
 
   @override
   TestTransactionWithReflection$reflection withObject(
@@ -2172,7 +2172,7 @@ class TestUserWithReflection$reflection
   Version get languageVersion => Version.parse('2.15.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.2');
+  Version get reflectionFactoryVersion => Version.parse('1.2.3');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>

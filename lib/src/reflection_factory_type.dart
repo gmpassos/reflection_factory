@@ -877,6 +877,10 @@ class TypeInfo {
   /// Resolves some [Type] singleton issues with [List], [Set] and [Map].
   bool equalsType(TypeInfo? other) => _typeWrapper == other?._typeWrapper;
 
+  /// Returns `true` if [equalsType] and [equalsArgumentsTypes] are `true`.
+  bool equalsTypeAndArguments(TypeInfo other) =>
+      equalsType(other) && equalsArgumentsTypes(other.arguments);
+
   /// The [arguments] length.
   int get argumentsLength => arguments.length;
 
@@ -898,7 +902,8 @@ class TypeInfo {
       return false;
     }
 
-    return _listEqualityTypeInfo.equals(arguments, TypeInfo.toList(types));
+    return _listEqualityTypeInfo.equals(
+        arguments, TypeInfo.toList(types, growable: false));
   }
 
   /// Returns `true` if [arguments] have equivalent [types].
@@ -1227,4 +1232,45 @@ final TypeInfoListEquivalency _listEquivalencyTypeInfo =
 
 extension _ListExtension<T> on List<T> {
   Type get listType => T;
+}
+
+/// Extension for [Type].
+extension TypeExtension on Type {
+  /// Returns `true` if `this` [Type] is primitive:
+  /// [int], [double], [num], [String] or [bool].
+  bool get isPrimitiveType {
+    var self = this;
+    return self == int ||
+        self == double ||
+        self == num ||
+        self == String ||
+        self == bool;
+  }
+}
+
+/// Extension for [Object] nullable.
+extension GenericObjectExtension on Object? {
+  /// Returns `true` if `this` object is a [num], [String] or [bool].
+  bool get isPrimitiveValue {
+    var self = this;
+    return self is num || self is String || self is bool;
+  }
+
+  /// Returns `true` if `this` object is a [List] of primitive values.
+  /// See [isPrimitiveValue].
+  bool get isPrimitiveList {
+    var self = this;
+    return self is List &&
+        (self is List<num> || self is List<String> || self is List<bool>);
+  }
+
+  /// Returns `true` if `this` object is a [Map] of [String] keys and primitive values.
+  /// See [isPrimitiveValue].
+  bool get isPrimitiveMap {
+    var self = this;
+    return self is Map &&
+        (self is Map<String, num> ||
+            self is Map<String, String> ||
+            self is Map<String, bool>);
+  }
 }

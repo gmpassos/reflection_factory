@@ -1779,6 +1779,12 @@ List castListType<T>(List list, Type type) {
 
 /// A JSON entity encoding/decoding cache.
 abstract class JsonEntityCache {
+  /// The cache ID.
+  int get id;
+
+  /// If `true` if will allow the use of on repository to fetch an entity by an ID reference.
+  bool get allowEntityFetch;
+
   /// Returns the ID value into [map] for [type].
   Object? getEntityIDFromMap(Map<Object?, Object?> map, {Type? type});
 
@@ -1818,6 +1824,14 @@ abstract class JsonEntityCache {
 
 /// Simple implementation of [JsonEntityCache].
 class JsonEntityCacheSimple implements JsonEntityCache {
+  static int _idCount = 0;
+
+  @override
+  final int id = ++_idCount;
+
+  @override
+  bool get allowEntityFetch => false;
+
   JsonEntityCacheSimple();
 
   @override

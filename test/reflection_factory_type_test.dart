@@ -5,9 +5,93 @@ import 'src/user_simple.dart';
 import 'src/user_with_reflection.dart';
 
 void main() {
-  group('TypeInfo', () {
-    setUp(() {});
+  group('TypeExtension', () {
+    test('basic', () async {
+      {
+        var t = int;
+        expect(t.isPrimitiveType, isTrue);
+      }
 
+      {
+        var t = double;
+        expect(t.isPrimitiveType, isTrue);
+      }
+
+      {
+        var t = num;
+        expect(t.isPrimitiveType, isTrue);
+      }
+
+      {
+        var t = BigInt;
+        expect(t.isPrimitiveType, isFalse);
+      }
+
+      {
+        var t = bool;
+        expect(t.isPrimitiveType, isTrue);
+      }
+
+      {
+        var t = String;
+        expect(t.isPrimitiveType, isTrue);
+      }
+    });
+  });
+
+  group('GenericObjectExtension', () {
+    test('basic', () async {
+      {
+        var v = 123;
+        expect(v.isPrimitiveValue, isTrue);
+        expect(v.isPrimitiveList, isFalse);
+        expect(v.isPrimitiveMap, isFalse);
+      }
+      {
+        var v = 12.3;
+        expect(v.isPrimitiveValue, isTrue);
+        expect(v.isPrimitiveList, isFalse);
+        expect(v.isPrimitiveMap, isFalse);
+      }
+      {
+        var v = 'abc';
+        expect(v.isPrimitiveValue, isTrue);
+        expect(v.isPrimitiveList, isFalse);
+        expect(v.isPrimitiveMap, isFalse);
+      }
+      {
+        var v = [123];
+        expect(v.isPrimitiveValue, isFalse);
+        expect(v.isPrimitiveList, isTrue);
+        expect(v.isPrimitiveMap, isFalse);
+      }
+      {
+        var v = [
+          [123],
+          [456]
+        ];
+        expect(v.isPrimitiveValue, isFalse);
+        expect(v.isPrimitiveList, isFalse);
+        expect(v.isPrimitiveMap, isFalse);
+      }
+      {
+        var v = {'a': 123};
+        expect(v.isPrimitiveValue, isFalse);
+        expect(v.isPrimitiveList, isFalse);
+        expect(v.isPrimitiveMap, isTrue);
+      }
+      {
+        var v = {
+          'a': [123]
+        };
+        expect(v.isPrimitiveValue, isFalse);
+        expect(v.isPrimitiveList, isFalse);
+        expect(v.isPrimitiveMap, isFalse);
+      }
+    });
+  });
+
+  group('TypeInfo', () {
     test('basic', () async {
       var t1 = TypeInfo(List);
       var t2 = TypeInfo(List);
@@ -22,6 +106,14 @@ void main() {
       expect(t3.isFuture, isFalse);
       expect(t3.isFutureOr, isFalse);
       expect(t3.isDynamic, isFalse);
+      expect(t3.equalsType(TypeInfo.from([])), isTrue);
+      expect(t3.equalsType(TypeInfo.from(<int>[])), isTrue);
+      expect(t3.equalsType(TypeInfo.from(123)), isFalse);
+      expect(t3.equalsTypeAndArguments(TypeInfo.from([])), isTrue);
+      expect(t3.equalsTypeAndArguments(TypeInfo.from(<bool>[])), isTrue);
+      expect(t3.equalsTypeAndArguments(TypeInfo.from({})), isFalse);
+      expect(t3.equalsTypeAndArguments(TypeInfo.from(<bool>{})), isFalse);
+      expect(t3.equalsTypeAndArguments(TypeInfo.from(123)), isFalse);
 
       var t4 = TypeInfo.from(<bool>{});
       expect(t4.isSet, isTrue);
@@ -30,6 +122,47 @@ void main() {
       expect(t4.isFuture, isFalse);
       expect(t4.isFutureOr, isFalse);
       expect(t4.isDynamic, isFalse);
+      expect(t4.equalsType(TypeInfo.from([])), isFalse);
+      expect(t4.equalsType(TypeInfo.from(<int>[])), isFalse);
+      expect(t4.equalsType(TypeInfo.from(123)), isFalse);
+      expect(t4.equalsTypeAndArguments(TypeInfo.from(<bool>[])), isFalse);
+      expect(t4.equalsTypeAndArguments(TypeInfo.from(<int>[])), isFalse);
+      expect(t4.equalsTypeAndArguments(TypeInfo.from(<bool>{})), isTrue);
+      expect(t4.equalsTypeAndArguments(TypeInfo.from(<int>{})), isTrue);
+      expect(t4.equalsTypeAndArguments(TypeInfo.from(123)), isFalse);
+
+      {
+        var t = TypeInfo.fromType(List, [String]);
+        expect(t.equalsType(TypeInfo.fromType(List, [String])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(List, [int])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(List, [String])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(List)), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(Set)), isFalse);
+        expect(t.equalsType(TypeInfo.fromType(Set, [String])), isFalse);
+
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
+            isTrue);
+        expect(
+            t.equalsTypeAndArguments(TypeInfo.fromType(List, [int])), isFalse);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
+            isTrue);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List)), isFalse);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])),
+            isFalse);
+        expect(
+            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [int])), isFalse);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Set)), isFalse);
+      }
+
+      {
+        var t = TypeInfo.fromType(List);
+        expect(t.equalsType(TypeInfo.fromType(List)), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(List, [String])), isTrue);
+
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List)), isTrue);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
+            isFalse);
+      }
 
       var t5 = TypeInfo.fromType(Future, [bool]);
       expect(t5.isFuture, isTrue);
