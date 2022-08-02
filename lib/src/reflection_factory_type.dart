@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
 
@@ -33,6 +35,8 @@ class TypeParser {
         return parseBigInt;
       } else if (obj is DateTime) {
         return parseDateTime;
+      } else if (obj is Uint8List) {
+        return parseUInt8List;
       }
     }
 
@@ -58,6 +62,8 @@ class TypeParser {
       return parseBigInt;
     } else if (typeInfo.isOf(DateTime)) {
       return parseDateTime;
+    } else if (typeInfo.isOf(Uint8List)) {
+      return parseUInt8List;
     }
 
     return null;
@@ -399,6 +405,34 @@ class TypeParser {
     }
   }
 
+  /// Tries to parse a [DateTime].
+  /// - Returns [def] if [value] is invalid.
+  static Uint8List? parseUInt8List(Object? value, [Uint8List? def]) {
+    if (value == null) return def;
+
+    if (value is Uint8List) {
+      return value;
+    } else if (value is List<int>) {
+      return Uint8List.fromList(value);
+    } else if (value is Iterable<int>) {
+      return Uint8List.fromList(value.toList(growable: false));
+    } else if (value is Iterable) {
+      var list = value.map((e) => parseInt(e)).toList(growable: false);
+      if (list.any((e) => e == null)) {
+        return def;
+      }
+      return Uint8List.fromList(list.cast<int>());
+    } else {
+      var s = value.toString().trim();
+      try {
+        var data = base64.decode(s);
+        return data;
+      } catch (_) {
+        return def;
+      }
+    }
+  }
+
   /// Returns `true` if [type] is primitive ([String], [int], [double], [num] or [bool]).
   static bool isPrimitiveType<T>([Type? type]) {
     type ??= T;
@@ -443,6 +477,7 @@ enum BasicDartType {
   bool,
   bigInt,
   dateTime,
+  uInt8List,
   mapEntry,
   future,
   futureOr,
@@ -469,6 +504,10 @@ class _TypeWrapper {
     if (type == tBool || object is bool) return BasicDartType.bool;
     if (type == tBigInt || object is BigInt) return BasicDartType.bigInt;
     if (type == tDateTime || object is DateTime) return BasicDartType.dateTime;
+
+    if (type == tUint8List || object is Uint8List) {
+      return BasicDartType.uInt8List;
+    }
 
     if (type == tObject) return BasicDartType.object;
     if (type == tDynamic) {
@@ -501,6 +540,7 @@ class _TypeWrapper {
   static final Type tBool = bool;
   static final Type tBigInt = BigInt;
   static final Type tDateTime = DateTime;
+  static final Type tUint8List = Uint8List;
   static final Type tList = List;
   static final Type tSet = Set;
   static final Type tMap = Map;
@@ -520,6 +560,7 @@ class _TypeWrapper {
     if (type == tBool || object is bool) return tBool;
     if (type == tBigInt || object is BigInt) return tBigInt;
     if (type == tDateTime || object is DateTime) return tDateTime;
+    if (type == tUint8List || object is Uint8List) return tUint8List;
 
     if (type == tObject) return tObject;
     if (type == tDynamic) return tDynamic;
@@ -581,6 +622,9 @@ class _TypeWrapper {
 
   /// Returns `true` if [type] is [DateTime].
   bool get isDateTime => basicDartType == BasicDartType.dateTime;
+
+  /// Returns `true` if [type] is [DateTime].
+  bool get isUInt8List => basicDartType == BasicDartType.uInt8List;
 
   /// Returns `true` if [type] is `String`.
   bool get isString => basicDartType == BasicDartType.string;
@@ -742,6 +786,8 @@ class TypeInfo {
   static final TypeInfo tDouble = TypeInfo._(_TypeWrapper.tDouble);
   static final TypeInfo tNum = TypeInfo._(_TypeWrapper.tNum);
   static final TypeInfo tBigInt = TypeInfo._(_TypeWrapper.tBigInt);
+  static final TypeInfo tDateTime = TypeInfo._(_TypeWrapper.tDateTime);
+  static final TypeInfo tUint8List = TypeInfo._(_TypeWrapper.tUint8List);
 
   static final TypeInfo tList = TypeInfo._(_TypeWrapper.tList);
   static final TypeInfo tSet = TypeInfo._(_TypeWrapper.tSet);
@@ -832,6 +878,10 @@ class TypeInfo {
     if (type == _TypeWrapper.tNum || object is num) return tNum;
     if (type == _TypeWrapper.tBool || object is bool) return tBool;
     if (type == _TypeWrapper.tBigInt || object is BigInt) return tBigInt;
+    if (type == _TypeWrapper.tDateTime || object is DateTime) return tDateTime;
+    if (type == _TypeWrapper.tUint8List || object is Uint8List) {
+      return tUint8List;
+    }
 
     if (type == _TypeWrapper.tObject) return tObject;
 
@@ -947,6 +997,8 @@ class TypeInfo {
       return TypeParser.parseNum(value, def as num?) as T?;
     } else if (isDateTime) {
       return TypeParser.parseDateTime(value, def as DateTime?) as T?;
+    } else if (isUInt8List) {
+      return TypeParser.parseUInt8List(value, def as Uint8List?) as T?;
     } else if (isBigInt) {
       return TypeParser.parseBigInt(value, def as BigInt?) as T?;
     } else if (isList) {
@@ -1023,6 +1075,9 @@ class TypeInfo {
 
   /// Returns `true` if [type] is [DateTime].
   bool get isDateTime => _typeWrapper.isDateTime;
+
+  /// Returns `true` if [type] is [Uint8List].
+  bool get isUInt8List => _typeWrapper.isUInt8List;
 
   /// Returns `true` if [type] is `String`.
   bool get isString => _typeWrapper.isString;

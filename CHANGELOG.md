@@ -1,3 +1,8 @@
+## 1.2.4
+
+- `TypeParser` and `TypeInfo`:
+  - Add support for `Uint8List`.
+
 ## 1.2.3
 
 - `JsonEntityCache`:

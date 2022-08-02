@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:reflection_factory/reflection_factory.dart';
 import 'package:test/test.dart';
 
@@ -196,6 +199,12 @@ void main() {
       expect(t8.equivalentArgumentsTypes([int]), isFalse);
 
       expect(TypeInfo.tVoid.isVoid, isTrue);
+
+      var t9 = TypeInfo.fromType(DateTime);
+      expect(t9.isDateTime, isTrue);
+      expect(t9.hasArguments, isFalse);
+      expect(t9.equivalentArgumentsTypes([]), isTrue);
+      expect(t9.equivalentArgumentsTypes([int]), isFalse);
     });
 
     test('from', () async {
@@ -276,6 +285,8 @@ void main() {
         expect(TypeInfo.from(num).isPrimitiveType, isTrue);
         expect(TypeInfo.from(String).isPrimitiveType, isTrue);
 
+        expect(TypeInfo.from(DateTime).isPrimitiveType, isFalse);
+        expect(TypeInfo.from(Uint8List).isPrimitiveType, isFalse);
         expect(TypeInfo.from(List).isPrimitiveType, isFalse);
         expect(TypeInfo.from(Map).isPrimitiveType, isFalse);
         expect(TypeInfo.from(Set).isPrimitiveType, isFalse);
@@ -292,6 +303,8 @@ void main() {
         expect(TypeInfo.from(double).isCollection, isFalse);
         expect(TypeInfo.from(num).isCollection, isFalse);
         expect(TypeInfo.from(String).isCollection, isFalse);
+        expect(TypeInfo.from(DateTime).isCollection, isFalse);
+        expect(TypeInfo.from(Uint8List).isCollection, isFalse);
 
         expect(TypeInfo.from(TestUserSimple).isCollection, isFalse);
       }
@@ -301,6 +314,9 @@ void main() {
         expect(TypeInfo.from(bool).isBasicType, isTrue);
         expect(TypeInfo.from(List).isBasicType, isTrue);
         expect(TypeInfo.from(Map).isBasicType, isTrue);
+
+        expect(TypeInfo.from(DateTime).isBasicType, isFalse);
+        expect(TypeInfo.from(Uint8List).isBasicType, isFalse);
 
         expect(TypeInfo.from(TestUserSimple).isBasicType, isFalse);
       }
@@ -312,6 +328,12 @@ void main() {
         expect(TypeInfo.accepts<String>(String), isTrue);
         expect(TypeInfo.accepts<String>(int), isFalse);
 
+        expect(TypeInfo.accepts<DateTime>(DateTime), isTrue);
+        expect(TypeInfo.accepts<DateTime>(int), isFalse);
+
+        expect(TypeInfo.accepts<Uint8List>(Uint8List), isTrue);
+        expect(TypeInfo.accepts<Uint8List>(int), isFalse);
+
         expect(TypeInfo.accepts<Object>(int), isTrue);
         expect(TypeInfo.accepts<Object>(double), isTrue);
         expect(TypeInfo.accepts<Object>(Object), isTrue);
@@ -321,6 +343,19 @@ void main() {
         expect(TypeInfo.accepts<dynamic>(double), isTrue);
         expect(TypeInfo.accepts<dynamic>(Object), isTrue);
         expect(TypeInfo.accepts<dynamic>(dynamic), isTrue);
+      }
+
+      {
+        expect(TypeInfo.from(DateTime), equals(TypeInfo.tDateTime));
+        expect(TypeInfo.from(String), isNot(equals(TypeInfo.tDateTime)));
+
+        expect(TypeInfo.from(Uint8List), equals(TypeInfo.tUint8List));
+        expect(TypeInfo.from(String), isNot(equals(TypeInfo.tUint8List)));
+
+        expect(TypeInfo.from(DateTime.now()), equals(TypeInfo.tDateTime));
+
+        expect(TypeInfo.from(Uint8List.fromList([0])),
+            equals(TypeInfo.tUint8List));
       }
 
       {
@@ -1007,6 +1042,14 @@ void main() {
 
       expect(TypeParser.parseDateTime(1577934245000),
           equals(DateTime.fromMillisecondsSinceEpoch(1577934245000)));
+    });
+
+    test('TypeParser.parseUInt8List', () async {
+      expect(TypeParser.parseUInt8List([1, 2, 3, 4, 5]),
+          equals(Uint8List.fromList([1, 2, 3, 4, 5])));
+
+      expect(TypeParser.parseUInt8List('aGVsbG8='),
+          equals(Uint8List.fromList(base64.decode('aGVsbG8='))));
     });
 
     test('TypeParser.parseBigInt', () async {
