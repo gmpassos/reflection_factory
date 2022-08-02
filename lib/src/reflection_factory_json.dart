@@ -516,7 +516,7 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
   T? toJson<T>(Object? o,
       {bool duplicatedEntitiesAsID = false, bool? autoResetEntityCache}) {
     _resetEntityCache(autoResetEntityCache);
-    var json = _valueToJson(o, null, duplicatedEntitiesAsID) as T;
+    var json = _valueToJson(o, null, duplicatedEntitiesAsID) as T?;
     _resetEntityCache(autoResetEntityCache);
     return json;
   }

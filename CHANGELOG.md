@@ -1,3 +1,8 @@
+## 1.2.5
+
+- `Json`:
+  - `toJson`: fix casting bug when the resulting JSON value is `null`.
+
 ## 1.2.4
 
 - `TypeParser` and `TypeInfo`:
