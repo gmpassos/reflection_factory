@@ -108,7 +108,7 @@ class TestAddressWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.15.0');
+  Version get languageVersion => Version.parse('2.17.0');
 
   @override
   Version get reflectionFactoryVersion => Version.parse('1.2.5');
@@ -339,7 +339,7 @@ class TestCompanyWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.15.0');
+  Version get languageVersion => Version.parse('2.17.0');
 
   @override
   Version get reflectionFactoryVersion => Version.parse('1.2.5');
@@ -599,7 +599,7 @@ class TestDataWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.15.0');
+  Version get languageVersion => Version.parse('2.17.0');
 
   @override
   Version get reflectionFactoryVersion => Version.parse('1.2.5');
@@ -833,7 +833,7 @@ class TestDomainWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.15.0');
+  Version get languageVersion => Version.parse('2.17.0');
 
   @override
   Version get reflectionFactoryVersion => Version.parse('1.2.5');
@@ -1174,7 +1174,7 @@ class TestEnumWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.15.0');
+  Version get languageVersion => Version.parse('2.17.0');
 
   @override
   Version get reflectionFactoryVersion => Version.parse('1.2.5');
@@ -1244,7 +1244,7 @@ class TestOpAWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.15.0');
+  Version get languageVersion => Version.parse('2.17.0');
 
   @override
   Version get reflectionFactoryVersion => Version.parse('1.2.5');
@@ -1473,7 +1473,7 @@ class TestOpBWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.15.0');
+  Version get languageVersion => Version.parse('2.17.0');
 
   @override
   Version get reflectionFactoryVersion => Version.parse('1.2.5');
@@ -1716,7 +1716,7 @@ class TestOpWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.15.0');
+  Version get languageVersion => Version.parse('2.17.0');
 
   @override
   Version get reflectionFactoryVersion => Version.parse('1.2.5');
@@ -1966,7 +1966,7 @@ class TestTransactionWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.15.0');
+  Version get languageVersion => Version.parse('2.17.0');
 
   @override
   Version get reflectionFactoryVersion => Version.parse('1.2.5');
@@ -2169,7 +2169,7 @@ class TestUserWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.15.0');
+  Version get languageVersion => Version.parse('2.17.0');
 
   @override
   Version get reflectionFactoryVersion => Version.parse('1.2.5');

@@ -37,7 +37,7 @@ class TestAddress$reflection extends ClassReflection<TestAddress> {
   }
 
   @override
-  Version get languageVersion => Version.parse('2.15.0');
+  Version get languageVersion => Version.parse('2.17.0');
 
   @override
   Version get reflectionFactoryVersion => Version.parse('1.2.5');
@@ -248,7 +248,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   }
 
   @override
-  Version get languageVersion => Version.parse('2.15.0');
+  Version get languageVersion => Version.parse('2.17.0');
 
   @override
   Version get reflectionFactoryVersion => Version.parse('1.2.5');
