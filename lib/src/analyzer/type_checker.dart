@@ -18,27 +18,10 @@ import 'utils.dart';
 abstract class TypeChecker {
   const TypeChecker._();
 
-  /// Creates a new [TypeChecker] that delegates to other [checkers].
-  ///
-  /// This implementation will return `true` for type checks if _any_ of the
-  /// provided type checkers return true, which is useful for deprecating an
-  /// API:
-  /// ```dart
-  /// const $Foo = const TypeChecker.fromRuntime(Foo);
-  /// const $Bar = const TypeChecker.fromRuntime(Bar);
-  ///
-  /// // Used until $Foo is deleted.
-  /// const $FooOrBar = const TypeChecker.forAny(const [$Foo, $Bar]);
-  /// ```
-  const factory TypeChecker.any(Iterable<TypeChecker> checkers) = _AnyChecker;
-
   /// Create a new [TypeChecker] backed by a runtime [type].
   ///
   /// This implementation uses `dart:mirrors` (runtime reflection).
   const factory TypeChecker.fromRuntime(Type type) = _MirrorTypeChecker;
-
-  /// Create a new [TypeChecker] backed by a static [type].
-  const factory TypeChecker.fromStatic(DartType type) = _LibraryTypeChecker;
 
   /// Create a new [TypeChecker] backed by a library [url].
   ///
@@ -163,19 +146,23 @@ abstract class TypeChecker {
       );
 
   /// Returns `true` if the type of [element] can be assigned to this type.
-  bool isAssignableFrom(Element element) =>
-      isExactly(element) ||
-      (element is ClassElement && element.allSupertypes.any(isExactlyType));
+  bool isAssignableFrom(Element? element) {
+    if (element == null) return false;
+
+    return isExactly(element) ||
+        (element is ClassElement && element.allSupertypes.any(isExactlyType));
+  }
 
   /// Returns `true` if [staticType] can be assigned to this type.
-  bool isAssignableFromType(DartType staticType) =>
-      isAssignableFrom(staticType.element!);
+  bool isAssignableFromType(DartType? staticType) =>
+      isAssignableFrom(staticType?.elementDeclaration);
 
   /// Returns `true` if representing the exact same class as [element].
-  bool isExactly(Element element);
+  bool isExactly(Element? element);
 
   /// Returns `true` if representing the exact same type as [staticType].
-  bool isExactlyType(DartType staticType) => isExactly(staticType.element!);
+  bool isExactlyType(DartType? staticType) =>
+      isExactly(staticType?.elementDeclaration);
 
   /// Returns `true` if representing a super class of [element].
   ///
@@ -185,13 +172,13 @@ abstract class TypeChecker {
     if (element is ClassElement) {
       var theSuper = element.supertype;
 
-      do {
-        if (isExactlyType(theSuper!)) {
+      while (theSuper != null) {
+        if (isExactlyType(theSuper)) {
           return true;
         }
 
         theSuper = theSuper.superclass;
-      } while (theSuper != null);
+      }
     }
 
     return false;
@@ -201,21 +188,8 @@ abstract class TypeChecker {
   ///
   /// This only takes into account the *extends* hierarchy. If you wish
   /// to check mixins and interfaces, use [isAssignableFromType].
-  bool isSuperTypeOf(DartType staticType) => isSuperOf(staticType.element!);
-}
-
-// Checks a static type against another static type;
-class _LibraryTypeChecker extends TypeChecker {
-  final DartType _type;
-
-  const _LibraryTypeChecker(this._type) : super._();
-
-  @override
-  bool isExactly(Element element) =>
-      element is ClassElement && element == _type.element;
-
-  @override
-  String toString() => urlOfElement(_type.element!);
+  bool isSuperTypeOf(DartType staticType) =>
+      isSuperOf(staticType.elementDeclaration!);
 }
 
 // Checks a runtime type against a static type.
@@ -235,7 +209,7 @@ class _MirrorTypeChecker extends TypeChecker {
       _cache[this] ??= TypeChecker.fromUrl(_uriOf(reflectClass(_type)));
 
   @override
-  bool isExactly(Element element) => _computed.isExactly(element);
+  bool isExactly(Element? element) => _computed.isExactly(element);
 
   @override
   String toString() => _computed.toString();
@@ -267,19 +241,13 @@ class _UriTypeChecker extends TypeChecker {
       (url is String ? url : normalizeUrl(url as Uri).toString());
 
   @override
-  bool isExactly(Element element) => hasSameUrl(urlOfElement(element));
+  bool isExactly(Element? element) {
+    if (element == null) return false;
+    return hasSameUrl(urlOfElement(element));
+  }
 
   @override
   String toString() => '$uri';
-}
-
-class _AnyChecker extends TypeChecker {
-  final Iterable<TypeChecker> _checkers;
-
-  const _AnyChecker(this._checkers) : super._();
-
-  @override
-  bool isExactly(Element element) => _checkers.any((c) => c.isExactly(element));
 }
 
 /// Exception thrown when [TypeChecker] fails to resolve a metadata annotation.
@@ -358,5 +326,15 @@ the version of `package:source_gen`, `package:analyzer` from `pubspec.lock`.
       return annotationSource!.message(message);
     }
     return message;
+  }
+}
+
+extension DartTypeExtension on DartType {
+  Element? get elementDeclaration {
+    var self = this;
+    if (self is InterfaceType) {
+      return self.element2;
+    }
+    return null;
   }
 }

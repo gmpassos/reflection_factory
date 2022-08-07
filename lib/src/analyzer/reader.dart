@@ -3,7 +3,6 @@
 // Original source: https://github.com/dart-lang/source_gen
 
 import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 
@@ -35,13 +34,6 @@ abstract class ConstantReader {
 
   /// Whether the value this constant represents matches [checker].
   bool instanceOf(TypeChecker checker) => false;
-
-  /// Reads [field] from the constant as another constant value.
-  ///
-  /// If the field is not present in the [DartObject] crawl up the chain of
-  /// super classes until it is found. If the field is not present throw a
-  /// [FormatException].
-  ConstantReader read(String field);
 
   /// Reads [field] from the constant as another constant value.
   ///
@@ -139,9 +131,6 @@ class _NullConstant extends ConstantReader {
   ConstantReader? peek(_) => null;
 
   @override
-  ConstantReader read(_) => throw UnsupportedError('Null');
-
-  @override
   String get stringValue => _throw('String');
 
   @override
@@ -189,7 +178,7 @@ class _DartObjectConstant extends ConstantReader {
 
   @override
   bool instanceOf(TypeChecker checker) =>
-      checker.isAssignableFromType(objectValue.type!);
+      checker.isAssignableFromType(objectValue.type);
 
   @override
   bool get isNull => isNullLike(objectValue);
@@ -254,16 +243,6 @@ class _DartObjectConstant extends ConstantReader {
   ConstantReader? peek(String field) {
     final constant = ConstantReader(getFieldRecursive(objectValue, field));
     return constant.isNull ? null : constant;
-  }
-
-  @override
-  ConstantReader read(String field) {
-    final reader = peek(field);
-    if (reader == null) {
-      assertHasField(objectValue.type?.element as ClassElement, field);
-      return const _NullConstant();
-    }
-    return reader;
   }
 
   @override

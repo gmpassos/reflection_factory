@@ -2,6 +2,10 @@
 
 - `Json`:
   - `toJson`: fix casting bug when the resulting JSON value is `null`.
+- Removed unused analyzer helper code.
+- Adjusted for analyzer 4.4.0.
+- sdk: '>=2.17.0 <3.0.0'
+- analyzer: ^4.4.0
 
 ## 1.2.4
 

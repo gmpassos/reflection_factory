@@ -420,7 +420,7 @@ class ReflectionBuilder implements Builder {
     var codeTable = <String, String>{};
 
     for (var classType in classesTypes) {
-      var classElement = classType.element;
+      var classElement = classType.elementDeclaration;
       if (classElement == null || classElement is! ClassElement) {
         continue;
       }
@@ -479,7 +479,7 @@ class ReflectionBuilder implements Builder {
 
     for (var classType in classesTypes) {
       var bridgeReflectionClassName = reflectionClassNames[classType] ?? '';
-      var className = classType.element!.name!;
+      var className = classType.elementDeclaration!.name!;
 
       var reflectionClassName =
           _buildReflectionClassName(className, bridgeReflectionClassName);
@@ -996,7 +996,9 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       classElement.visitChildren(this);
 
       for (var t in classElement.allSupertypes) {
-        var superClass = t.element;
+        var superClass = t.element2;
+        if (superClass is! ClassElement) continue;
+
         if (superClass.isDartCoreObject) {
           continue;
         }
@@ -2055,7 +2057,7 @@ class _Element {
       return null;
     }
 
-    var enclosingElement = element.enclosingElement2;
+    var enclosingElement = element.enclosingElement3;
 
     if (enclosingElement is ClassElement) {
       return enclosingElement.thisType;
@@ -2442,7 +2444,7 @@ extension _DartTypeExtension on DartType {
   }
 
   String get typeName {
-    var name = element?.name;
+    var name = elementDeclaration?.name;
 
     if (name == null) {
       name = getDisplayString(withNullability: false);
@@ -2464,7 +2466,7 @@ extension _DartTypeExtension on DartType {
   }
 
   InterfaceType? get interfaceType {
-    var element = this.element;
+    var element = elementDeclaration;
     if (element is ClassElement) {
       return element.thisType;
     }
