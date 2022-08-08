@@ -1782,7 +1782,7 @@ abstract class JsonEntityCache {
   /// The cache ID.
   int get id;
 
-  /// If `true` if will allow the use of on repository to fetch an entity by an ID reference.
+  /// If `true` it will allow the use of on repository to fetch an entity by an ID reference.
   bool get allowEntityFetch;
 
   /// Returns the ID value into [map] for [type].
