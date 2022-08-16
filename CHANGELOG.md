@@ -1,3 +1,8 @@
+## 1.2.6
+
+- Add `coverage:ignore-file` to generated files.
+- analyzer: ^4.6.0
+
 ## 1.2.5
 
 - `Json`:

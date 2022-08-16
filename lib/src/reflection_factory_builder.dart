@@ -111,6 +111,7 @@ class ReflectionBuilder implements Builder {
     fullCode.write('// BUILD COMMAND: dart run build_runner build\n');
     fullCode.write('// \n\n');
 
+    fullCode.write('// coverage:ignore-file\n');
     fullCode.write('// ignore_for_file: unnecessary_const\n');
     fullCode.write('// ignore_for_file: unnecessary_cast\n');
     fullCode.write('// ignore_for_file: unnecessary_type_check\n\n');
