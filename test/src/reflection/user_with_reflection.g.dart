@@ -1,9 +1,10 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.2.5
+// BUILDER: reflection_factory/1.2.6
 // BUILD COMMAND: dart run build_runner build
 //
 
+// coverage:ignore-file
 // ignore_for_file: unnecessary_const
 // ignore_for_file: unnecessary_cast
 // ignore_for_file: unnecessary_type_check
@@ -111,7 +112,7 @@ class TestAddressWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.5');
+  Version get reflectionFactoryVersion => Version.parse('1.2.6');
 
   @override
   TestAddressWithReflection$reflection withObject(
@@ -342,7 +343,7 @@ class TestCompanyWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.5');
+  Version get reflectionFactoryVersion => Version.parse('1.2.6');
 
   @override
   TestCompanyWithReflection$reflection withObject(
@@ -602,7 +603,7 @@ class TestDataWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.5');
+  Version get reflectionFactoryVersion => Version.parse('1.2.6');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -836,7 +837,7 @@ class TestDomainWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.5');
+  Version get reflectionFactoryVersion => Version.parse('1.2.6');
 
   @override
   TestDomainWithReflection$reflection withObject(
@@ -1177,7 +1178,7 @@ class TestEnumWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.5');
+  Version get reflectionFactoryVersion => Version.parse('1.2.6');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -1247,7 +1248,7 @@ class TestOpAWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.5');
+  Version get reflectionFactoryVersion => Version.parse('1.2.6');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -1476,7 +1477,7 @@ class TestOpBWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.5');
+  Version get reflectionFactoryVersion => Version.parse('1.2.6');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -1719,7 +1720,7 @@ class TestOpWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.5');
+  Version get reflectionFactoryVersion => Version.parse('1.2.6');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -1969,7 +1970,7 @@ class TestTransactionWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.5');
+  Version get reflectionFactoryVersion => Version.parse('1.2.6');
 
   @override
   TestTransactionWithReflection$reflection withObject(
@@ -2172,7 +2173,7 @@ class TestUserWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.5');
+  Version get reflectionFactoryVersion => Version.parse('1.2.6');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
