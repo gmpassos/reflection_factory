@@ -1,3 +1,12 @@
+## 1.2.7
+
+- `TypeInfo`:
+  - Added `T` generic type.
+  - Added `callCasted` to pass the `T` to a `Function<T>()`.
+  - Improved internal representation og `arguments`.
+- `ReflectionBuilder`:
+  - Declare reflected types using `TypeInfo<T>` generics.
+
 ## 1.2.6
 
 - Add `coverage:ignore-file` to generated files.

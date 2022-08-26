@@ -352,6 +352,23 @@ void main() {
           isFalse);
 
       expect(
+          TypeInfo.from(
+              TestUserWithReflection$reflection.staticInstance.field('axis')!),
+          equals(TypeInfo.from(TestEnumWithReflection)));
+
+      expect(
+          TypeInfo.from(TestUserWithReflection$reflection.staticInstance
+              .field('axis')!
+              .type),
+          equals(TypeInfo.from(TestEnumWithReflection)));
+
+      expect(
+          TypeInfo.from(TestUserWithReflection$reflection.staticInstance
+              .method('checkPassword')!
+              .allParameters[0]),
+          equals(TypeInfo.from(String)));
+
+      expect(
           TestUserWithReflection$reflection.staticInstance
               .siblingsClassReflection(),
           isNotEmpty);

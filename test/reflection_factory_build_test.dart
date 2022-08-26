@@ -212,6 +212,8 @@ void main() {
             Op(this.type);
             
             List<Set<int>> opMethod() => <Set<int>>[{1},{2}] ;
+            
+            List<Set<int?>> opMethodNullable() => <Set<int?>>[{1},{2,null}] ;
           }
           
           @EnableReflection()
@@ -254,8 +256,12 @@ void main() {
               contains("case 'type':"),
               contains("case 'value':"),
               contains("fieldsNames => const <String>['type', 'value']"),
-              contains("TypeReflection(List, [TypeReflection.tSetInt])"),
-              contains("TypeReflection(Set, [TypeReflection.tListDynamic])"),
+              matches(RegExp(
+                  r"TypeReflection<List<Set<int>>>\(\s*List, <TypeReflection>\[TypeReflection.tSetInt\]\)")),
+              matches(RegExp(
+                  r"TypeReflection<List<Set<int\?>>>\(\s*List, <TypeReflection>\[TypeReflection.tSetInt\]\)")),
+              matches(RegExp(
+                  r"TypeReflection<Set<List<dynamic>>>\(\s*Set, <TypeReflection>\[TypeReflection.tListDynamic\]\)")),
             ),
           )),
         },

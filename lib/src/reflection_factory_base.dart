@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert' as dart_convert;
 
 import 'package:collection/collection.dart'
@@ -19,7 +20,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.2.6';
+  static const String VERSION = '1.2.7';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -1596,77 +1597,77 @@ class ParameterReflection {
 }
 
 /// Dart [Type] reflection.
-class TypeReflection {
-  static const TypeReflection tObject = TypeReflection(Object);
-  static const TypeReflection tDynamic = TypeReflection(dynamic);
-  static final TypeReflection tVoid = TypeReflection.from(TypeInfo.tVoid);
-  static const TypeReflection tString = TypeReflection(String);
-  static const TypeReflection tDouble = TypeReflection(double);
-  static const TypeReflection tInt = TypeReflection(int);
-  static const TypeReflection tNum = TypeReflection(num);
-  static const TypeReflection tBool = TypeReflection(bool);
-  static const TypeReflection tBigInt = TypeReflection(BigInt);
-  static const TypeReflection tList = TypeReflection(List);
-  static const TypeReflection tMap = TypeReflection(Map);
-  static const TypeReflection tSet = TypeReflection(Set);
-  static const TypeReflection tFuture = TypeReflection(Future);
-  static const TypeReflection tFutureOr = TypeReflection(FutureOr);
-  static const TypeReflection tFunction = TypeReflection(Function);
+class TypeReflection<T> {
+  static const TypeReflection<Object> tObject = TypeReflection(Object);
+  static const TypeReflection<dynamic> tDynamic = TypeReflection(dynamic);
+  static final TypeReflection<void> tVoid = TypeReflection.from(TypeInfo.tVoid);
+  static const TypeReflection<String> tString = TypeReflection(String);
+  static const TypeReflection<double> tDouble = TypeReflection(double);
+  static const TypeReflection<int> tInt = TypeReflection(int);
+  static const TypeReflection<num> tNum = TypeReflection(num);
+  static const TypeReflection<bool> tBool = TypeReflection(bool);
+  static const TypeReflection<BigInt> tBigInt = TypeReflection(BigInt);
+  static const TypeReflection<List> tList = TypeReflection(List);
+  static const TypeReflection<Map> tMap = TypeReflection(Map);
+  static const TypeReflection<Set> tSet = TypeReflection(Set);
+  static const TypeReflection<Future> tFuture = TypeReflection(Future);
+  static const TypeReflection<FutureOr> tFutureOr = TypeReflection(FutureOr);
+  static const TypeReflection<Function> tFunction = TypeReflection(Function);
 
-  static const TypeReflection tListObject =
-      TypeReflection(List, [TypeReflection.tObject]);
-  static const TypeReflection tListDynamic =
-      TypeReflection(List, [TypeReflection.tDynamic]);
-  static const TypeReflection tListString =
-      TypeReflection(List, [TypeReflection.tString]);
-  static const TypeReflection tListDouble =
-      TypeReflection(List, [TypeReflection.tDouble]);
-  static const TypeReflection tListInt =
-      TypeReflection(List, [TypeReflection.tInt]);
-  static const TypeReflection tListNum =
-      TypeReflection(List, [TypeReflection.tNum]);
-  static const TypeReflection tListBool =
-      TypeReflection(List, [TypeReflection.tBool]);
+  static const TypeReflection<List<Object>> tListObject =
+      TypeReflection(List, [TypeInfo.tObject]);
+  static const TypeReflection<List<dynamic>> tListDynamic =
+      TypeReflection(List, [TypeInfo.tDynamic]);
+  static const TypeReflection<List<String>> tListString =
+      TypeReflection(List, [TypeInfo.tString]);
+  static const TypeReflection<List<double>> tListDouble =
+      TypeReflection(List, [TypeInfo.tDouble]);
+  static const TypeReflection<List<int>> tListInt =
+      TypeReflection(List, [TypeInfo.tInt]);
+  static const TypeReflection<List<num>> tListNum =
+      TypeReflection(List, [TypeInfo.tNum]);
+  static const TypeReflection<List<bool>> tListBool =
+      TypeReflection(List, [TypeInfo.tBool]);
 
-  static const TypeReflection tMapStringObject =
-      TypeReflection(Map, [TypeReflection.tString, TypeReflection.tObject]);
-  static const TypeReflection tMapStringDynamic =
-      TypeReflection(Map, [TypeReflection.tString, TypeReflection.tDynamic]);
-  static const TypeReflection tMapStringString =
-      TypeReflection(Map, [TypeReflection.tString, TypeReflection.tString]);
-  static const TypeReflection tMapObjectObject =
-      TypeReflection(Map, [TypeReflection.tObject, TypeReflection.tObject]);
+  static const TypeReflection<Map<String, Object>> tMapStringObject =
+      TypeReflection(Map, [TypeInfo.tString, TypeInfo.tObject]);
+  static const TypeReflection<Map<String, dynamic>> tMapStringDynamic =
+      TypeReflection(Map, [TypeInfo.tString, TypeInfo.tDynamic]);
+  static const TypeReflection<Map<String, String>> tMapStringString =
+      TypeReflection(Map, [TypeInfo.tString, TypeInfo.tString]);
+  static const TypeReflection<Map<Object, Object>> tMapObjectObject =
+      TypeReflection(Map, [TypeInfo.tObject, TypeInfo.tObject]);
 
-  static const TypeReflection tSetObject =
-      TypeReflection(Set, [TypeReflection.tObject]);
-  static const TypeReflection tSetDynamic =
-      TypeReflection(Set, [TypeReflection.tDynamic]);
-  static const TypeReflection tSetString =
-      TypeReflection(Set, [TypeReflection.tString]);
-  static const TypeReflection tSetInt =
-      TypeReflection(Set, [TypeReflection.tInt]);
+  static const TypeReflection<Set<Object>> tSetObject =
+      TypeReflection(Set, [TypeInfo.tObject]);
+  static const TypeReflection<Set<dynamic>> tSetDynamic =
+      TypeReflection(Set, [TypeInfo.tDynamic]);
+  static const TypeReflection<Set<String>> tSetString =
+      TypeReflection(Set, [TypeInfo.tString]);
+  static const TypeReflection<Set<int>> tSetInt =
+      TypeReflection(Set, [TypeInfo.tInt]);
 
-  static const TypeReflection tFutureObject =
-      TypeReflection(Future, [TypeReflection.tObject]);
-  static const TypeReflection tFutureDynamic =
-      TypeReflection(Future, [TypeReflection.tDynamic]);
-  static const TypeReflection tFutureString =
-      TypeReflection(Future, [TypeReflection.tString]);
-  static const TypeReflection tFutureBool =
-      TypeReflection(Future, [TypeReflection.tBool]);
-  static const TypeReflection tFutureInt =
-      TypeReflection(Future, [TypeReflection.tInt]);
+  static const TypeReflection<Future<Object>> tFutureObject =
+      TypeReflection(Future, [TypeInfo.tObject]);
+  static const TypeReflection<Future<dynamic>> tFutureDynamic =
+      TypeReflection(Future, [TypeInfo.tDynamic]);
+  static const TypeReflection<Future<String>> tFutureString =
+      TypeReflection(Future, [TypeInfo.tString]);
+  static const TypeReflection<Future<bool>> tFutureBool =
+      TypeReflection(Future, [TypeInfo.tBool]);
+  static const TypeReflection<Future<int>> tFutureInt =
+      TypeReflection(Future, [TypeInfo.tInt]);
 
-  static const TypeReflection tFutureOrObject =
-      TypeReflection(FutureOr, [TypeReflection.tObject]);
-  static const TypeReflection tFutureOrDynamic =
-      TypeReflection(FutureOr, [TypeReflection.tDynamic]);
-  static const TypeReflection tFutureOrString =
-      TypeReflection(FutureOr, [TypeReflection.tString]);
-  static const TypeReflection tFutureOrBool =
-      TypeReflection(FutureOr, [TypeReflection.tBool]);
-  static const TypeReflection tFutureOrInt =
-      TypeReflection(FutureOr, [TypeReflection.tInt]);
+  static const TypeReflection<FutureOr<Object>> tFutureOrObject =
+      TypeReflection(FutureOr, [TypeInfo.tObject]);
+  static const TypeReflection<FutureOr<dynamic>> tFutureOrDynamic =
+      TypeReflection(FutureOr, [TypeInfo.tDynamic]);
+  static const TypeReflection<FutureOr<String>> tFutureOrString =
+      TypeReflection(FutureOr, [TypeInfo.tString]);
+  static const TypeReflection<FutureOr<bool>> tFutureOrBool =
+      TypeReflection(FutureOr, [TypeInfo.tBool]);
+  static const TypeReflection<FutureOr<int>> tFutureOrInt =
+      TypeReflection(FutureOr, [TypeInfo.tInt]);
 
   static String? getConstantName(String typeName,
       [List<String> args = const <String>[]]) {
@@ -1687,6 +1688,8 @@ class TypeReflection {
         return 'tBigInt';
       case 'bool':
         return 'tBool';
+      case 'void':
+        return 'tVoid';
       case 'List':
         {
           if (args.length != 1) {
@@ -1830,32 +1833,44 @@ class TypeReflection {
     return typeInfo.isOf(type, arguments);
   }
 
-  /// The [Type] arguments.
-  ///
-  /// Example: `Map<String, int>` will return `[String, int]`.
-  final List<Object>? _arguments;
+  final List<TypeReflection>? _argumentsTypeReflection;
+
+  final List<TypeInfo>? _argumentsTypeInfo;
+
+  final List<Object>? _argumentsUnresolved;
+
+  List<Object>? get _argumentsList =>
+      _argumentsTypeReflection ?? _argumentsTypeInfo ?? _argumentsUnresolved;
 
   // Internal [TypeInfo] to avoid unnecessary instantiation.
   final TypeInfo? _typeInfo;
 
-  const TypeReflection(this.type, [this._arguments]) : _typeInfo = null;
+  const TypeReflection(Type type, [List<Object>? arguments])
+      : this._(type, arguments, null);
 
-  const TypeReflection._(this.type, [this._arguments, this._typeInfo]);
+  const TypeReflection._(this.type, [List<Object>? arguments, this._typeInfo])
+      : _argumentsTypeReflection =
+            arguments is List<TypeReflection> ? arguments : null,
+        _argumentsTypeInfo = arguments is List<TypeInfo> ? arguments : null,
+        _argumentsUnresolved =
+            (arguments is! List<TypeReflection> && arguments is! List<TypeInfo>)
+                ? arguments
+                : null;
 
   factory TypeReflection.from(Object o) {
     if (o is TypeReflection) {
-      return o;
+      return o as TypeReflection<T>;
     } else if (o is Type) {
-      return TypeReflection._(o, null, TypeInfo.from(o));
+      return TypeReflection<T>._(o, null, TypeInfo.from(o));
     } else if (o is TypeInfo) {
-      return TypeReflection._(o.type, toList(o.arguments), o);
+      return TypeReflection<T>._(o.type, o.arguments, o);
     } else if (o is List<Type>) {
       var t = o[0];
       if (o.length > 1) {
-        var args = o.sublist(1).map((e) => TypeReflection.from(e)).toList();
-        return TypeReflection._(t, args, TypeInfo.from(t, args));
+        var args = o.sublist(1).map((e) => TypeInfo.from(e)).toList();
+        return TypeReflection<T>._(t, args, TypeInfo<T>.from(t, args));
       } else {
-        return TypeReflection._(t, null, TypeInfo.from(t));
+        return TypeReflection<T>._(t, null, TypeInfo<T>.from(t));
       }
     } else {
       throw ArgumentError("Invalid type: $o");
@@ -1865,36 +1880,83 @@ class TypeReflection {
   static final Expando<TypeInfo> _typeReflectionToTypeInfo =
       Expando('TypeReflection_to_TypeInfo');
 
-  static TypeInfo _toTypeInfo(TypeReflection typeReflection) {
+  static TypeInfo<T> _toTypeInfo<T>(TypeReflection<T> typeReflection) {
     var typeInfo = _typeReflectionToTypeInfo[typeReflection];
     if (typeInfo == null) {
-      typeInfo = TypeInfo.from(typeReflection, typeReflection._arguments);
+      typeInfo = TypeInfo<T>.fromType(
+          typeReflection.type, typeReflection.argumentsAsTypeInfo);
       _typeReflectionToTypeInfo[typeReflection] = typeInfo;
     }
-    return typeInfo;
+    return typeInfo as TypeInfo<T>;
   }
 
   /// Returns a [TypeInfo] of this instance.
-  TypeInfo get typeInfo => _typeInfo ?? _toTypeInfo(this);
+  TypeInfo get typeInfo => _typeInfo ?? _toTypeInfo<T>(this);
 
   /// Returns the [arguments] length.
   int get argumentsLength {
-    var arguments = _arguments;
+    var arguments = _argumentsList;
     return arguments != null ? arguments.length : 0;
   }
 
   /// Returns the arguments of this type.
+  /// Example: `Map<String, int>` will return `[String, int]`.
   List<TypeReflection> get arguments {
-    var arguments = _arguments;
-    return arguments == null
-        ? <TypeReflection>[]
-        : arguments
-            .map((e) => e is TypeReflection ? e : TypeReflection.from(e))
-            .toList();
+    var argumentsTypeReflection = _argumentsTypeReflection;
+    if (argumentsTypeReflection != null) {
+      return UnmodifiableListView<TypeReflection>(argumentsTypeReflection);
+    }
+
+    var argumentsTypeInfo = _argumentsTypeInfo;
+    if (argumentsTypeInfo != null) {
+      var args = argumentsTypeInfo
+          .map((e) => e.asTypeReflection)
+          .toList(growable: false);
+      return UnmodifiableListView<TypeReflection>(args);
+    }
+
+    var argumentsUnresolved = _argumentsUnresolved;
+    if (argumentsUnresolved != null) {
+      var args = argumentsUnresolved
+          .map((e) => TypeReflection.from(e))
+          .toList(growable: false);
+      return UnmodifiableListView<TypeReflection>(args);
+    }
+
+    return UnmodifiableListView(<TypeReflection>[]);
+  }
+
+  /// Returns the [arguments] of this type as [TypeInfo].
+  List<TypeInfo> get argumentsAsTypeInfo {
+    var argumentsTypeInfo = _argumentsTypeInfo;
+    if (argumentsTypeInfo != null) {
+      return UnmodifiableListView<TypeInfo>(argumentsTypeInfo);
+    }
+
+    var argumentsTypeReflection = _argumentsTypeReflection;
+    if (argumentsTypeReflection != null) {
+      var args = argumentsTypeReflection
+          .map((e) => e.typeInfo)
+          .toList(growable: false);
+      return UnmodifiableListView<TypeInfo>(args);
+    }
+
+    var argumentsUnresolved = _argumentsUnresolved;
+    if (argumentsUnresolved != null) {
+      var args = argumentsUnresolved
+          .map((e) => TypeInfo.from(e))
+          .toList(growable: false);
+      return UnmodifiableListView<TypeInfo>(args);
+    }
+
+    return UnmodifiableListView(<TypeInfo>[]);
   }
 
   /// Returns `true` if this type has [arguments].
-  bool get hasArguments => _arguments != null && _arguments!.isNotEmpty;
+  bool get hasArguments {
+    var arguments = _argumentsList;
+    return arguments != null && arguments.isNotEmpty;
+  }
 
   /// Returns `true` if [arguments] have equals [types].
   bool equalsArgumentsTypes(List<Type> types) {
@@ -1978,9 +2040,7 @@ class TypeReflection {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TypeReflection &&
-          runtimeType == other.runtimeType &&
-          typeInfo == other.typeInfo;
+      other is TypeReflection && typeInfo == other.typeInfo;
 
   @override
   int get hashCode =>

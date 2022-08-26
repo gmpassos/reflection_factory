@@ -279,6 +279,14 @@ void main() {
       }
 
       {
+        expect(TypeInfo<Object>.from(TestUserSimple.empty()).type,
+            equals(TestUserSimple));
+
+        expect(TypeInfo<int>.from(TestUserSimple.empty()).type,
+            equals(TestUserSimple));
+      }
+
+      {
         expect(TypeInfo.from(bool).isPrimitiveType, isTrue);
         expect(TypeInfo.from(int).isPrimitiveType, isTrue);
         expect(TypeInfo.from(double).isPrimitiveType, isTrue);
@@ -391,8 +399,8 @@ void main() {
       }
 
       {
-        var typeReflection =
-            TypeReflection(Future, [TypeReflection(TestUserWithReflection)]);
+        var typeReflection = TypeReflection<Future<TestUserWithReflection>>(
+            Future, [TypeInfo<TestUserWithReflection>(TestUserWithReflection)]);
 
         var typeInfo = typeReflection.typeInfo;
 
@@ -401,8 +409,9 @@ void main() {
       }
 
       {
-        var typeReflection =
-            TypeReflection(FutureOr, [TypeReflection(TestUserWithReflection)]);
+        var typeReflection = TypeReflection<FutureOr<TestUserWithReflection>>(
+            FutureOr,
+            [TypeInfo<TestUserWithReflection>(TestUserWithReflection)]);
 
         var typeInfo = typeReflection.typeInfo;
 
@@ -412,8 +421,10 @@ void main() {
       }
 
       {
-        var typeReflection =
-            TypeReflection(Future, [TestOpAWithReflection(123)]);
+        var typeReflection = TypeReflection<Future<TestOpAWithReflection>>(
+            Future, [
+          TypeInfo<TestOpAWithReflection>.fromObject(TestOpAWithReflection(123))
+        ]);
 
         var typeInfo = typeReflection.typeInfo;
 
@@ -424,8 +435,8 @@ void main() {
       }
 
       {
-        var typeReflection =
-            TypeReflection(Future, [TestOpWithReflection<int>('test', 123)]);
+        var typeReflection = TypeReflection<Future<TestOpWithReflection<int>>>(
+            Future, [TypeInfo.from(TestOpWithReflection<int>('test', 123))]);
 
         var typeInfo = typeReflection.typeInfo;
 
@@ -442,8 +453,10 @@ void main() {
       }
 
       {
-        var typeReflection = TypeReflection(
-            Future, [TestOpWithReflection$reflection().reflectedType]);
+        var typeReflection = TypeReflection<Future<TestOpWithReflection>>(
+            Future, [
+          TypeInfo.fromType(TestOpWithReflection$reflection().reflectedType)
+        ]);
 
         var typeInfo = typeReflection.typeInfo;
 
@@ -486,6 +499,25 @@ void main() {
 
         //expect(typeInfo.equalsArgumentsTypes([TestOpWithReflection]), isTrue);
 
+      }
+    });
+
+    test('callCasted', () async {
+      {
+        var t = TypeInfo<List<TestUserSimple>>.fromType(
+            List, [TypeInfo<TestUserSimple>.fromType(TestUserSimple)]);
+
+        expect(t.type, equals(List));
+
+        var tArg0 = t.argumentType(0)!;
+        expect(tArg0.type, equals(TestUserSimple));
+
+        List<Type> castCall<T>() => <Type>[T];
+
+        expect(t.callCasted(castCall), equals(<Type>[List<TestUserSimple>]));
+
+        expect(t.argumentType(0)?.callCasted(castCall),
+            equals(<Type>[TestUserSimple]));
       }
     });
 
@@ -993,6 +1025,24 @@ void main() {
       expect(TypeParser.parserFor(obj: [1, 2])!('1,2'), isA<List>());
       expect(TypeParser.parserFor(obj: [1, 2].map((e) => e))!('1,2'),
           isA<Iterable>());
+
+      expect(TypeParser.parserFor(obj: Uint8List(0))!('0001020304'),
+          allOf(isA<Uint8List>(), equals([0, 1, 2, 3, 4])));
+
+      expect(
+          TypeParser.parserFor(obj: Uint8List(0))!(
+              base64.encode([5, 4, 3, 2, 1, 0])),
+          allOf(isA<Uint8List>(), equals([5, 4, 3, 2, 1, 0])));
+
+      expect(TypeParser.parserFor(obj: Uint8List(0))!([5, 4, 3]),
+          allOf(isA<Uint8List>(), equals([5, 4, 3])));
+
+      expect(
+          TypeParser.parserFor(obj: Uint8List(0))!([5, 4, 3].map((n) => n * 2)),
+          allOf(isA<Uint8List>(), equals([10, 8, 6])));
+
+      expect(TypeParser.parserFor(obj: Uint8List(0))!(['6', '5', '4', '3']),
+          allOf(isA<Uint8List>(), equals([6, 5, 4, 3])));
     });
 
     test('TypeParser.parserFor', () async {
