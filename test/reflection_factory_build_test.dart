@@ -40,7 +40,6 @@ void main() {
             String pass ;
             bool enabled ;
             
-            
             User(this.email, {required this.pass, this.enabled = true});
             
             @TestAnnotation(['field', 'eMail'])
@@ -154,9 +153,24 @@ void main() {
             final Fx? fx;
             final bool Function()? extra;
           
-            Domain(this.name, this.suffix, [this.fx, this.extra]);
+            Domain.positional(this.name, this.suffix, [this.fx, this.extra]);
           
             Domain.named({required this.name, this.suffix = 'net', Fx? fx, this.extra}) : fx = fx;
+            
+            Domain.empty() : this('', '');
+            
+            Domain() : this('', '');
+            
+            bool callFx(int n, [Fx? f]) {
+              f ??= fx ;
+              return f(n);
+            }
+            
+            bool callAllFx(int n, List<Fx> fxs) {
+              for (var f in fxs) {
+                f(n);
+              }
+            }
           }
         
         '''
@@ -179,9 +193,26 @@ void main() {
               contains('Domain\$reflection'),
               contains('Domain\$reflectionExtension'),
             ),
+            allOf(
+              contains('bool get hasDefaultConstructor => true;'),
+              contains(
+                  'Domain? createInstanceWithDefaultConstructor() => Domain();'),
+              contains('bool get hasEmptyConstructor => true;'),
+              contains(
+                  'Domain? createInstanceWithEmptyConstructor() => Domain.empty();'),
+              contains('bool get hasNoRequiredArgsConstructor => true;'),
+              contains(
+                  'Domain? createInstanceWithNoRequiredArgsConstructor() => Domain.empty();'),
+            ),
             matches(RegExp(
                 r"'suffix':\s*ParameterReflection\(\s*TypeReflection.tString\s*,\s*'suffix'\s*,\s*false\s*,\s*false\s*,\s*'net'\s*,\s*null\s*\)")),
             allOf(
+                matches(RegExp(
+                    r"case 'callfx':.*?const <ParameterReflection>\[\s*ParameterReflection\(\s*TypeReflection<Fx>\(Fx\), 'f', true, false, null, null\)\s*\]",
+                    dotAll: true)),
+                matches(RegExp(
+                    r"case 'callallfx':.*?ParameterReflection\(\s*TypeReflection<List<Function>>\(\s*List, <TypeInfo>\[TypeInfo.tFunction\]\),\s*'fxs',\s*false,\s*true,\s*null,\s*null\)",
+                    dotAll: true)),
                 matches(RegExp(
                     r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\(')),
                 matches(RegExp(

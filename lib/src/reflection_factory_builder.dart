@@ -2758,7 +2758,7 @@ String _buildStringListCode(Iterable? o,
 String _buildParameterReflectionList(Iterable<_Parameter>? o,
     {required bool nullOnEmpty, required bool required}) {
   if (o == null || o.isEmpty) {
-    return nullOnEmpty ? 'null' : '<ParameterReflection>[]';
+    return nullOnEmpty ? 'null' : 'const <ParameterReflection>[]';
   } else {
     var parameters = o
         .map((e) => "ParameterReflection( "
