@@ -1078,7 +1078,8 @@ void main() {
             TestAnnotation(['class', 'user'])
           ]));
 
-      expect(userReflection.fieldsNames, equals(['email', 'name', 'password']));
+      expect(userReflection.fieldsNames,
+          equals(['email', 'hashCode', 'name', 'password']));
       expect(userReflection.staticFieldsNames,
           equals(['version', 'withReflection']));
 

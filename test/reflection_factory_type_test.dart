@@ -97,9 +97,12 @@ void main() {
   group('TypeInfo', () {
     test('basic', () async {
       var t1 = TypeInfo(List);
-      var t2 = TypeInfo(List);
+      var t2 = TypeInfo<List>(List);
 
       expect(t1.type, equals(t2.type));
+
+      expect(t1.genericType, equals(dynamic));
+      expect(t2.genericType, equals(List));
 
       var t3 = TypeInfo.from([]);
       expect(t3.type, equals(t1.type));
@@ -133,6 +136,34 @@ void main() {
       expect(t4.equalsTypeAndArguments(TypeInfo.from(<bool>{})), isTrue);
       expect(t4.equalsTypeAndArguments(TypeInfo.from(<int>{})), isTrue);
       expect(t4.equalsTypeAndArguments(TypeInfo.from(123)), isFalse);
+
+      {
+        var t = TypeInfo<int>.fromType(int);
+        var parser = t.parser!;
+
+        expect(parser('123'), equals(123));
+
+        expect(parser('x'), isNull);
+      }
+
+      {
+        var t = TypeInfo<bool>.fromType(bool);
+        var parser = t.parser!;
+
+        expect(parser('true'), isTrue);
+        expect(parser('ok'), isTrue);
+        expect(parser('t'), isTrue);
+        expect(parser('1'), isTrue);
+        expect(parser('y'), isTrue);
+
+        expect(parser('false'), isFalse);
+        expect(parser('no'), isFalse);
+        expect(parser('error'), isFalse);
+        expect(parser('fail'), isFalse);
+        expect(parser('f'), isFalse);
+        expect(parser('0'), isFalse);
+        expect(parser('n'), isFalse);
+      }
 
       {
         var t = TypeInfo.fromType(List, [String]);
@@ -545,6 +576,13 @@ void main() {
       }
 
       {
+        var t = TypeInfo(num);
+        expect(t.parse('123'), equals(123));
+        expect(t.parse(' 123.1 '), equals(123.1));
+        expect(t.parse(123.2), equals(123.2));
+      }
+
+      {
         var t = TypeInfo(String);
         expect(t.parse('123'), equals('123'));
         expect(t.parse(' 123 '), equals(' 123 '));
@@ -566,6 +604,16 @@ void main() {
         expect(t.parse('1577934245000'), equals(n));
         expect(t.parse(' 1577934245000 '), equals(n));
         expect(t.parse(1577934245000), equals(n));
+      }
+
+      {
+        var t = TypeInfo(Uint8List);
+
+        expect(t.parse(base64.encode([10, 9, 8, 7, 6])),
+            equals(Uint8List.fromList([10, 9, 8, 7, 6])));
+        expect(
+            t.parse('0403020100'), equals(Uint8List.fromList([4, 3, 2, 1, 0])));
+        expect(t.parse([3, 2, 1, 0]), equals(Uint8List.fromList([3, 2, 1, 0])));
       }
 
       {
@@ -596,6 +644,28 @@ void main() {
         var m = t.parse<MapEntry>('a:1')!;
         expect(m.key, equals('a'));
         expect(m.value, equals('1'));
+      }
+
+      {
+        var t = TypeInfo(TestUserSimple);
+
+        expect(t.parse(TestUserSimple.empty()), equals(TestUserSimple.empty()));
+      }
+    });
+
+    test('TypeInfo.parseTraversingFuture', () async {
+      {
+        var t = TypeInfo<int>(int);
+
+        expect(t.parse('123'), equals(123));
+        expect(t.parseTraversingFuture('123'), equals(123));
+      }
+
+      {
+        var t = TypeInfo<Future<int>>(Future, [TypeInfo<int>(int)]);
+
+        expect(t.parse('123'), isNull);
+        expect(t.parseTraversingFuture('123'), equals(123));
       }
     });
 
@@ -789,6 +859,93 @@ void main() {
 
         expect(users2, equals(users));
       }
+    });
+  });
+
+  group('Equality', () {
+    test('TypeEquality', () async {
+      TypeEquality teq = TypeEquality();
+
+      expect(teq.isValidKey(int), isTrue);
+      expect(teq.isValidKey(123), isFalse);
+
+      expect(teq.equals(int, int), isTrue);
+      expect(teq.equals(int, 123.runtimeType), isTrue);
+
+      expect(teq.equals(int, String), isFalse);
+
+      expect(teq.equals(Object, dynamic), isFalse);
+
+      expect(teq.hash(int), equals(teq.hash(int)));
+      expect(teq.hash(int), isNot(equals(teq.hash(String))));
+    });
+
+    test('TypeEquivalency', () async {
+      TypeEquivalency teq = TypeEquivalency();
+
+      expect(teq.isValidKey(int), isTrue);
+      expect(teq.isValidKey(123), isFalse);
+
+      expect(teq.equals(int, int), isTrue);
+      expect(teq.equals(int, 123.runtimeType), isTrue);
+
+      expect(teq.equals(int, String), isFalse);
+
+      expect(teq.equals(Object, dynamic), isTrue);
+
+      expect(teq.hash(int), equals(teq.hash(int)));
+      expect(teq.hash(int), isNot(equals(teq.hash(String))));
+    });
+
+    test('TypeListEquality', () async {
+      TypeListEquality teq = TypeListEquality();
+
+      expect(teq.isValidKey(<Type>[int]), isTrue);
+      expect(teq.isValidKey(<int>[123]), isFalse);
+      expect(teq.isValidKey(int), isFalse);
+      expect(teq.isValidKey(123), isFalse);
+
+      expect(teq.equals(<Type>[int], <Type>[int]), isTrue);
+      expect(teq.equals(<Type>[int], <Type>[String]), isFalse);
+
+      expect(teq.equals(<Type>[int, String], <Type>[int, String]), isTrue);
+      expect(teq.equals(<Type>[int, String], <Type>[int, Object]), isFalse);
+    });
+
+    test('TypeInfo.equivalentTypeList', () async {
+      expect(TypeInfo.equivalentTypeList(<Type>[int], <Type>[int]), isTrue);
+      expect(TypeInfo.equivalentTypeList(<Type>[int], <Type>[String]), isFalse);
+
+      expect(
+          TypeInfo.equivalentTypeList(<Type>[int, String], <Type>[int, String]),
+          isTrue);
+      expect(
+          TypeInfo.equivalentTypeList(<Type>[String, int], <Type>[int, String]),
+          isFalse);
+    });
+
+    test('TypeInfo.equalsTypeInfoList', () async {
+      expect(
+          TypeInfo.equalsTypeInfoList(<TypeInfo>[TypeInfo.fromType(int)],
+              <TypeInfo>[TypeInfo.fromType(int)]),
+          isTrue);
+
+      expect(
+          TypeInfo.equalsTypeInfoList(<TypeInfo>[TypeInfo.fromType(int)],
+              <TypeInfo>[TypeInfo.fromType(String)]),
+          isFalse);
+
+      expect(
+          TypeInfo.equalsTypeInfoList(
+              <TypeInfo>[TypeInfo.fromType(int), TypeInfo.fromType(String)],
+              <TypeInfo>[TypeInfo.fromType(int), TypeInfo.fromType(String)]),
+          isTrue);
+
+      expect(
+          TypeInfo.equalsTypeInfoList(
+              <TypeInfo>[TypeInfo.fromType(String), TypeInfo.fromType(int)],
+              <TypeInfo>[TypeInfo.fromType(int), TypeInfo.fromType(String)]),
+          isFalse);
     });
   });
 

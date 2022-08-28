@@ -360,7 +360,8 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   Object? callMethodToJson([TestUserSimple? obj]) => null;
 
   @override
-  List<String> get fieldsNames => const <String>['email', 'name', 'password'];
+  List<String> get fieldsNames =>
+      const <String>['email', 'hashCode', 'name', 'password'];
 
   @override
   FieldReflection<TestUserSimple, T>? field<T>(String fieldName,
@@ -413,6 +414,20 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
           false,
           false,
           null,
+        );
+      case 'hashcode':
+        return FieldReflection<TestUserSimple, T>(
+          this,
+          TestUserSimple,
+          TypeReflection.tInt,
+          'hashCode',
+          false,
+          (o) => () => o!.hashCode as T,
+          null,
+          obj,
+          false,
+          false,
+          [override],
         );
       default:
         return null;

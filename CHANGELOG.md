@@ -6,6 +6,7 @@
   - Improved internal representation og `arguments`.
 - `ReflectionBuilder`:
   - Declare reflected types using `TypeInfo<T>` generics.
+- Improved tests coverage.
 
 ## 1.2.6
 

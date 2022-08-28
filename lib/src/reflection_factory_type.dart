@@ -13,8 +13,13 @@ typedef TypeElementParser<T> = T? Function(Object? o);
 /// Lenient parsers for basic Dart types.
 class TypeParser {
   /// Returns the parser for the desired type, defined by [T], [obj] or [type].
-  static TypeElementParser? parserFor<T>(
+  static TypeElementParser<T>? parserFor<T>(
       {Object? obj, Type? type, TypeInfo? typeInfo}) {
+    return _parserForImpl<T>(obj, type, typeInfo) as TypeElementParser<T>?;
+  }
+
+  static TypeElementParser? _parserForImpl<T>(
+      Object? obj, Type? type, TypeInfo? typeInfo) {
     if (obj != null) {
       if (obj is String) {
         return parseString;
@@ -163,10 +168,10 @@ class TypeParser {
       return value;
     }
 
-    keyParser ??= parserFor<K>() as TypeElementParser<K>?;
+    keyParser ??= parserFor<K>();
     keyParser ??= (k) => k as K;
 
-    valueParser ??= parserFor<V>() as TypeElementParser<V>?;
+    valueParser ??= parserFor<V>();
     valueParser ??= (v) => v as V;
 
     if (value is Map) {
@@ -201,10 +206,10 @@ class TypeParser {
       return value;
     }
 
-    keyParser ??= parserFor<K>() as TypeElementParser<K>?;
+    keyParser ??= parserFor<K>();
     keyParser ??= (k) => k as K;
 
-    valueParser ??= parserFor<V>() as TypeElementParser<V>?;
+    valueParser ??= parserFor<V>();
     valueParser ??= (v) => v as V;
 
     if (value is MapEntry) {
@@ -1062,7 +1067,7 @@ class TypeInfo<T> {
   /// Returns the [type] parser.
   ///
   /// See [TypeParser.parserFor].
-  TypeElementParser? get parser => TypeParser.parserFor(typeInfo: this);
+  TypeElementParser<T>? get parser => TypeParser.parserFor<T>(typeInfo: this);
 
   /// Returns the parser of the argument at [index].
   TypeElementParser? argumentParser(int index) =>
@@ -1116,11 +1121,11 @@ class TypeInfo<T> {
     if (isFuture) {
       var argument = argumentType(0);
       if (argument != null) {
-        return argument.parse(value);
+        return argument.parse<V>(value);
       }
     }
 
-    return parse(value);
+    return parse<V>(value);
   }
 
   /// Returns `true` if [type] is primitive ([bool], [int], [double], [num] or [String]).

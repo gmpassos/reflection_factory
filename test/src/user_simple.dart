@@ -34,6 +34,17 @@ class TestUserSimple {
   bool hasEmail() => email != null && email!.isNotEmpty;
 
   @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TestUserSimple &&
+          name == other.name &&
+          email == other.email &&
+          password == other.password;
+
+  @override
+  int get hashCode => name.hashCode ^ email.hashCode ^ password.hashCode;
+
+  @override
   String toString() {
     return 'TestUserSimple{name: $name, email: $email}';
   }

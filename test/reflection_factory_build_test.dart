@@ -142,7 +142,7 @@ void main() {
         
           import 'package:reflection_factory/reflection_factory.dart';
         
-          part 'foo.reflection.g.dart';
+          part 'reflection/foo.g.dart';
           
           typedef Fx = bool Function(int x);
           
@@ -168,12 +168,12 @@ void main() {
         reader: await PackageAssetReader.currentIsolate(),
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/reflection/foo.g.dart': decodedMatches(allOf(
             allOf(
               contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
               contains(
                   'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
+              contains("part of '../foo.dart'"),
             ),
             allOf(
               contains('Domain\$reflection'),
@@ -194,6 +194,43 @@ void main() {
           print(msg);
         },
       );
+    });
+
+    test('EnableReflection: [no part error]', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+          
+          @EnableReflection()
+          class Domain {
+            final String name;
+            final String suffix;
+            
+            Domain(this.name, this.suffix);
+            
+            bool equalsName(String name) => this.name == name;
+          }
+        
+        '''
+      };
+
+      var packageAssetReader = await PackageAssetReader.currentIsolate();
+
+      expectLater(
+          () => testBuilder(
+                builder,
+                sourceAssets,
+                reader: packageAssetReader,
+                generateFor: {'$_pkgName|lib/foo.dart'},
+                onLog: (msg) {
+                  print(msg);
+                },
+              ),
+          throwsA(isA<StateError>().having((e) => e.message,
+              'NO part directive', contains('NO reflection part directive '))));
     });
 
     test('EnableReflection[super class]', () async {
