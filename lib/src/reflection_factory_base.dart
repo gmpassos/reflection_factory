@@ -158,7 +158,12 @@ abstract class Reflection<O> {
       return List<Object>.from(list);
     }
 
-    return null;
+    var typeInfo = TypeInfo.fromType(type);
+
+    List? callCast<E>() => list.cast<E>();
+
+    var l = typeInfo.callCasted(callCast);
+    return l;
   }
 
   /// Cast [set] to [classType] if [type] == [classType] or return `null`.
@@ -175,7 +180,12 @@ abstract class Reflection<O> {
       return Set<Object>.from(set);
     }
 
-    return null;
+    var typeInfo = TypeInfo.fromType(type);
+
+    Set? callCast<E>() => set.cast<E>();
+
+    var l = typeInfo.callCasted(callCast);
+    return l;
   }
 
   /// Cast [itr] to [classType] if [type] == [classType] or return `null`.
@@ -192,7 +202,12 @@ abstract class Reflection<O> {
       return itr.cast<Object>();
     }
 
-    return null;
+    var typeInfo = TypeInfo.fromType(type);
+
+    Iterable? callCast<E>() => itr.cast<E>();
+
+    var l = typeInfo.callCasted(callCast);
+    return l;
   }
 
   /// Cast [map] values to [classType] if [type] == [classType] or return `null`.
@@ -251,7 +266,12 @@ abstract class Reflection<O> {
       }
     }
 
-    return null;
+    Map? callKey<K>() => valueType.callCasted(<V>() {
+          return map.map<K, V>((key, value) => MapEntry<K, V>(key, value));
+        });
+
+    var m = keyType.callCasted(callKey);
+    return m;
   }
 
   /// Cast [o] to a collection represented by [typeInfo].

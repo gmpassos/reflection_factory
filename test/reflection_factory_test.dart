@@ -199,6 +199,9 @@ void main() {
       var userReflection = user.reflection;
 
       expect(userReflection.classType, equals(TestUserWithReflection));
+      expect(userReflection.reflectedType, equals(TestUserWithReflection));
+      expect(userReflection.className, equals('TestUserWithReflection'));
+      expect(userReflection.reflectionName, equals('TestUserWithReflection'));
       expect(userReflection.languageVersion.toString(), isNotEmpty);
       expect(userReflection.reflectionFactoryVersion.toString(),
           equals(ReflectionFactory.VERSION));
@@ -413,6 +416,13 @@ void main() {
 
       expect(TestEnumWithReflection.x.reflection.enumName,
           equals('TestEnumWithReflection'));
+      expect(TestEnumWithReflection.x.reflection.reflectionName,
+          equals('TestEnumWithReflection'));
+
+      expect(TestEnumWithReflection.x.reflection.enumType,
+          equals(TestEnumWithReflection));
+      expect(TestEnumWithReflection.x.reflection.reflectedType,
+          equals(TestEnumWithReflection));
 
       expect(TestEnumWithReflection.x.reflection.name(), equals('x'));
       expect(TestEnumWithReflection.Z.reflection.name(), equals('Z'));
@@ -466,6 +476,22 @@ void main() {
           TestEnumWithReflection$reflection(TestEnumWithReflection.x)
               .name(TestEnumWithReflection.y),
           equals('y'));
+
+      expect(TestEnumWithReflection$reflection.staticInstance.fromJson('x'),
+          equals(TestEnumWithReflection.x));
+
+      expect(TestEnumWithReflection$reflection.staticInstance.fromJson('y'),
+          equals(TestEnumWithReflection.y));
+
+      expect(
+          () => TestEnumWithReflection$reflection.staticInstance.fromJson('w'),
+          throwsA(isA<StateError>()
+              .having((e) => e.message, 'Bad JSON', contains('for JSON: w'))));
+
+      expect(
+          () => TestEnumWithReflection$reflection.staticInstance.fromJson(null),
+          throwsA(isA<StateError>()
+              .having((e) => e.message, 'Null JSON', contains('Null JSON'))));
 
       expect(
           ReflectionFactory()
