@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.2.6
+// BUILDER: reflection_factory/1.2.7
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -112,7 +112,7 @@ class TestAddressWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.6');
+  Version get reflectionFactoryVersion => Version.parse('1.2.7');
 
   @override
   TestAddressWithReflection$reflection withObject(
@@ -343,7 +343,7 @@ class TestCompanyWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.6');
+  Version get reflectionFactoryVersion => Version.parse('1.2.7');
 
   @override
   TestCompanyWithReflection$reflection withObject(
@@ -406,10 +406,20 @@ class TestCompanyWithReflection$reflection
             const <ParameterReflection>[
               ParameterReflection(
                   TypeReflection.tString, 'name', false, true, null, null),
-              ParameterReflection(TypeReflection(TestAddressWithReflection),
-                  'mainAddress', false, true, null, null),
               ParameterReflection(
-                  TypeReflection(List, [TestAddressWithReflection]),
+                  TypeReflection<TestAddressWithReflection>(
+                      TestAddressWithReflection),
+                  'mainAddress',
+                  false,
+                  true,
+                  null,
+                  null),
+              ParameterReflection(
+                  TypeReflection<List<TestAddressWithReflection>>(
+                      List, <TypeReflection>[
+                    TypeReflection<TestAddressWithReflection>(
+                        TestAddressWithReflection)
+                  ]),
                   'extraAddresses',
                   false,
                   true,
@@ -482,7 +492,7 @@ class TestCompanyWithReflection$reflection
         return FieldReflection<TestCompanyWithReflection, T>(
           this,
           TestCompanyWithReflection,
-          TypeReflection(TestAddressWithReflection),
+          TypeReflection<TestAddressWithReflection>(TestAddressWithReflection),
           'mainAddress',
           false,
           (o) => () => o!.mainAddress as T,
@@ -510,7 +520,10 @@ class TestCompanyWithReflection$reflection
         return FieldReflection<TestCompanyWithReflection, T>(
           this,
           TestCompanyWithReflection,
-          TypeReflection(List, [TestAddressWithReflection]),
+          TypeReflection<List<TestAddressWithReflection>>(
+              List, <TypeReflection>[
+            TypeReflection<TestAddressWithReflection>(TestAddressWithReflection)
+          ]),
           'extraAddresses',
           false,
           (o) => () => o!.extraAddresses as T,
@@ -603,7 +616,7 @@ class TestDataWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.6');
+  Version get reflectionFactoryVersion => Version.parse('1.2.7');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -662,13 +675,14 @@ class TestDataWithReflection$reflection
             const <ParameterReflection>[
               ParameterReflection(
                   TypeReflection.tString, 'name', false, true, null, null),
-              ParameterReflection(
-                  TypeReflection(Uint8List), 'bytes', false, true, null, null)
+              ParameterReflection(TypeReflection<Uint8List>(Uint8List), 'bytes',
+                  false, true, null, null)
             ],
             null,
             const <String, ParameterReflection>{
               'domain': ParameterReflection(
-                  TypeReflection(TestDomainWithReflection),
+                  TypeReflection<TestDomainWithReflection>(
+                      TestDomainWithReflection),
                   'domain',
                   true,
                   false,
@@ -746,7 +760,7 @@ class TestDataWithReflection$reflection
         return FieldReflection<TestDataWithReflection, T>(
           this,
           TestDataWithReflection,
-          TypeReflection(Uint8List),
+          TypeReflection<Uint8List>(Uint8List),
           'bytes',
           false,
           (o) => () => o!.bytes as T,
@@ -760,7 +774,7 @@ class TestDataWithReflection$reflection
         return FieldReflection<TestDataWithReflection, T>(
           this,
           TestDataWithReflection,
-          TypeReflection(TestDomainWithReflection),
+          TypeReflection<TestDomainWithReflection>(TestDomainWithReflection),
           'domain',
           true,
           (o) => () => o!.domain as T,
@@ -837,7 +851,7 @@ class TestDomainWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.6');
+  Version get reflectionFactoryVersion => Version.parse('1.2.7');
 
   @override
   TestDomainWithReflection$reflection withObject(
@@ -904,8 +918,13 @@ class TestDomainWithReflection$reflection
                   TypeReflection.tString, 'suffix', false, true, null, null)
             ],
             const <ParameterReflection>[
-              ParameterReflection(TypeReflection(DomainFunction),
-                  'domainFunction', true, false, null, null),
+              ParameterReflection(
+                  TypeReflection<DomainFunction>(DomainFunction),
+                  'domainFunction',
+                  true,
+                  false,
+                  null,
+                  null),
               ParameterReflection(TypeReflection.tFunction, 'extraFunction',
                   true, false, null, null)
             ],
@@ -930,7 +949,7 @@ class TestDomainWithReflection$reflection
             null,
             const <String, ParameterReflection>{
               'domainFunction': ParameterReflection(
-                  TypeReflection(DomainFunction),
+                  TypeReflection<DomainFunction>(DomainFunction),
                   'domainFunction',
                   true,
                   false,
@@ -1033,7 +1052,7 @@ class TestDomainWithReflection$reflection
         return FieldReflection<TestDomainWithReflection, T>(
           this,
           TestDomainWithReflection,
-          TypeReflection(DomainFunction),
+          TypeReflection<DomainFunction>(DomainFunction),
           'domainFunction',
           true,
           (o) => () => o!.domainFunction as T,
@@ -1108,8 +1127,14 @@ class TestDomainWithReflection$reflection
             obj,
             false,
             const <ParameterReflection>[
-              ParameterReflection(TypeReflection(TypedFunction, [dynamic]), 'f',
-                  false, true, null, null),
+              ParameterReflection(
+                  TypeReflection<TypedFunction<dynamic>>(
+                      TypedFunction, <TypeReflection>[TypeReflection.tDynamic]),
+                  'f',
+                  false,
+                  true,
+                  null,
+                  null),
               ParameterReflection(
                   TypeReflection.tDynamic, 'x', false, true, null, null)
             ],
@@ -1178,7 +1203,7 @@ class TestEnumWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.6');
+  Version get reflectionFactoryVersion => Version.parse('1.2.7');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -1248,7 +1273,7 @@ class TestOpAWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.6');
+  Version get reflectionFactoryVersion => Version.parse('1.2.7');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -1477,7 +1502,7 @@ class TestOpBWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.6');
+  Version get reflectionFactoryVersion => Version.parse('1.2.7');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -1720,7 +1745,7 @@ class TestOpWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.6');
+  Version get reflectionFactoryVersion => Version.parse('1.2.7');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -1970,7 +1995,7 @@ class TestTransactionWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.6');
+  Version get reflectionFactoryVersion => Version.parse('1.2.7');
 
   @override
   TestTransactionWithReflection$reflection withObject(
@@ -2032,10 +2057,22 @@ class TestTransactionWithReflection$reflection
             const <ParameterReflection>[
               ParameterReflection(
                   TypeReflection.tInt, 'amount', false, true, null, null),
-              ParameterReflection(TypeReflection(TestUserWithReflection),
-                  'fromUser', false, true, null, null),
-              ParameterReflection(TypeReflection(TestUserWithReflection),
-                  'toUser', false, true, null, null)
+              ParameterReflection(
+                  TypeReflection<TestUserWithReflection>(
+                      TestUserWithReflection),
+                  'fromUser',
+                  false,
+                  true,
+                  null,
+                  null),
+              ParameterReflection(
+                  TypeReflection<TestUserWithReflection>(
+                      TestUserWithReflection),
+                  'toUser',
+                  false,
+                  true,
+                  null,
+                  null)
             ],
             null,
             null,
@@ -2080,7 +2117,7 @@ class TestTransactionWithReflection$reflection
         return FieldReflection<TestTransactionWithReflection, T>(
           this,
           TestTransactionWithReflection,
-          TypeReflection(TestUserWithReflection),
+          TypeReflection<TestUserWithReflection>(TestUserWithReflection),
           'fromUser',
           false,
           (o) => () => o!.fromUser as T,
@@ -2094,7 +2131,7 @@ class TestTransactionWithReflection$reflection
         return FieldReflection<TestTransactionWithReflection, T>(
           this,
           TestTransactionWithReflection,
-          TypeReflection(TestUserWithReflection),
+          TypeReflection<TestUserWithReflection>(TestUserWithReflection),
           'toUser',
           false,
           (o) => () => o!.toUser as T,
@@ -2173,7 +2210,7 @@ class TestUserWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.6');
+  Version get reflectionFactoryVersion => Version.parse('1.2.7');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
@@ -2245,7 +2282,8 @@ class TestUserWithReflection$reflection
             null,
             const <String, ParameterReflection>{
               'axis': ParameterReflection(
-                  TypeReflection(TestEnumWithReflection),
+                  TypeReflection<TestEnumWithReflection>(
+                      TestEnumWithReflection),
                   'axis',
                   false,
                   false,
@@ -2389,7 +2427,7 @@ class TestUserWithReflection$reflection
         return FieldReflection<TestUserWithReflection, T>(
           this,
           TestUserWithReflection,
-          TypeReflection(TestEnumWithReflection),
+          TypeReflection<TestEnumWithReflection>(TestEnumWithReflection),
           'axis',
           false,
           (o) => () => o!.axis as T,

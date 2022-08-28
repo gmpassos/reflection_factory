@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.2.6
+// BUILDER: reflection_factory/1.2.7
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -41,7 +41,7 @@ class TestAddress$reflection extends ClassReflection<TestAddress> {
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.6');
+  Version get reflectionFactoryVersion => Version.parse('1.2.7');
 
   @override
   TestAddress$reflection withObject([TestAddress? obj]) =>
@@ -252,7 +252,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.6');
+  Version get reflectionFactoryVersion => Version.parse('1.2.7');
 
   @override
   TestUserSimple$reflection withObject([TestUserSimple? obj]) =>
@@ -360,7 +360,8 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   Object? callMethodToJson([TestUserSimple? obj]) => null;
 
   @override
-  List<String> get fieldsNames => const <String>['email', 'name', 'password'];
+  List<String> get fieldsNames =>
+      const <String>['email', 'hashCode', 'name', 'password'];
 
   @override
   FieldReflection<TestUserSimple, T>? field<T>(String fieldName,
@@ -413,6 +414,20 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
           false,
           false,
           null,
+        );
+      case 'hashcode':
+        return FieldReflection<TestUserSimple, T>(
+          this,
+          TestUserSimple,
+          TypeReflection.tInt,
+          'hashCode',
+          false,
+          (o) => () => o!.hashCode as T,
+          null,
+          obj,
+          false,
+          false,
+          [override],
         );
       default:
         return null;

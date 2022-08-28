@@ -1814,7 +1814,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
       str.write(' {\n');
 
-      var returnTypeAsCode = proxyMethod.returnType.typeAsCode;
+      var returnTypeAsCode = proxyMethod.returnType.asTypeReflectionCode;
 
       var call = StringBuffer();
 
@@ -2151,7 +2151,8 @@ class _Constructor<T> extends _Element {
   String get returnTypeNameAsCode =>
       constructorElement.returnType.typeNameAsCode;
 
-  String get returnTypeAsCode => constructorElement.returnType.typeAsCode;
+  String get returnTypeAsCode =>
+      constructorElement.returnType.asTypeReflectionCode;
 
   List<_Parameter> get normalParameters =>
       constructorElement.type.normalParameters;
@@ -2306,7 +2307,7 @@ class _Method extends _Element {
 
   String get returnTypeNameAsCode => methodElement.returnType.typeNameAsCode;
 
-  String get returnTypeAsCode => methodElement.returnType.typeAsCode;
+  String get returnTypeAsCode => methodElement.returnType.asTypeReflectionCode;
 
   List<_Parameter> get normalParameters => methodElement.type.normalParameters;
 
@@ -2366,7 +2367,7 @@ class _Field extends _Element {
 
   String get typeNameAsNullableCode => fieldElement.type.typeNameAsNullableCode;
 
-  String get typeAsCode => fieldElement.type.typeAsCode;
+  String get typeAsCode => fieldElement.type.asTypeReflectionCode;
 
   @override
   String toString() {
@@ -2397,13 +2398,29 @@ extension _IterableExtension on Iterable<DartType> {
 }
 
 extension _ListDartTypeExtension on List<DartType> {
-  String get typesAsCode => map((e) {
-        if (!e.hasTypeArguments && !e.isNullable) {
-          return e.typeNameAsCode;
-        } else {
-          return e.typeAsCode;
-        }
-      }).join(', ');
+  List<String> get typesNamesResolvable =>
+      map((a) => a.typeNameResolvable).toList();
+
+  String get toListOfConstTypeCode {
+    var listConstTypeReflection =
+        map((e) => e.asConstTypeReflectionCode).toList(growable: false);
+    if (listConstTypeReflection.every((e) => e != null)) {
+      return '<TypeReflection>[${listConstTypeReflection.join(',')}]';
+    }
+
+    var listConstTypeInfo =
+        map((e) => e.asConstTypeInfoCode).toList(growable: false);
+    if (listConstTypeInfo.every((e) => e != null)) {
+      return '<TypeInfo>[${listConstTypeInfo.join(',')}]';
+    }
+
+    var listTypeReflection =
+        map((e) => e.asTypeReflectionCode).toList(growable: false);
+    return '<TypeReflection>[${listTypeReflection.join(',')}]';
+  }
+
+  String get typesNames =>
+      map((e) => e.fullTypeNameResolvable(withNullability: true)).join(', ');
 }
 
 extension _DartTypeExtension on DartType {
@@ -2506,7 +2523,7 @@ extension _DartTypeExtension on DartType {
   String get typeNameAsCode {
     var self = this;
     if (self is VoidType) {
-      return 'TypeReflection.tVoid';
+      return 'void';
     }
 
     if (self is FunctionType) {
@@ -2535,7 +2552,49 @@ extension _DartTypeExtension on DartType {
           ? '$typeNameAsCode?'
           : typeNameAsCode;
 
-  String get typeAsCode {
+  String? get asConstTypeReflectionCode {
+    var self = this;
+
+    if (self is VoidType) {
+      return 'TypeReflection.tVoid';
+    }
+
+    if (self is FunctionType) {
+      var alias = self.alias;
+      if (alias != null) {
+        return null;
+      } else {
+        return 'TypeReflection.tFunction';
+      }
+    }
+
+    var name = typeNameResolvable;
+    var arguments = resolvedTypeArguments;
+
+    if (arguments.isNotEmpty) {
+      if (hasSimpleTypeArguments) {
+        var typeArgs = arguments.typesNamesResolvable;
+
+        var constName = TypeReflection.getConstantName(name, typeArgs);
+        if (constName != null) {
+          return 'TypeReflection.$constName';
+        }
+      }
+
+      return null;
+    } else {
+      var constName = _getTypeReflectionConstantName(name);
+      if (constName != null) {
+        return 'TypeReflection.$constName';
+      } else if (this is TypeParameterType) {
+        return 'TypeReflection.tDynamic';
+      }
+
+      return null;
+    }
+  }
+
+  String get asTypeReflectionCode {
     var self = this;
 
     if (self is VoidType) {
@@ -2549,9 +2608,9 @@ extension _DartTypeExtension on DartType {
         List<DartType> arguments = alias.typeArguments;
 
         if (arguments.isEmpty) {
-          return 'TypeReflection($name)';
+          return 'TypeReflection<$name>($name)';
         } else {
-          return 'TypeReflection($name, [${arguments.typesAsCode}])';
+          return 'TypeReflection<$name<${arguments.typesNames}>>($name, ${arguments.toListOfConstTypeCode})';
         }
       } else {
         return 'TypeReflection.tFunction';
@@ -2563,7 +2622,7 @@ extension _DartTypeExtension on DartType {
 
     if (arguments.isNotEmpty) {
       if (hasSimpleTypeArguments) {
-        var typeArgs = arguments.map((a) => a.typeNameResolvable).toList();
+        var typeArgs = arguments.typesNamesResolvable;
 
         var constName = TypeReflection.getConstantName(name, typeArgs);
         if (constName != null) {
@@ -2571,9 +2630,10 @@ extension _DartTypeExtension on DartType {
         }
       }
 
-      var argsCode = arguments.typesAsCode;
+      var argsT = arguments.typesNames;
+      var argsCode = arguments.toListOfConstTypeCode;
 
-      return 'TypeReflection($name, [$argsCode])';
+      return 'TypeReflection<$name<$argsT>>($name, $argsCode)';
     } else {
       var constName = _getTypeReflectionConstantName(name);
       if (constName != null) {
@@ -2582,13 +2642,13 @@ extension _DartTypeExtension on DartType {
         if (this is TypeParameterType) {
           return 'TypeReflection.tDynamic';
         } else {
-          return 'TypeReflection($name)';
+          return 'TypeReflection<$name>($name)';
         }
       }
     }
   }
 
-  String? _getTypeReflectionConstantName([String? name]) {
+  String? _getTypeReflectionConstantName([String? name, List<String>? args]) {
     if (isDartCoreObject) {
       return 'tObject';
     } else if (isDartCoreString) {
@@ -2601,10 +2661,18 @@ extension _DartTypeExtension on DartType {
       return 'tNum';
     } else if (isDartCoreBool) {
       return 'tBool';
+    } else if (this is VoidType) {
+      return 'tVoid';
     }
 
     name ??= typeNameResolvable;
-    return TypeReflection.getConstantName(name);
+    args ??= resolvedTypeArguments.typesNamesResolvable;
+    return TypeReflection.getConstantName(name, args);
+  }
+
+  String? get asConstTypeInfoCode {
+    var constName = _getTypeReflectionConstantName();
+    return constName == null ? null : 'TypeInfo.$constName';
   }
 }
 
@@ -2690,11 +2758,11 @@ String _buildStringListCode(Iterable? o,
 String _buildParameterReflectionList(Iterable<_Parameter>? o,
     {required bool nullOnEmpty, required bool required}) {
   if (o == null || o.isEmpty) {
-    return nullOnEmpty ? 'null' : '<ParameterReflection>[]';
+    return nullOnEmpty ? 'null' : 'const <ParameterReflection>[]';
   } else {
     var parameters = o
         .map((e) => "ParameterReflection( "
-            "${e.type.typeAsCode} , "
+            "${e.type.asTypeReflectionCode} , "
             "'${e.name}' , "
             "${e.isNullable ? 'true' : 'false'} , "
             "$required , "
@@ -2715,7 +2783,7 @@ String _buildNamedParameterReflectionMap(Map<String, _Parameter>? o,
       var key = e.key;
       var value = e.value;
       return "'$key': ParameterReflection( "
-          "${value.type.typeAsCode} , "
+          "${value.type.asTypeReflectionCode} , "
           "'${e.value.name}' , "
           "${e.value.isNullable ? 'true' : 'false'} , "
           "${e.value.required ? 'true' : 'false'} , "

@@ -40,7 +40,6 @@ void main() {
             String pass ;
             bool enabled ;
             
-            
             User(this.email, {required this.pass, this.enabled = true});
             
             @TestAnnotation(['field', 'eMail'])
@@ -142,7 +141,7 @@ void main() {
         
           import 'package:reflection_factory/reflection_factory.dart';
         
-          part 'foo.reflection.g.dart';
+          part 'reflection/foo.g.dart';
           
           typedef Fx = bool Function(int x);
           
@@ -154,9 +153,24 @@ void main() {
             final Fx? fx;
             final bool Function()? extra;
           
-            Domain(this.name, this.suffix, [this.fx, this.extra]);
+            Domain.positional(this.name, this.suffix, [this.fx, this.extra]);
           
             Domain.named({required this.name, this.suffix = 'net', Fx? fx, this.extra}) : fx = fx;
+            
+            Domain.empty() : this('', '');
+            
+            Domain() : this('', '');
+            
+            bool callFx(int n, [Fx? f]) {
+              f ??= fx ;
+              return f(n);
+            }
+            
+            bool callAllFx(int n, List<Fx> fxs) {
+              for (var f in fxs) {
+                f(n);
+              }
+            }
           }
         
         '''
@@ -168,20 +182,37 @@ void main() {
         reader: await PackageAssetReader.currentIsolate(),
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/reflection/foo.g.dart': decodedMatches(allOf(
             allOf(
               contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
               contains(
                   'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
+              contains("part of '../foo.dart'"),
             ),
             allOf(
               contains('Domain\$reflection'),
               contains('Domain\$reflectionExtension'),
             ),
+            allOf(
+              contains('bool get hasDefaultConstructor => true;'),
+              contains(
+                  'Domain? createInstanceWithDefaultConstructor() => Domain();'),
+              contains('bool get hasEmptyConstructor => true;'),
+              contains(
+                  'Domain? createInstanceWithEmptyConstructor() => Domain.empty();'),
+              contains('bool get hasNoRequiredArgsConstructor => true;'),
+              contains(
+                  'Domain? createInstanceWithNoRequiredArgsConstructor() => Domain.empty();'),
+            ),
             matches(RegExp(
                 r"'suffix':\s*ParameterReflection\(\s*TypeReflection.tString\s*,\s*'suffix'\s*,\s*false\s*,\s*false\s*,\s*'net'\s*,\s*null\s*\)")),
             allOf(
+                matches(RegExp(
+                    r"case 'callfx':.*?const <ParameterReflection>\[\s*ParameterReflection\(\s*TypeReflection<Fx>\(Fx\), 'f', true, false, null, null\)\s*\]",
+                    dotAll: true)),
+                matches(RegExp(
+                    r"case 'callallfx':.*?ParameterReflection\(\s*TypeReflection<List<Function>>\(\s*List, <TypeInfo>\[TypeInfo.tFunction\]\),\s*'fxs',\s*false,\s*true,\s*null,\s*null\)",
+                    dotAll: true)),
                 matches(RegExp(
                     r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\(')),
                 matches(RegExp(
@@ -194,6 +225,43 @@ void main() {
           print(msg);
         },
       );
+    });
+
+    test('EnableReflection: [no part error]', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+          
+          @EnableReflection()
+          class Domain {
+            final String name;
+            final String suffix;
+            
+            Domain(this.name, this.suffix);
+            
+            bool equalsName(String name) => this.name == name;
+          }
+        
+        '''
+      };
+
+      var packageAssetReader = await PackageAssetReader.currentIsolate();
+
+      expectLater(
+          () => testBuilder(
+                builder,
+                sourceAssets,
+                reader: packageAssetReader,
+                generateFor: {'$_pkgName|lib/foo.dart'},
+                onLog: (msg) {
+                  print(msg);
+                },
+              ),
+          throwsA(isA<StateError>().having((e) => e.message,
+              'NO part directive', contains('NO reflection part directive '))));
     });
 
     test('EnableReflection[super class]', () async {
@@ -212,6 +280,8 @@ void main() {
             Op(this.type);
             
             List<Set<int>> opMethod() => <Set<int>>[{1},{2}] ;
+            
+            List<Set<int?>> opMethodNullable() => <Set<int?>>[{1},{2,null}] ;
           }
           
           @EnableReflection()
@@ -254,8 +324,12 @@ void main() {
               contains("case 'type':"),
               contains("case 'value':"),
               contains("fieldsNames => const <String>['type', 'value']"),
-              contains("TypeReflection(List, [TypeReflection.tSetInt])"),
-              contains("TypeReflection(Set, [TypeReflection.tListDynamic])"),
+              matches(RegExp(
+                  r"TypeReflection<List<Set<int>>>\(\s*List, <TypeReflection>\[TypeReflection.tSetInt\]\)")),
+              matches(RegExp(
+                  r"TypeReflection<List<Set<int\?>>>\(\s*List, <TypeReflection>\[TypeReflection.tSetInt\]\)")),
+              matches(RegExp(
+                  r"TypeReflection<Set<List<dynamic>>>\(\s*Set, <TypeReflection>\[TypeReflection.tListDynamic\]\)")),
             ),
           )),
         },

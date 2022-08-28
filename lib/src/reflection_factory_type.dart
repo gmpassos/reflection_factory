@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:base_codecs/base_codecs.dart' as base_codecs;
 
 import 'reflection_factory_base.dart';
 import 'reflection_factory_json.dart';
@@ -12,8 +13,13 @@ typedef TypeElementParser<T> = T? Function(Object? o);
 /// Lenient parsers for basic Dart types.
 class TypeParser {
   /// Returns the parser for the desired type, defined by [T], [obj] or [type].
-  static TypeElementParser? parserFor<T>(
+  static TypeElementParser<T>? parserFor<T>(
       {Object? obj, Type? type, TypeInfo? typeInfo}) {
+    return _parserForImpl<T>(obj, type, typeInfo) as TypeElementParser<T>?;
+  }
+
+  static TypeElementParser? _parserForImpl<T>(
+      Object? obj, Type? type, TypeInfo? typeInfo) {
     if (obj != null) {
       if (obj is String) {
         return parseString;
@@ -21,6 +27,8 @@ class TypeParser {
         return parseMap;
       } else if (obj is Set) {
         return parseSet;
+      } else if (obj is Uint8List) {
+        return parseUInt8List;
       } else if (obj is List || obj is Iterable) {
         return parseList;
       } else if (obj is int) {
@@ -35,8 +43,6 @@ class TypeParser {
         return parseBigInt;
       } else if (obj is DateTime) {
         return parseDateTime;
-      } else if (obj is Uint8List) {
-        return parseUInt8List;
       }
     }
 
@@ -162,10 +168,10 @@ class TypeParser {
       return value;
     }
 
-    keyParser ??= parserFor<K>() as TypeElementParser<K>?;
+    keyParser ??= parserFor<K>();
     keyParser ??= (k) => k as K;
 
-    valueParser ??= parserFor<V>() as TypeElementParser<V>?;
+    valueParser ??= parserFor<V>();
     valueParser ??= (v) => v as V;
 
     if (value is Map) {
@@ -200,10 +206,10 @@ class TypeParser {
       return value;
     }
 
-    keyParser ??= parserFor<K>() as TypeElementParser<K>?;
+    keyParser ??= parserFor<K>();
     keyParser ??= (k) => k as K;
 
-    valueParser ??= parserFor<V>() as TypeElementParser<V>?;
+    valueParser ??= parserFor<V>();
     valueParser ??= (v) => v as V;
 
     if (value is MapEntry) {
@@ -424,12 +430,20 @@ class TypeParser {
       return Uint8List.fromList(list.cast<int>());
     } else {
       var s = value.toString().trim();
+
+      if (s.isEmpty) return Uint8List(0);
+
       try {
         var data = base64.decode(s);
         return data;
-      } catch (_) {
-        return def;
-      }
+      } catch (_) {}
+
+      try {
+        var data = base_codecs.hex.decode(s);
+        return data;
+      } catch (_) {}
+
+      return def;
     }
   }
 
@@ -489,12 +503,6 @@ class _TypeWrapper {
 
   final BasicDartType basicDartType;
 
-  _TypeWrapper(Type type,
-      {BasicDartType? basicType, Object? object, bool? hasArguments})
-      : type = detectType(type, object),
-        basicDartType =
-            basicType ?? detectBasicType(type, object, hasArguments);
-
   static BasicDartType detectBasicType(Type type,
       [Object? object, bool? hasArguments]) {
     if (type == tString || object is String) return BasicDartType.string;
@@ -533,23 +541,68 @@ class _TypeWrapper {
     return BasicDartType.none;
   }
 
-  static final Type tString = String;
-  static final Type tInt = int;
-  static final Type tDouble = double;
-  static final Type tNum = num;
-  static final Type tBool = bool;
-  static final Type tBigInt = BigInt;
-  static final Type tDateTime = DateTime;
-  static final Type tUint8List = Uint8List;
-  static final Type tList = List;
-  static final Type tSet = Set;
-  static final Type tMap = Map;
-  static final Type tMapEntry = MapEntry;
-  static final Type tIterable = Iterable;
-  static final Type tFuture = Future;
-  static final Type tFutureOr = FutureOr;
-  static final Type tObject = Object;
-  static final Type tDynamic = dynamic;
+  _TypeWrapper(Type type,
+      {BasicDartType? basicType, Object? object, bool? hasArguments})
+      : type = detectType(type, object),
+        basicDartType =
+            basicType ?? detectBasicType(type, object, hasArguments);
+
+  const _TypeWrapper._const(this.type, this.basicDartType);
+
+  static const _TypeWrapper twString =
+      _TypeWrapper._const(_TypeWrapper.tString, BasicDartType.string);
+  static const _TypeWrapper twInt =
+      _TypeWrapper._const(_TypeWrapper.tInt, BasicDartType.int);
+  static const _TypeWrapper twDouble =
+      _TypeWrapper._const(_TypeWrapper.tDouble, BasicDartType.double);
+  static const _TypeWrapper twNum =
+      _TypeWrapper._const(_TypeWrapper.tNum, BasicDartType.num);
+  static const _TypeWrapper twBool =
+      _TypeWrapper._const(_TypeWrapper.tBool, BasicDartType.bool);
+  static const _TypeWrapper twBigInt =
+      _TypeWrapper._const(_TypeWrapper.tBigInt, BasicDartType.bigInt);
+  static const _TypeWrapper twDateTime =
+      _TypeWrapper._const(_TypeWrapper.tDateTime, BasicDartType.dateTime);
+  static const _TypeWrapper twUint8List =
+      _TypeWrapper._const(_TypeWrapper.tUint8List, BasicDartType.uInt8List);
+  static const _TypeWrapper twList =
+      _TypeWrapper._const(_TypeWrapper.tList, BasicDartType.list);
+  static const _TypeWrapper twSet =
+      _TypeWrapper._const(_TypeWrapper.tSet, BasicDartType.set);
+  static const _TypeWrapper twMap =
+      _TypeWrapper._const(_TypeWrapper.tMap, BasicDartType.map);
+  static const _TypeWrapper twMapEntry =
+      _TypeWrapper._const(_TypeWrapper.tMapEntry, BasicDartType.mapEntry);
+  static const _TypeWrapper twIterable =
+      _TypeWrapper._const(_TypeWrapper.tIterable, BasicDartType.iterable);
+  static const _TypeWrapper twFuture =
+      _TypeWrapper._const(_TypeWrapper.tFuture, BasicDartType.future);
+  static const _TypeWrapper twFutureOr =
+      _TypeWrapper._const(_TypeWrapper.tFutureOr, BasicDartType.futureOr);
+  static const _TypeWrapper twObject =
+      _TypeWrapper._const(_TypeWrapper.tObject, BasicDartType.object);
+  static const _TypeWrapper twDynamic =
+      _TypeWrapper._const(_TypeWrapper.tDynamic, BasicDartType.dynamic);
+  static final _TypeWrapper twVoid =
+      _TypeWrapper._const(_TypeWrapper.tVoid, BasicDartType.voidType);
+
+  static const Type tString = String;
+  static const Type tInt = int;
+  static const Type tDouble = double;
+  static const Type tNum = num;
+  static const Type tBool = bool;
+  static const Type tBigInt = BigInt;
+  static const Type tDateTime = DateTime;
+  static const Type tUint8List = Uint8List;
+  static const Type tList = List;
+  static const Type tSet = Set;
+  static const Type tMap = Map;
+  static const Type tMapEntry = MapEntry;
+  static const Type tIterable = Iterable;
+  static const Type tFuture = Future;
+  static const Type tFutureOr = FutureOr;
+  static const Type tObject = Object;
+  static const Type tDynamic = dynamic;
   static final Type tVoid = <void>[].listType; // Is there a better way?
 
   static Type detectType(Type type, [Object? object]) {
@@ -749,7 +802,7 @@ class TypeListEquality extends ListEquality<Type> {
 }
 
 /// Represents a [Type] and its [arguments].
-class TypeInfo {
+class TypeInfo<T> {
   /// Returns `true` if [T] accepts a value of [type].
   static bool accepts<T>(Type type) {
     return T == type || T == Object || T == dynamic;
@@ -780,32 +833,46 @@ class TypeInfo {
   static bool equivalentTypeInfoList(List<TypeInfo> a, List<TypeInfo> b) =>
       _listEquivalencyTypeInfo.equals(a, b);
 
-  static final TypeInfo tString = TypeInfo._(_TypeWrapper.tString);
-  static final TypeInfo tBool = TypeInfo._(_TypeWrapper.tBool);
-  static final TypeInfo tInt = TypeInfo._(_TypeWrapper.tInt);
-  static final TypeInfo tDouble = TypeInfo._(_TypeWrapper.tDouble);
-  static final TypeInfo tNum = TypeInfo._(_TypeWrapper.tNum);
-  static final TypeInfo tBigInt = TypeInfo._(_TypeWrapper.tBigInt);
-  static final TypeInfo tDateTime = TypeInfo._(_TypeWrapper.tDateTime);
-  static final TypeInfo tUint8List = TypeInfo._(_TypeWrapper.tUint8List);
+  static const TypeInfo<String> tString =
+      TypeInfo._const(_TypeWrapper.twString);
+  static const TypeInfo<bool> tBool = TypeInfo._const(_TypeWrapper.twBool);
+  static const TypeInfo<int> tInt = TypeInfo._const(_TypeWrapper.twInt);
+  static const TypeInfo<double> tDouble =
+      TypeInfo._const(_TypeWrapper.twDouble);
+  static const TypeInfo<num> tNum = TypeInfo._const(_TypeWrapper.twNum);
+  static const TypeInfo<BigInt> tBigInt =
+      TypeInfo._const(_TypeWrapper.twBigInt);
+  static const TypeInfo<DateTime> tDateTime =
+      TypeInfo._const(_TypeWrapper.twDateTime);
+  static const TypeInfo<Uint8List> tUint8List =
+      TypeInfo._const(_TypeWrapper.twUint8List);
 
-  static final TypeInfo tList = TypeInfo._(_TypeWrapper.tList);
-  static final TypeInfo tSet = TypeInfo._(_TypeWrapper.tSet);
-  static final TypeInfo tMap = TypeInfo._(_TypeWrapper.tMap);
-  static final TypeInfo tIterable = TypeInfo._(_TypeWrapper.tIterable);
+  static const TypeInfo<List> tList = TypeInfo._const(_TypeWrapper.twList);
+  static const TypeInfo<Set> tSet = TypeInfo._const(_TypeWrapper.twSet);
+  static const TypeInfo<Map> tMap = TypeInfo._const(_TypeWrapper.twMap);
+  static const TypeInfo<Map> tMapEntry =
+      TypeInfo._const(_TypeWrapper.twMapEntry);
+  static const TypeInfo<Iterable> tIterable =
+      TypeInfo._const(_TypeWrapper.twIterable);
 
-  static final TypeInfo tFuture = TypeInfo._(_TypeWrapper.tFuture);
-  static final TypeInfo tFutureOr = TypeInfo._wrapper(
-      _TypeWrapper(_TypeWrapper.tFutureOr, basicType: BasicDartType.futureOr));
+  static const TypeInfo<Future> tFuture =
+      TypeInfo._const(_TypeWrapper.twFuture);
+  static const TypeInfo<FutureOr> tFutureOr =
+      TypeInfo._const(_TypeWrapper.twFutureOr);
 
-  static final TypeInfo tObject = TypeInfo._(_TypeWrapper.tObject);
-  static final TypeInfo tDynamic = TypeInfo._(_TypeWrapper.tDynamic);
-  static final TypeInfo tVoid = TypeInfo._(_TypeWrapper.tVoid);
+  static const TypeInfo<Object> tObject =
+      TypeInfo._const(_TypeWrapper.twObject);
+  static const TypeInfo<dynamic> tDynamic =
+      TypeInfo._const(_TypeWrapper.twDynamic);
+  static final TypeInfo<void> tVoid = TypeInfo._wrapper(_TypeWrapper.twVoid);
 
   final _TypeWrapper _typeWrapper;
 
   /// The main [Type].
   Type get type => _typeWrapper.type;
+
+  /// The generic `T` [Type].
+  Type get genericType => T;
 
   /// Returns the [type] name.
   String get typeName {
@@ -820,9 +887,13 @@ class TypeInfo {
   }
 
   /// The [type] arguments (generics).
-  final List<TypeInfo> arguments;
+  final List<TypeInfo> _arguments;
 
-  static final _emptyArguments = List<TypeInfo>.unmodifiable([]);
+  List<TypeInfo> get arguments => _arguments is UnmodifiableListView<TypeInfo>
+      ? _arguments
+      : UnmodifiableListView<TypeInfo>(_arguments);
+
+  static const _emptyArguments = <TypeInfo>[];
 
   TypeInfo(Type type, [Iterable<Object>? arguments])
       : this._(type, arguments, null);
@@ -833,57 +904,68 @@ class TypeInfo {
             _TypeWrapper(type,
                 object: object,
                 hasArguments: arguments != null && arguments.isNotEmpty),
-        arguments = arguments == null || arguments.isEmpty
+        _arguments = arguments == null || arguments.isEmpty
             ? _emptyArguments
             : List<TypeInfo>.unmodifiable(
                 arguments.map((o) => TypeInfo.from(o)));
 
-  TypeInfo._wrapper(this._typeWrapper, [Iterable<Object>? arguments])
-      : arguments = arguments == null || arguments.isEmpty
-            ? _emptyArguments
-            : List<TypeInfo>.unmodifiable(
-                arguments.map((o) => TypeInfo.from(o)));
+  const TypeInfo._wrapper(this._typeWrapper) : _arguments = _emptyArguments;
+
+  const TypeInfo._const(this._typeWrapper) : _arguments = _emptyArguments;
 
   factory TypeInfo.from(Object o,
       [Iterable<Object>? arguments, Object? object]) {
-    if (o is TypeInfo) return o;
-    if (o is Type) return TypeInfo.fromType(o, arguments, object);
+    if (o is TypeInfo) return o as TypeInfo<T>;
+    if (o is Type) return TypeInfo<T>.fromType(o, arguments, object);
 
     if (o is ParameterReflection) {
-      return TypeInfo.from(o.type, null, object);
+      return o.type.typeInfo as TypeInfo<T>;
     }
 
     if (o is TypeReflection) {
-      var args = arguments ?? o.arguments;
-      return TypeInfo._(o.type, args, object);
+      return o.typeInfo as TypeInfo<T>;
     }
 
-    if (o is FieldReflection) {
-      if (arguments == null && object == null) {
-        return o.type.typeInfo;
-      } else {
-        var args = arguments ?? o.type.arguments;
-        return TypeInfo._(o.type.type, args, object);
-      }
+    if (o is T) {
+      return TypeInfo<T>.fromObject(o as T, arguments, object);
+    } else {
+      return TypeInfo<T>.fromType(o.runtimeType, arguments, object ?? o);
+    }
+  }
+
+  factory TypeInfo.fromObject(T o,
+      [Iterable<Object>? arguments, Object? object]) {
+    if (arguments == null || arguments.isEmpty) {
+      return TypeInfo<T>.fromType(o.runtimeType, null, object ?? o);
     }
 
-    return TypeInfo._(o.runtimeType, arguments, object ?? o);
+    return TypeInfo<T>.fromType(o.runtimeType, arguments, object ?? o);
   }
 
   factory TypeInfo.fromType(Type type,
       [Iterable<Object>? arguments, Object? object]) {
-    if (type == _TypeWrapper.tString || object is String) return tString;
-    if (type == _TypeWrapper.tInt || object is int) return tInt;
-    if (type == _TypeWrapper.tDouble || object is double) return tDouble;
-    if (type == _TypeWrapper.tNum || object is num) return tNum;
-    if (type == _TypeWrapper.tBool || object is bool) return tBool;
-    if (type == _TypeWrapper.tBigInt || object is BigInt) return tBigInt;
-    if (type == _TypeWrapper.tDateTime || object is DateTime) return tDateTime;
+    if (type == _TypeWrapper.tString || object is String) {
+      return tString as TypeInfo<T>;
+    }
+    if (type == _TypeWrapper.tInt || object is int) return tInt as TypeInfo<T>;
+    if (type == _TypeWrapper.tDouble || object is double) {
+      return tDouble as TypeInfo<T>;
+    }
+    if (type == _TypeWrapper.tNum || object is num) return tNum as TypeInfo<T>;
+    if (type == _TypeWrapper.tBool || object is bool) {
+      return tBool as TypeInfo<T>;
+    }
+    if (type == _TypeWrapper.tBigInt || object is BigInt) {
+      return tBigInt as TypeInfo<T>;
+    }
+    if (type == _TypeWrapper.tDateTime || object is DateTime) {
+      return tDateTime as TypeInfo<T>;
+    }
     if (type == _TypeWrapper.tUint8List || object is Uint8List) {
-      return tUint8List;
+      return tUint8List as TypeInfo<T>;
     }
 
-    if (type == _TypeWrapper.tObject) return tObject;
+    if (type == _TypeWrapper.tObject) return tObject as TypeInfo<T>;
 
     var hasArguments = arguments != null && arguments.isNotEmpty;
 
@@ -893,7 +975,7 @@ class TypeInfo {
         return TypeInfo._(_TypeWrapper.tFutureOr, arguments, object,
             TypeInfo.tFutureOr._typeWrapper);
       } else {
-        return tDynamic;
+        return tDynamic as TypeInfo<T>;
       }
     }
 
@@ -902,24 +984,36 @@ class TypeInfo {
         return TypeInfo._(_TypeWrapper.tFuture, arguments, object,
             TypeInfo.tFuture._typeWrapper);
       } else {
-        return TypeInfo.tFuture;
+        return TypeInfo.tFuture as TypeInfo<T>;
       }
     }
 
-    if (type == _TypeWrapper.tVoid) return tVoid;
+    if (type == _TypeWrapper.tVoid) return tVoid as TypeInfo<T>;
 
     if (arguments == null || arguments.isEmpty) {
-      if (type == _TypeWrapper.tList || object is List) return tList;
-      if (type == _TypeWrapper.tSet || object is Set) return tSet;
-      if (type == _TypeWrapper.tMap || object is Map) return tMap;
+      if (type == _TypeWrapper.tList || object is List) {
+        return tList as TypeInfo<T>;
+      }
+      if (type == _TypeWrapper.tSet || object is Set) {
+        return tSet as TypeInfo<T>;
+      }
+      if (type == _TypeWrapper.tMap || object is Map) {
+        return tMap as TypeInfo<T>;
+      }
       if (type == _TypeWrapper.tIterable || object is Iterable) {
-        return tIterable;
+        return tIterable as TypeInfo<T>;
       }
 
-      if (type == _TypeWrapper.tFuture || object is Future) return tFuture;
+      if (type == _TypeWrapper.tFuture || object is Future) {
+        return tFuture as TypeInfo<T>;
+      }
     }
 
-    return TypeInfo._(type, arguments, object);
+    return TypeInfo<T>._(type, arguments, object);
+  }
+
+  R callCasted<R>(R Function<T>() f) {
+    return f<T>();
   }
 
   /// Returns `true` if `this`.[type] equals to [other].[type].
@@ -929,21 +1023,21 @@ class TypeInfo {
 
   /// Returns `true` if [equalsType] and [equalsArgumentsTypes] are `true`.
   bool equalsTypeAndArguments(TypeInfo other) =>
-      equalsType(other) && equalsArgumentsTypes(other.arguments);
+      equalsType(other) && equalsArgumentsTypes(other._arguments);
 
   /// The [arguments] length.
-  int get argumentsLength => arguments.length;
+  int get argumentsLength => _arguments.length;
 
   /// Returns `true` if [type] has [arguments].
-  bool get hasArguments => arguments.isNotEmpty;
+  bool get hasArguments => _arguments.isNotEmpty;
 
   /// Returns the [TypeInfo] of the argument at [index].
   TypeInfo? argumentType(int index) =>
-      index < argumentsLength ? arguments[index] : null;
+      index < argumentsLength ? _arguments[index] : null;
 
   /// Returns `true` if [arguments] have equals [types].
   bool equalsArgumentsTypes(List<Object> types) {
-    var arguments = this.arguments;
+    var arguments = _arguments;
     if (arguments.isEmpty) {
       return types.isEmpty;
     }
@@ -958,7 +1052,7 @@ class TypeInfo {
 
   /// Returns `true` if [arguments] have equivalent [types].
   bool equivalentArgumentsTypes(List<Object> types) {
-    var arguments = this.arguments;
+    var arguments = _arguments;
     if (arguments.isEmpty) {
       return types.isEmpty;
     }
@@ -973,48 +1067,48 @@ class TypeInfo {
   /// Returns the [type] parser.
   ///
   /// See [TypeParser.parserFor].
-  TypeElementParser? get parser => TypeParser.parserFor(typeInfo: this);
+  TypeElementParser<T>? get parser => TypeParser.parserFor<T>(typeInfo: this);
 
   /// Returns the parser of the argument at [index].
   TypeElementParser? argumentParser(int index) =>
-      index < argumentsLength ? arguments[index].parser : null;
+      index < argumentsLength ? _arguments[index].parser : null;
 
   /// Parse [value] or return [def].
   ///
   /// See [TypeParser.parserFor].
-  T? parse<T>(Object? value, [T? def]) {
+  V? parse<V>(Object? value, [V? def]) {
     if (value == null) return def;
 
     if (isString) {
-      return TypeParser.parseString(value, def as String?) as T?;
+      return TypeParser.parseString(value, def as String?) as V?;
     } else if (isInt) {
-      return TypeParser.parseInt(value, def as int?) as T?;
+      return TypeParser.parseInt(value, def as int?) as V?;
     } else if (isBool) {
-      return TypeParser.parseBool(value, def as bool?) as T?;
+      return TypeParser.parseBool(value, def as bool?) as V?;
     } else if (isDouble) {
-      return TypeParser.parseDouble(value, def as double?) as T?;
+      return TypeParser.parseDouble(value, def as double?) as V?;
     } else if (isNum) {
-      return TypeParser.parseNum(value, def as num?) as T?;
+      return TypeParser.parseNum(value, def as num?) as V?;
     } else if (isDateTime) {
-      return TypeParser.parseDateTime(value, def as DateTime?) as T?;
+      return TypeParser.parseDateTime(value, def as DateTime?) as V?;
     } else if (isUInt8List) {
-      return TypeParser.parseUInt8List(value, def as Uint8List?) as T?;
+      return TypeParser.parseUInt8List(value, def as Uint8List?) as V?;
     } else if (isBigInt) {
-      return TypeParser.parseBigInt(value, def as BigInt?) as T?;
+      return TypeParser.parseBigInt(value, def as BigInt?) as V?;
     } else if (isList) {
       return TypeParser.parseList(value, elementParser: argumentParser(0))
-          as T?;
+          as V?;
     } else if (isSet) {
-      return TypeParser.parseSet(value, elementParser: argumentParser(0)) as T?;
+      return TypeParser.parseSet(value, elementParser: argumentParser(0)) as V?;
     } else if (isMap) {
       return TypeParser.parseMap(value,
-          keyParser: argumentParser(0), valueParser: argumentParser(1)) as T?;
+          keyParser: argumentParser(0), valueParser: argumentParser(1)) as V?;
     } else if (isMapEntry) {
       return TypeParser.parseMapEntry(value,
-          keyParser: argumentParser(0), valueParser: argumentParser(1)) as T?;
+          keyParser: argumentParser(0), valueParser: argumentParser(1)) as V?;
     } else {
       if (value.runtimeType == type) {
-        return value as T;
+        return value as V;
       }
 
       return null;
@@ -1023,15 +1117,15 @@ class TypeInfo {
 
   /// Same as [parse] but if `this` [isFuture] it will traverse
   /// to the [Future] argument.
-  T? parseTraversingFuture<T>(Object? value, [T? def]) {
+  V? parseTraversingFuture<V>(Object? value, [V? def]) {
     if (isFuture) {
       var argument = argumentType(0);
       if (argument != null) {
-        return argument.parse(value);
+        return argument.parse<V>(value);
       }
     }
 
-    return parse(value);
+    return parse<V>(value);
   }
 
   /// Returns `true` if [type] is primitive ([bool], [int], [double], [num] or [String]).
@@ -1109,16 +1203,14 @@ class TypeInfo {
 
   /// Returns `true` if [type] is a [List] of entities.
   bool get isListEntity =>
-      isList && hasArguments && !arguments.first.isPrimitiveType;
+      isList && hasArguments && !_arguments.first.isPrimitiveType;
 
   /// The [TypeInfo] of the [List] elements type.
-  TypeInfo? get listEntityType => isListEntity ? arguments.first : null;
-
-  TypeReflection? _typeReflection;
+  TypeInfo? get listEntityType => isListEntity ? _arguments.first : null;
 
   /// Returns this instance as [TypeReflection].
-  TypeReflection get asTypeReflection =>
-      _typeReflection ??= TypeReflection(type, arguments);
+  TypeReflection get asTypeReflection => TypeReflection<T>(
+      type, _arguments.map((e) => e.asTypeReflection).toList(growable: false));
 
   /// Returns `true` if this instances has the same [type] and [arguments].
   bool isOf(Type type, [List<Object>? arguments]) {
@@ -1130,7 +1222,7 @@ class TypeInfo {
       if (hasArguments) {
         return argumentsLength == arguments.length &&
             _listEqualityTypeInfo.equals(
-                this.arguments, TypeInfo.toList(arguments));
+                _arguments, TypeInfo.toList(arguments));
       } else {
         return arguments.isEmpty;
       }
@@ -1144,9 +1236,8 @@ class TypeInfo {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is TypeInfo &&
-          runtimeType == other.runtimeType &&
           _typeWrapper == other._typeWrapper &&
-          _listEqualityTypeInfo.equals(arguments, other.arguments);
+          _listEqualityTypeInfo.equals(_arguments, other._arguments);
 
   /// Checks for equivalence, if the instances are similar:
   /// - `Object` and `dynamic` are equivalent.
@@ -1165,8 +1256,8 @@ class TypeInfo {
       }
     }
 
-    var args1 = arguments;
-    var args2 = other.arguments;
+    var args1 = _arguments;
+    var args2 = other._arguments;
 
     if (args1.isEmpty) {
       return args2.where((e) => !e.isDynamic && !e.isObject).isEmpty;
@@ -1179,11 +1270,14 @@ class TypeInfo {
 
   @override
   int get hashCode =>
-      _typeWrapper.hashCode ^ _listEqualityTypeInfo.hash(arguments);
+      _typeWrapper.hashCode ^ _listEqualityTypeInfo.hash(_arguments);
 
   @override
-  String toString() {
-    return hasArguments ? '$typeName<${arguments.join(',')}>' : typeName;
+  String toString({bool withT = true}) {
+    var typeName = this.typeName;
+    if (withT) typeName = '<T:$T> $typeName';
+
+    return hasArguments ? '$typeName<${_arguments.join(',')}>' : typeName;
   }
 
   Object? fromJson(dynamic json,
