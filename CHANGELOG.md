@@ -1,3 +1,12 @@
+## 1.2.8
+
+- `FunctionReflection.methodInvocationFromMap` and `FunctionReflection.methodInvocation`:
+  - Better handling of unresolved parameters values.
+    Attempts to resolve 2 times, to allow entities references through cache.
+- `Reflection`:
+  - `castList`, `castSet`, `castIterable`, `castMap`, `castCollection`:
+    - Added parameter `nullable`.
+
 ## 1.2.7
 
 - `TypeInfo`:

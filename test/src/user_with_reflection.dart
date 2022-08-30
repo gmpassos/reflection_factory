@@ -124,13 +124,15 @@ class TestUserWithReflection {
 
 @EnableReflection()
 class TestAddressWithReflection {
+  int? id;
+
   final String state;
 
   final String city;
 
-  TestAddressWithReflection(this.state, [this.city = '']);
+  TestAddressWithReflection(this.state, {this.city = '', this.id});
 
-  TestAddressWithReflection.empty() : this('', '');
+  TestAddressWithReflection.empty() : this('');
 
   @override
   bool operator ==(Object other) =>
@@ -144,7 +146,11 @@ class TestAddressWithReflection {
   int get hashCode => state.hashCode ^ city.hashCode;
 
   // Implements its own `toJson`:
-  Map<String, dynamic> toJson() => {'state': state, 'city': city};
+  Map<String, dynamic> toJson() => {
+        if (id != null) 'id': id,
+        'state': state,
+        'city': city,
+      };
 }
 
 @EnableReflection()
@@ -154,10 +160,14 @@ class TestCompanyWithReflection {
 
   final List<String> extraNames;
 
+  List<TestAddressWithReflection> branchesAddresses;
+
   List<TestAddressWithReflection> extraAddresses;
 
-  TestCompanyWithReflection(this.name, this.mainAddress, this.extraAddresses,
-      {this.extraNames = const <String>[]});
+  TestCompanyWithReflection(this.name, this.mainAddress,
+      {this.extraAddresses = const <TestAddressWithReflection>[],
+      this.branchesAddresses = const <TestAddressWithReflection>[],
+      this.extraNames = const <String>[]});
 
   @JsonField.hidden()
   bool local = false;
@@ -169,14 +179,17 @@ class TestCompanyWithReflection {
           runtimeType == other.runtimeType &&
           name == other.name &&
           mainAddress == other.mainAddress &&
+          ListEquality<String>().equals(extraNames, other.extraNames) &&
           ListEquality<TestAddressWithReflection>()
-              .equals(extraAddresses, other.extraAddresses) &&
-          ListEquality<String>().equals(extraNames, other.extraNames);
+              .equals(branchesAddresses, other.branchesAddresses) &&
+          ListEquality<TestAddressWithReflection>()
+              .equals(extraAddresses, other.extraAddresses);
 
   @override
   int get hashCode =>
       name.hashCode ^
       mainAddress.hashCode ^
+      ListEquality<TestAddressWithReflection>().hash(branchesAddresses) ^
       ListEquality<TestAddressWithReflection>().hash(extraAddresses) ^
       ListEquality<String>().hash(extraNames);
 }
