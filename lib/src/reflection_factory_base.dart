@@ -313,10 +313,8 @@ abstract class Reflection<O> {
     return null;
   }
 
-  /// Calls [function] with correct casting for [Reflection].
-  R callCasted<R>(R Function<O>(Reflection<O> reflection) function) {
-    return function<O>(this);
-  }
+  /// Calls [function] with correct casting for this [Reflection].
+  R callCasted<R>(R Function<O>(Reflection<O> reflection) function);
 
   /// Returns a [List] of siblings [Reflection] (declared in the same code unit).
   List<Reflection> siblingsReflection();
