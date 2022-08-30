@@ -262,12 +262,30 @@ void main() {
           isA<List<TestAddressWithReflection>>());
 
       expect(
+          TestAddressWithReflection$reflection.staticInstance.castCollection(
+              <dynamic>[
+                TestAddressWithReflection('State2', city: 'City2'),
+                null
+              ],
+              TypeInfo.fromType(List, [TestAddressWithReflection]),
+              nullable: true),
+          isA<List<TestAddressWithReflection?>>());
+
+      expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<dynamic>[
             TestAddressWithReflection('State2', city: 'City2'),
             TestAddressWithReflection('State3', city: 'City3')
           ], TypeInfo.fromType(List, [Object])),
           isA<List<Object>>());
+
+      expect(
+          TestAddressWithReflection$reflection.staticInstance
+              .castCollection(<dynamic>[
+            TestAddressWithReflection('State2', city: 'City2'),
+            null
+          ], TypeInfo.fromType(List, [Object]), nullable: true),
+          isA<List<Object?>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance
@@ -282,6 +300,12 @@ void main() {
               <dynamic>[123, 456], TypeInfo.fromType(List, [int])),
           isA<List<int>>());
 
+      expect(
+          TestAddressWithReflection$reflection.staticInstance.castCollection(
+              <dynamic>[123, null], TypeInfo.fromType(List, [int]),
+              nullable: true),
+          isA<List<int?>>());
+
       // Iterable:
 
       expect(
@@ -293,12 +317,30 @@ void main() {
           isA<Iterable<TestAddressWithReflection>>());
 
       expect(
+          TestAddressWithReflection$reflection.staticInstance.castCollection(
+              <dynamic>[
+                TestAddressWithReflection('State2', city: 'City2'),
+                null
+              ],
+              TypeInfo.fromType(Iterable, [TestAddressWithReflection]),
+              nullable: true),
+          isA<Iterable<TestAddressWithReflection?>>());
+
+      expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<dynamic>[
             TestAddressWithReflection('State2', city: 'City2'),
             TestAddressWithReflection('State3', city: 'City3')
           ], TypeInfo.fromType(Iterable, [Object])),
           isA<Iterable<Object>>());
+
+      expect(
+          TestAddressWithReflection$reflection.staticInstance
+              .castCollection(<dynamic>[
+            TestAddressWithReflection('State2', city: 'City2'),
+            null
+          ], TypeInfo.fromType(Iterable, [Object]), nullable: true),
+          isA<Iterable<Object?>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance
@@ -313,6 +355,12 @@ void main() {
               <dynamic>[123, 456], TypeInfo.fromType(Iterable, [int])),
           isA<Iterable<int>>());
 
+      expect(
+          TestAddressWithReflection$reflection.staticInstance.castCollection(
+              <dynamic>[123, null], TypeInfo.fromType(Iterable, [int]),
+              nullable: true),
+          isA<Iterable<int?>>());
+
       // Set:
 
       expect(
@@ -324,12 +372,30 @@ void main() {
           isA<Set<TestAddressWithReflection>>());
 
       expect(
+          TestAddressWithReflection$reflection.staticInstance.castCollection(
+              <dynamic>{
+                TestAddressWithReflection('State2', city: 'City2'),
+                null
+              },
+              TypeInfo.fromType(Set, [TestAddressWithReflection]),
+              nullable: true),
+          isA<Set<TestAddressWithReflection?>>());
+
+      expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<dynamic>{
             TestAddressWithReflection('State2', city: 'City2'),
             TestAddressWithReflection('State3', city: 'City3')
           }, TypeInfo.fromType(Set, [Object])),
           isA<Set<Object>>());
+
+      expect(
+          TestAddressWithReflection$reflection.staticInstance
+              .castCollection(<dynamic>{
+            TestAddressWithReflection('State2', city: 'City2'),
+            null
+          }, TypeInfo.fromType(Set, [Object]), nullable: true),
+          isA<Set<Object?>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance
@@ -344,6 +410,12 @@ void main() {
               <dynamic>{123, 456}, TypeInfo.fromType(Set, [int])),
           isA<Set<int>>());
 
+      expect(
+          TestAddressWithReflection$reflection.staticInstance.castCollection(
+              <dynamic>{123, null}, TypeInfo.fromType(Set, [int]),
+              nullable: true),
+          isA<Set<int?>>());
+
       // Map:
 
       expect(
@@ -353,6 +425,16 @@ void main() {
             'b': TestAddressWithReflection('State3', city: 'City3')
           }, TypeInfo.fromType(Map, [String, TestAddressWithReflection])),
           isA<Map<String, TestAddressWithReflection>>());
+
+      expect(
+          TestAddressWithReflection$reflection.staticInstance.castCollection(
+              <Object, dynamic>{
+                'a': TestAddressWithReflection('State2', city: 'City2'),
+                'b': null
+              },
+              TypeInfo.fromType(Map, [String, TestAddressWithReflection]),
+              nullable: true),
+          isA<Map<String, TestAddressWithReflection?>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance
@@ -424,8 +506,25 @@ void main() {
               TypeInfo.fromType(Map, [String, int])),
           isA<Map<String, int>>());
 
+      expect(
+          TestAddressWithReflection$reflection.staticInstance.castCollection(
+              <Object, Object?>{'a': 123, 'b': null},
+              TypeInfo.fromType(Map, [String, int]),
+              nullable: true),
+          isA<Map<String, int?>>());
+
       expect(JsonCodec().toJson(TestOpAWithReflection(10)),
           equals({'type': 'a', 'value': 10}));
+
+      expect(
+          TestOpAWithReflection$reflection.staticInstance
+              .callCasted(<T>(c) => T),
+          equals(TestOpAWithReflection));
+
+      expect(
+          TestEnumWithReflection$reflection.staticInstance
+              .callCasted(<T>(c) => T),
+          equals(TestEnumWithReflection));
     });
 
     test('fromJson', () async {
