@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.2.7
+// BUILDER: reflection_factory/1.2.8
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -112,7 +112,7 @@ class TestAddressWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.7');
+  Version get reflectionFactoryVersion => Version.parse('1.2.8');
 
   @override
   TestAddressWithReflection$reflection withObject(
@@ -168,17 +168,19 @@ class TestAddressWithReflection$reflection
             this,
             TestAddressWithReflection,
             '',
-            () => (String state, [String city = '']) =>
-                TestAddressWithReflection(state, city),
+            () => (String state, {String city = '', int? id}) =>
+                TestAddressWithReflection(state, city: city, id: id),
             const <ParameterReflection>[
               ParameterReflection(
                   TypeReflection.tString, 'state', false, true, null, null)
             ],
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 'city', false, false, '', null)
-            ],
             null,
+            const <String, ParameterReflection>{
+              'city': ParameterReflection(
+                  TypeReflection.tString, 'city', false, false, '', null),
+              'id': ParameterReflection(
+                  TypeReflection.tInt, 'id', true, false, null, null)
+            },
             null);
       case 'empty':
         return ConstructorReflection<TestAddressWithReflection>(
@@ -218,7 +220,8 @@ class TestAddressWithReflection$reflection
   }
 
   @override
-  List<String> get fieldsNames => const <String>['city', 'hashCode', 'state'];
+  List<String> get fieldsNames =>
+      const <String>['city', 'hashCode', 'id', 'state'];
 
   @override
   FieldReflection<TestAddressWithReflection, T>? field<T>(String fieldName,
@@ -228,6 +231,20 @@ class TestAddressWithReflection$reflection
     var lc = fieldName.trim().toLowerCase();
 
     switch (lc) {
+      case 'id':
+        return FieldReflection<TestAddressWithReflection, T>(
+          this,
+          TestAddressWithReflection,
+          TypeReflection.tInt,
+          'id',
+          true,
+          (o) => () => o!.id as T,
+          (o) => (T? v) => o!.id = v as int?,
+          obj,
+          false,
+          false,
+          null,
+        );
       case 'state':
         return FieldReflection<TestAddressWithReflection, T>(
           this,
@@ -343,7 +360,7 @@ class TestCompanyWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.7');
+  Version get reflectionFactoryVersion => Version.parse('1.2.8');
 
   @override
   TestCompanyWithReflection$reflection withObject(
@@ -399,9 +416,14 @@ class TestCompanyWithReflection$reflection
             TestCompanyWithReflection,
             '',
             () => (String name, TestAddressWithReflection mainAddress,
-                    List<TestAddressWithReflection> extraAddresses,
-                    {List<String> extraNames = const <String>[]}) =>
-                TestCompanyWithReflection(name, mainAddress, extraAddresses,
+                    {List<TestAddressWithReflection> extraAddresses =
+                        const <TestAddressWithReflection>[],
+                    List<TestAddressWithReflection> branchesAddresses =
+                        const <TestAddressWithReflection>[],
+                    List<String> extraNames = const <String>[]}) =>
+                TestCompanyWithReflection(name, mainAddress,
+                    extraAddresses: extraAddresses,
+                    branchesAddresses: branchesAddresses,
                     extraNames: extraNames),
             const <ParameterReflection>[
               ParameterReflection(
@@ -413,8 +435,22 @@ class TestCompanyWithReflection$reflection
                   false,
                   true,
                   null,
+                  null)
+            ],
+            null,
+            const <String, ParameterReflection>{
+              'branchesAddresses': ParameterReflection(
+                  TypeReflection<List<TestAddressWithReflection>>(
+                      List, <TypeReflection>[
+                    TypeReflection<TestAddressWithReflection>(
+                        TestAddressWithReflection)
+                  ]),
+                  'branchesAddresses',
+                  false,
+                  false,
+                  const <TestAddressWithReflection>[],
                   null),
-              ParameterReflection(
+              'extraAddresses': ParameterReflection(
                   TypeReflection<List<TestAddressWithReflection>>(
                       List, <TypeReflection>[
                     TypeReflection<TestAddressWithReflection>(
@@ -422,12 +458,9 @@ class TestCompanyWithReflection$reflection
                   ]),
                   'extraAddresses',
                   false,
-                  true,
-                  null,
-                  null)
-            ],
-            null,
-            const <String, ParameterReflection>{
+                  false,
+                  const <TestAddressWithReflection>[],
+                  null),
               'extraNames': ParameterReflection(TypeReflection.tListString,
                   'extraNames', false, false, const <String>[], null)
             },
@@ -458,6 +491,7 @@ class TestCompanyWithReflection$reflection
 
   @override
   List<String> get fieldsNames => const <String>[
+        'branchesAddresses',
         'extraAddresses',
         'extraNames',
         'hashCode',
@@ -514,6 +548,24 @@ class TestCompanyWithReflection$reflection
           obj,
           false,
           true,
+          null,
+        );
+      case 'branchesaddresses':
+        return FieldReflection<TestCompanyWithReflection, T>(
+          this,
+          TestCompanyWithReflection,
+          TypeReflection<List<TestAddressWithReflection>>(
+              List, <TypeReflection>[
+            TypeReflection<TestAddressWithReflection>(TestAddressWithReflection)
+          ]),
+          'branchesAddresses',
+          false,
+          (o) => () => o!.branchesAddresses as T,
+          (o) => (T? v) =>
+              o!.branchesAddresses = v as List<TestAddressWithReflection>,
+          obj,
+          false,
+          false,
           null,
         );
       case 'extraaddresses':
@@ -616,7 +668,7 @@ class TestDataWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.7');
+  Version get reflectionFactoryVersion => Version.parse('1.2.8');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -851,7 +903,7 @@ class TestDomainWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.7');
+  Version get reflectionFactoryVersion => Version.parse('1.2.8');
 
   @override
   TestDomainWithReflection$reflection withObject(
@@ -1203,7 +1255,7 @@ class TestEnumWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.7');
+  Version get reflectionFactoryVersion => Version.parse('1.2.8');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -1273,7 +1325,7 @@ class TestOpAWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.7');
+  Version get reflectionFactoryVersion => Version.parse('1.2.8');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -1502,7 +1554,7 @@ class TestOpBWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.7');
+  Version get reflectionFactoryVersion => Version.parse('1.2.8');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -1745,7 +1797,7 @@ class TestOpWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.7');
+  Version get reflectionFactoryVersion => Version.parse('1.2.8');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -1995,7 +2047,7 @@ class TestTransactionWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.7');
+  Version get reflectionFactoryVersion => Version.parse('1.2.8');
 
   @override
   TestTransactionWithReflection$reflection withObject(
@@ -2210,7 +2262,7 @@ class TestUserWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.7');
+  Version get reflectionFactoryVersion => Version.parse('1.2.8');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>

@@ -413,10 +413,11 @@ void main() {
         expect(t3.type, equals(t1.type));
 
         var company = TestCompanyWithReflection(
-            'FooInc', TestAddressWithReflection('State1', 'City1'), [
-          TestAddressWithReflection('State2', 'City2'),
-          TestAddressWithReflection('State3', 'City3')
-        ]);
+            'FooInc', TestAddressWithReflection('State1', city: 'City1'),
+            extraAddresses: [
+              TestAddressWithReflection('State2', city: 'City2'),
+              TestAddressWithReflection('State3', city: 'City3')
+            ]);
 
         var fieldExtraAddressesTypeInfo =
             company.reflection.field('extraAddresses')!.type.typeInfo;
@@ -737,6 +738,28 @@ void main() {
                 'password': 's123456'
               }
             ]));
+
+        var json2WithRef = [usersJson[0], usersJson[0]['id']];
+        var usersDecoded2 = typeListOfUser.fromJson(json2WithRef) as List;
+
+        expect(identical(usersDecoded2[0], usersDecoded2[1]), isTrue);
+
+        expect(
+            JsonEncoder.defaultEncoder
+                .toJson(usersDecoded2, duplicatedEntitiesAsID: true),
+            equals([
+              {
+                'axis': 'x',
+                'email': 'joe@mail.com',
+                'enabled': true,
+                'id': 101,
+                'isEnabled': true,
+                'theLevel': null,
+                'name': 'joe',
+                'password': 'j123456'
+              },
+              101
+            ]));
       }
 
       {
@@ -858,6 +881,177 @@ void main() {
         var users2 = typeMapOfUser.fromJson(usersJson);
 
         expect(users2, equals(users));
+      }
+
+      {
+        var entityType = TypeInfo<TestCompanyWithReflection>.fromType(
+            TestCompanyWithReflection);
+
+        var address1 = TestAddressWithReflection('NY', city: 'New York', id: 1);
+        var address2 =
+            TestAddressWithReflection('CA', city: 'Los Angeles', id: 2);
+        var address3 = TestAddressWithReflection('MA', city: 'Boston', id: 3);
+
+        var company1 = TestCompanyWithReflection('Comp1', address1,
+            branchesAddresses: [address1],
+            extraAddresses: [address2, address3]);
+
+        var company1Json = JsonEncoder.defaultEncoder
+            .toJson(company1, duplicatedEntitiesAsID: true);
+
+        expect(
+            company1Json,
+            equals({
+              'branchesAddresses': [
+                {'id': 1, 'state': 'NY', 'city': 'New York'}
+              ],
+              'extraAddresses': [
+                {'id': 2, 'state': 'CA', 'city': 'Los Angeles'},
+                {'id': 3, 'state': 'MA', 'city': 'Boston'}
+              ],
+              'extraNames': [],
+              'mainAddress': 1,
+              'name': 'Comp1'
+            }));
+
+        var company1Decoded = JsonDecoder.defaultDecoder.fromJson(company1Json,
+            type: TestCompanyWithReflection, duplicatedEntitiesAsID: true);
+        expect(company1Decoded, equals(company1));
+
+        var company1Decoded2 = entityType.fromJson(company1Json);
+        expect(company1Decoded2, equals(company1));
+
+        var company2 = TestCompanyWithReflection('Comp2', address1,
+            branchesAddresses: [address2],
+            extraAddresses: [address2, address1, address2]);
+
+        var company2Json = JsonEncoder.defaultEncoder
+            .toJson(company2, duplicatedEntitiesAsID: true);
+
+        expect(
+            company2Json,
+            equals({
+              'branchesAddresses': [
+                {'id': 2, 'state': 'CA', 'city': 'Los Angeles'}
+              ],
+              'extraAddresses': [
+                2,
+                {'id': 1, 'state': 'NY', 'city': 'New York'},
+                2
+              ],
+              'extraNames': [],
+              'mainAddress': 1,
+              'name': 'Comp2'
+            }));
+
+        var company2Decoded = JsonDecoder.defaultDecoder.fromJson(company2Json,
+            type: TestCompanyWithReflection, duplicatedEntitiesAsID: true);
+        expect(company2Decoded, equals(company2));
+
+        var company2Decoded2 = entityType.fromJson(company2Json);
+        expect(company2Decoded2, equals(company2));
+
+        var companiesList = <TestCompanyWithReflection>[company1, company2];
+
+        var companiesListType =
+            TypeInfo<List<TestCompanyWithReflection>>.fromType(List, [
+          TypeInfo<TestCompanyWithReflection>.fromType(
+              TestCompanyWithReflection)
+        ]);
+
+        var companiesJson = JsonEncoder.defaultEncoder
+            .toJson(companiesList, duplicatedEntitiesAsID: true);
+
+        expect(
+            companiesJson,
+            equals([
+              {
+                'branchesAddresses': [
+                  {'id': 1, 'state': 'NY', 'city': 'New York'}
+                ],
+                'extraAddresses': [
+                  {'id': 2, 'state': 'CA', 'city': 'Los Angeles'},
+                  {'id': 3, 'state': 'MA', 'city': 'Boston'}
+                ],
+                'extraNames': [],
+                'mainAddress': 1,
+                'name': 'Comp1'
+              },
+              {
+                'branchesAddresses': [2],
+                'extraAddresses': [2, 1, 2],
+                'extraNames': [],
+                'mainAddress': 1,
+                'name': 'Comp2'
+              }
+            ]));
+
+        var companiesDecoded = companiesListType.fromJson(companiesJson);
+
+        expect(companiesDecoded, companiesList);
+      }
+
+      {
+        var entityType = TypeInfo<TestCompanyWithReflection>.fromType(
+            TestCompanyWithReflection);
+
+        var address1 = TestAddressWithReflection('NY', city: 'New York', id: 1);
+        var address2 =
+            TestAddressWithReflection('CA', city: 'Los Angeles', id: 2);
+        var address3 = TestAddressWithReflection('MA', city: 'Boston', id: 3);
+
+        var company1 = TestCompanyWithReflection('Comp1', address2,
+            branchesAddresses: [address1, address3],
+            extraAddresses: [address2, address3]);
+
+        var company1Json = JsonEncoder.defaultEncoder
+            .toJson(company1, duplicatedEntitiesAsID: true);
+
+        expect(
+            company1Json,
+            equals({
+              'branchesAddresses': [
+                {'id': 1, 'state': 'NY', 'city': 'New York'},
+                {'id': 3, 'state': 'MA', 'city': 'Boston'}
+              ],
+              'extraAddresses': [
+                {'id': 2, 'state': 'CA', 'city': 'Los Angeles'},
+                3
+              ],
+              'extraNames': [],
+              'mainAddress': 2,
+              'name': 'Comp1'
+            }));
+
+        var company1Decoded = JsonDecoder.defaultDecoder.fromJson(company1Json,
+            type: TestCompanyWithReflection, duplicatedEntitiesAsID: true);
+        expect(company1Decoded, equals(company1));
+
+        var company1Decoded2 = entityType.fromJson(company1Json);
+        expect(company1Decoded2, equals(company1));
+
+        var company1Json2 = {
+          'branchesAddresses': [
+            {'id': 1, 'state': 'NY', 'city': 'New York'},
+            3
+          ],
+          'extraAddresses': [
+            {'id': 2, 'state': 'CA', 'city': 'Los Angeles'},
+            {'id': 3, 'state': 'MA', 'city': 'Boston'}
+          ],
+          'extraNames': [],
+          'mainAddress': 2,
+          'name': 'Comp1'
+        };
+
+        var company1Decoded3 = JsonDecoder.defaultDecoder.fromJson(
+            company1Json2,
+            type: TestCompanyWithReflection,
+            duplicatedEntitiesAsID: true);
+        expect(company1Decoded3, equals(company1));
+
+        var company1Decoded4 = entityType.fromJson(company1Json2);
+        expect(company1Decoded4, equals(company1));
       }
     });
   });

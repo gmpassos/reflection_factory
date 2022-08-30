@@ -1429,7 +1429,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
         "Can't find registered JsonDecoder or Reflection for type: $type > $s");
   }
 
-  O _entityFromJsonValue<O>(
+  O? _entityFromJsonValue<O>(
       Type type, Object value, bool duplicatedEntitiesAsID) {
     if ((duplicatedEntitiesAsID || forceDuplicatedEntitiesAsID)) {
       var cachedEntity = entityCache.getCachedEntityByID(value, type: type);
@@ -1457,6 +1457,10 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
         _cacheEntity(obj);
         return obj as O;
       }
+    }
+
+    if (value.runtimeType == type) {
+      return value as O;
     }
 
     if (!JsonConverter.isValidEntityType(type)) {
@@ -1511,7 +1515,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       }
     }
 
-    return value as O;
+    return null;
   }
 
   @override
@@ -1673,7 +1677,8 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
         ReflectionFactory().getRegisterClassReflection(castType);
 
     if (classReflection != null) {
-      return classReflection.castList(val, castType) ?? val;
+      var nullable = val.any((e) => e == null);
+      return classReflection.castList(val, castType, nullable: nullable) ?? val;
     } else {
       return castListType(val, castType);
     }

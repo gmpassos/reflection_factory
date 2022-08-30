@@ -1074,16 +1074,14 @@ void main() {
       expect(userStaticReflection.getStaticField('version'), equals(1.1));
       expect(userStaticReflection.getStaticField('withReflection'), isTrue);
 
-      //TestAddressWithReflection$reflection.staticInstance;
-
-      var address = TestAddressWithReflection('CA', 'Los Angeles');
+      var address = TestAddressWithReflection('CA', city: 'Los Angeles');
       var addressReflection = address.reflection;
 
       expect(addressReflection, isNotNull);
       expect(addressReflection.hasJsonNameAlias, isFalse);
       expect(addressReflection.canCreateInstanceWithoutArguments, isTrue);
-      expect(
-          addressReflection.fieldsNames, equals(['city', 'hashCode', 'state']));
+      expect(addressReflection.fieldsNames,
+          equals(['city', 'hashCode', 'id', 'state']));
       expect(addressReflection.methodsNames, equals(['toJson']));
       expect(addressReflection.constructorsNames, equals(['', 'empty']));
 

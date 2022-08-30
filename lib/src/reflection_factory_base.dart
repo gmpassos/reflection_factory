@@ -20,7 +20,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.2.7';
+  static const String VERSION = '1.2.8';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -145,73 +145,112 @@ abstract class Reflection<O> {
   int get reflectionLevel;
 
   /// Cast [list] to [classType] if [type] == [classType] or return `null`.
-  List? castList(List list, Type type) {
+  /// - If [nullable] is `true` casts to a [List] of nullable values.
+  List? castList(List list, Type type, {bool nullable = false}) {
     if (type == reflectedType) {
-      if (list is List<O>) {
-        return list;
+      if (nullable) {
+        if (list is List<O?>) {
+          return list;
+        } else {
+          return List<O?>.from(list);
+        }
       } else {
-        return List<O>.from(list);
+        if (list is List<O>) {
+          return list;
+        } else {
+          return List<O>.from(list);
+        }
       }
     } else if (type == dynamic) {
       return List<dynamic>.from(list);
     } else if (type == Object) {
-      return List<Object>.from(list);
+      return nullable ? List<Object?>.from(list) : List<Object>.from(list);
     }
 
     var typeInfo = TypeInfo.fromType(type);
 
     List? callCast<E>() => list.cast<E>();
+    List? callCastNullable<E>() => list.cast<E?>();
 
-    var l = typeInfo.callCasted(callCast);
+    var l = nullable
+        ? typeInfo.callCasted(callCastNullable)
+        : typeInfo.callCasted(callCast);
+
     return l;
   }
 
   /// Cast [set] to [classType] if [type] == [classType] or return `null`.
-  Set? castSet(Set set, Type type) {
+  /// - If [nullable] is `true` casts to a [Set] of nullable values.
+  Set? castSet(Set set, Type type, {bool nullable = false}) {
     if (type == reflectedType) {
-      if (set is Set<O>) {
-        return set;
+      if (nullable) {
+        if (set is Set<O?>) {
+          return set;
+        } else {
+          return Set<O?>.from(set);
+        }
       } else {
-        return Set<O>.from(set);
+        if (set is Set<O>) {
+          return set;
+        } else {
+          return Set<O>.from(set);
+        }
       }
     } else if (type == dynamic) {
       return Set<dynamic>.from(set);
     } else if (type == Object) {
-      return Set<Object>.from(set);
+      return nullable ? Set<Object?>.from(set) : Set<Object>.from(set);
     }
 
     var typeInfo = TypeInfo.fromType(type);
 
     Set? callCast<E>() => set.cast<E>();
+    Set? callCastNullable<E>() => set.cast<E?>();
 
-    var l = typeInfo.callCasted(callCast);
+    var l = nullable
+        ? typeInfo.callCasted(callCastNullable)
+        : typeInfo.callCasted(callCast);
+
     return l;
   }
 
   /// Cast [itr] to [classType] if [type] == [classType] or return `null`.
-  Iterable? castIterable(Iterable itr, Type type) {
+  /// - If [nullable] is `true` casts to an [Iterable] of nullable values.
+  Iterable? castIterable(Iterable itr, Type type, {bool nullable = false}) {
     if (type == reflectedType) {
-      if (itr is Iterable<O>) {
-        return itr;
+      if (nullable) {
+        if (itr is Iterable<O?>) {
+          return itr;
+        } else {
+          return itr.cast<O?>();
+        }
       } else {
-        return itr.cast<O>();
+        if (itr is Iterable<O>) {
+          return itr;
+        } else {
+          return itr.cast<O>();
+        }
       }
     } else if (type == dynamic) {
       return itr.cast<dynamic>();
     } else if (type == Object) {
-      return itr.cast<Object>();
+      return nullable ? itr.cast<Object?>() : itr.cast<Object>();
     }
 
     var typeInfo = TypeInfo.fromType(type);
 
     Iterable? callCast<E>() => itr.cast<E>();
+    Iterable? callCastNullable<E>() => itr.cast<E>();
 
-    var l = typeInfo.callCasted(callCast);
+    var l = nullable
+        ? typeInfo.callCasted(callCastNullable)
+        : typeInfo.callCasted(callCast);
     return l;
   }
 
   /// Cast [map] values to [classType] if [type] == [classType] or return `null`.
-  Map? castMap(Map map, TypeInfo typeInfo) {
+  /// - If [nullable] is `true` casts to a [Map] of nullable values.
+  Map? castMap(Map map, TypeInfo typeInfo, {bool nullable = false}) {
     if (!typeInfo.isMap) {
       return map;
     }
@@ -219,84 +258,63 @@ abstract class Reflection<O> {
     var keyType = typeInfo.argumentType(0) ?? TypeInfo.tDynamic;
     var valueType = typeInfo.argumentType(1) ?? TypeInfo.tDynamic;
 
-    if (keyType.isString) {
-      if (valueType.type == reflectedType) {
-        if (map is Map<String, O>) {
-          return map;
-        } else {
-          return map
-              .map<String, O>((key, value) => MapEntry<String, O>(key, value));
-        }
-      } else if (valueType.isDynamic) {
-        return map.map<String, dynamic>(
-            (key, value) => MapEntry<String, dynamic>(key, value));
-      } else if (valueType.isObject) {
-        return map.map<String, Object>(
-            (key, value) => MapEntry<String, Object>(key, value));
-      }
-    } else if (keyType.isObject) {
-      if (valueType.type == reflectedType) {
-        if (map is Map<Object, O>) {
-          return map;
-        } else {
-          return map
-              .map<Object, O>((key, value) => MapEntry<Object, O>(key, value));
-        }
-      } else if (valueType.isDynamic) {
-        return map.map<Object, dynamic>(
-            (key, value) => MapEntry<Object, dynamic>(key, value));
-      } else if (valueType.isObject) {
-        return map.map<Object, Object>(
-            (key, value) => MapEntry<Object, Object>(key, value));
-      }
-    } else if (keyType.isDynamic) {
-      if (valueType.type == reflectedType) {
-        if (map is Map<dynamic, O>) {
-          return map;
-        } else {
-          return map.map<dynamic, O>(
-              (key, value) => MapEntry<dynamic, O>(key, value));
-        }
-      } else if (valueType.isDynamic) {
-        return map.map<dynamic, dynamic>(
-            (key, value) => MapEntry<dynamic, dynamic>(key, value));
-      } else if (valueType.isObject) {
-        return map.map<dynamic, Object>(
-            (key, value) => MapEntry<dynamic, Object>(key, value));
-      }
+    if (valueType.type == reflectedType) {
+      Map? callKey<K>() => map is Map<K, O>
+          ? map
+          : map.map<K, O>((key, value) => MapEntry<K, O>(key, value));
+      Map? callKeyNullable<K>() => map is Map<K, O?>
+          ? map
+          : map.map<K, O?>((key, value) => MapEntry<K, O?>(key, value));
+
+      var m = nullable
+          ? keyType.callCasted(callKeyNullable)
+          : keyType.callCasted(callKey);
+
+      return m;
+    } else {
+      Map? callKey<K>() => valueType.callCasted(<V>() {
+            return map is Map<K, V>
+                ? map
+                : map.map<K, V>((key, value) => MapEntry<K, V>(key, value));
+          });
+
+      Map? callKeyNullable<K>() => valueType.callCasted(<V>() {
+            return map is Map<K, V?>
+                ? map
+                : map.map<K, V?>((key, value) => MapEntry<K, V?>(key, value));
+          });
+
+      var m = nullable
+          ? keyType.callCasted(callKeyNullable)
+          : keyType.callCasted(callKey);
+      return m;
     }
-
-    Map? callKey<K>() => valueType.callCasted(<V>() {
-          return map.map<K, V>((key, value) => MapEntry<K, V>(key, value));
-        });
-
-    var m = keyType.callCasted(callKey);
-    return m;
   }
 
   /// Cast [o] to a collection represented by [typeInfo].
-  Object? castCollection(dynamic o, TypeInfo typeInfo) {
+  /// - If [nullable] is `true` casts to a collection of nullable values.
+  /// - See: [castList], [castSet], [castIterable], [castMap].
+  Object? castCollection(dynamic o, TypeInfo typeInfo,
+      {bool nullable = false}) {
     if (o == null) return null;
 
     var mainType = typeInfo.argumentType(0) ?? typeInfo;
 
     if (typeInfo.isSet) {
-      return castSet(o, mainType.type);
+      return castSet(o, mainType.type, nullable: nullable);
     } else if (typeInfo.isList) {
-      return castList(o, mainType.type);
+      return castList(o, mainType.type, nullable: nullable);
     } else if (typeInfo.isIterable) {
-      return castIterable(o, mainType.type);
+      return castIterable(o, mainType.type, nullable: nullable);
     } else if (typeInfo.isMap) {
-      return castMap(o, typeInfo);
+      return castMap(o, typeInfo, nullable: nullable);
     }
 
     return null;
   }
 
-  /// Calls [function] with correct casting for [Reflection].
-  R callCasted<R>(R Function<O>(Reflection<O> reflection) function) {
-    return function<O>(this);
-  }
+  /// Calls [function] with correct casting for this [Reflection].
+  R callCasted<R>(R Function<O>(Reflection<O> reflection) function);
 
   /// Returns a [List] of siblings [Reflection] (declared in the same code unit).
   List<Reflection> siblingsReflection();
@@ -1148,7 +1166,7 @@ abstract class ClassReflection<O> extends Reflection<O>
           autoResetEntityCache: autoResetEntityCache);
     } else {
       throw StateError(
-          "JSON needs to be a Map to decode a class object: $className");
+          "JSON needs to be a Map to decode a class (`$className`) object. JSON type: `${json.runtimeType}`");
     }
   }
 
@@ -1206,7 +1224,7 @@ abstract class ClassReflection<O> extends Reflection<O>
       return o;
     } catch (e) {
       // Tries a second parameter resolution if some value was resolved.
-      // This will allow use of the  current cached entities in a `JsonEntityCache`
+      // This will allow use of the current cached entities in a `JsonEntityCache`
       // (if used by `fieldValueResolver`).
       var map2 = methodInvocation.parametersToMap();
 
@@ -2282,6 +2300,8 @@ class FieldReflection<O, T> extends ElementReflection<O>
 
 final Object absentParameterValue = _AbsentParameterValue();
 
+final Object unresolvedParameterValue = _UnresolvedParameterValue();
+
 class _AbsentParameterValue {
   const _AbsentParameterValue();
 
@@ -2289,7 +2309,23 @@ class _AbsentParameterValue {
   bool operator ==(Object other) => identical(this, other);
 
   @override
-  int get hashCode => 0;
+  int get hashCode => 1;
+
+  @override
+  String toString() => '<absent_parameter>';
+}
+
+class _UnresolvedParameterValue {
+  const _UnresolvedParameterValue();
+
+  @override
+  bool operator ==(Object other) => identical(this, other);
+
+  @override
+  int get hashCode => 2;
+
+  @override
+  String toString() => '<unresolved_parameter>';
 }
 
 /// Base class fro methods and constructors.
@@ -2543,6 +2579,33 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
       {FieldValueResolver? reviver,
       FieldNameResolver? nameResolver,
       bool jsonName = false}) {
+    // Resolve the valie, reviving it if needed:
+    Object? resolveValue(
+        ParameterReflection p, String pName, Object? val, bool contains) {
+      if (reviver != null) {
+        var type = p.type;
+        var valRevived = reviver(pName, val, type);
+        if (valRevived != null) {
+          if (valRevived is List &&
+              type.isListEntity &&
+              valRevived.any((e) => e == null)) {
+            var valRevivedUnresolved =
+                valRevived.map((e) => e ?? unresolvedParameterValue).toList();
+            return valRevivedUnresolved;
+          }
+          return valRevived;
+        }
+        if (contains) {
+          return val == null ? null : unresolvedParameterValue;
+        } else {
+          return absentParameterValue;
+        }
+      } else {
+        if (val != null) return val;
+        return contains ? null : absentParameterValue;
+      }
+    }
+
     if (jsonName) {
       var fieldsAliases = classReflection.fieldsJsonNameAliases;
       var fieldsAliasesReverse =
@@ -2576,12 +2639,7 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
           contains = true;
         }
 
-        if (reviver != null) {
-          val = reviver(pName, val, p.type);
-        }
-
-        if (val != null) return val;
-        return contains ? null : absentParameterValue;
+        return resolveValue(p, pName, val, contains);
       });
     } else {
       return methodInvocation((p) {
@@ -2599,12 +2657,7 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
           contains = true;
         }
 
-        if (reviver != null) {
-          val = reviver(pName, val, p.type);
-        }
-
-        if (val != null) return val;
-        return contains ? null : absentParameterValue;
+        return resolveValue(p, pName, val, contains);
       });
     }
   }
@@ -2612,70 +2665,97 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
   /// Creates a [MethodInvocation] using [parametersProvider].
   MethodInvocation<O> methodInvocation(
       Object? Function(ParameterReflection parameter) parametersProvider) {
-    var normalParameters = this
-        .normalParameters
-        .map((p) => MapEntry<String, Object?>(p.name, parametersProvider(p)))
-        .toList();
+    final normalParameters = this.normalParameters;
+    final optionalParameters = this.optionalParameters;
+    final namedParameters = this.namedParameters;
 
-    var optionalParameters = this
-        .optionalParameters
-        .map((p) => MapEntry<String, Object?>(p.name, parametersProvider(p)))
-        .toList();
+    MapEntry<String, Object?> resolveParameterEntry(ParameterReflection p) =>
+        MapEntry<String, Object?>(p.name, parametersProvider(p));
 
-    while (optionalParameters.isNotEmpty) {
-      var lastIndex = optionalParameters.length - 1;
+    var normalParametersEntries =
+        normalParameters.map(resolveParameterEntry).toList();
 
-      var entry = optionalParameters[lastIndex];
+    var optionalParametersEntries =
+        optionalParameters.map(resolveParameterEntry).toList();
+
+    var namedParametersEntries = Map<String, dynamic>.fromEntries(
+        namedParameters.values.map(resolveParameterEntry));
+
+    // If has some unresolved parameter tries to resolve it again.
+    // This will allow use of the current cached entities in
+    // a `JsonEntityCache` (if in use).
+    if (_hasUnresolvedParameterValue(normalParametersEntries) ||
+        _hasUnresolvedParameterValue(optionalParametersEntries) ||
+        _hasUnresolvedParameterValue(namedParametersEntries.entries)) {
+      normalParametersEntries =
+          normalParameters.map(resolveParameterEntry).toList();
+
+      optionalParametersEntries =
+          optionalParameters.map(resolveParameterEntry).toList();
+
+      namedParametersEntries = Map<String, dynamic>.fromEntries(
+          namedParameters.values.map(resolveParameterEntry));
+
+      if (_hasUnresolvedParameterValue(normalParametersEntries) ||
+          _hasUnresolvedParameterValue(optionalParametersEntries) ||
+          _hasUnresolvedParameterValue(namedParametersEntries.entries)) {
+        throw StateError(
+            "Unresolved parameter value> normal: ${normalParametersEntries.asStringSimple} ; "
+            "optional: ${optionalParametersEntries.asStringSimple} ; "
+            "named: ${namedParametersEntries.entries.asStringSimple}");
+      }
+    }
+
+    while (optionalParametersEntries.isNotEmpty) {
+      var lastIndex = optionalParametersEntries.length - 1;
+
+      var entry = optionalParametersEntries[lastIndex];
       var value = entry.value;
-      var isAbsent = absentParameterValue == value;
+      var isAbsent = value.isAbsentParameterValue;
       if (value != null && !isAbsent) break;
 
       var lastParam = this.optionalParameters[lastIndex];
 
       if (isAbsent) {
-        optionalParameters.removeAt(lastIndex);
+        optionalParametersEntries.removeAt(lastIndex);
       } else {
         if (lastParam.hasDefaultValue || lastParam.nullable) {
-          optionalParameters.removeAt(lastIndex);
+          optionalParametersEntries.removeAt(lastIndex);
         } else {
           throw StateError(
-              "Invalid optional parameter value: $optionalParameters != ${this.optionalParameters}");
+              "Invalid optional parameter value: $optionalParametersEntries != ${this.optionalParameters}");
         }
       }
     }
 
-    _removeAbsentParameterValue(normalParameters);
-    _removeAbsentParameterValue(optionalParameters);
+    for (var k in namedParametersEntries.keys.toList(growable: false)) {
+      var p = namedParameters[k]!;
+      Object? value = namedParametersEntries[k];
 
-    var namedParameters =
-        Map<String, dynamic>.fromEntries(this.namedParameters.entries.map((e) {
-      var p = e.value;
-
-      var value = parametersProvider(p);
-
-      var isAbsent = absentParameterValue == value;
+      var isAbsent = value.isAbsentParameterValue;
 
       if ((value == null || isAbsent) &&
           (p.nullable || p.hasDefaultValue) &&
           !p.required) {
-        return null;
-      } else {
-        if (isAbsent) {
-          throw StateError("Required named parameter `${p.name}` "
-              "${p.hasJsonNameAlias ? '(jsonName: p.jsonName)' : ''} "
-              "for `MethodInvocation[${classReflection.classType}.$name]`: $p");
-        }
-        return MapEntry(e.key, value);
+        namedParametersEntries.remove(k);
+      } else if (isAbsent) {
+        throw StateError("Required named parameter `${p.name}` "
+            "${p.hasJsonNameAlias ? '(jsonName: p.jsonName)' : ''} "
+            "for `MethodInvocation[${classReflection.classType}.$name]`: $p");
       }
-    }).whereType<MapEntry<String, dynamic>>());
+    }
 
-    var normalParametersValues = normalParameters.map((e) => e.value).toList();
+    _removeAbsentParameterValue(normalParametersEntries);
+    _removeAbsentParameterValue(optionalParametersEntries);
+
+    var normalParametersValues =
+        normalParametersEntries.map((e) => e.value).toList();
     var optionalParametersValues =
-        optionalParameters.map((e) => e.value).toList();
+        optionalParametersEntries.map((e) => e.value).toList();
 
     var positionalParametersNames = <String>[
-      ...normalParameters.map((e) => e.key),
-      ...optionalParameters.map((e) => e.key),
+      ...normalParametersEntries.map((e) => e.key),
+      ...optionalParametersEntries.map((e) => e.key),
     ];
 
     return MethodInvocation<O>.withPositionalParametersNames(
@@ -2684,7 +2764,7 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
       positionalParametersNames,
       normalParametersValues,
       optionalParametersValues,
-      namedParameters,
+      namedParametersEntries,
     );
   }
 
@@ -2692,12 +2772,25 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
     for (var i = parameters.length - 1; i >= 0; --i) {
       var entry = parameters[i];
       var value = entry.value;
-      var isAbsent = absentParameterValue == value;
+      var isAbsent = value.isAbsentParameterValue;
       if (isAbsent) {
         parameters[i] = MapEntry<String, Object?>(entry.key, null);
       }
     }
   }
+
+  bool _hasUnresolvedParameterValue(Iterable parameters) => parameters.any((e) {
+        Object? val = e is MapEntry ? e.value : e;
+        if (val.isUnresolvedParameterValue) {
+          return true;
+        } else if (val is Iterable) {
+          return _hasUnresolvedParameterValue(val);
+        } else if (val is Map) {
+          return _hasUnresolvedParameterValue(val.values);
+        } else {
+          return false;
+        }
+      });
 
   /// Invoke this method.
   R invoke(Iterable<Object?>? positionalArguments,
@@ -2727,6 +2820,37 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
     }
     return cmp;
   }
+}
+
+extension _ObjectExtension on Object? {
+  bool get isAbsentParameterValue => this == absentParameterValue;
+
+  bool get isUnresolvedParameterValue => this == unresolvedParameterValue;
+
+  String get asStringSimple {
+    var val = this;
+
+    if (val.isPrimitiveValue) {
+      return '$val';
+    } else if (val is Iterable) {
+      return '(${val.runtimeType})[${val.map((e) => (e as Object?).asStringSimple).join(', ')}]';
+    } else if (val is Map) {
+      return '(${val.runtimeType}){${val.entries.map((e) => e.asStringSimple).join(', ')}}';
+    } else {
+      if (val is _UnresolvedParameterValue || val is _AbsentParameterValue) {
+        return '$val';
+      }
+      return '<Type:${val.runtimeType}>';
+    }
+  }
+}
+
+extension _MapEntryExtension<K, V> on MapEntry<K, V> {
+  String get asStringSimple => '$key=${value.asStringSimple}';
+}
+
+extension _IterableMapEntryExtension on Iterable<MapEntry> {
+  String get asStringSimple => '[${map((e) => e.asStringSimple).join(', ')}]';
 }
 
 typedef ConstructorReflectionAccessor = Function Function();
@@ -2904,12 +3028,14 @@ class MethodInvocation<T> {
   List<dynamic> get positionalArguments {
     var optionalParameters = this.optionalParameters;
 
-    return optionalParameters == null || optionalParameters.isEmpty
+    var args = optionalParameters == null || optionalParameters.isEmpty
         ? normalParameters
         : [
             ...normalParameters,
             ...optionalParameters,
           ];
+
+    return args;
   }
 
   /// The named arguments, derived from [namedParameters].
@@ -2921,7 +3047,9 @@ class MethodInvocation<T> {
     if (namedParameters == null || namedParameters.isEmpty) {
       return null;
     }
-    return namedParameters.map((key, value) => MapEntry(Symbol(key), value));
+    var args =
+        namedParameters.map((key, value) => MapEntry(Symbol(key), value));
+    return args;
   }
 
   /// Invokes the [Function] [f] with [positionalArguments] and [namedArguments].
