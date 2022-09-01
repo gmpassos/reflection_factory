@@ -501,7 +501,19 @@ void main() {
 
       expect(
           ReflectionFactory()
+              .getRegisterEnumReflectionByName('TestEnumWithReflection')!
+              .enumType,
+          equals(TestEnumWithReflection));
+
+      expect(
+          ReflectionFactory()
               .getRegisterClassReflection(TestUserWithReflection)!
+              .classType,
+          equals(TestUserWithReflection));
+
+      expect(
+          ReflectionFactory()
+              .getRegisterClassReflectionByName('TestUserWithReflection')!
               .classType,
           equals(TestUserWithReflection));
 

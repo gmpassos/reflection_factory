@@ -1,3 +1,9 @@
+## 1.2.9
+
+- `ReflectionFactory`:
+  - Added `getRegisterClassReflectionByName` and `getRegisterEnumReflectionByName`.
+- `JsonTypeDecoder`: added parameter `jsonDecoder`.
+
 ## 1.2.8
 
 - `FunctionReflection.methodInvocationFromMap` and `FunctionReflection.methodInvocation`:

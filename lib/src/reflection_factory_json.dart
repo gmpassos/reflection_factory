@@ -768,7 +768,8 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
   }
 }
 
-typedef JsonTypeDecoder<T> = T? Function(Object? json);
+typedef JsonTypeDecoder<T> = T? Function(
+    Object? json, JsonDecoder? jsonDecoder);
 
 /// A JSON decoder.
 abstract class JsonDecoder extends JsonConverter<String, Object?> {
@@ -819,6 +820,9 @@ abstract class JsonDecoder extends JsonConverter<String, Object?> {
         forceDuplicatedEntitiesAsID,
         autoResetEntityCache);
   }
+
+  /// The internal entity cache.
+  JsonEntityCache get entityCache;
 
   /// Returns `true` if the entity cache is automatically reset for each
   /// decoding session.
@@ -937,6 +941,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
   final IterableCaster? iterableCaster;
 
+  @override
   final JsonEntityCache entityCache;
 
   final bool forceDuplicatedEntitiesAsID;
@@ -1330,7 +1335,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     var typeDecoder = JsonDecoder.getTypeDecoder(type);
     if (typeDecoder != null) {
-      var obj = typeDecoder(map);
+      var obj = typeDecoder(map, this);
       if (obj != null) {
         _cacheEntity(obj);
         return obj as O;
@@ -1374,7 +1379,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     var typeDecoder = JsonDecoder.getTypeDecoder(type);
     if (typeDecoder != null) {
-      var obj = typeDecoder(s);
+      var obj = typeDecoder(s, this);
       if (obj != null) {
         _cacheEntity(obj);
         return obj as O;
@@ -1452,7 +1457,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     var typeDecoder = JsonDecoder.getTypeDecoder(type);
     if (typeDecoder != null) {
-      var obj = typeDecoder(value);
+      var obj = typeDecoder(value, this);
       if (obj != null) {
         _cacheEntity(obj);
         return obj as O;
@@ -1595,7 +1600,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     var typeDecoder = JsonDecoder.getTypeDecoder(type);
     if (typeDecoder != null) {
-      var obj = typeDecoder(map);
+      var obj = typeDecoder(map, this);
       if (obj != null) {
         return _cacheEntityAsync<O>(obj);
       }
@@ -1992,6 +1997,16 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
       typeEntities![id] = e!;
     }
+  }
+
+  @override
+  String toString() {
+    var total = _entities.values.map((e) => e.length).sum;
+    var s = 'JsonEntityCacheSimple#$id[$total]';
+
+    return total == 0
+        ? s
+        : '$s${_entities.map((key, value) => MapEntry(key, value.length))}';
   }
 }
 

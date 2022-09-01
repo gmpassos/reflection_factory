@@ -20,7 +20,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.2.8';
+  static const String VERSION = '1.2.9';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -39,6 +39,12 @@ class ReflectionFactory {
   /// Returns the registered [EnumReflection] for [enumType].
   EnumReflection<O>? getRegisterEnumReflection<O>([Type? enumType]) =>
       _registeredEnumReflection[enumType ?? O] as EnumReflection<O>?;
+
+  /// Returns the registered [EnumReflection] that matches [enumName].
+  EnumReflection<O>? getRegisterEnumReflectionByName<O>(String enumName) =>
+      _registeredEnumReflection.values
+              .firstWhereOrNull((e) => e.enumName == enumName)
+          as EnumReflection<O>?;
 
   /// Called by [EnumReflection] when instantiated for the 1st time.
   void registerEnumReflection<O>(EnumReflection<O> enumReflection) {
@@ -60,6 +66,12 @@ class ReflectionFactory {
   /// Returns the registered [ClassReflection] for [classType].
   ClassReflection<O>? getRegisterClassReflection<O>([Type? classType]) =>
       _registeredClassReflection[classType ?? O] as ClassReflection<O>?;
+
+  /// Returns the registered [ClassReflection] that matches [className].
+  ClassReflection<O>? getRegisterClassReflectionByName<O>(String className) =>
+      _registeredClassReflection.values
+              .firstWhereOrNull((e) => e.className == className)
+          as ClassReflection<O>?;
 
   /// Called by [ClassReflection] when instantiated for the 1st time.
   void registerClassReflection<O>(ClassReflection<O> classReflection) {

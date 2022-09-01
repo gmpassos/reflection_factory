@@ -913,7 +913,7 @@ void main() {
       var json3 = jsonCodec.encode(l1);
       expect(json3, equals('["1:2:3","11:12:13"]'));
 
-      JsonDecoder.registerTypeDecoder(Time, (json) {
+      JsonDecoder.registerTypeDecoder(Time, (json, jsonDecoder) {
         if (json is String) {
           return Time.parse(json);
         } else if (json is Map) {
