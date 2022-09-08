@@ -1277,7 +1277,9 @@ class TypeInfo<T> {
     var typeName = this.typeName;
     if (withT) typeName = '<T:$T> $typeName';
 
-    return hasArguments ? '$typeName<${_arguments.join(',')}>' : typeName;
+    return hasArguments
+        ? '$typeName<${_arguments.map((e) => e.toString(withT: withT)).join(',')}>'
+        : typeName;
   }
 
   Object? fromJson(dynamic json,

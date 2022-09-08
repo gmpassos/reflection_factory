@@ -1,3 +1,7 @@
+## 1.2.10
+
+- Small fix in `TypeInfo.toString`: was not passing the parameter `withT` to recursive calls. 
+
 ## 1.2.9
 
 - `ReflectionFactory`:
