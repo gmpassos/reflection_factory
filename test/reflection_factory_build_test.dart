@@ -781,6 +781,53 @@ void main() {
         },
       );
     });
+
+    test(
+        'ClassProxy: MimeTypeResolverProxy (libraryPath: package:mime/mime.dart)',
+        () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'foo.reflection.g.dart';
+
+          @ClassProxy('MimeTypeResolver', libraryPath: 'package:mime/mime.dart')
+          class MimeTypeResolverProxy implements ClassProxyListener {
+          }
+          
+        '''
+      };
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        reader: await PackageAssetReader.currentIsolate(),
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of 'foo.dart'"),
+            ),
+            allOf(
+              contains('MimeTypeResolverProxy\$reflectionProxy'),
+              contains(
+                  'String? lookup(String path, {List<int>? headerBytes}) {'),
+              contains(
+                  'void addExtension(String extension, String mimeType) {'),
+            ),
+          )),
+        },
+        onLog: (msg) {
+          print(msg);
+        },
+      );
+    });
   });
 }
 
