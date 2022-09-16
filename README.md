@@ -221,6 +221,43 @@ void main() {
 }
 ```
 
+## `part` directive
+
+The generated code will be in a separated file referenced by
+a `part` directive in your code file:
+
+file `user_file.dart`:
+```dart
+import 'package:reflection_factory/reflection_factory.dart';
+
+// The reference to the generated reflection code:
+part 'user_file.reflection.g.dart';
+
+@EnableReflection()
+class User {
+  String name;
+  String? email;
+
+  User(this.name, this.email);
+  
+  User.empty() : this('','') ;
+}
+```
+
+You can also use a subdirectory to have the generated reflection files:
+
+```dart
+import 'package:reflection_factory/reflection_factory.dart';
+
+// The reference to the generated reflection code inside a subdirectory:
+part 'reflection/user_file.g.dart';
+
+@EnableReflection()
+class User {
+  //...
+}
+```
+
 ## Dependencies
 
 You need to add 2 dependencies in your project:
@@ -228,10 +265,10 @@ You need to add 2 dependencies in your project:
 File: `pubspec.yaml`
 ```yaml
 dependencies:
-  reflection_factory: ^1.0.0
+  reflection_factory: ^1.2.10
 
 dev_dependencies:
-  build_runner: ^2.1.1
+  build_runner: ^2.2.0
 ```
 
 ## Building/Generating Code
