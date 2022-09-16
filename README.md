@@ -246,6 +246,7 @@ class User {
 
 You can also use a subdirectory to have the generated reflection files:
 
+file `user_file.dart`:
 ```dart
 import 'package:reflection_factory/reflection_factory.dart';
 
@@ -257,6 +258,11 @@ class User {
   //...
 }
 ```
+
+The builder will automatically detect the `part` directive and identify if the
+generated code needs to be in a subdirectory or not,
+but always using the parent file name (`user_file.dart`)
+in the generated file name (`user_file.reflection.g.dart` or `reflection/user_file.g.dart`). 
 
 ## Dependencies
 
