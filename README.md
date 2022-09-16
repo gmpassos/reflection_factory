@@ -159,6 +159,68 @@ User JSON encoded:
 {"email":"joe@mail.com","pass":"123","hasEmail":true}
 ```
 
+## @ClassProxy
+
+Here's an example to create a class proxy that can intercept calls to its methods: 
+
+`proxies.dart`:
+```dart
+import 'package:reflection_factory/reflection_factory.dart';
+import 'package:mime/mime.dart';
+
+part 'proxies.reflection.g.dart';
+
+@ClassProxy('MimeTypeResolver')
+class MimeTypeResolverProxy implements ClassProxyListener {
+  
+  @override
+  Object? onCall(instance, String methodName, Map<String, dynamic> parameters,
+          TypeReflection? returnType) {
+    var call = '$instance -> $methodName( $parameters ) -> $returnType';
+    calls.add(call);
+    print('CALL>> $call');
+    return call;
+  }
+
+}
+```
+
+One common use case is to have a proxy to a class without need to import its package in
+the code, having only the class structure methods in the proxy:
+
+`proxies_detached.dart`:
+```dart
+import 'package:reflection_factory/reflection_factory.dart';
+        
+part 'proxies_detached.reflection.g.dart';
+
+@ClassProxy('MimeTypeResolver', libraryPath: 'package:mime/mime.dart')
+class MimeTypeResolverProxy implements ClassProxyListener {
+  
+  @override
+  Object? onCall(instance, String methodName, Map<String, dynamic> parameters,
+          TypeReflection? returnType) {
+    var call = '$instance -> $methodName( $parameters ) -> $returnType';
+    calls.add(call);
+    print('CALL>> $call');
+    return call;
+  }
+  
+}
+```
+
+Using the proxy:
+
+```dart
+import 'proxies_detached.dart';
+
+void main() {
+  var proxy = MimeTypeResolverProxy();
+
+  var proxyResult = proxy.lookup('path/foo'); // `onCall` returned value.
+}
+```
+
 ## Dependencies
 
 You need to add 2 dependencies in your project:

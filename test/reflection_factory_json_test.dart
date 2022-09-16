@@ -1229,4 +1229,110 @@ void main() {
       }
     });
   });
+
+  group('JsonEntityCacheSimple', () {
+    test('basic', () {
+      var mainAddress =
+          TestAddressWithReflection('NY', city: 'New York', id: 11);
+      var company = TestCompanyWithReflection('c1', mainAddress);
+
+      var jsonEntityCache1 = JsonEntityCacheSimple();
+
+      var encode1 = JsonCodec(entityCache: jsonEntityCache1).encode(
+          [company, mainAddress],
+          duplicatedEntitiesAsID: false, autoResetEntityCache: false);
+
+      expect(
+          encode1,
+          equals('['
+              '{"branchesAddresses":[],"extraAddresses":[],"extraNames":[],"mainAddress":{"id":11,"state":"NY","city":"New York"},"name":"c1"},'
+              '{"id":11,"state":"NY","city":"New York"}'
+              ']'));
+
+      expect(jsonEntityCache1.cachedEntitiesLength, equals(0));
+
+      var decoded1 =
+          JsonCodec().decode(encode1, duplicatedEntitiesAsID: true) as List;
+
+      var company1 = JsonCodec(entityCache: jsonEntityCache1)
+          .fromJson<TestCompanyWithReflection>(decoded1[0],
+              type: TestCompanyWithReflection, duplicatedEntitiesAsID: false);
+
+      var mainAddress1 = JsonCodec(entityCache: jsonEntityCache1)
+          .fromJson<TestAddressWithReflection>(decoded1[1],
+              type: TestAddressWithReflection, duplicatedEntitiesAsID: false);
+
+      expect(company1, equals(company));
+      expect(mainAddress1, equals(mainAddress));
+
+      var jsonEntityCache2 = JsonEntityCacheSimple();
+
+      var encode2 = JsonCodec(entityCache: jsonEntityCache2).encode(
+          [company, mainAddress],
+          duplicatedEntitiesAsID: true, autoResetEntityCache: false);
+
+      expect(
+          encode2,
+          equals('['
+              '{"branchesAddresses":[],"extraAddresses":[],"extraNames":[],"mainAddress":{"id":11,"state":"NY","city":"New York"},"name":"c1"},'
+              '11'
+              ']'));
+
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(2));
+
+      var decoded2 =
+          JsonCodec().decode(encode2, duplicatedEntitiesAsID: true) as List;
+
+      var company2 = JsonCodec(entityCache: jsonEntityCache2)
+          .fromJson<TestCompanyWithReflection>(decoded2[0],
+              type: TestCompanyWithReflection,
+              duplicatedEntitiesAsID: true,
+              autoResetEntityCache: false);
+
+      var mainAddress2 = JsonCodec(entityCache: jsonEntityCache2)
+          .fromJson<TestAddressWithReflection>(decoded2[1],
+              type: TestAddressWithReflection,
+              duplicatedEntitiesAsID: true,
+              autoResetEntityCache: false);
+
+      expect(company2, equals(company));
+      expect(mainAddress2, equals(mainAddress));
+
+      var jsonEntityCache3 = JsonEntityCacheSimple();
+
+      jsonEntityCache3.cacheEntities([mainAddress1]);
+
+      expect(jsonEntityCache3.cachedEntitiesLength, equals(1));
+
+      var company3 = JsonCodec(entityCache: jsonEntityCache3)
+          .fromJson<TestCompanyWithReflection>(decoded2[0],
+              type: TestCompanyWithReflection,
+              duplicatedEntitiesAsID: true,
+              autoResetEntityCache: false);
+
+      var mainAddress3 = JsonCodec(entityCache: jsonEntityCache3)
+          .fromJson<TestAddressWithReflection>(decoded2[1],
+              type: TestAddressWithReflection,
+              duplicatedEntitiesAsID: true,
+              autoResetEntityCache: false);
+
+      expect(company3, equals(company));
+      expect(mainAddress3, equals(mainAddress));
+
+      expect(jsonEntityCache3.cachedEntitiesLength, equals(2));
+
+      jsonEntityCache3.removeCachedEntity(mainAddress1?.id,
+          type: TestAddressWithReflection);
+
+      expect(jsonEntityCache3.cachedEntitiesLength, equals(1));
+
+      var mainAddress4 = JsonCodec(entityCache: jsonEntityCache3)
+          .fromJson<TestAddressWithReflection>(decoded2[1],
+              type: TestAddressWithReflection,
+              duplicatedEntitiesAsID: true,
+              autoResetEntityCache: false);
+
+      expect(mainAddress4, isNull);
+    });
+  });
 }
