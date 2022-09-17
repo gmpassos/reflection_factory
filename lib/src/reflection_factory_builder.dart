@@ -615,30 +615,64 @@ extension _AssetIdExtension on AssetId {
 }
 
 extension _LibraryElementExtension on LibraryElement {
-  Iterable<ClassElement> get exportedClasses =>
-      topLevelElements.whereType<ClassElement>();
+  static final Expando<List<ClassElement>> _exportedClasses =
+      Expando<List<ClassElement>>();
 
-  Iterable<LibraryElement> get allExports =>
-      libraryExports.map((e) => e.exportedLibrary).whereNotNull();
+  List<ClassElement> get exportedClasses => _exportedClasses[this] ??=
+      UnmodifiableListView(topLevelElements.whereType<ClassElement>().toList());
 
-  Iterable<ClassElement> get allExportedClasses =>
-      allExports.expand((e) => e.exportedClasses);
+  static final Expando<List<LibraryElement>> _allExports =
+      Expando<List<LibraryElement>>();
 
-  Iterable<ClassElement> get allImportedClasses => units.expand(
-      (e) => e.library.importedLibraries.expand((e) => e.exportedClasses));
+  List<LibraryElement> get allExports =>
+      _allExports[this] ??= UnmodifiableListView(
+          libraryExports.map((e) => e.exportedLibrary).whereNotNull().toList());
 
-  Iterable<ClassElement> get allUnitsClasses =>
-      units.expand((e) => e.library.topLevelElements.whereType<ClassElement>());
+  static final Expando<Set<ClassElement>> _allExportedClasses =
+      Expando<Set<ClassElement>>();
+
+  Set<ClassElement> get allExportedClasses => _allExportedClasses[this] ??=
+      UnmodifiableSetView(allExports.expand((e) => e.exportedClasses).toSet());
+
+  static final Expando<Set<ClassElement>> _allImportedClasses =
+      Expando<Set<ClassElement>>();
+
+  Set<ClassElement> get allImportedClasses =>
+      _allImportedClasses[this] ??= UnmodifiableSetView(units
+          .expand((e) =>
+              e.library.importedLibraries.expand((e) => e.exportedClasses))
+          .toSet());
+
+  static final Expando<Set<ClassElement>> _allUnitsClasses =
+      Expando<Set<ClassElement>>();
+
+  Set<ClassElement> get allUnitsClasses =>
+      _allUnitsClasses[this] ??= UnmodifiableSetView(
+          units.expand((e) => e.library.exportedClasses).toSet());
+
+  static final Expando<Set<ClassElement>> _allClassesFromExportedClassesUnits =
+      Expando<Set<ClassElement>>();
+
+  Set<ClassElement> get allClassesFromExportedClassesUnits =>
+      _allClassesFromExportedClassesUnits[this] ??= UnmodifiableSetView(
+          allExportedClasses.expand((e) => e.library.allUnitsClasses).toSet());
+
+  static final Expando<Set<ClassElement>>
+      _allImportedClassesFromExportedClasses = Expando<Set<ClassElement>>();
+
+  Set<ClassElement> get allImportedClassesFromExportedClasses =>
+      _allImportedClassesFromExportedClasses[this] ??= UnmodifiableSetView(
+          allExportedClasses
+              .expand((e) => e.library.allImportedClasses)
+              .toSet());
 }
 
 extension IterableLibraryElementExtension on Iterable<LibraryElement> {
   Set<ClassElement> get allUsedClasses => <ClassElement>{
         ...expand((l) => l.exportedClasses),
         ...expand((l) => l.allExportedClasses),
-        ...expand((l) =>
-            l.allExportedClasses.expand((e) => e.library.allUnitsClasses)),
-        ...expand((l) =>
-            l.allExportedClasses.expand((e) => e.library.allImportedClasses)),
+        ...expand((l) => l.allClassesFromExportedClassesUnits),
+        ...expand((l) => l.allImportedClassesFromExportedClasses),
       };
 }
 

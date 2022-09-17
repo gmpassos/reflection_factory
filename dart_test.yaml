@@ -3,6 +3,9 @@ tags:
   # Test the package version self-references.
   version:
     timeout: 10s
+  # Tests that expects errors.
+  error:
+    timeout: 10s
   # Slow tests.
   slow:
     timeout: 180s

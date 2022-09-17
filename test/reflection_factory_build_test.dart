@@ -227,7 +227,7 @@ void main() {
       );
     });
 
-    test('EnableReflection: [no part error]', () async {
+    test('EnableReflection: [no part error]', tags: ['error'], () async {
       var builder = ReflectionBuilder(verbose: true);
 
       var sourceAssets = {

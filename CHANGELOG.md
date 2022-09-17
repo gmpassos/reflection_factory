@@ -1,3 +1,13 @@
+## 1.2.11
+
+- `ClassProxy`:
+  - Optimize `@ClassProxy` classes resolution speed.
+  - Added `ClassProxy` test with `libraryPath` parameter.
+- `README.md`:
+  - Added `part` directive description.
+  - Added `@ClassProxy` example.
+- Added tests for `JsonEntityCacheSimple`.
+
 ## 1.2.10
 
 - Small fix in `TypeInfo.toString`: was not passing the parameter `withT` to recursive calls. 
