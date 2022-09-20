@@ -1,3 +1,8 @@
+## 1.2.12
+
+- `ClassReflection` added field `className`.
+- `EnumReflection` added field `enumName`.
+
 ## 1.2.11
 
 - `ClassProxy`:

@@ -19,7 +19,7 @@ User User$fromJsonEncoded(String jsonEncoded) =>
     User$reflection.staticInstance.fromJsonEncoded(jsonEncoded);
 
 class User$reflection extends ClassReflection<User> {
-  User$reflection([User? object]) : super(User, object);
+  User$reflection([User? object]) : super(User, 'User', object);
 
   static bool _registered = false;
   @override

@@ -150,8 +150,8 @@ abstract class Reflection<O> {
   /// Returns `reflection_factory` [Version] used to generate this reflection code.
   Version get reflectionFactoryVersion;
 
-  /// Returns the reflection name.
-  String get reflectionName => reflectedType.toString();
+  /// The reflected type name by this implementation. See [reflectedType].
+  String get reflectionName;
 
   /// The reflection level (complexity).
   int get reflectionLevel;
@@ -365,15 +365,23 @@ abstract class Reflection<O> {
 /// Base for Enum reflection.
 abstract class EnumReflection<O> extends Reflection<O>
     implements Comparable<EnumReflection<O>> {
+  /// Then reflected enum [Type].
   final Type enumType;
+
+  /// Then reflected enum name (without minification).
+  final String enumName;
+
   final O? object;
 
-  EnumReflection(this.enumType, [this.object]) {
+  EnumReflection(this.enumType, this.enumName, [this.object]) {
     register();
   }
 
   @override
   Type get reflectedType => enumType;
+
+  @override
+  String get reflectionName => enumName;
 
   /// Returns `true` if this instances has an associated object ([O]).
   @override
@@ -407,9 +415,6 @@ abstract class EnumReflection<O> extends Reflection<O>
       ReflectionFactory().registerEnumReflection(er);
     }
   }
-
-  /// Returns the class name.
-  String get enumName => enumType.toString();
 
   @override
   int get reflectionLevel => fieldsNames.length;
@@ -598,15 +603,23 @@ abstract class EnumReflection<O> extends Reflection<O>
 /// Base for Class reflection.
 abstract class ClassReflection<O> extends Reflection<O>
     implements Comparable<ClassReflection<O>> {
+  /// The reflected class [Type].
   final Type classType;
+
+  /// The reflected class name (without minification).
+  final String className;
+
   final O? object;
 
-  ClassReflection(this.classType, [this.object]) {
+  ClassReflection(this.classType, this.className, [this.object]) {
     register();
   }
 
   @override
   Type get reflectedType => classType;
+
+  @override
+  String get reflectionName => className;
 
   /// Returns `true` if this instances has an associated object ([O]).
   @override
@@ -640,9 +653,6 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// Returns `reflection_factory` [Version] used to generate this reflection code.
   @override
   Version get reflectionFactoryVersion;
-
-  /// Returns the class name.
-  String get className => classType.toString();
 
   @override
   int get reflectionLevel =>

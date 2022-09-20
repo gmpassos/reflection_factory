@@ -25,7 +25,8 @@ TestUserSimple TestUserSimple$fromJsonEncoded(String jsonEncoded) =>
     TestUserSimple$reflection.staticInstance.fromJsonEncoded(jsonEncoded);
 
 class TestAddress$reflection extends ClassReflection<TestAddress> {
-  TestAddress$reflection([TestAddress? object]) : super(TestAddress, object);
+  TestAddress$reflection([TestAddress? object])
+      : super(TestAddress, 'TestAddress', object);
 
   static bool _registered = false;
   @override
@@ -236,7 +237,7 @@ class TestAddress$reflection extends ClassReflection<TestAddress> {
 
 class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   TestUserSimple$reflection([TestUserSimple? object])
-      : super(TestUserSimple, object);
+      : super(TestUserSimple, 'TestUserSimple', object);
 
   static bool _registered = false;
   @override

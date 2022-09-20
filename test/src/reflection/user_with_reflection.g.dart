@@ -96,7 +96,7 @@ TestUserWithReflection TestUserWithReflection$fromJsonEncoded(
 class TestAddressWithReflection$reflection
     extends ClassReflection<TestAddressWithReflection> {
   TestAddressWithReflection$reflection([TestAddressWithReflection? object])
-      : super(TestAddressWithReflection, object);
+      : super(TestAddressWithReflection, 'TestAddressWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -344,7 +344,7 @@ class TestAddressWithReflection$reflection
 class TestCompanyWithReflection$reflection
     extends ClassReflection<TestCompanyWithReflection> {
   TestCompanyWithReflection$reflection([TestCompanyWithReflection? object])
-      : super(TestCompanyWithReflection, object);
+      : super(TestCompanyWithReflection, 'TestCompanyWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -652,7 +652,7 @@ class TestCompanyWithReflection$reflection
 class TestDataWithReflection$reflection
     extends ClassReflection<TestDataWithReflection> {
   TestDataWithReflection$reflection([TestDataWithReflection? object])
-      : super(TestDataWithReflection, object);
+      : super(TestDataWithReflection, 'TestDataWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -887,7 +887,7 @@ class TestDataWithReflection$reflection
 class TestDomainWithReflection$reflection
     extends ClassReflection<TestDomainWithReflection> {
   TestDomainWithReflection$reflection([TestDomainWithReflection? object])
-      : super(TestDomainWithReflection, object);
+      : super(TestDomainWithReflection, 'TestDomainWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1239,7 +1239,7 @@ class TestDomainWithReflection$reflection
 class TestEnumWithReflection$reflection
     extends EnumReflection<TestEnumWithReflection> {
   TestEnumWithReflection$reflection([TestEnumWithReflection? object])
-      : super(TestEnumWithReflection, object);
+      : super(TestEnumWithReflection, 'TestEnumWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1309,7 +1309,7 @@ class TestEnumWithReflection$reflection
 class TestOpAWithReflection$reflection
     extends ClassReflection<TestOpAWithReflection> {
   TestOpAWithReflection$reflection([TestOpAWithReflection? object])
-      : super(TestOpAWithReflection, object);
+      : super(TestOpAWithReflection, 'TestOpAWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1538,7 +1538,7 @@ class TestOpAWithReflection$reflection
 class TestOpBWithReflection$reflection
     extends ClassReflection<TestOpBWithReflection> {
   TestOpBWithReflection$reflection([TestOpBWithReflection? object])
-      : super(TestOpBWithReflection, object);
+      : super(TestOpBWithReflection, 'TestOpBWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1781,7 +1781,7 @@ class TestOpBWithReflection$reflection
 class TestOpWithReflection$reflection
     extends ClassReflection<TestOpWithReflection> {
   TestOpWithReflection$reflection([TestOpWithReflection? object])
-      : super(TestOpWithReflection, object);
+      : super(TestOpWithReflection, 'TestOpWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -2031,7 +2031,8 @@ class TestTransactionWithReflection$reflection
     extends ClassReflection<TestTransactionWithReflection> {
   TestTransactionWithReflection$reflection(
       [TestTransactionWithReflection? object])
-      : super(TestTransactionWithReflection, object);
+      : super(TestTransactionWithReflection, 'TestTransactionWithReflection',
+            object);
 
   static bool _registered = false;
   @override
@@ -2246,7 +2247,7 @@ class TestTransactionWithReflection$reflection
 class TestUserWithReflection$reflection
     extends ClassReflection<TestUserWithReflection> {
   TestUserWithReflection$reflection([TestUserWithReflection? object])
-      : super(TestUserWithReflection, object);
+      : super(TestUserWithReflection, 'TestUserWithReflection', object);
 
   static bool _registered = false;
   @override
