@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.2.11
+// BUILDER: reflection_factory/1.2.12
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -25,7 +25,8 @@ TestUserSimple TestUserSimple$fromJsonEncoded(String jsonEncoded) =>
     TestUserSimple$reflection.staticInstance.fromJsonEncoded(jsonEncoded);
 
 class TestAddress$reflection extends ClassReflection<TestAddress> {
-  TestAddress$reflection([TestAddress? object]) : super(TestAddress, object);
+  TestAddress$reflection([TestAddress? object])
+      : super(TestAddress, 'TestAddress', object);
 
   static bool _registered = false;
   @override
@@ -41,7 +42,7 @@ class TestAddress$reflection extends ClassReflection<TestAddress> {
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.11');
+  Version get reflectionFactoryVersion => Version.parse('1.2.12');
 
   @override
   TestAddress$reflection withObject([TestAddress? obj]) =>
@@ -236,7 +237,7 @@ class TestAddress$reflection extends ClassReflection<TestAddress> {
 
 class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   TestUserSimple$reflection([TestUserSimple? object])
-      : super(TestUserSimple, object);
+      : super(TestUserSimple, 'TestUserSimple', object);
 
   static bool _registered = false;
   @override
@@ -252,7 +253,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.11');
+  Version get reflectionFactoryVersion => Version.parse('1.2.12');
 
   @override
   TestUserSimple$reflection withObject([TestUserSimple? obj]) =>

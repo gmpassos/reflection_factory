@@ -831,7 +831,7 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
     str.write('class $reflectionClass extends EnumReflection<$enumName> {\n\n');
 
     str.write(
-        '  $reflectionClass([$enumName? object]) : super($enumName, object);\n\n');
+        '  $reflectionClass([$enumName? object]) : super($enumName, \'$enumName\', object);\n\n');
 
     str.write('  static bool _registered = false;\n');
     str.write('  @override\n');
@@ -1269,7 +1269,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         'class $reflectionClass extends ClassReflection<$className> {\n\n');
 
     str.write(
-        '  $reflectionClass([$className? object]) : super($className, object);\n\n');
+        '  $reflectionClass([$className? object]) : super($className, \'$className\', object);\n\n');
 
     str.write('  static bool _registered = false;\n');
     str.write('  @override\n');

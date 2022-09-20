@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.2.11
+// BUILDER: reflection_factory/1.2.12
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -96,7 +96,7 @@ TestUserWithReflection TestUserWithReflection$fromJsonEncoded(
 class TestAddressWithReflection$reflection
     extends ClassReflection<TestAddressWithReflection> {
   TestAddressWithReflection$reflection([TestAddressWithReflection? object])
-      : super(TestAddressWithReflection, object);
+      : super(TestAddressWithReflection, 'TestAddressWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -112,7 +112,7 @@ class TestAddressWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.11');
+  Version get reflectionFactoryVersion => Version.parse('1.2.12');
 
   @override
   TestAddressWithReflection$reflection withObject(
@@ -344,7 +344,7 @@ class TestAddressWithReflection$reflection
 class TestCompanyWithReflection$reflection
     extends ClassReflection<TestCompanyWithReflection> {
   TestCompanyWithReflection$reflection([TestCompanyWithReflection? object])
-      : super(TestCompanyWithReflection, object);
+      : super(TestCompanyWithReflection, 'TestCompanyWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -360,7 +360,7 @@ class TestCompanyWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.11');
+  Version get reflectionFactoryVersion => Version.parse('1.2.12');
 
   @override
   TestCompanyWithReflection$reflection withObject(
@@ -652,7 +652,7 @@ class TestCompanyWithReflection$reflection
 class TestDataWithReflection$reflection
     extends ClassReflection<TestDataWithReflection> {
   TestDataWithReflection$reflection([TestDataWithReflection? object])
-      : super(TestDataWithReflection, object);
+      : super(TestDataWithReflection, 'TestDataWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -668,7 +668,7 @@ class TestDataWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.11');
+  Version get reflectionFactoryVersion => Version.parse('1.2.12');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -887,7 +887,7 @@ class TestDataWithReflection$reflection
 class TestDomainWithReflection$reflection
     extends ClassReflection<TestDomainWithReflection> {
   TestDomainWithReflection$reflection([TestDomainWithReflection? object])
-      : super(TestDomainWithReflection, object);
+      : super(TestDomainWithReflection, 'TestDomainWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -903,7 +903,7 @@ class TestDomainWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.11');
+  Version get reflectionFactoryVersion => Version.parse('1.2.12');
 
   @override
   TestDomainWithReflection$reflection withObject(
@@ -1239,7 +1239,7 @@ class TestDomainWithReflection$reflection
 class TestEnumWithReflection$reflection
     extends EnumReflection<TestEnumWithReflection> {
   TestEnumWithReflection$reflection([TestEnumWithReflection? object])
-      : super(TestEnumWithReflection, object);
+      : super(TestEnumWithReflection, 'TestEnumWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1255,7 +1255,7 @@ class TestEnumWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.11');
+  Version get reflectionFactoryVersion => Version.parse('1.2.12');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -1309,7 +1309,7 @@ class TestEnumWithReflection$reflection
 class TestOpAWithReflection$reflection
     extends ClassReflection<TestOpAWithReflection> {
   TestOpAWithReflection$reflection([TestOpAWithReflection? object])
-      : super(TestOpAWithReflection, object);
+      : super(TestOpAWithReflection, 'TestOpAWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1325,7 +1325,7 @@ class TestOpAWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.11');
+  Version get reflectionFactoryVersion => Version.parse('1.2.12');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -1538,7 +1538,7 @@ class TestOpAWithReflection$reflection
 class TestOpBWithReflection$reflection
     extends ClassReflection<TestOpBWithReflection> {
   TestOpBWithReflection$reflection([TestOpBWithReflection? object])
-      : super(TestOpBWithReflection, object);
+      : super(TestOpBWithReflection, 'TestOpBWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1554,7 +1554,7 @@ class TestOpBWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.11');
+  Version get reflectionFactoryVersion => Version.parse('1.2.12');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -1781,7 +1781,7 @@ class TestOpBWithReflection$reflection
 class TestOpWithReflection$reflection
     extends ClassReflection<TestOpWithReflection> {
   TestOpWithReflection$reflection([TestOpWithReflection? object])
-      : super(TestOpWithReflection, object);
+      : super(TestOpWithReflection, 'TestOpWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1797,7 +1797,7 @@ class TestOpWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.11');
+  Version get reflectionFactoryVersion => Version.parse('1.2.12');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -2031,7 +2031,8 @@ class TestTransactionWithReflection$reflection
     extends ClassReflection<TestTransactionWithReflection> {
   TestTransactionWithReflection$reflection(
       [TestTransactionWithReflection? object])
-      : super(TestTransactionWithReflection, object);
+      : super(TestTransactionWithReflection, 'TestTransactionWithReflection',
+            object);
 
   static bool _registered = false;
   @override
@@ -2047,7 +2048,7 @@ class TestTransactionWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.11');
+  Version get reflectionFactoryVersion => Version.parse('1.2.12');
 
   @override
   TestTransactionWithReflection$reflection withObject(
@@ -2246,7 +2247,7 @@ class TestTransactionWithReflection$reflection
 class TestUserWithReflection$reflection
     extends ClassReflection<TestUserWithReflection> {
   TestUserWithReflection$reflection([TestUserWithReflection? object])
-      : super(TestUserWithReflection, object);
+      : super(TestUserWithReflection, 'TestUserWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -2262,7 +2263,7 @@ class TestUserWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.11');
+  Version get reflectionFactoryVersion => Version.parse('1.2.12');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>

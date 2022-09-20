@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.2.11
+// BUILDER: reflection_factory/1.2.12
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -19,7 +19,7 @@ User User$fromJsonEncoded(String jsonEncoded) =>
     User$reflection.staticInstance.fromJsonEncoded(jsonEncoded);
 
 class User$reflection extends ClassReflection<User> {
-  User$reflection([User? object]) : super(User, object);
+  User$reflection([User? object]) : super(User, 'User', object);
 
   static bool _registered = false;
   @override
@@ -35,7 +35,7 @@ class User$reflection extends ClassReflection<User> {
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.11');
+  Version get reflectionFactoryVersion => Version.parse('1.2.12');
 
   @override
   User$reflection withObject([User? obj]) => User$reflection(obj);
