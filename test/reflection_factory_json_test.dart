@@ -673,6 +673,12 @@ void main() {
           ]));
 
       expect(
+          JsonCodec.defaultCodec
+              .fromJsonList(['x', 'z'], type: TestEnumWithReflection),
+          allOf(equals([TestEnumWithReflection.x, TestEnumWithReflection.z]),
+              isA<List<TestEnumWithReflection>>()));
+
+      expect(
           JsonCodec.defaultCodec.fromJsonMap(
               {'state': 'State1', 'city': 'City1'},
               type: TestAddressWithReflection),

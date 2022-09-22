@@ -1,3 +1,13 @@
+## 1.2.13
+
+- Json:
+  - Add parameter `TypeInfo` as an alternative to the parameter `Type`.
+  - Improve collections casting.
+- `TypeInfo`:
+  - Added constructors: `TypeInfo.fromListType`, `TypeInfo.fromSetType`, `TypeInfo.fromMapType`.
+  - Added `toListType`, `toSetType`, `toIterableType`, `toMapValueType` and `toMapKeyType`.
+  - Added `castList`, `castSet`, `castIterable` and `castMap`.
+
 ## 1.2.12
 
 - `ClassReflection` added field `className`.

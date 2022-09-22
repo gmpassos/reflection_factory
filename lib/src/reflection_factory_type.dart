@@ -874,6 +874,9 @@ class TypeInfo<T> {
   /// The generic `T` [Type].
   Type get genericType => T;
 
+  /// Returns `true` if [genericType] matches [type].
+  bool get isValidGenericType => genericType == type;
+
   /// Returns the [type] name.
   String get typeName {
     if (isFutureOr) {
@@ -940,6 +943,27 @@ class TypeInfo<T> {
     }
 
     return TypeInfo<T>.fromType(o.runtimeType, arguments, object ?? o);
+  }
+
+  factory TypeInfo.fromListType(Object listType) {
+    var t = TypeInfo.from(listType);
+    return TypeInfo<T>.fromType(List, [t]);
+  }
+
+  factory TypeInfo.fromSetType(Object setType) {
+    var t = TypeInfo.from(setType);
+    return TypeInfo<T>.fromType(Set, [t]);
+  }
+
+  factory TypeInfo.fromIterableType(Object itrType) {
+    var t = TypeInfo.from(itrType);
+    return TypeInfo<T>.fromType(Iterable, [t]);
+  }
+
+  factory TypeInfo.fromMapType(Object keyType, Object valueType) {
+    var k = TypeInfo.from(keyType);
+    var v = TypeInfo.from(valueType);
+    return TypeInfo<T>.fromType(Map, [k, v]);
   }
 
   factory TypeInfo.fromType(Type type,
@@ -1014,6 +1038,27 @@ class TypeInfo<T> {
 
   R callCasted<R>(R Function<T>() f) {
     return f<T>();
+  }
+
+  /// Returns `this` as a [TypeInfo] for `List<T>`.
+  TypeInfo<List<T>> toListType() => TypeInfo.fromType(List, [this]);
+
+  /// Returns `this` as a [TypeInfo] for `Set<T>`.
+  TypeInfo<Set<T>> toSetType() => TypeInfo.fromType(Set, [this]);
+
+  /// Returns `this` as a [TypeInfo] for `Iterable<T>`.
+  TypeInfo<Iterable<T>> toIterableType() => TypeInfo.fromType(Iterable, [this]);
+
+  /// Returns `this` as a [TypeInfo] for `Map<K,T>`.
+  TypeInfo<Map<K, T>> toMapValueType<K>({TypeInfo? keyType}) {
+    keyType ??= TypeInfo.fromType(K);
+    return TypeInfo.fromType(Map, [keyType, this]);
+  }
+
+  /// Returns `this` as a [TypeInfo] for `Map<K,T>`.
+  TypeInfo<Map<T, V>> toMapKeyType<V>({TypeInfo? valueType}) {
+    valueType ??= TypeInfo.fromType(V);
+    return TypeInfo.fromType(Map, [this, valueType]);
   }
 
   /// Returns `true` if `this`.[type] equals to [other].[type].
@@ -1361,19 +1406,140 @@ class TypeInfo<T> {
         autoResetEntityCache: autoResetEntityCache);
   }
 
-  /// Casts [o] to this collection type if a [ReflectionFactory] is registered
-  /// for it.
-  Object castCollection(Object o) {
-    var mainType = isCollection ? (argumentType(0) ?? this) : this;
+  /// Casts [o] to this collection type if a [ClassReflection] or [EnumReflection]
+  /// for it is registered at [ReflectionFactory].
+  Object castCollection(Object o, {bool nullable = false}) {
+    var mainType = isCollection ? (argumentType(0) ?? TypeInfo.tDynamic) : this;
 
-    var classReflection =
-        ReflectionFactory().getRegisterClassReflection(mainType.type);
+    var reflectionFactory = ReflectionFactory();
 
-    if (classReflection != null) {
-      return classReflection.castCollection(o, this) ?? o;
+    var reflection =
+        reflectionFactory.getRegisterClassReflection(mainType.type) ??
+            reflectionFactory.getRegisterEnumReflection(mainType.type);
+
+    if (reflection != null) {
+      return reflection.castCollection(o, this, nullable: nullable) ?? o;
     }
 
     return o;
+  }
+
+  /// Casts [list] to this type (`List<T>`) if a [ClassReflection] or [EnumReflection]
+  /// for `T` is registered at [ReflectionFactory].
+  List castList(List list, {bool nullable = false}) {
+    var mainType = isCollection ? (argumentType(0) ?? TypeInfo.tDynamic) : this;
+
+    var reflectionFactory = ReflectionFactory();
+
+    var reflection =
+        reflectionFactory.getRegisterClassReflection(mainType.type) ??
+            reflectionFactory.getRegisterEnumReflection(mainType.type);
+
+    if (reflection != null) {
+      return reflection.castList(list, mainType.type, nullable: nullable) ??
+          list;
+    }
+
+    if (mainType.isValidGenericType) {
+      return mainType.callCasted(<E>() => list.cast<E>());
+    } else {
+      return list;
+    }
+  }
+
+  /// Casts [set] to this type (`Set<T>`) if a [ClassReflection] or [EnumReflection]
+  /// for `T` is registered at [ReflectionFactory].
+  Set castSet(Set set, {bool nullable = false}) {
+    var mainType = isCollection ? (argumentType(0) ?? TypeInfo.tDynamic) : this;
+
+    var reflectionFactory = ReflectionFactory();
+
+    var reflection =
+        reflectionFactory.getRegisterClassReflection(mainType.type) ??
+            reflectionFactory.getRegisterEnumReflection(mainType.type);
+
+    if (reflection != null) {
+      return reflection.castSet(set, mainType.type, nullable: nullable) ?? set;
+    }
+
+    if (mainType.isValidGenericType) {
+      return mainType.callCasted(<E>() => set.cast<E>());
+    } else {
+      return set;
+    }
+  }
+
+  /// Casts [itr] to this type (`Iterable<T>`) if a [ClassReflection] or [EnumReflection]
+  /// for `T` is registered at [ReflectionFactory].
+  Iterable castIterable(Iterable itr, {bool nullable = false}) {
+    var mainType = isCollection ? (argumentType(0) ?? TypeInfo.tDynamic) : this;
+
+    var reflectionFactory = ReflectionFactory();
+
+    var reflection =
+        reflectionFactory.getRegisterClassReflection(mainType.type) ??
+            reflectionFactory.getRegisterEnumReflection(mainType.type);
+
+    if (reflection != null) {
+      return reflection.castIterable(itr, mainType.type, nullable: nullable) ??
+          itr;
+    }
+
+    if (mainType.isValidGenericType) {
+      return mainType.callCasted(<E>() => itr.cast<E>());
+    } else {
+      return itr;
+    }
+  }
+
+  /// Casts [map] to this type (`Map<K,V>`), resolving the casting for
+  /// `K` and `V` if there's a [ClassReflection] or [EnumReflection]
+  /// for them registered at [ReflectionFactory].
+  Map castMap(Map map, {bool nullable = false}) {
+    var keyType = isCollection
+        ? (argumentType(0) ?? TypeInfo.tDynamic)
+        : TypeInfo.tDynamic;
+    var valueType = isCollection
+        ? (argumentType(1) ?? TypeInfo.tDynamic)
+        : TypeInfo.tDynamic;
+
+    var reflectionFactory = ReflectionFactory();
+
+    var keyReflection =
+        reflectionFactory.getRegisterClassReflection(keyType.type) ??
+            reflectionFactory.getRegisterEnumReflection(keyType.type);
+
+    var valueReflection =
+        reflectionFactory.getRegisterClassReflection(valueType.type) ??
+            reflectionFactory.getRegisterEnumReflection(valueType.type);
+
+    if (keyReflection != null && valueReflection != null) {
+      var mapKeysCast = keyReflection.castMap(
+              map, TypeInfo.fromMapType(keyType, TypeInfo.tDynamic),
+              nullable: nullable) ??
+          map;
+
+      var mapCast =
+          valueReflection.castMap(mapKeysCast, this, nullable: nullable) ?? map;
+
+      return mapCast;
+    } else if (keyReflection != null) {
+      return keyReflection.castMap(map, this, nullable: nullable) ?? map;
+    } else if (valueReflection != null) {
+      return valueReflection.castMap(map, this, nullable: nullable) ?? map;
+    }
+
+    if (keyType.isValidGenericType && valueType.isValidGenericType) {
+      return keyType.callCasted(<K>() {
+        return valueType.callCasted(<V>() => map.cast<K, V>());
+      });
+    } else if (keyType.isValidGenericType) {
+      return keyType.callCasted(<K>() => map.cast<K, dynamic>());
+    } else if (valueType.isValidGenericType) {
+      return valueType.callCasted(<V>() => map.cast<dynamic, V>());
+    }
+
+    return map;
   }
 }
 
