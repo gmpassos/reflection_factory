@@ -371,6 +371,101 @@ void main() {
               .allParameters[0]),
           equals(TypeInfo.from(String)));
 
+      {
+        var t =
+            TypeInfo<TestUserWithReflection>.fromType(TestUserWithReflection);
+
+        var tList = t.toListType();
+
+        expect(
+            tList,
+            equals(TypeInfo<List<TestUserWithReflection>>.fromListType(
+                TestUserWithReflection)));
+
+        expect(
+            tList.castList(<Object>[
+              TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
+            ]),
+            allOf(
+                equals(<TestUserWithReflection>[
+                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
+                ]),
+                isA<List<TestUserWithReflection>>()));
+
+        var tSet = t.toSetType();
+
+        expect(
+            tSet,
+            equals(TypeInfo<Set<TestUserWithReflection>>.fromSetType(
+                TestUserWithReflection)));
+
+        expect(
+            tSet.castSet(<Object>{
+              TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
+            }),
+            allOf(
+                equals(<TestUserWithReflection>{
+                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
+                }),
+                isA<Set<TestUserWithReflection>>()));
+
+        var tItr = t.toIterableType();
+
+        expect(
+            tItr,
+            equals(TypeInfo<Iterable<TestUserWithReflection>>.fromIterableType(
+                TestUserWithReflection)));
+
+        expect(
+            tItr.castIterable(<Object>[
+              TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
+            ]),
+            allOf(
+                equals(<TestUserWithReflection>[
+                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
+                ]),
+                isA<Iterable<TestUserWithReflection>>()));
+
+        var tMapK = t.toMapKeyType<String>();
+
+        expect(
+            tMapK,
+            equals(TypeInfo<Map<TestUserWithReflection, String>>.fromMapType(
+                TestUserWithReflection, String)));
+
+        var mapK = tMapK.castMap(<Object, Object>{
+          TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'): 'a'
+        });
+
+        expect(
+            mapK,
+            allOf(
+                equals(<TestUserWithReflection, String>{
+                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
+                      'a'
+                }),
+                isA<Map<TestUserWithReflection, String>>()),
+            reason: '!!! ${mapK.runtimeType}');
+
+        var tMapV = t.toMapValueType<String>();
+
+        expect(tMapV,
+            equals(TypeInfo.fromMapType(String, TestUserWithReflection)));
+
+        var mapV = tMapV.castMap(<Object, Object>{
+          'a': TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
+        });
+
+        expect(
+            mapV,
+            allOf(
+                equals(<String, TestUserWithReflection>{
+                  'a': TestUserWithReflection.fields(
+                      'Joe', 'joe@mail.com', '123')
+                }),
+                isA<Map<String, TestUserWithReflection>>()));
+      }
+
       expect(
           TestUserWithReflection$reflection.staticInstance
               .siblingsClassReflection(),

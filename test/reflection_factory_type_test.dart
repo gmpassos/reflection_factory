@@ -138,12 +138,99 @@ void main() {
       expect(t4.equalsTypeAndArguments(TypeInfo.from(123)), isFalse);
 
       {
+        var t = TypeInfo<List<int>>.fromListType(int);
+
+        expect(t.type, equals(List));
+        expect(t.genericType, equals(List<int>));
+        expect(t.argumentsLength, equals(1));
+        expect(t.argumentType(0), equals(TypeInfo.tInt));
+      }
+
+      {
+        var t = TypeInfo<Map<String, int>>.fromMapType(String, int);
+
+        expect(t.type, equals(Map));
+        expect(t.genericType, equals(Map<String, int>));
+        expect(t.argumentsLength, equals(2));
+        expect(t.argumentType(0), equals(TypeInfo.tString));
+        expect(t.argumentType(1), equals(TypeInfo.tInt));
+      }
+
+      {
         var t = TypeInfo<int>.fromType(int);
         var parser = t.parser!;
 
         expect(parser('123'), equals(123));
 
         expect(parser('x'), isNull);
+
+        var tList = t.toListType();
+
+        expect(tList, equals(TypeInfo<List<int>>.fromListType(int)));
+        expect(tList.type, equals(List));
+        expect(tList.argumentType(0), equals(TypeInfo.tInt));
+        expect(tList.genericType, equals(List<int>));
+
+        expect(tList.castList(<Object>[1, 2, 3]),
+            allOf(equals([1, 2, 3]), isA<List<int>>()));
+
+        var tSet = t.toSetType();
+
+        expect(tSet, equals(TypeInfo<Set<int>>.fromSetType(int)));
+        expect(tSet.type, equals(Set));
+        expect(tSet.argumentType(0), equals(TypeInfo.tInt));
+        expect(tSet.genericType, equals(Set<int>));
+
+        expect(tSet.castSet(<Object>{1, 2, 3}),
+            allOf(equals({1, 2, 3}), isA<Set<int>>()));
+
+        var tItr = t.toIterableType();
+
+        expect(
+            tItr.castIterable(<Object>[1, 2, 3].map((e) {
+              dynamic d = (e as int) * 10;
+              return d;
+            })),
+            allOf(equals([10, 20, 30]), isA<Iterable<int>>()));
+
+        expect(tItr, equals(TypeInfo<Iterable<int>>.fromIterableType(int)));
+        expect(tItr.type, equals(Iterable));
+        expect(tItr.argumentType(0), equals(TypeInfo.tInt));
+        expect(tItr.genericType, equals(Iterable<int>));
+
+        var tMapV = t.toMapValueType<String>();
+
+        expect(
+            tMapV,
+            equals(TypeInfo<Map<String, int>>.fromType(
+                Map, [TypeInfo.tString, TypeInfo.tInt])));
+
+        expect(tMapV.type, equals(Map));
+        expect(tMapV.argumentType(0), equals(TypeInfo.tString));
+        expect(tMapV.argumentType(1), equals(TypeInfo.tInt));
+        expect(tMapV.genericType, equals(Map<String, int>));
+
+        expect(
+            tMapV.castMap(<Object, Object>{'a': 1, 'b': 2}),
+            allOf(equals(<String, int>{'a': 1, 'b': 2}),
+                isA<Map<String, int>>()));
+
+        var tMapK = t.toMapKeyType<String>();
+
+        expect(
+            tMapK,
+            equals(TypeInfo<Map<int, String>>.fromType(
+                Map, [TypeInfo.tInt, TypeInfo.tString])));
+
+        expect(tMapK.type, equals(Map));
+        expect(tMapK.argumentType(0), equals(TypeInfo.tInt));
+        expect(tMapK.argumentType(1), equals(TypeInfo.tString));
+        expect(tMapK.genericType, equals(Map<int, String>));
+
+        expect(
+            tMapK.castMap(<Object, Object>{1: 'a', 2: 'b'}),
+            allOf(equals(<int, String>{1: 'a', 2: 'b'}),
+                isA<Map<int, String>>()));
       }
 
       {
