@@ -20,7 +20,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.2.13';
+  static const String VERSION = '1.2.14';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -2350,6 +2350,49 @@ class _UnresolvedParameterValue {
   String toString() => '<unresolved_parameter>';
 }
 
+typedef ParameterProvider = Object? Function(
+    ParameterReflection parameter, int? parameterIndex);
+
+typedef _ParameterValueEntry = MapEntry<String, Object?>;
+
+/// Helper for [ParameterReflection] value resolver,
+/// used by [FunctionReflection.methodInvocation].
+class _ParameterResolver {
+  final ParameterProvider parameterProvider;
+  final int normalParametersLength;
+  final int optionalParametersLength;
+
+  final int offsetOptional;
+  final int offsetNamed;
+
+  _ParameterResolver(this.parameterProvider, this.normalParametersLength,
+      this.optionalParametersLength)
+      : offsetOptional = normalParametersLength,
+        offsetNamed = normalParametersLength + optionalParametersLength;
+
+  List<_ParameterValueEntry> resolveNormal(
+          List<ParameterReflection> parameters) =>
+      parameters.mapIndexed(_resolveNormal).toList();
+
+  List<_ParameterValueEntry> resolveOptional(
+          List<ParameterReflection> parameters) =>
+      parameters.mapIndexed(_resolveOptional).toList();
+
+  Map<String, dynamic> resolveNamed(
+          Map<String, ParameterReflection> parameters) =>
+      Map<String, dynamic>.fromEntries(
+          parameters.values.mapIndexed(_resolveNamed));
+
+  _ParameterValueEntry _resolveNormal(int i, ParameterReflection p) =>
+      _ParameterValueEntry(p.name, parameterProvider(p, i));
+
+  _ParameterValueEntry _resolveOptional(int i, ParameterReflection p) =>
+      _ParameterValueEntry(p.name, parameterProvider(p, offsetOptional + i));
+
+  _ParameterValueEntry _resolveNamed(int i, ParameterReflection p) =>
+      _ParameterValueEntry(p.name, parameterProvider(p, offsetNamed + i));
+}
+
 /// Base class fro methods and constructors.
 abstract class FunctionReflection<O, R> extends ElementReflection<O>
     implements Comparable<FunctionReflection> {
@@ -2633,7 +2676,7 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
       var fieldsAliasesReverse =
           fieldsAliases.map((key, value) => MapEntry(value, key));
 
-      return methodInvocation((p) {
+      return methodInvocation((p, i) {
         var pJsonName = p.jsonName;
         var pName = p.name;
         var fAlias1 = fieldsAliases[pName];
@@ -2664,7 +2707,7 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
         return resolveValue(p, pName, val, contains);
       });
     } else {
-      return methodInvocation((p) {
+      return methodInvocation((p, i) {
         var pName = p.name;
 
         if (nameResolver != null) {
@@ -2684,54 +2727,43 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
     }
   }
 
-  /// Creates a [MethodInvocation] using [parametersProvider].
-  MethodInvocation<O> methodInvocation(
-      Object? Function(ParameterReflection parameter) parametersProvider) {
+  /// Creates a [MethodInvocation] using [parameterProvider].
+  MethodInvocation<O> methodInvocation(ParameterProvider parameterProvider) {
     final normalParameters = this.normalParameters;
     final optionalParameters = this.optionalParameters;
     final namedParameters = this.namedParameters;
 
-    MapEntry<String, Object?> resolveParameterEntry(ParameterReflection p) =>
-        MapEntry<String, Object?>(p.name, parametersProvider(p));
+    var parameterResolver = _ParameterResolver(
+        parameterProvider, normalParameters.length, optionalParameters.length);
 
-    var normalParametersEntries =
-        normalParameters.map(resolveParameterEntry).toList();
-
-    var optionalParametersEntries =
-        optionalParameters.map(resolveParameterEntry).toList();
-
-    var namedParametersEntries = Map<String, dynamic>.fromEntries(
-        namedParameters.values.map(resolveParameterEntry));
+    var normalValues = parameterResolver.resolveNormal(normalParameters);
+    var optionalValues = parameterResolver.resolveOptional(optionalParameters);
+    var namedValues = parameterResolver.resolveNamed(namedParameters);
 
     // If has some unresolved parameter tries to resolve it again.
     // This will allow use of the current cached entities in
     // a `JsonEntityCache` (if in use).
-    if (_hasUnresolvedParameterValue(normalParametersEntries) ||
-        _hasUnresolvedParameterValue(optionalParametersEntries) ||
-        _hasUnresolvedParameterValue(namedParametersEntries.entries)) {
-      normalParametersEntries =
-          normalParameters.map(resolveParameterEntry).toList();
+    if (_hasUnresolvedParameterValue(normalValues) ||
+        _hasUnresolvedParameterValue(optionalValues) ||
+        _hasUnresolvedParameterValue(namedValues.entries)) {
+      normalValues = parameterResolver.resolveNormal(normalParameters);
+      optionalValues = parameterResolver.resolveOptional(optionalParameters);
+      namedValues = parameterResolver.resolveNamed(namedParameters);
 
-      optionalParametersEntries =
-          optionalParameters.map(resolveParameterEntry).toList();
-
-      namedParametersEntries = Map<String, dynamic>.fromEntries(
-          namedParameters.values.map(resolveParameterEntry));
-
-      if (_hasUnresolvedParameterValue(normalParametersEntries) ||
-          _hasUnresolvedParameterValue(optionalParametersEntries) ||
-          _hasUnresolvedParameterValue(namedParametersEntries.entries)) {
+      if (_hasUnresolvedParameterValue(normalValues) ||
+          _hasUnresolvedParameterValue(optionalValues) ||
+          _hasUnresolvedParameterValue(namedValues.entries)) {
         throw StateError(
-            "Unresolved parameter value> normal: ${normalParametersEntries.asStringSimple} ; "
-            "optional: ${optionalParametersEntries.asStringSimple} ; "
-            "named: ${namedParametersEntries.entries.asStringSimple}");
+            "Unresolved parameter value> normal: ${normalValues.asStringSimple} ; "
+            "optional: ${optionalValues.asStringSimple} ; "
+            "named: ${namedValues.entries.asStringSimple}");
       }
     }
 
-    while (optionalParametersEntries.isNotEmpty) {
-      var lastIndex = optionalParametersEntries.length - 1;
+    while (optionalValues.isNotEmpty) {
+      var lastIndex = optionalValues.length - 1;
 
-      var entry = optionalParametersEntries[lastIndex];
+      var entry = optionalValues[lastIndex];
       var value = entry.value;
       var isAbsent = value.isAbsentParameterValue;
       if (value != null && !isAbsent) break;
@@ -2739,27 +2771,27 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
       var lastParam = this.optionalParameters[lastIndex];
 
       if (isAbsent) {
-        optionalParametersEntries.removeAt(lastIndex);
+        optionalValues.removeAt(lastIndex);
       } else {
         if (lastParam.hasDefaultValue || lastParam.nullable) {
-          optionalParametersEntries.removeAt(lastIndex);
+          optionalValues.removeAt(lastIndex);
         } else {
           throw StateError(
-              "Invalid optional parameter value: $optionalParametersEntries != ${this.optionalParameters}");
+              "Invalid optional parameter value: $optionalValues != ${this.optionalParameters}");
         }
       }
     }
 
-    for (var k in namedParametersEntries.keys.toList(growable: false)) {
+    for (var k in namedValues.keys.toList(growable: false)) {
       var p = namedParameters[k]!;
-      Object? value = namedParametersEntries[k];
+      Object? value = namedValues[k];
 
       var isAbsent = value.isAbsentParameterValue;
 
       if ((value == null || isAbsent) &&
           (p.nullable || p.hasDefaultValue) &&
           !p.required) {
-        namedParametersEntries.remove(k);
+        namedValues.remove(k);
       } else if (isAbsent) {
         throw StateError("Required named parameter `${p.name}` "
             "${p.hasJsonNameAlias ? '(jsonName: p.jsonName)' : ''} "
@@ -2767,17 +2799,15 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
       }
     }
 
-    _removeAbsentParameterValue(normalParametersEntries);
-    _removeAbsentParameterValue(optionalParametersEntries);
+    _removeAbsentParameterValue(normalValues);
+    _removeAbsentParameterValue(optionalValues);
 
-    var normalParametersValues =
-        normalParametersEntries.map((e) => e.value).toList();
-    var optionalParametersValues =
-        optionalParametersEntries.map((e) => e.value).toList();
+    var normalParametersValues = normalValues.map((e) => e.value).toList();
+    var optionalParametersValues = optionalValues.map((e) => e.value).toList();
 
     var positionalParametersNames = <String>[
-      ...normalParametersEntries.map((e) => e.key),
-      ...optionalParametersEntries.map((e) => e.key),
+      ...normalValues.map((e) => e.key),
+      ...optionalValues.map((e) => e.key),
     ];
 
     return MethodInvocation<O>.withPositionalParametersNames(
@@ -2786,7 +2816,7 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
       positionalParametersNames,
       normalParametersValues,
       optionalParametersValues,
-      namedParametersEntries,
+      namedValues,
     );
   }
 
