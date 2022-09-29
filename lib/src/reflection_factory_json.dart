@@ -790,15 +790,33 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
 }
 
 typedef JsonTypeDecoder<T> = T? Function(
-    Object? json, JsonDecoder? jsonDecoder);
+    Object? json, JsonDecoder? jsonDecoder, TypeInfo typeInfo);
 
 /// A JSON decoder.
 abstract class JsonDecoder extends JsonConverter<String, Object?> {
   static final Map<Type, JsonTypeDecoder> _registeredTypeDecoders =
       <Type, JsonTypeDecoder>{};
 
+  /// Register a global [JsonTypeDecoder] for [type].
   static void registerTypeDecoder(Type type, JsonTypeDecoder decoder) {
     _registeredTypeDecoders[type] = decoder;
+  }
+
+  /// Unregister a global [JsonTypeDecoder] for [type].
+  /// - If [decoder] is provided the registered instance must match [identical] to be removed.
+  static bool unregisterTypeDecoder(Type type, [JsonTypeDecoder? decoder]) {
+    if (decoder == null) {
+      _registeredTypeDecoders.remove(type);
+      return true;
+    } else {
+      var prev = _registeredTypeDecoders[type];
+      if (identical(prev, decoder)) {
+        _registeredTypeDecoders.remove(type);
+        return true;
+      } else {
+        return false;
+      }
+    }
   }
 
   static JsonTypeDecoder? getTypeDecoder(Type type) =>
@@ -1032,12 +1050,9 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     } else if (o is Iterable) {
       return _fromJsonListImpl(o, typeInfo, duplicatedEntitiesAsID) as O?;
     } else if (o is String) {
-      return _entityFromJsonString(type, o, duplicatedEntitiesAsID);
+      return _entityFromJsonString(typeInfo, o, duplicatedEntitiesAsID);
     } else {
-      if (o == null) {
-        return null;
-      }
-      return _entityFromJsonValue(type, o, duplicatedEntitiesAsID);
+      return _entityFromJsonValue(typeInfo, o, duplicatedEntitiesAsID);
     }
   }
 
@@ -1078,12 +1093,9 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       return _fromJsonListAsyncImpl(
           o, typeInfo, duplicatedEntitiesAsID, autoResetEntityCache) as O?;
     } else if (o is String) {
-      return _entityFromJsonString(type, o, duplicatedEntitiesAsID);
+      return _entityFromJsonString(typeInfo, o, duplicatedEntitiesAsID);
     } else {
-      if (o == null) {
-        return null;
-      }
-      return _entityFromJsonValue(type, o, duplicatedEntitiesAsID);
+      return _entityFromJsonValue(typeInfo, o, duplicatedEntitiesAsID);
     }
   }
 
@@ -1396,7 +1408,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     var typeDecoder = JsonDecoder.getTypeDecoder(type);
     if (typeDecoder != null) {
-      var obj = typeDecoder(map, this);
+      var obj = typeDecoder(map, this, typeInfo);
       if (obj != null) {
         _cacheEntity(obj);
         return obj as O;
@@ -1425,7 +1437,10 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     }
   }
 
-  O _entityFromJsonString<O>(Type type, String s, bool duplicatedEntitiesAsID) {
+  O _entityFromJsonString<O>(
+      TypeInfo typeInfo, String s, bool duplicatedEntitiesAsID) {
+    var type = typeInfo.type;
+
     var jsonValueDecoderProvider = this.jsonValueDecoderProvider;
     if (jsonValueDecoderProvider != null) {
       var valueDecoder = jsonValueDecoderProvider(type, s);
@@ -1440,7 +1455,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     var typeDecoder = JsonDecoder.getTypeDecoder(type);
     if (typeDecoder != null) {
-      var obj = typeDecoder(s, this);
+      var obj = typeDecoder(s, this, typeInfo);
       if (obj != null) {
         _cacheEntity(obj);
         return obj as O;
@@ -1496,8 +1511,11 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
   }
 
   O? _entityFromJsonValue<O>(
-      Type type, Object value, bool duplicatedEntitiesAsID) {
-    if ((duplicatedEntitiesAsID || forceDuplicatedEntitiesAsID)) {
+      TypeInfo typeInfo, Object? value, bool duplicatedEntitiesAsID) {
+    var type = typeInfo.type;
+
+    if (value != null &&
+        (duplicatedEntitiesAsID || forceDuplicatedEntitiesAsID)) {
       var cachedEntity = entityCache.getCachedEntityByID(value, type: type);
       if (cachedEntity != null) {
         return cachedEntity as O;
@@ -1518,12 +1536,14 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     var typeDecoder = JsonDecoder.getTypeDecoder(type);
     if (typeDecoder != null) {
-      var obj = typeDecoder(value, this);
+      var obj = typeDecoder(value, this, typeInfo);
       if (obj != null) {
         _cacheEntity(obj);
         return obj as O;
       }
     }
+
+    if (value == null) return null;
 
     if (value.runtimeType == type) {
       return value as O;
@@ -1664,7 +1684,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     var typeDecoder = JsonDecoder.getTypeDecoder(type);
     if (typeDecoder != null) {
-      var obj = typeDecoder(map, this);
+      var obj = typeDecoder(map, this, typeInfo);
       if (obj != null) {
         return _cacheEntityAsync<O>(obj);
       }

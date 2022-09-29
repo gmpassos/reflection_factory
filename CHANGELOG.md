@@ -1,3 +1,11 @@
+## 1.2.15
+
+- `JsonTypeDecoder`: added parameter `TypeInfo typeInfo`.
+- `JsonDecoder`:
+  - Added `unregisterTypeDecoder`
+  - Allow decoding of `null` values with personalized `JsonTypeDecoder`.
+- Added `ClassReflection.createInstanceWithConstructorByName`.
+
 ## 1.2.14
 
 - `FunctionReflection.methodInvocation`:

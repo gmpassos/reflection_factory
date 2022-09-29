@@ -1189,7 +1189,7 @@ void main() {
       expect(addressReflection.canCreateInstanceWithoutArguments, isTrue);
       expect(addressReflection.fieldsNames,
           equals(['city', 'hashCode', 'id', 'state']));
-      expect(addressReflection.methodsNames, equals(['toJson']));
+      expect(addressReflection.methodsNames, equals(['toJson', 'toString']));
       expect(addressReflection.constructorsNames, equals(['', 'empty']));
 
       expect(ReflectionFactory.toJsonEncodable(address),

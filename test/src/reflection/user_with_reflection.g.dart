@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.2.14
+// BUILDER: reflection_factory/1.2.15
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -112,7 +112,7 @@ class TestAddressWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.14');
+  Version get reflectionFactoryVersion => Version.parse('1.2.15');
 
   @override
   TestAddressWithReflection$reflection withObject(
@@ -302,7 +302,7 @@ class TestAddressWithReflection$reflection
   }
 
   @override
-  List<String> get methodsNames => const <String>['toJson'];
+  List<String> get methodsNames => const <String>['toJson', 'toString'];
 
   @override
   MethodReflection<TestAddressWithReflection, R>? method<R>(String methodName,
@@ -326,6 +326,20 @@ class TestAddressWithReflection$reflection
             null,
             null,
             null);
+      case 'tostring':
+        return MethodReflection<TestAddressWithReflection, R>(
+            this,
+            TestAddressWithReflection,
+            'toString',
+            TypeReflection.tString,
+            false,
+            (o) => o!.toString,
+            obj,
+            false,
+            null,
+            null,
+            null,
+            [override]);
       default:
         return null;
     }
@@ -360,7 +374,7 @@ class TestCompanyWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.14');
+  Version get reflectionFactoryVersion => Version.parse('1.2.15');
 
   @override
   TestCompanyWithReflection$reflection withObject(
@@ -415,7 +429,7 @@ class TestCompanyWithReflection$reflection
             this,
             TestCompanyWithReflection,
             '',
-            () => (String name, TestAddressWithReflection mainAddress,
+            () => (String name, TestAddressWithReflection? mainAddress,
                     {List<TestAddressWithReflection> extraAddresses =
                         const <TestAddressWithReflection>[],
                     List<TestAddressWithReflection> branchesAddresses =
@@ -432,7 +446,7 @@ class TestCompanyWithReflection$reflection
                   TypeReflection<TestAddressWithReflection>(
                       TestAddressWithReflection),
                   'mainAddress',
-                  false,
+                  true,
                   true,
                   null,
                   null)
@@ -528,9 +542,9 @@ class TestCompanyWithReflection$reflection
           TestCompanyWithReflection,
           TypeReflection<TestAddressWithReflection>(TestAddressWithReflection),
           'mainAddress',
-          false,
+          true,
           (o) => () => o!.mainAddress as T,
-          (o) => (T? v) => o!.mainAddress = v as TestAddressWithReflection,
+          (o) => (T? v) => o!.mainAddress = v as TestAddressWithReflection?,
           obj,
           false,
           false,
@@ -629,14 +643,33 @@ class TestCompanyWithReflection$reflection
   }
 
   @override
-  List<String> get methodsNames => const <String>[];
+  List<String> get methodsNames => const <String>['toString'];
 
   @override
   MethodReflection<TestCompanyWithReflection, R>? method<R>(String methodName,
       [TestCompanyWithReflection? obj]) {
     obj ??= object;
 
-    return null;
+    var lc = methodName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'tostring':
+        return MethodReflection<TestCompanyWithReflection, R>(
+            this,
+            TestCompanyWithReflection,
+            'toString',
+            TypeReflection.tString,
+            false,
+            (o) => o!.toString,
+            obj,
+            false,
+            null,
+            null,
+            null,
+            [override]);
+      default:
+        return null;
+    }
   }
 
   @override
@@ -668,7 +701,7 @@ class TestDataWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.14');
+  Version get reflectionFactoryVersion => Version.parse('1.2.15');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -903,7 +936,7 @@ class TestDomainWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.14');
+  Version get reflectionFactoryVersion => Version.parse('1.2.15');
 
   @override
   TestDomainWithReflection$reflection withObject(
@@ -1255,7 +1288,7 @@ class TestEnumWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.14');
+  Version get reflectionFactoryVersion => Version.parse('1.2.15');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -1325,7 +1358,7 @@ class TestOpAWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.14');
+  Version get reflectionFactoryVersion => Version.parse('1.2.15');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -1554,7 +1587,7 @@ class TestOpBWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.14');
+  Version get reflectionFactoryVersion => Version.parse('1.2.15');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -1797,7 +1830,7 @@ class TestOpWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.14');
+  Version get reflectionFactoryVersion => Version.parse('1.2.15');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -2048,7 +2081,7 @@ class TestTransactionWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.14');
+  Version get reflectionFactoryVersion => Version.parse('1.2.15');
 
   @override
   TestTransactionWithReflection$reflection withObject(
@@ -2263,7 +2296,7 @@ class TestUserWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.14');
+  Version get reflectionFactoryVersion => Version.parse('1.2.15');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>

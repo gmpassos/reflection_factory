@@ -919,7 +919,7 @@ void main() {
       var json3 = jsonCodec.encode(l1);
       expect(json3, equals('["1:2:3","11:12:13"]'));
 
-      JsonDecoder.registerTypeDecoder(Time, (json, jsonDecoder) {
+      JsonDecoder.registerTypeDecoder(Time, (json, jsonDecoder, t) {
         if (json is String) {
           return Time.parse(json);
         } else if (json is Map) {
@@ -1073,6 +1073,122 @@ void main() {
 
         expect(jsonCodec.encode([user1, user1], duplicatedEntitiesAsID: true),
             equals(encodedJson));
+      }
+    });
+
+    test('encode/decode 2', () {
+      TestAddressWithReflection$reflection.boot();
+      TestCompanyWithReflection$reflection.boot();
+
+      {
+        var address = TestAddressWithReflection('NY', city: 'New York', id: 11);
+
+        var addressJson = address.toJson();
+        expect(
+            addressJson, equals({'id': 11, 'state': 'NY', 'city': 'New York'}));
+
+        expect(
+            JsonCodec.defaultCodec
+                .fromJson(addressJson, type: TestAddressWithReflection),
+            equals(address));
+
+        var company = TestCompanyWithReflection('c1', address);
+
+        var companyJson = company.toJson();
+        expect(
+            companyJson,
+            equals({
+              'branchesAddresses': [],
+              'extraAddresses': [],
+              'extraNames': [],
+              'mainAddress': {'id': 11, 'state': 'NY', 'city': 'New York'},
+              'name': 'c1'
+            }));
+
+        expect(
+            JsonCodec.defaultCodec
+                .fromJson(companyJson, type: TestCompanyWithReflection),
+            equals(company));
+      }
+
+      {
+        var company = TestCompanyWithReflection('c1', null);
+
+        var companyJson = company.toJson();
+        expect(
+            companyJson,
+            equals({
+              'branchesAddresses': [],
+              'extraAddresses': [],
+              'extraNames': [],
+              'mainAddress': null,
+              'name': 'c1'
+            }));
+
+        expect(
+            JsonCodec.defaultCodec
+                .fromJson(companyJson, type: TestCompanyWithReflection),
+            equals(company));
+      }
+
+      {
+        JsonDecoder.registerTypeDecoder(TestAddressWithReflection,
+            (o, jsonDecoder, t) {
+          if (o is Map<String, Object?>) {
+            return TestAddressWithReflection$reflection.staticInstance
+                .createInstanceFromMap(o);
+          } else {
+            return TestAddressWithReflection('?', city: '?');
+          }
+        });
+
+        try {
+          {
+            var mainAddress =
+                TestAddressWithReflection('NY', city: 'New York', id: 11);
+
+            var company = TestCompanyWithReflection('c1', mainAddress);
+
+            var companyJson = company.toJson();
+            expect(
+                companyJson,
+                equals({
+                  'branchesAddresses': [],
+                  'extraAddresses': [],
+                  'extraNames': [],
+                  'mainAddress': {'id': 11, 'state': 'NY', 'city': 'New York'},
+                  'name': 'c1'
+                }));
+
+            expect(
+                JsonCodec.defaultCodec
+                    .fromJson(companyJson, type: TestCompanyWithReflection),
+                equals(company));
+          }
+
+          {
+            var company = TestCompanyWithReflection('c1', null);
+
+            var companyJson = company.toJson();
+            expect(
+                companyJson,
+                equals({
+                  'branchesAddresses': [],
+                  'extraAddresses': [],
+                  'extraNames': [],
+                  'mainAddress': null,
+                  'name': 'c1'
+                }));
+
+            expect(
+                JsonCodec.defaultCodec
+                    .fromJson(companyJson, type: TestCompanyWithReflection),
+                equals(TestCompanyWithReflection(
+                    'c1', TestAddressWithReflection('?', city: '?'))));
+          }
+        } finally {
+          JsonDecoder.unregisterTypeDecoder(TestAddressWithReflection);
+        }
       }
     });
 
@@ -1306,9 +1422,17 @@ void main() {
 
       var jsonEntityCache3 = JsonEntityCacheSimple();
 
+      expect(jsonEntityCache3.cachedEntitiesLength, equals(0));
+      expect(jsonEntityCache3.toString(),
+          matches(RegExp(r'JsonEntityCacheSimple#\d+\[0\]')));
+
       jsonEntityCache3.cacheEntities([mainAddress1]);
 
       expect(jsonEntityCache3.cachedEntitiesLength, equals(1));
+      expect(
+          jsonEntityCache3.toString(),
+          matches(RegExp(
+              r'JsonEntityCacheSimple#\d+\[1\]\{TestAddressWithReflection: 1\}')));
 
       var company3 = JsonCodec(entityCache: jsonEntityCache3)
           .fromJson<TestCompanyWithReflection>(decoded2[0],

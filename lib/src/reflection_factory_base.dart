@@ -20,7 +20,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.2.14';
+  static const String VERSION = '1.2.15';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -1223,8 +1223,23 @@ abstract class ClassReflection<O> extends Reflection<O>
     return null;
   }
 
+  /// Creates an instance with the constructor with [constructorName]
+  /// using [map] entries as parameters.
+  O? createInstanceWithConstructorByName(
+      String constructorName, Map<String, dynamic> map,
+      {FieldNameResolver? fieldNameResolver,
+      FieldValueResolver? fieldValueResolver}) {
+    var constructor = this.constructor(constructorName);
+
+    if (constructor == null) return null;
+
+    return createInstanceWithConstructor(constructor, map,
+        fieldNameResolver: fieldNameResolver,
+        fieldValueResolver: fieldValueResolver);
+  }
+
   /// Creates an instance with the constructor returned by [getBestConstructorForMap],
-  /// using [map] entries.
+  /// using [map] entries as parameters.
   O? createInstanceWithBestConstructor(Map<String, Object?> map,
       {FieldNameResolver? fieldNameResolver,
       FieldValueResolver? fieldValueResolver}) {
@@ -1234,6 +1249,16 @@ abstract class ClassReflection<O> extends Reflection<O>
 
     if (constructor == null) return null;
 
+    return createInstanceWithConstructor(constructor, map,
+        fieldNameResolver: fieldNameResolver,
+        fieldValueResolver: fieldValueResolver);
+  }
+
+  /// Creates an instance with [constructor] using [map] entries as parameters.
+  O? createInstanceWithConstructor(
+      ConstructorReflection<O> constructor, Map<String, Object?> map,
+      {FieldNameResolver? fieldNameResolver,
+      FieldValueResolver? fieldValueResolver}) {
     var usesJsonNameAlias = hasJsonNameAlias;
 
     var methodInvocation = constructor.methodInvocationFromMap(map,

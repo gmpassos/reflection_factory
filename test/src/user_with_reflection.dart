@@ -151,12 +151,17 @@ class TestAddressWithReflection {
         'state': state,
         'city': city,
       };
+
+  @override
+  String toString() {
+    return 'TestAddressWithReflection{id: $id, state: $state, city: $city}';
+  }
 }
 
 @EnableReflection()
 class TestCompanyWithReflection {
   final String name;
-  TestAddressWithReflection mainAddress;
+  TestAddressWithReflection? mainAddress;
 
   final List<String> extraNames;
 
@@ -192,6 +197,11 @@ class TestCompanyWithReflection {
       ListEquality<TestAddressWithReflection>().hash(branchesAddresses) ^
       ListEquality<TestAddressWithReflection>().hash(extraAddresses) ^
       ListEquality<String>().hash(extraNames);
+
+  @override
+  String toString() {
+    return 'TestCompanyWithReflection{name: $name, mainAddress: $mainAddress, extraNames: $extraNames, branchesAddresses: $branchesAddresses, extraAddresses: $extraAddresses, local: $local}';
+  }
 }
 
 @EnableReflection()
