@@ -1189,6 +1189,26 @@ void main() {
         } finally {
           JsonDecoder.unregisterTypeDecoder(TestAddressWithReflection);
         }
+
+        {
+          var company = TestCompanyWithReflection('c1', null);
+
+          var companyJson = company.toJson();
+          expect(
+              companyJson,
+              equals({
+                'branchesAddresses': [],
+                'extraAddresses': [],
+                'extraNames': [],
+                'mainAddress': null,
+                'name': 'c1'
+              }));
+
+          expect(
+              JsonCodec.defaultCodec
+                  .fromJson(companyJson, type: TestCompanyWithReflection),
+              equals(TestCompanyWithReflection('c1', null)));
+        }
       }
     });
 
