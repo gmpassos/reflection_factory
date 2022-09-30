@@ -1,3 +1,11 @@
+## 1.2.16
+
+- `ClassReflection`:
+  - Added `fieldsWithJsonFieldHidden`, `fieldsWithJsonFieldVisible`, `hasJsonFieldHidden` and `hasJsonFieldVisible`.
+  - Added `entityFields` and `entityFieldsNamesWhere`.
+  - Added `getBestConstructorsFor`.
+  - `getBestConstructorFor`: using multiple contructor candidates.
+
 ## 1.2.15
 
 - `JsonTypeDecoder`: added parameter `TypeInfo typeInfo`.

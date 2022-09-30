@@ -600,6 +600,12 @@ abstract class EnumReflection<O> extends Reflection<O>
   }
 }
 
+typedef OnConstructorInvocationError = void Function(
+    ConstructorReflection constructor,
+    MethodInvocation methodInvocation,
+    Map<String, dynamic> map,
+    Object? error);
+
 /// Base for Class reflection.
 abstract class ClassReflection<O> extends Reflection<O>
     implements Comparable<ClassReflection<O>> {
@@ -686,12 +692,34 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// Returns a list of supper types.
   List<Type> get supperTypes;
 
-  List<FieldReflection<O, dynamic>>? _fieldsWithJsonNameAlias;
+  List<FieldReflection<O, dynamic>>? _fieldsWithJsonFieldHidden;
+
+  /// Returns the fields with a [JsonField.hidden].
+  List<FieldReflection<O, dynamic>> get fieldsWithJsonFieldHidden =>
+      _fieldsWithJsonFieldHidden ??=
+          List<FieldReflection<O, dynamic>>.unmodifiable(
+              allFields().where((f) => f.hasJsonFieldHidden));
+
+  List<FieldReflection<O, dynamic>>? _fieldsWithJsonFieldVisible;
+
+  /// Returns the fields with a [JsonField.visible].
+  List<FieldReflection<O, dynamic>> get fieldsWithJsonFieldVisible =>
+      _fieldsWithJsonFieldVisible ??=
+          List<FieldReflection<O, dynamic>>.unmodifiable(
+              allFields().where((f) => f.hasJsonFieldVisible));
+
+  /// Returns `true` if any field uses a [JsonField.hidden].
+  bool get hasJsonFieldHidden => fieldsWithJsonFieldHidden.isNotEmpty;
+
+  /// Returns `true` if any field uses a [JsonField.visible].
+  bool get hasJsonFieldVisible => fieldsWithJsonFieldVisible.isNotEmpty;
 
   /// Returns a [Map] with the fields names aliases.
   Map<String, String> get fieldsJsonNameAliases =>
       Map<String, String>.fromEntries(
           fieldsWithJsonNameAlias.map((f) => MapEntry(f.name, f.jsonName)));
+
+  List<FieldReflection<O, dynamic>>? _fieldsWithJsonNameAlias;
 
   /// Returns the fields with a valid [JsonFieldAlias].
   List<FieldReflection<O, dynamic>> get fieldsWithJsonNameAlias =>
@@ -762,7 +790,27 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   /// Returns the best [ConstructorReflection] for [requiredParameters], [optionalParameters],
   /// [nullableParameters] and [presentParameters].
+  ///
+  /// See [getBestConstructorsFor].
   ConstructorReflection<O>? getBestConstructorFor(
+      {Iterable<String> requiredParameters = const <String>[],
+      Iterable<String> optionalParameters = const <String>[],
+      Iterable<String> nullableParameters = const <String>[],
+      Iterable<String> presentParameters = const <String>[],
+      bool jsonName = false}) {
+    var constructors = getBestConstructorsFor(
+        requiredParameters: requiredParameters,
+        optionalParameters: optionalParameters,
+        nullableParameters: nullableParameters,
+        presentParameters: presentParameters,
+        jsonName: jsonName);
+
+    return constructors.firstOrNull;
+  }
+
+  /// Returns a [List] of the  best [ConstructorReflection] for [requiredParameters], [optionalParameters],
+  /// [nullableParameters] and [presentParameters].
+  List<ConstructorReflection<O>> getBestConstructorsFor(
       {Iterable<String> requiredParameters = const <String>[],
       Iterable<String> optionalParameters = const <String>[],
       Iterable<String> nullableParameters = const <String>[],
@@ -772,11 +820,24 @@ abstract class ClassReflection<O> extends Reflection<O>
       nullableParameters = nullableParameters.toList(growable: false);
     }
 
-    var constructors = allConstructors();
-
-    if (constructors.isEmpty) return null;
+    var constructors = allConstructors().toList();
+    if (constructors.isEmpty) return <ConstructorReflection<O>>[];
 
     var presentParametersResolved = presentParameters.toSet();
+
+    var invalidConstructors = constructors.where((c) {
+      var paramsRequired = c
+          .parametersNamesWhere((p) => p.required, jsonName: jsonName)
+          .toList();
+      return _elementsInCount(
+              presentParameters, paramsRequired, _nameNormalizer) <
+          paramsRequired.length;
+    }).toList();
+
+    if (invalidConstructors.isNotEmpty) {
+      constructors.removeWhere((c) => invalidConstructors.contains(c));
+      if (constructors.isEmpty) return <ConstructorReflection<O>>[];
+    }
 
     if (requiredParameters.isNotEmpty) {
       var constructorsWithRequired = constructors.where((c) {
@@ -786,7 +847,7 @@ abstract class ClassReflection<O> extends Reflection<O>
       }).toList();
 
       constructors = constructorsWithRequired;
-      if (constructors.isEmpty) return null;
+      if (constructors.isEmpty) return <ConstructorReflection<O>>[];
 
       presentParametersResolved.addAll(requiredParameters);
     }
@@ -803,7 +864,7 @@ abstract class ClassReflection<O> extends Reflection<O>
       }).toList();
 
       constructors = constructorsWithNullables;
-      if (constructors.isEmpty) return null;
+      if (constructors.isEmpty) return <ConstructorReflection<O>>[];
 
       presentParametersResolved.addAll(nullableParameters);
     }
@@ -819,10 +880,8 @@ abstract class ClassReflection<O> extends Reflection<O>
           paramsRequired.length;
     }).toList();
 
-    if (constructors.isEmpty) return null;
-
-    if (constructors.length == 1) {
-      return constructors.first;
+    if (constructors.length <= 1) {
+      return constructors;
     }
 
     var constructorsInfo = Map.fromEntries(constructors.map((c) {
@@ -849,7 +908,7 @@ abstract class ClassReflection<O> extends Reflection<O>
       return cmp;
     });
 
-    return constructors.first;
+    return constructors;
   }
 
   static String _nameNormalizer(String name) {
@@ -918,11 +977,25 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// Returns a static [FieldReflection] for [fieldName].
   FieldReflection<O, T>? staticField<T>(String fieldName);
 
+  List<FieldReflection<O, dynamic>>? _entityFields;
+
+  /// [fieldsWhere] [FieldReflection.isEntityField].
+  List<FieldReflection<O, dynamic>> entityFields([O? obj]) => _entityFields ??=
+      UnmodifiableListView(fieldsWhere((f) => f.isEntityField, obj).toList());
+
   /// Returns a [List] of fields [FieldReflection] that matches [test].
   Iterable<FieldReflection<O, dynamic>> fieldsWhere(
       bool Function(FieldReflection<O, dynamic> f) test,
       [O? obj]) {
     return allFields(obj).where(test);
+  }
+
+  /// Returns a [List] of fields names that matches [test].
+  Iterable<String> entityFieldsNamesWhere(
+      bool Function(FieldReflection<O, dynamic> f) test,
+      [O? obj,
+      bool jsonName = false]) {
+    return entityFields(obj).where(test).map((e) => e.resolveName(jsonName));
   }
 
   /// Returns a [List] of fields names that matches [test].
@@ -1243,22 +1316,77 @@ abstract class ClassReflection<O> extends Reflection<O>
   O? createInstanceWithBestConstructor(Map<String, Object?> map,
       {FieldNameResolver? fieldNameResolver,
       FieldValueResolver? fieldValueResolver}) {
-    var constructor = getBestConstructorForMap(map,
+    var constructors = getBestConstructorsForMap(map,
         fieldNameResolver: fieldNameResolver,
         fieldValueResolver: fieldValueResolver);
 
-    if (constructor == null) return null;
+    if (constructors.isEmpty) return null;
 
-    return createInstanceWithConstructor(constructor, map,
-        fieldNameResolver: fieldNameResolver,
-        fieldValueResolver: fieldValueResolver);
+    if (map.isNotEmpty) {
+      var emptyConstructors = constructors
+          .where((c) =>
+              c.parametersLength == 0 ||
+              (c.normalParameters.isEmpty &&
+                  c.optionalParameters.where((c) => c.required).isEmpty &&
+                  c.namedParameters.values.where((c) => c.required).isEmpty))
+          .toList();
+
+      constructors =
+          constructors.where((c) => !emptyConstructors.contains(c)).toList();
+
+      if (constructors.isEmpty) return null;
+    }
+
+    var invocationErrors = <List>[];
+
+    void catchInvokeError(
+        ConstructorReflection constructor,
+        MethodInvocation methodInvocation,
+        Map<String, dynamic> map,
+        Object? error) {
+      invocationErrors.add([constructor, methodInvocation, map, error]);
+    }
+
+    for (var c in constructors) {
+      var o = createInstanceWithConstructor(c, map,
+          fieldNameResolver: fieldNameResolver,
+          fieldValueResolver: fieldValueResolver,
+          onInvocationError: catchInvokeError);
+      if (o != null) return o;
+    }
+
+    if (invocationErrors.isNotEmpty) {
+      for (var i = 0; i < invocationErrors.length; ++i) {
+        var args = invocationErrors[i];
+        _showInvokeError(i, args[0], args[1], args[2], args[3]);
+      }
+
+      var error = invocationErrors.first[3];
+      throw error;
+    }
+
+    return null;
+  }
+
+  void _showInvokeError(
+      int i,
+      ConstructorReflection constructor,
+      MethodInvocation methodInvocation,
+      Map<String, dynamic> map,
+      Object? error) {
+    print('Error invoking[$i]>\n'
+        '  - constructor: $constructor\n'
+        '  - map: $map\n'
+        '  - methodInvocation: $methodInvocation\n'
+        '  - error: $error\n');
   }
 
   /// Creates an instance with [constructor] using [map] entries as parameters.
   O? createInstanceWithConstructor(
       ConstructorReflection<O> constructor, Map<String, Object?> map,
       {FieldNameResolver? fieldNameResolver,
-      FieldValueResolver? fieldValueResolver}) {
+      FieldValueResolver? fieldValueResolver,
+      OnConstructorInvocationError? onInvocationError}) {
     var usesJsonNameAlias = hasJsonNameAlias;
 
     var methodInvocation = constructor.methodInvocationFromMap(map,
@@ -1285,33 +1413,42 @@ abstract class ClassReflection<O> extends Reflection<O>
           var o = methodInvocation2.invoke(constructor.constructor);
           return o;
         } catch (e2) {
-          _showInvokeError(constructor, methodInvocation2, map2, e2);
-          rethrow;
+          if (onInvocationError != null) {
+            onInvocationError(constructor, methodInvocation2, map2, e2);
+          } else {
+            rethrow;
+          }
         }
       } else {
-        _showInvokeError(constructor, methodInvocation, map, e);
-        rethrow;
+        if (onInvocationError != null) {
+          onInvocationError(constructor, methodInvocation, map, e);
+        } else {
+          rethrow;
+        }
       }
     }
+
+    return null;
   }
 
-  void _showInvokeError(
-      ConstructorReflection constructor,
-      MethodInvocation methodInvocation,
-      Map<String, dynamic> map,
-      Object? error) {
-    print('Error invoking>\n'
-        '  - constructor: $constructor\n'
-        '  - map: $map\n'
-        '  - methodInvocation: $methodInvocation\n'
-        '  - error: $error\n');
-  }
-
-  Map<_KeyParametersNames, ConstructorReflection<O>?>?
+  Map<_KeyParametersNames, List<ConstructorReflection<O>>>?
       _getBestConstructorForMapCache;
 
   /// Returns the best constructor to instantiate with [map] entries.
+  ///
+  /// See [getBestConstructorsForMap].
   ConstructorReflection<O>? getBestConstructorForMap(Map<String, Object?> map,
+      {FieldNameResolver? fieldNameResolver,
+      FieldValueResolver? fieldValueResolver}) {
+    var constructors = getBestConstructorsForMap(map,
+        fieldNameResolver: fieldNameResolver,
+        fieldValueResolver: fieldValueResolver);
+    return constructors.firstOrNull;
+  }
+
+  /// Returns an unmodifiable [List] of the best constructors to instantiate with [map] entries.
+  List<ConstructorReflection<O>> getBestConstructorsForMap(
+      Map<String, Object?> map,
       {FieldNameResolver? fieldNameResolver,
       FieldValueResolver? fieldValueResolver}) {
     fieldNameResolver ??= _defaultFieldNameResolver;
@@ -1334,58 +1471,60 @@ abstract class ClassReflection<O> extends Reflection<O>
     var key = _KeyParametersNames(presentParameters);
 
     var cache = getStaticInstance()._getBestConstructorForMapCache ??=
-        <_KeyParametersNames, ConstructorReflection<O>?>{};
+        <_KeyParametersNames, List<ConstructorReflection<O>>>{};
 
-    var constructor = cache.putIfAbsent(key, () {
+    var constructors = cache.putIfAbsent(key, () {
       key.sort();
 
+      List<ConstructorReflection<O>> list;
       if (hasJsonNameAlias) {
-        return _getBestConstructorForMapImpl(presentParameters, true) ??
-            _getBestConstructorForMapImpl(presentParameters, false);
+        list = _getBestConstructorsForMapImpl(presentParameters, true);
+        if (list.isEmpty) {
+          list = _getBestConstructorsForMapImpl(presentParameters, false);
+        }
       } else {
-        return _getBestConstructorForMapImpl(presentParameters, false);
+        list = _getBestConstructorsForMapImpl(presentParameters, false);
       }
+
+      return UnmodifiableListView<ConstructorReflection<O>>(list);
     });
 
-    return constructor;
+    return constructors;
   }
 
-  ConstructorReflection<O>? _getBestConstructorForMapImpl(
+  List<ConstructorReflection<O>> _getBestConstructorsForMapImpl(
       List<String> presentParameters, bool jsonName) {
-    var fieldsNotPresent = fieldsNamesWhere((f) =>
-        f.isEntityField &&
-        !presentParameters.contains(f.resolveName(jsonName))).toList();
+    var fieldsNotPresent = entityFieldsNamesWhere(
+        (f) => !presentParameters.contains(f.resolveName(jsonName))).toList();
 
-    var fieldsRequired =
-        fieldsNamesWhere((f) => f.isEntityField && !f.hasSetter).toList();
+    var fieldsRequired = entityFieldsNamesWhere((f) => !f.hasSetter).toList();
 
-    var fieldsOptional = fieldsNamesWhere((f) =>
-        f.isEntityField &&
-        !fieldsRequired.contains(f.resolveName(jsonName))).toList();
+    var fieldsOptional = entityFieldsNamesWhere(
+        (f) => !fieldsRequired.contains(f.resolveName(jsonName))).toList();
 
-    var constructor = getBestConstructorFor(
+    var constructors = getBestConstructorsFor(
         requiredParameters: fieldsRequired,
         optionalParameters: fieldsOptional,
         nullableParameters: fieldsNotPresent,
         presentParameters: presentParameters,
         jsonName: jsonName);
 
-    if (constructor == null && fieldsRequired.isNotEmpty) {
-      constructor = getBestConstructorFor(
+    if (constructors.isEmpty && fieldsRequired.isNotEmpty) {
+      constructors = getBestConstructorsFor(
           optionalParameters: fieldsOptional,
           nullableParameters: fieldsNotPresent,
           presentParameters: presentParameters,
           jsonName: jsonName);
     }
 
-    if (constructor == null && fieldsNotPresent.isNotEmpty) {
-      constructor = getBestConstructorFor(
+    if (constructors.isEmpty && fieldsNotPresent.isNotEmpty) {
+      constructors = getBestConstructorsFor(
           optionalParameters: fieldsOptional,
           presentParameters: presentParameters,
           jsonName: jsonName);
     }
 
-    return constructor;
+    return constructors;
   }
 
   O? createInstanceFromMap(Map<String, Object?> map,
@@ -2262,6 +2401,16 @@ class FieldReflection<O, T> extends ElementReflection<O>
         isFinal,
         _annotations);
   }
+
+  bool? _hasJsonFieldHidden;
+
+  bool get hasJsonFieldHidden =>
+      _hasJsonFieldHidden ??= jsonFieldAnnotations.hasHidden;
+
+  bool? _hasJsonFieldVisible;
+
+  bool get hasJsonFieldVisible =>
+      _hasJsonFieldVisible ??= jsonFieldAnnotations.hasVisible;
 
   String? _jsonName;
 

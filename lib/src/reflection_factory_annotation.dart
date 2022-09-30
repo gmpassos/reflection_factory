@@ -106,6 +106,12 @@ class JsonField extends JsonAnnotation {
   bool get isVisible => !_hidden;
 }
 
+extension IterableJsonFieldExtension on Iterable<JsonField> {
+  bool get hasHidden => any((a) => a.isHidden);
+
+  bool get hasVisible => any((a) => a.isVisible);
+}
+
 /// Defines the JSON field name.
 /// - If used in a constructor parameter, defines the corresponding JSON field.
 @Target({TargetKind.parameter, TargetKind.field, TargetKind.getter})
