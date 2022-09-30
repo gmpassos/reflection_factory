@@ -534,6 +534,16 @@ void main() {
           equals(DateTime.utc(2020, 1, 2, 10, 11, 12)));
 
       expect(
+          () => JsonCodec().fromJson({
+                'axis': 'x',
+                'enabled': true,
+                'isEnabled': true,
+                'name': 'Joe',
+              }, type: TestUserWithReflection),
+          throwsA(isA<StateError>().having((e) => e.message, 'final name',
+              contains('due final field `name`'))));
+
+      expect(
           JsonCodec().fromJson({
             'axis': 'x',
             'enabled': true,

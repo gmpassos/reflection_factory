@@ -815,6 +815,7 @@ abstract class ClassReflection<O> extends Reflection<O>
       Iterable<String> optionalParameters = const <String>[],
       Iterable<String> nullableParameters = const <String>[],
       Iterable<String> presentParameters = const <String>[],
+      bool allowEmptyConstructors = true,
       bool jsonName = false}) {
     if (nullableParameters is! List && nullableParameters is! Set) {
       nullableParameters = nullableParameters.toList(growable: false);
@@ -823,11 +824,27 @@ abstract class ClassReflection<O> extends Reflection<O>
     var constructors = allConstructors().toList();
     if (constructors.isEmpty) return <ConstructorReflection<O>>[];
 
+    if (!allowEmptyConstructors) {
+      var emptyConstructors = constructors
+          .where((c) =>
+              c.parametersLength == 0 ||
+              (c.normalParameters.isEmpty &&
+                  c.optionalParameters.where((c) => c.required).isEmpty &&
+                  c.namedParameters.values.where((c) => c.required).isEmpty))
+          .toList();
+
+      constructors =
+          constructors.where((c) => !emptyConstructors.contains(c)).toList();
+
+      if (constructors.isEmpty) return <ConstructorReflection<O>>[];
+    }
+
     var presentParametersResolved = presentParameters.toSet();
 
     var invalidConstructors = constructors.where((c) {
       var paramsRequired = c
-          .parametersNamesWhere((p) => p.required, jsonName: jsonName)
+          .parametersNamesWhere((p) => p.required && !p.nullable,
+              jsonName: jsonName)
           .toList();
       return _elementsInCount(
               presentParameters, paramsRequired, _nameNormalizer) <
@@ -1318,24 +1335,10 @@ abstract class ClassReflection<O> extends Reflection<O>
       FieldValueResolver? fieldValueResolver}) {
     var constructors = getBestConstructorsForMap(map,
         fieldNameResolver: fieldNameResolver,
-        fieldValueResolver: fieldValueResolver);
+        fieldValueResolver: fieldValueResolver,
+        allowEmptyConstructors: map.isEmpty);
 
     if (constructors.isEmpty) return null;
-
-    if (map.isNotEmpty) {
-      var emptyConstructors = constructors
-          .where((c) =>
-              c.parametersLength == 0 ||
-              (c.normalParameters.isEmpty &&
-                  c.optionalParameters.where((c) => c.required).isEmpty &&
-                  c.namedParameters.values.where((c) => c.required).isEmpty))
-          .toList();
-
-      constructors =
-          constructors.where((c) => !emptyConstructors.contains(c)).toList();
-
-      if (constructors.isEmpty) return null;
-    }
 
     var invocationErrors = <List>[];
 
@@ -1439,10 +1442,12 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// See [getBestConstructorsForMap].
   ConstructorReflection<O>? getBestConstructorForMap(Map<String, Object?> map,
       {FieldNameResolver? fieldNameResolver,
-      FieldValueResolver? fieldValueResolver}) {
+      FieldValueResolver? fieldValueResolver,
+      bool allowEmptyConstructors = true}) {
     var constructors = getBestConstructorsForMap(map,
         fieldNameResolver: fieldNameResolver,
-        fieldValueResolver: fieldValueResolver);
+        fieldValueResolver: fieldValueResolver,
+        allowEmptyConstructors: allowEmptyConstructors);
     return constructors.firstOrNull;
   }
 
@@ -1450,7 +1455,8 @@ abstract class ClassReflection<O> extends Reflection<O>
   List<ConstructorReflection<O>> getBestConstructorsForMap(
       Map<String, Object?> map,
       {FieldNameResolver? fieldNameResolver,
-      FieldValueResolver? fieldValueResolver}) {
+      FieldValueResolver? fieldValueResolver,
+      bool allowEmptyConstructors = true}) {
     fieldNameResolver ??= _defaultFieldNameResolver;
 
     var fieldsResolved = _resolveFieldsNames(fieldNameResolver, map);
@@ -1468,7 +1474,7 @@ abstract class ClassReflection<O> extends Reflection<O>
       presentParameters = presentFields.toList();
     }
 
-    var key = _KeyParametersNames(presentParameters);
+    var key = _KeyParametersNames(presentParameters, allowEmptyConstructors);
 
     var cache = getStaticInstance()._getBestConstructorForMapCache ??=
         <_KeyParametersNames, List<ConstructorReflection<O>>>{};
@@ -1478,12 +1484,15 @@ abstract class ClassReflection<O> extends Reflection<O>
 
       List<ConstructorReflection<O>> list;
       if (hasJsonNameAlias) {
-        list = _getBestConstructorsForMapImpl(presentParameters, true);
+        list = _getBestConstructorsForMapImpl(
+            presentParameters, allowEmptyConstructors, true);
         if (list.isEmpty) {
-          list = _getBestConstructorsForMapImpl(presentParameters, false);
+          list = _getBestConstructorsForMapImpl(
+              presentParameters, allowEmptyConstructors, false);
         }
       } else {
-        list = _getBestConstructorsForMapImpl(presentParameters, false);
+        list = _getBestConstructorsForMapImpl(
+            presentParameters, allowEmptyConstructors, false);
       }
 
       return UnmodifiableListView<ConstructorReflection<O>>(list);
@@ -1493,7 +1502,9 @@ abstract class ClassReflection<O> extends Reflection<O>
   }
 
   List<ConstructorReflection<O>> _getBestConstructorsForMapImpl(
-      List<String> presentParameters, bool jsonName) {
+      List<String> presentParameters,
+      bool allowEmptyConstructors,
+      bool jsonName) {
     var fieldsNotPresent = entityFieldsNamesWhere(
         (f) => !presentParameters.contains(f.resolveName(jsonName))).toList();
 
@@ -1507,6 +1518,7 @@ abstract class ClassReflection<O> extends Reflection<O>
         optionalParameters: fieldsOptional,
         nullableParameters: fieldsNotPresent,
         presentParameters: presentParameters,
+        allowEmptyConstructors: allowEmptyConstructors,
         jsonName: jsonName);
 
     if (constructors.isEmpty && fieldsRequired.isNotEmpty) {
@@ -1514,6 +1526,7 @@ abstract class ClassReflection<O> extends Reflection<O>
           optionalParameters: fieldsOptional,
           nullableParameters: fieldsNotPresent,
           presentParameters: presentParameters,
+          allowEmptyConstructors: allowEmptyConstructors,
           jsonName: jsonName);
     }
 
@@ -1521,6 +1534,7 @@ abstract class ClassReflection<O> extends Reflection<O>
       constructors = getBestConstructorsFor(
           optionalParameters: fieldsOptional,
           presentParameters: presentParameters,
+          allowEmptyConstructors: allowEmptyConstructors,
           jsonName: jsonName);
     }
 
@@ -1633,8 +1647,9 @@ abstract class ClassReflection<O> extends Reflection<O>
 
 class _KeyParametersNames {
   final List<String> _fields;
+  final bool _allowEmptyConstructors;
 
-  _KeyParametersNames(this._fields);
+  _KeyParametersNames(this._fields, this._allowEmptyConstructors);
 
   bool _sorted = false;
 
@@ -1684,10 +1699,11 @@ class _KeyParametersNames {
       identical(this, other) ||
       other is _KeyParametersNames &&
           runtimeType == other.runtimeType &&
+          _allowEmptyConstructors == other._allowEmptyConstructors &&
           equalsFields(other);
 
   @override
-  int get hashCode => _fields.length;
+  int get hashCode => _allowEmptyConstructors.hashCode ^ _fields.length;
 }
 
 /// A simple element of type [T] [resolver].
