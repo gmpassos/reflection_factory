@@ -20,7 +20,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.2.16';
+  static const String VERSION = '1.2.17';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -841,10 +841,18 @@ abstract class ClassReflection<O> extends Reflection<O>
 
     var presentParametersResolved = presentParameters.toSet();
 
+    String paramNameResolver(ParameterReflection p, String name) {
+      var f = field(p.name);
+      var alias = f?.jsonFieldAliasAnnotations.alias;
+      return alias ?? name;
+    }
+
+    var paramNameResolverJson = jsonName ? paramNameResolver : null;
+
     var invalidConstructors = constructors.where((c) {
       var paramsRequired = c
           .parametersNamesWhere((p) => p.required && !p.nullable,
-              jsonName: jsonName)
+              jsonName: jsonName, nameResolver: paramNameResolverJson)
           .toList();
       return _elementsInCount(
               presentParameters, paramsRequired, _nameNormalizer) <
@@ -858,8 +866,12 @@ abstract class ClassReflection<O> extends Reflection<O>
 
     if (requiredParameters.isNotEmpty) {
       var constructorsWithRequired = constructors.where((c) {
-        return _elementsInCount<String>(requiredParameters,
-                c.resolveAllParametersNames(jsonName), _nameNormalizer) ==
+        var paramsAll = c
+            .parametersNamesWhere((p) => true,
+                jsonName: jsonName, nameResolver: paramNameResolverJson)
+            .toList();
+        return _elementsInCount<String>(
+                requiredParameters, paramsAll, _nameNormalizer) ==
             requiredParameters.length;
       }).toList();
 
@@ -873,7 +885,7 @@ abstract class ClassReflection<O> extends Reflection<O>
       var constructorsWithNullables = constructors.where((c) {
         var paramsNullable = c
             .parametersNamesWhere((p) => p.nullable || !p.required,
-                jsonName: jsonName)
+                jsonName: jsonName, nameResolver: paramNameResolverJson)
             .toList();
         return _elementsInCount(
                 nullableParameters, paramsNullable, _nameNormalizer) ==
@@ -890,7 +902,8 @@ abstract class ClassReflection<O> extends Reflection<O>
 
     constructors = constructors.where((c) {
       var paramsRequired = c
-          .parametersNamesWhere((p) => p.required, jsonName: jsonName)
+          .parametersNamesWhere((p) => p.required,
+              jsonName: jsonName, nameResolver: paramNameResolverJson)
           .toList();
       return _elementsInCount<String>(
               presentParametersResolved, paramsRequired, _nameNormalizer) ==
@@ -2761,8 +2774,16 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
   /// Returns a [List] of parameters names that matches [test].
   Iterable<String> parametersNamesWhere(
           bool Function(ParameterReflection parameter) test,
-          {bool jsonName = false}) =>
-      allParameters.where(test).map((e) => e.resolveName(jsonName));
+          {bool jsonName = false,
+          String Function(ParameterReflection parameter, String name)?
+              nameResolver}) =>
+      allParameters.where(test).map((e) {
+        var name = e.resolveName(jsonName);
+        if (nameResolver != null) {
+          name = nameResolver(e, name);
+        }
+        return name;
+      });
 
   /// Returns a [ParameterReflection] by [name].
   ParameterReflection? getParameterByName(String name,

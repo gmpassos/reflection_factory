@@ -1,3 +1,10 @@
+## 1.2.17
+
+- `FunctionReflection.parametersNamesWhere`:
+  - Added parameter `nameResolver`.
+- `ClassReflection.getBestConstructorsFor`:
+  - Improve parameter/field JSON name alias (`JsonFieldAlias`) resolution.
+
 ## 1.2.16
 
 - `ClassReflection`:
