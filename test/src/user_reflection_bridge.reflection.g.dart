@@ -1,15 +1,28 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.2.17
+// BUILDER: reflection_factory/1.2.18
 // BUILD COMMAND: dart run build_runner build
 //
 
 // coverage:ignore-file
+// ignore_for_file: unused_element
 // ignore_for_file: unnecessary_const
 // ignore_for_file: unnecessary_cast
 // ignore_for_file: unnecessary_type_check
 
 part of 'user_reflection_bridge.dart';
+
+typedef __TR<T> = TypeReflection<T>;
+typedef __TI<T> = TypeInfo<T>;
+typedef __PR = ParameterReflection;
+
+mixin __ReflectionMixin {
+  static final Version _version = Version.parse('1.2.18');
+
+  Version get reflectionFactoryVersion => _version;
+
+  List<Reflection> siblingsReflection() => _siblingsReflection();
+}
 
 // ignore: non_constant_identifier_names
 TestAddress TestAddress$fromJson(Map<String, Object?> map) =>
@@ -24,7 +37,8 @@ TestUserSimple TestUserSimple$fromJson(Map<String, Object?> map) =>
 TestUserSimple TestUserSimple$fromJsonEncoded(String jsonEncoded) =>
     TestUserSimple$reflection.staticInstance.fromJsonEncoded(jsonEncoded);
 
-class TestAddress$reflection extends ClassReflection<TestAddress> {
+class TestAddress$reflection extends ClassReflection<TestAddress>
+    with __ReflectionMixin {
   TestAddress$reflection([TestAddress? object])
       : super(TestAddress, 'TestAddress', object);
 
@@ -40,9 +54,6 @@ class TestAddress$reflection extends ClassReflection<TestAddress> {
 
   @override
   Version get languageVersion => Version.parse('2.17.0');
-
-  @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
 
   @override
   TestAddress$reflection withObject([TestAddress? obj]) =>
@@ -94,11 +105,9 @@ class TestAddress$reflection extends ClassReflection<TestAddress> {
             TestAddress,
             '',
             () => (String state, String city) => TestAddress(state, city),
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 'state', false, true, null, null),
-              ParameterReflection(
-                  TypeReflection.tString, 'city', false, true, null, null)
+            const <__PR>[
+              __PR(__TR.tString, 'state', false, true),
+              __PR(__TR.tString, 'city', false, true)
             ],
             null,
             null,
@@ -110,13 +119,6 @@ class TestAddress$reflection extends ClassReflection<TestAddress> {
 
   @override
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
-
-  @override
-  List<ClassReflection> siblingsClassReflection() =>
-      _siblingsReflection().whereType<ClassReflection>().toList();
-
-  @override
-  List<Reflection> siblingsReflection() => _siblingsReflection();
 
   @override
   List<Type> get supperTypes => const <Type>[];
@@ -145,7 +147,7 @@ class TestAddress$reflection extends ClassReflection<TestAddress> {
         return FieldReflection<TestAddress, T>(
           this,
           TestAddress,
-          TypeReflection.tString,
+          __TR.tString,
           'state',
           false,
           (o) => () => o!.state as T,
@@ -153,13 +155,12 @@ class TestAddress$reflection extends ClassReflection<TestAddress> {
           obj,
           false,
           true,
-          null,
         );
       case 'city':
         return FieldReflection<TestAddress, T>(
           this,
           TestAddress,
-          TypeReflection.tString,
+          __TR.tString,
           'city',
           false,
           (o) => () => o!.city as T,
@@ -167,13 +168,12 @@ class TestAddress$reflection extends ClassReflection<TestAddress> {
           obj,
           false,
           true,
-          null,
         );
       case 'hashcode':
         return FieldReflection<TestAddress, T>(
           this,
           TestAddress,
-          TypeReflection.tInt,
+          __TR.tInt,
           'hashCode',
           false,
           (o) => () => o!.hashCode as T,
@@ -212,7 +212,7 @@ class TestAddress$reflection extends ClassReflection<TestAddress> {
             this,
             TestAddress,
             'toJson',
-            TypeReflection.tMapStringDynamic,
+            __TR.tMapStringDynamic,
             false,
             (o) => o!.toJson,
             obj,
@@ -235,7 +235,8 @@ class TestAddress$reflection extends ClassReflection<TestAddress> {
   }
 }
 
-class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
+class TestUserSimple$reflection extends ClassReflection<TestUserSimple>
+    with __ReflectionMixin {
   TestUserSimple$reflection([TestUserSimple? object])
       : super(TestUserSimple, 'TestUserSimple', object);
 
@@ -251,9 +252,6 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
 
   @override
   Version get languageVersion => Version.parse('2.17.0');
-
-  @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
 
   @override
   TestUserSimple$reflection withObject([TestUserSimple? obj]) =>
@@ -310,13 +308,10 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
             '',
             () => (String name, String? email, String password) =>
                 TestUserSimple(name, email, password),
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 'name', false, true, null, null),
-              ParameterReflection(
-                  TypeReflection.tString, 'email', true, true, null, null),
-              ParameterReflection(
-                  TypeReflection.tString, 'password', false, true, null, null)
+            const <__PR>[
+              __PR(__TR.tString, 'name', false, true),
+              __PR(__TR.tString, 'email', true, true),
+              __PR(__TR.tString, 'password', false, true)
             ],
             null,
             null,
@@ -345,13 +340,6 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
       List<Object>.unmodifiable(_classAnnotations);
 
   @override
-  List<ClassReflection> siblingsClassReflection() =>
-      _siblingsReflection().whereType<ClassReflection>().toList();
-
-  @override
-  List<Reflection> siblingsReflection() => _siblingsReflection();
-
-  @override
   List<Type> get supperTypes => const <Type>[];
 
   @override
@@ -376,7 +364,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
         return FieldReflection<TestUserSimple, T>(
           this,
           TestUserSimple,
-          TypeReflection.tString,
+          __TR.tString,
           'name',
           false,
           (o) => () => o!.name as T,
@@ -392,7 +380,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
         return FieldReflection<TestUserSimple, T>(
           this,
           TestUserSimple,
-          TypeReflection.tString,
+          __TR.tString,
           'email',
           true,
           (o) => () => o!.email as T,
@@ -400,13 +388,12 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
           obj,
           false,
           false,
-          null,
         );
       case 'password':
         return FieldReflection<TestUserSimple, T>(
           this,
           TestUserSimple,
-          TypeReflection.tString,
+          __TR.tString,
           'password',
           false,
           (o) => () => o!.password as T,
@@ -414,13 +401,12 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
           obj,
           false,
           false,
-          null,
         );
       case 'hashcode':
         return FieldReflection<TestUserSimple, T>(
           this,
           TestUserSimple,
-          TypeReflection.tInt,
+          __TR.tInt,
           'hashCode',
           false,
           (o) => () => o!.hashCode as T,
@@ -448,7 +434,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
         return FieldReflection<TestUserSimple, T>(
           this,
           TestUserSimple,
-          TypeReflection.tDouble,
+          __TR.tDouble,
           'version',
           false,
           (o) => () => TestUserSimple.version as T,
@@ -464,7 +450,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
         return FieldReflection<TestUserSimple, T>(
           this,
           TestUserSimple,
-          TypeReflection.tBool,
+          __TR.tBool,
           'withReflection',
           false,
           (o) => () => TestUserSimple.withReflection as T,
@@ -496,21 +482,19 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
             this,
             TestUserSimple,
             'checkThePassword',
-            TypeReflection.tBool,
+            __TR.tBool,
             false,
             (o) => o!.checkThePassword,
             obj,
             false,
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 'password', false, true, null, [
+            const <__PR>[
+              __PR(__TR.tString, 'password', false, true, null, [
                 TestAnnotation(['parameter', 'password'])
               ])
             ],
             null,
-            const <String, ParameterReflection>{
-              'ignoreCase': ParameterReflection(
-                  TypeReflection.tBool, 'ignoreCase', false, false, false, null)
+            const <String, __PR>{
+              'ignoreCase': __PR(__TR.tBool, 'ignoreCase', false, false, false)
             },
             [
               TestAnnotation(['method', 'password checker'])
@@ -520,7 +504,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
             this,
             TestUserSimple,
             'hasEmail',
-            TypeReflection.tBool,
+            __TR.tBool,
             false,
             (o) => o!.hasEmail,
             obj,
@@ -534,7 +518,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
             this,
             TestUserSimple,
             'toString',
-            TypeReflection.tString,
+            __TR.tString,
             false,
             (o) => o!.toString,
             obj,
@@ -561,15 +545,12 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple> {
             this,
             TestUserSimple,
             'isVersion',
-            TypeReflection.tBool,
+            __TR.tBool,
             false,
             (o) => TestUserSimple.isVersion,
             null,
             true,
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tDouble, 'ver', false, true, null, null)
-            ],
+            const <__PR>[__PR(__TR.tDouble, 'ver', false, true)],
             null,
             null,
             [
@@ -661,13 +642,12 @@ extension TestUserSimpleProxy$reflectionProxy on TestUserSimpleProxy {
           'password': password,
           'ignoreCase': ignoreCase,
         },
-        TypeReflection.tBool);
+        __TR.tBool);
     return ret as dynamic;
   }
 
   bool hasEmail() {
-    var ret =
-        onCall(this, 'hasEmail', <String, dynamic>{}, TypeReflection.tBool);
+    var ret = onCall(this, 'hasEmail', <String, dynamic>{}, __TR.tBool);
     return ret as dynamic;
   }
 }
@@ -681,7 +661,7 @@ extension TestUserSimpleProxyAsync$reflectionProxy on TestUserSimpleProxyAsync {
           'password': password,
           'ignoreCase': ignoreCase,
         },
-        TypeReflection.tFutureBool);
+        __TR.tFutureBool);
     return ret is Future<bool>
         ? ret as Future<bool>
         : (ret is Future
@@ -690,8 +670,7 @@ extension TestUserSimpleProxyAsync$reflectionProxy on TestUserSimpleProxyAsync {
   }
 
   Future<bool> hasEmail() {
-    var ret = onCall(
-        this, 'hasEmail', <String, dynamic>{}, TypeReflection.tFutureBool);
+    var ret = onCall(this, 'hasEmail', <String, dynamic>{}, __TR.tFutureBool);
     return ret is Future<bool>
         ? ret as Future<bool>
         : (ret is Future

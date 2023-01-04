@@ -1,3 +1,27 @@
+## 1.2.18
+
+- `Reflection`:
+  - Fix `castMap`:
+  - Added `castMapKeys` and `castMapValues`.
+  - Added getters: `asTypeReflection`, `typeInfo`, `listType`, `mapKeyType` and `mapValueType`.
+- `JsonCodec`:
+  - Added field `mapCaster`.
+- `_JsonDecoder`:
+  - Now supports `Map` casting when decoding an entity field.
+- Added `castMapType`.
+- `ReflectionBuilder`:
+  - Optimize and reduce generated code.
+- build: ^2.3.1
+- analyzer: ^4.7.0
+- dart_style: ^2.2.4
+- mime: ^1.0.3
+- pub_semver: ^2.1.3
+- path: ^1.8.3
+- build_runner: ^2.3.3
+- lints: ^2.0.1
+- test: ^1.22.1
+- coverage: ^1.6.1
+
 ## 1.2.17
 
 - `FunctionReflection.parametersNamesWhere`:

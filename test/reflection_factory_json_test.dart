@@ -141,6 +141,8 @@ void main() {
   group('JSON', () {
     test('castListType', () {
       expect(<dynamic>['a', 'b'], isNot(isA<List<String>>()));
+      expect(castListType<String>(<String>['a', 'b'], String),
+          isA<List<String>>());
       expect(castListType(<dynamic>['a', 'b'], String), isA<List<String>>());
       expect(castListType(<dynamic>[1, 2], int), isA<List<int>>());
       expect(castListType(<dynamic>[1.2, 2.3], double), isA<List<double>>());
@@ -152,6 +154,56 @@ void main() {
           isA<List<BigInt>>());
       expect(castListType(<dynamic>[Uint8List(10)], Uint8List),
           isA<List<Uint8List>>());
+    });
+
+    test('castMapType', () {
+      expect(<dynamic, dynamic>{'a': 'b'}, isNot(isA<Map<String, String>>()));
+      expect(
+          castMapType<String, String>(
+              <String, String>{'a': 'b'}, String, String),
+          isA<Map<String, String>>());
+      expect(castMapType(<dynamic, dynamic>{'a': 'b'}, String, String),
+          isA<Map<String, String>>());
+      expect(castMapType(<dynamic, dynamic>{'a': 1}, String, int),
+          isA<Map<String, int>>());
+      expect(castMapType(<dynamic, dynamic>{'a': 1.2}, String, double),
+          isA<Map<String, double>>());
+      expect(castMapType(<dynamic, dynamic>{'a': 1.2, 'b': 2}, String, num),
+          isA<Map<String, num>>());
+      expect(castMapType(<dynamic, dynamic>{'a': true}, String, bool),
+          isA<Map<String, bool>>());
+      expect(
+          castMapType(
+              <dynamic, dynamic>{'a': DateTime.now()}, String, DateTime),
+          isA<Map<String, DateTime>>());
+      expect(castMapType(<dynamic, dynamic>{'a': BigInt.zero}, String, BigInt),
+          isA<Map<String, BigInt>>());
+      expect(
+          castMapType(
+              <dynamic, dynamic>{'a': Uint8List(10)}, String, Uint8List),
+          isA<Map<String, Uint8List>>());
+
+      expect(castMapType<int, String>(<int, String>{1: 'b'}, int, String),
+          isA<Map<int, String>>());
+
+      expect(castMapType(<dynamic, dynamic>{1: 'b'}, int, String),
+          isA<Map<int, String>>());
+      expect(castMapType(<dynamic, dynamic>{1.2: 'b'}, double, String),
+          isA<Map<double, String>>());
+      expect(castMapType(<dynamic, dynamic>{1.2: 'b', 1: 'a'}, num, String),
+          isA<Map<num, String>>());
+      expect(castMapType(<dynamic, dynamic>{true: 'b'}, bool, String),
+          isA<Map<bool, String>>());
+      expect(
+          castMapType(
+              <dynamic, dynamic>{DateTime.now(): 'b'}, DateTime, String),
+          isA<Map<DateTime, String>>());
+      expect(castMapType(<dynamic, dynamic>{BigInt.zero: 'b'}, BigInt, String),
+          isA<Map<BigInt, String>>());
+      expect(
+          castMapType(
+              <dynamic, dynamic>{Uint8List(10): 'b'}, Uint8List, String),
+          isA<Map<Uint8List, String>>());
     });
   });
 
@@ -250,6 +302,22 @@ void main() {
         TestAddressWithReflection('State2', city: 'City2'),
         TestAddressWithReflection('State3', city: 'City3')
       ], isNot(isA<List<TestAddressWithReflection>>()));
+
+      expect(
+          JsonCodec().toJson(TestFranchiseWithReflection(
+            'FooInc',
+            {
+              'main': TestAddressWithReflection('State1', city: 'City1'),
+              'extra': TestAddressWithReflection('State1', city: 'City2')
+            },
+          )),
+          equals({
+            'addresses': {
+              'main': {'state': 'State1', 'city': 'City1'},
+              'extra': {'state': 'State1', 'city': 'City2'}
+            },
+            'name': 'FooInc'
+          }));
 
       // List:
 
@@ -659,6 +727,21 @@ void main() {
                 TestAddressWithReflection('State2', city: 'City2'),
                 TestAddressWithReflection('State3', city: 'City3')
               ])));
+
+      expect(
+          await JsonCodec.defaultCodec.fromJsonAsync(
+              Future.value({
+                'addresses': {
+                  'a': {'state': 'State', 'city': 'A'},
+                  'b': {'state': 'State', 'city': 'B'}
+                },
+                'name': 'FooFranchise'
+              }),
+              type: TestFranchiseWithReflection),
+          equals(TestFranchiseWithReflection('FooFranchise', {
+            'a': TestAddressWithReflection('State', city: 'A'),
+            'b': TestAddressWithReflection('State', city: 'B'),
+          })));
 
       expect(
           JsonCodec.defaultCodec.fromJsonList([

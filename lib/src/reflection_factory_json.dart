@@ -125,6 +125,8 @@ typedef JsomMapDecoderAsyncProvider = JsomMapDecoderAsync? Function(
 
 typedef IterableCaster = Object? Function(Iterable value, TypeReflection type);
 
+typedef MapCaster = Object? Function(Map value, TypeReflection type);
+
 /// JSON codec integrated with [ReflectionFactory].
 class JsonCodec {
   static final JsonCodec defaultCodec =
@@ -143,6 +145,7 @@ class JsonCodec {
       JsomMapDecoderAsyncProvider? jsomMapDecoderAsyncProvider,
       JsomMapDecoderAsync? jsomMapDecoderAsync,
       IterableCaster? iterableCaster,
+      MapCaster? mapCaster,
       JsonEntityCache? entityCache,
       bool forceDuplicatedEntitiesAsID = false,
       autoResetEntityCache = true}) {
@@ -156,6 +159,7 @@ class JsonCodec {
         jsomMapDecoderAsyncProvider == null &&
         jsomMapDecoderAsync == null &&
         iterableCaster == null &&
+        mapCaster == null &&
         entityCache == null &&
         !forceDuplicatedEntitiesAsID &&
         autoResetEntityCache) {
@@ -180,6 +184,7 @@ class JsonCodec {
             jsomMapDecoderAsyncProvider,
             jsomMapDecoderAsync,
             iterableCaster,
+            mapCaster,
             entityCache,
             forceDuplicatedEntitiesAsID,
             autoResetEntityCache));
@@ -834,6 +839,7 @@ abstract class JsonDecoder extends JsonConverter<String, Object?> {
       JsomMapDecoderAsyncProvider? jsomMapDecoderAsyncProvider,
       JsomMapDecoderAsync? jsomMapDecoderAsync,
       IterableCaster? iterableCaster,
+      MapCaster? mapCaster,
       JsonEntityCache? entityCache,
       bool forceDuplicatedEntitiesAsID = false,
       bool autoResetEntityCache = true}) {
@@ -842,6 +848,7 @@ abstract class JsonDecoder extends JsonConverter<String, Object?> {
         jsomMapDecoderAsyncProvider == null &&
         jsomMapDecoderAsync == null &&
         iterableCaster == null &&
+        mapCaster == null &&
         entityCache == null &&
         !forceDuplicatedEntitiesAsID &&
         autoResetEntityCache) {
@@ -855,6 +862,7 @@ abstract class JsonDecoder extends JsonConverter<String, Object?> {
         jsomMapDecoderAsyncProvider,
         jsomMapDecoderAsync,
         iterableCaster,
+        mapCaster,
         entityCache,
         forceDuplicatedEntitiesAsID,
         autoResetEntityCache);
@@ -943,8 +951,8 @@ abstract class JsonDecoder extends JsonConverter<String, Object?> {
 
 class _JsonDecoder extends dart_convert.Converter<String, Object?>
     implements JsonDecoder {
-  static final _JsonDecoder _defaultDecoder =
-      _JsonDecoder._(null, null, null, null, null, null, null, false, true);
+  static final _JsonDecoder _defaultDecoder = _JsonDecoder._(
+      null, null, null, null, null, null, null, null, false, true);
 
   factory _JsonDecoder(
       JsonValueDecoderProvider? jsonValueDecoderProvider,
@@ -953,6 +961,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       JsomMapDecoderAsyncProvider? jsomMapDecoderAsyncProvider,
       JsomMapDecoderAsync? jsomMapDecoderAsync,
       IterableCaster? iterableCaster,
+      MapCaster? mapCaster,
       JsonEntityCache? entityCache,
       bool forceDuplicatedEntitiesAsID,
       bool autoResetEntityCache) {
@@ -962,6 +971,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
         jsomMapDecoderAsyncProvider == null &&
         jsomMapDecoderAsync == null &&
         iterableCaster == null &&
+        mapCaster == null &&
         entityCache == null &&
         !forceDuplicatedEntitiesAsID &&
         autoResetEntityCache) {
@@ -975,6 +985,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
         jsomMapDecoderAsyncProvider,
         jsomMapDecoderAsync,
         iterableCaster,
+        mapCaster,
         entityCache,
         forceDuplicatedEntitiesAsID,
         autoResetEntityCache);
@@ -989,6 +1000,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
   final JsomMapDecoderAsync? jsomMapDecoderAsync;
 
   final IterableCaster? iterableCaster;
+  final MapCaster? mapCaster;
 
   @override
   final JsonEntityCache entityCache;
@@ -1005,6 +1017,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     this.jsomMapDecoderAsyncProvider,
     this.jsomMapDecoderAsync,
     this.iterableCaster,
+    this.mapCaster,
     JsonEntityCache? entityCache,
     this.forceDuplicatedEntitiesAsID,
     this.autoResetEntityCache,
@@ -1364,7 +1377,9 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     if (map is Map<String, String?> ||
         map is Map<String, num?> ||
-        map is Map<String, bool?>) {
+        map is Map<String, bool?> ||
+        map is Map<String, DateTime?> ||
+        map is Map<String, BigInt?>) {
       return map as O;
     }
 
@@ -1743,6 +1758,8 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       bool duplicatedEntitiesAsID) {
     if (type.isIterableType && value is Iterable) {
       return _castEntityList(value, type, duplicatedEntitiesAsID);
+    } else if (type.isMapType && value is Map) {
+      return _castEntityMap(value, type, duplicatedEntitiesAsID);
     } else {
       return _fromJsonImpl(value, type.typeInfo, duplicatedEntitiesAsID);
     }
@@ -1758,20 +1775,87 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       }
     }
 
-    var castTypeInfo = type.listEntityType!;
-    var castType = castTypeInfo.type;
+    var castTypeRefl = type.listType;
 
-    var val =
-        _fromJsonListImpl(value, castTypeInfo.typeInfo, duplicatedEntitiesAsID);
+    if (castTypeRefl != null) {
+      var castType = castTypeRefl.type;
 
-    var classReflection =
-        ReflectionFactory().getRegisterClassReflection(castType);
+      var val = _fromJsonListImpl(
+          value, castTypeRefl.typeInfo, duplicatedEntitiesAsID);
 
-    if (classReflection != null) {
-      var nullable = val.any((e) => e == null);
-      return classReflection.castList(val, castType, nullable: nullable) ?? val;
-    } else {
+      var classReflection =
+          ReflectionFactory().getRegisterClassReflection(castType);
+
+      if (classReflection != null) {
+        var nullable = val.any((e) => e == null);
+        return classReflection.castList(val, castType, nullable: nullable) ??
+            val;
+      }
+
       return castListType(val, castType);
+    } else {
+      return value;
+    }
+  }
+
+  Object? _castEntityMap(
+      Map value, TypeReflection type, bool duplicatedEntitiesAsID) {
+    var mapCaster = this.mapCaster;
+    if (mapCaster != null) {
+      var casted = mapCaster(value, type);
+      if (casted != null) {
+        return casted;
+      }
+    }
+
+    var castKeyTypeRefl = type.mapKeyType;
+    var castValueTypeRefl = type.mapValueType;
+
+    var val = value;
+
+    if (castKeyTypeRefl != null && castKeyTypeRefl.isEntityType) {
+      val = val.map((key, value) => MapEntry(
+          _fromJsonImpl(key, castKeyTypeRefl.typeInfo, duplicatedEntitiesAsID),
+          value));
+    }
+
+    if (castValueTypeRefl != null && castValueTypeRefl.isEntityType) {
+      val = val.map((key, value) => MapEntry(
+          key,
+          _fromJsonImpl(
+              value, castValueTypeRefl.typeInfo, duplicatedEntitiesAsID)));
+    }
+
+    var castKeyType = castKeyTypeRefl?.type;
+    var castValueType = castValueTypeRefl?.type;
+
+    var classReflectionKey = castKeyType != null
+        ? ReflectionFactory().getRegisterClassReflection(castKeyType)
+        : null;
+    var classReflectionValue = castValueType != null
+        ? ReflectionFactory().getRegisterClassReflection(castValueType)
+        : null;
+
+    if (classReflectionKey != null) {
+      var nullableKey = val.entries.any((e) => e.key == null);
+
+      val = classReflectionKey.castMapKeys(val, type.typeInfo,
+              nullable: nullableKey) ??
+          val;
+    }
+
+    if (classReflectionValue != null) {
+      var nullableVal = val.entries.any((e) => e.value == null);
+
+      val = classReflectionValue.castMapValues(val, type.typeInfo,
+              nullable: nullableVal) ??
+          val;
+    }
+
+    if (castKeyType != null || castValueType != null) {
+      return castMapType(val, castKeyType ?? dynamic, castValueType ?? dynamic);
+    } else {
+      return val;
     }
   }
 
@@ -1877,6 +1961,58 @@ List castListType<T>(List list, Type type) {
     return list.cast<Uint8List>();
   } else {
     return list;
+  }
+}
+
+Map castMapType<K, V>(Map map, Type keyType, Type valueType) {
+  if (map is Map<K, V> &&
+      K != dynamic &&
+      K != Object &&
+      V != dynamic &&
+      V != Object) {
+    return map;
+  } else if (keyType == String) {
+    return _castMapValueType<String>(map, keyType, valueType);
+  } else if (keyType == int) {
+    return _castMapValueType<int>(map, keyType, valueType);
+  } else if (keyType == double) {
+    return _castMapValueType<double>(map, keyType, valueType);
+  } else if (keyType == num) {
+    return _castMapValueType<num>(map, keyType, valueType);
+  } else if (keyType == bool) {
+    return _castMapValueType<bool>(map, keyType, valueType);
+  } else if (keyType == DateTime) {
+    return _castMapValueType<DateTime>(map, keyType, valueType);
+  } else if (keyType == BigInt) {
+    return _castMapValueType<BigInt>(map, keyType, valueType);
+  } else if (keyType == Uint8List) {
+    return _castMapValueType<Uint8List>(map, keyType, valueType);
+  } else {
+    return map;
+  }
+}
+
+Map _castMapValueType<K>(Map map, Type keyType, Type valueType) {
+  assert(K == keyType);
+
+  if (valueType == String) {
+    return map.cast<K, String>();
+  } else if (valueType == int) {
+    return map.cast<K, int>();
+  } else if (valueType == double) {
+    return map.cast<K, double>();
+  } else if (valueType == num) {
+    return map.cast<K, num>();
+  } else if (valueType == bool) {
+    return map.cast<K, bool>();
+  } else if (valueType == DateTime) {
+    return map.cast<K, DateTime>();
+  } else if (valueType == BigInt) {
+    return map.cast<K, BigInt>();
+  } else if (valueType == Uint8List) {
+    return map.cast<K, Uint8List>();
+  } else {
+    return map;
   }
 }
 

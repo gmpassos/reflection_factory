@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:reflection_factory/reflection_factory.dart';
 import 'package:test/test.dart';
 
@@ -464,6 +465,117 @@ void main() {
                       'Joe', 'joe@mail.com', '123')
                 }),
                 isA<Map<String, TestUserWithReflection>>()));
+
+        var tMapKV1 = TypeInfo<
+                Map<TestUserWithReflection,
+                    TestAddressWithReflection>>.fromMapType(
+            TestUserWithReflection, TestAddressWithReflection);
+
+        var mapKV1 = tMapKV1.castMap(<Object, Object>{
+          TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
+              TestAddressWithReflection('NY', city: 'New York')
+        });
+
+        expect(
+            mapKV1,
+            allOf(
+                equals(<TestUserWithReflection, TestAddressWithReflection>{
+                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
+                      TestAddressWithReflection('NY', city: 'New York')
+                }),
+                isA<Map<TestUserWithReflection, TestAddressWithReflection>>()));
+
+        var tMapKV2 = TypeInfo<
+                Map<TestAddressWithReflection,
+                    TestAddressWithReflection>>.fromMapType(
+            TestAddressWithReflection, TestAddressWithReflection);
+
+        var mapKV2 = tMapKV2.castMap(<Object, Object>{
+          TestAddressWithReflection('CA', city: 'Los Angeles'):
+              TestAddressWithReflection('NY', city: 'New York')
+        });
+
+        expect(
+            mapKV2,
+            allOf(
+                equals(<TestAddressWithReflection, TestAddressWithReflection>{
+                  TestAddressWithReflection('CA', city: 'Los Angeles'):
+                      TestAddressWithReflection('NY', city: 'New York')
+                }),
+                isA<
+                    Map<TestAddressWithReflection,
+                        TestAddressWithReflection>>()));
+
+        var tMapK2 = TypeInfo<Map<TestUserWithReflection, dynamic>>.fromMapType(
+            TestUserWithReflection, TypeInfo.tDynamic);
+
+        var mapK2 = TestUserWithReflection$reflection.staticInstance
+            .castMap(<Object, Object>{
+          TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
+              TestAddressWithReflection('NY', city: 'New York')
+        }, tMapK2);
+
+        expect(
+            mapK2,
+            allOf(
+                equals(<TestUserWithReflection, dynamic>{
+                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
+                      TestAddressWithReflection('NY', city: 'New York')
+                }),
+                isA<Map<TestUserWithReflection, dynamic>>()));
+
+        var tMapV2 = TypeInfo<Map<TestUserWithReflection, dynamic>>.fromMapType(
+            TypeInfo.tDynamic, TestUserWithReflection);
+
+        var mapV2 = TestUserWithReflection$reflection.staticInstance
+            .castMap(<Object, Object>{
+          TestAddressWithReflection('NY', city: 'New York'):
+              TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
+        }, tMapV2);
+
+        expect(
+            mapV2,
+            allOf(
+                equals(<dynamic, TestUserWithReflection>{
+                  TestAddressWithReflection('NY', city: 'New York'):
+                      TestUserWithReflection.fields(
+                          'Joe', 'joe@mail.com', '123')
+                }),
+                isA<Map<dynamic, TestUserWithReflection>>()));
+
+        var tMapK3 = TypeInfo<Map<String, TestUserWithReflection>>.fromMapType(
+            TypeInfo.tString, TestUserWithReflection);
+
+        var mapK3 = TestUserWithReflection$reflection.staticInstance
+            .castMapKeys(<Object, Object>{
+          'a': TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
+        }, tMapK3);
+
+        expect(
+            mapK3,
+            allOf(
+                equals(<String, dynamic>{
+                  'a': TestUserWithReflection.fields(
+                      'Joe', 'joe@mail.com', '123')
+                }),
+                isA<Map<String, dynamic>>()));
+
+        var tMapV3 = TypeInfo<Map<TestUserWithReflection, String>>.fromMapType(
+            TestUserWithReflection, TypeInfo.tString);
+
+        var mapV3 = TestUserWithReflection$reflection.staticInstance
+            .castMapValues(<Object, Object>{
+          TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'): 'a'
+        }, tMapV3);
+
+        expect(
+            mapV3,
+            allOf(
+                equals(<dynamic, String>{
+                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
+                      'a'
+                }),
+                isA<Map<dynamic, String>>()));
       }
 
       expect(
@@ -487,12 +599,31 @@ void main() {
             TestUserWithReflection,
             TestAddressWithReflection,
             TestCompanyWithReflection,
+            TestFranchiseWithReflection,
             TestDataWithReflection,
             TestDomainWithReflection,
             TestOpWithReflection,
             TestOpAWithReflection,
             TestOpBWithReflection,
             TestTransactionWithReflection,
+          ]));
+
+      expect(
+          userReflection
+              .siblingsClassReflection()
+              .sorted()
+              .map((e) => e.classType),
+          equals([
+            TestTransactionWithReflection,
+            TestFranchiseWithReflection,
+            TestDataWithReflection,
+            TestOpWithReflection,
+            TestOpAWithReflection,
+            TestAddressWithReflection,
+            TestCompanyWithReflection,
+            TestOpBWithReflection,
+            TestDomainWithReflection,
+            TestUserWithReflection
           ]));
 
       expect(

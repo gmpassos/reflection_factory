@@ -1,15 +1,28 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.2.17
+// BUILDER: reflection_factory/1.2.18
 // BUILD COMMAND: dart run build_runner build
 //
 
 // coverage:ignore-file
+// ignore_for_file: unused_element
 // ignore_for_file: unnecessary_const
 // ignore_for_file: unnecessary_cast
 // ignore_for_file: unnecessary_type_check
 
 part of '../user_with_reflection.dart';
+
+typedef __TR<T> = TypeReflection<T>;
+typedef __TI<T> = TypeInfo<T>;
+typedef __PR = ParameterReflection;
+
+mixin __ReflectionMixin {
+  static final Version _version = Version.parse('1.2.18');
+
+  Version get reflectionFactoryVersion => _version;
+
+  List<Reflection> siblingsReflection() => _siblingsReflection();
+}
 
 // ignore: non_constant_identifier_names
 TestAddressWithReflection TestAddressWithReflection$fromJson(
@@ -50,6 +63,15 @@ TestDomainWithReflection TestDomainWithReflection$fromJsonEncoded(
 // ignore: non_constant_identifier_names
 TestEnumWithReflection? TestEnumWithReflection$from(Object? o) =>
     TestEnumWithReflection$reflection.staticInstance.from(o);
+// ignore: non_constant_identifier_names
+TestFranchiseWithReflection TestFranchiseWithReflection$fromJson(
+        Map<String, Object?> map) =>
+    TestFranchiseWithReflection$reflection.staticInstance.fromJson(map);
+// ignore: non_constant_identifier_names
+TestFranchiseWithReflection TestFranchiseWithReflection$fromJsonEncoded(
+        String jsonEncoded) =>
+    TestFranchiseWithReflection$reflection.staticInstance
+        .fromJsonEncoded(jsonEncoded);
 // ignore: non_constant_identifier_names
 TestOpAWithReflection TestOpAWithReflection$fromJson(
         Map<String, Object?> map) =>
@@ -94,7 +116,7 @@ TestUserWithReflection TestUserWithReflection$fromJsonEncoded(
         .fromJsonEncoded(jsonEncoded);
 
 class TestAddressWithReflection$reflection
-    extends ClassReflection<TestAddressWithReflection> {
+    extends ClassReflection<TestAddressWithReflection> with __ReflectionMixin {
   TestAddressWithReflection$reflection([TestAddressWithReflection? object])
       : super(TestAddressWithReflection, 'TestAddressWithReflection', object);
 
@@ -110,9 +132,6 @@ class TestAddressWithReflection$reflection
 
   @override
   Version get languageVersion => Version.parse('2.17.0');
-
-  @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
 
   @override
   TestAddressWithReflection$reflection withObject(
@@ -170,16 +189,11 @@ class TestAddressWithReflection$reflection
             '',
             () => (String state, {String city = '', int? id}) =>
                 TestAddressWithReflection(state, city: city, id: id),
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 'state', false, true, null, null)
-            ],
+            const <__PR>[__PR(__TR.tString, 'state', false, true)],
             null,
-            const <String, ParameterReflection>{
-              'city': ParameterReflection(
-                  TypeReflection.tString, 'city', false, false, '', null),
-              'id': ParameterReflection(
-                  TypeReflection.tInt, 'id', true, false, null, null)
+            const <String, __PR>{
+              'city': __PR(__TR.tString, 'city', false, false, ''),
+              'id': __PR(__TR.tInt, 'id', true, false)
             },
             null);
       case 'empty':
@@ -199,13 +213,6 @@ class TestAddressWithReflection$reflection
 
   @override
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
-
-  @override
-  List<ClassReflection> siblingsClassReflection() =>
-      _siblingsReflection().whereType<ClassReflection>().toList();
-
-  @override
-  List<Reflection> siblingsReflection() => _siblingsReflection();
 
   @override
   List<Type> get supperTypes => const <Type>[];
@@ -235,7 +242,7 @@ class TestAddressWithReflection$reflection
         return FieldReflection<TestAddressWithReflection, T>(
           this,
           TestAddressWithReflection,
-          TypeReflection.tInt,
+          __TR.tInt,
           'id',
           true,
           (o) => () => o!.id as T,
@@ -243,13 +250,12 @@ class TestAddressWithReflection$reflection
           obj,
           false,
           false,
-          null,
         );
       case 'state':
         return FieldReflection<TestAddressWithReflection, T>(
           this,
           TestAddressWithReflection,
-          TypeReflection.tString,
+          __TR.tString,
           'state',
           false,
           (o) => () => o!.state as T,
@@ -257,13 +263,12 @@ class TestAddressWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       case 'city':
         return FieldReflection<TestAddressWithReflection, T>(
           this,
           TestAddressWithReflection,
-          TypeReflection.tString,
+          __TR.tString,
           'city',
           false,
           (o) => () => o!.city as T,
@@ -271,13 +276,12 @@ class TestAddressWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       case 'hashcode':
         return FieldReflection<TestAddressWithReflection, T>(
           this,
           TestAddressWithReflection,
-          TypeReflection.tInt,
+          __TR.tInt,
           'hashCode',
           false,
           (o) => () => o!.hashCode as T,
@@ -317,7 +321,7 @@ class TestAddressWithReflection$reflection
             this,
             TestAddressWithReflection,
             'toJson',
-            TypeReflection.tMapStringDynamic,
+            __TR.tMapStringDynamic,
             false,
             (o) => o!.toJson,
             obj,
@@ -331,7 +335,7 @@ class TestAddressWithReflection$reflection
             this,
             TestAddressWithReflection,
             'toString',
-            TypeReflection.tString,
+            __TR.tString,
             false,
             (o) => o!.toString,
             obj,
@@ -356,7 +360,7 @@ class TestAddressWithReflection$reflection
 }
 
 class TestCompanyWithReflection$reflection
-    extends ClassReflection<TestCompanyWithReflection> {
+    extends ClassReflection<TestCompanyWithReflection> with __ReflectionMixin {
   TestCompanyWithReflection$reflection([TestCompanyWithReflection? object])
       : super(TestCompanyWithReflection, 'TestCompanyWithReflection', object);
 
@@ -372,9 +376,6 @@ class TestCompanyWithReflection$reflection
 
   @override
   Version get languageVersion => Version.parse('2.17.0');
-
-  @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
 
   @override
   TestCompanyWithReflection$reflection withObject(
@@ -439,44 +440,31 @@ class TestCompanyWithReflection$reflection
                     extraAddresses: extraAddresses,
                     branchesAddresses: branchesAddresses,
                     extraNames: extraNames),
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 'name', false, true, null, null),
-              ParameterReflection(
-                  TypeReflection<TestAddressWithReflection>(
-                      TestAddressWithReflection),
-                  'mainAddress',
-                  true,
-                  true,
-                  null,
-                  null)
+            const <__PR>[
+              __PR(__TR.tString, 'name', false, true),
+              __PR(__TR<TestAddressWithReflection>(TestAddressWithReflection),
+                  'mainAddress', true, true)
             ],
             null,
-            const <String, ParameterReflection>{
-              'branchesAddresses': ParameterReflection(
-                  TypeReflection<List<TestAddressWithReflection>>(
-                      List, <TypeReflection>[
-                    TypeReflection<TestAddressWithReflection>(
-                        TestAddressWithReflection)
+            const <String, __PR>{
+              'branchesAddresses': __PR(
+                  __TR<List<TestAddressWithReflection>>(List, <__TR>[
+                    __TR<TestAddressWithReflection>(TestAddressWithReflection)
                   ]),
                   'branchesAddresses',
                   false,
                   false,
-                  const <TestAddressWithReflection>[],
-                  null),
-              'extraAddresses': ParameterReflection(
-                  TypeReflection<List<TestAddressWithReflection>>(
-                      List, <TypeReflection>[
-                    TypeReflection<TestAddressWithReflection>(
-                        TestAddressWithReflection)
+                  const <TestAddressWithReflection>[]),
+              'extraAddresses': __PR(
+                  __TR<List<TestAddressWithReflection>>(List, <__TR>[
+                    __TR<TestAddressWithReflection>(TestAddressWithReflection)
                   ]),
                   'extraAddresses',
                   false,
                   false,
-                  const <TestAddressWithReflection>[],
-                  null),
-              'extraNames': ParameterReflection(TypeReflection.tListString,
-                  'extraNames', false, false, const <String>[], null)
+                  const <TestAddressWithReflection>[]),
+              'extraNames': __PR(__TR.tListString, 'extraNames', false, false,
+                  const <String>[])
             },
             null);
       default:
@@ -486,13 +474,6 @@ class TestCompanyWithReflection$reflection
 
   @override
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
-
-  @override
-  List<ClassReflection> siblingsClassReflection() =>
-      _siblingsReflection().whereType<ClassReflection>().toList();
-
-  @override
-  List<Reflection> siblingsReflection() => _siblingsReflection();
 
   @override
   List<Type> get supperTypes => const <Type>[];
@@ -526,7 +507,7 @@ class TestCompanyWithReflection$reflection
         return FieldReflection<TestCompanyWithReflection, T>(
           this,
           TestCompanyWithReflection,
-          TypeReflection.tString,
+          __TR.tString,
           'name',
           false,
           (o) => () => o!.name as T,
@@ -534,13 +515,12 @@ class TestCompanyWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       case 'mainaddress':
         return FieldReflection<TestCompanyWithReflection, T>(
           this,
           TestCompanyWithReflection,
-          TypeReflection<TestAddressWithReflection>(TestAddressWithReflection),
+          __TR<TestAddressWithReflection>(TestAddressWithReflection),
           'mainAddress',
           true,
           (o) => () => o!.mainAddress as T,
@@ -548,13 +528,12 @@ class TestCompanyWithReflection$reflection
           obj,
           false,
           false,
-          null,
         );
       case 'extranames':
         return FieldReflection<TestCompanyWithReflection, T>(
           this,
           TestCompanyWithReflection,
-          TypeReflection.tListString,
+          __TR.tListString,
           'extraNames',
           false,
           (o) => () => o!.extraNames as T,
@@ -562,15 +541,13 @@ class TestCompanyWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       case 'branchesaddresses':
         return FieldReflection<TestCompanyWithReflection, T>(
           this,
           TestCompanyWithReflection,
-          TypeReflection<List<TestAddressWithReflection>>(
-              List, <TypeReflection>[
-            TypeReflection<TestAddressWithReflection>(TestAddressWithReflection)
+          __TR<List<TestAddressWithReflection>>(List, <__TR>[
+            __TR<TestAddressWithReflection>(TestAddressWithReflection)
           ]),
           'branchesAddresses',
           false,
@@ -580,15 +557,13 @@ class TestCompanyWithReflection$reflection
           obj,
           false,
           false,
-          null,
         );
       case 'extraaddresses':
         return FieldReflection<TestCompanyWithReflection, T>(
           this,
           TestCompanyWithReflection,
-          TypeReflection<List<TestAddressWithReflection>>(
-              List, <TypeReflection>[
-            TypeReflection<TestAddressWithReflection>(TestAddressWithReflection)
+          __TR<List<TestAddressWithReflection>>(List, <__TR>[
+            __TR<TestAddressWithReflection>(TestAddressWithReflection)
           ]),
           'extraAddresses',
           false,
@@ -598,13 +573,12 @@ class TestCompanyWithReflection$reflection
           obj,
           false,
           false,
-          null,
         );
       case 'local':
         return FieldReflection<TestCompanyWithReflection, T>(
           this,
           TestCompanyWithReflection,
-          TypeReflection.tBool,
+          __TR.tBool,
           'local',
           false,
           (o) => () => o!.local as T,
@@ -618,7 +592,7 @@ class TestCompanyWithReflection$reflection
         return FieldReflection<TestCompanyWithReflection, T>(
           this,
           TestCompanyWithReflection,
-          TypeReflection.tInt,
+          __TR.tInt,
           'hashCode',
           false,
           (o) => () => o!.hashCode as T,
@@ -658,7 +632,7 @@ class TestCompanyWithReflection$reflection
             this,
             TestCompanyWithReflection,
             'toString',
-            TypeReflection.tString,
+            __TR.tString,
             false,
             (o) => o!.toString,
             obj,
@@ -683,7 +657,7 @@ class TestCompanyWithReflection$reflection
 }
 
 class TestDataWithReflection$reflection
-    extends ClassReflection<TestDataWithReflection> {
+    extends ClassReflection<TestDataWithReflection> with __ReflectionMixin {
   TestDataWithReflection$reflection([TestDataWithReflection? object])
       : super(TestDataWithReflection, 'TestDataWithReflection', object);
 
@@ -699,9 +673,6 @@ class TestDataWithReflection$reflection
 
   @override
   Version get languageVersion => Version.parse('2.17.0');
-
-  @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -757,24 +728,18 @@ class TestDataWithReflection$reflection
             () => (String name, Uint8List bytes,
                     {BigInt? id, TestDomainWithReflection? domain}) =>
                 TestDataWithReflection(name, bytes, id: id, domain: domain),
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 'name', false, true, null, null),
-              ParameterReflection(TypeReflection<Uint8List>(Uint8List), 'bytes',
-                  false, true, null, null)
+            const <__PR>[
+              __PR(__TR.tString, 'name', false, true),
+              __PR(__TR<Uint8List>(Uint8List), 'bytes', false, true)
             ],
             null,
-            const <String, ParameterReflection>{
-              'domain': ParameterReflection(
-                  TypeReflection<TestDomainWithReflection>(
-                      TestDomainWithReflection),
+            const <String, __PR>{
+              'domain': __PR(
+                  __TR<TestDomainWithReflection>(TestDomainWithReflection),
                   'domain',
                   true,
-                  false,
-                  null,
-                  null),
-              'id': ParameterReflection(
-                  TypeReflection.tBigInt, 'id', true, false, null, null)
+                  false),
+              'id': __PR(__TR.tBigInt, 'id', true, false)
             },
             null);
       default:
@@ -784,13 +749,6 @@ class TestDataWithReflection$reflection
 
   @override
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
-
-  @override
-  List<ClassReflection> siblingsClassReflection() =>
-      _siblingsReflection().whereType<ClassReflection>().toList();
-
-  @override
-  List<Reflection> siblingsReflection() => _siblingsReflection();
 
   @override
   List<Type> get supperTypes => const <Type>[];
@@ -817,7 +775,7 @@ class TestDataWithReflection$reflection
         return FieldReflection<TestDataWithReflection, T>(
           this,
           TestDataWithReflection,
-          TypeReflection.tString,
+          __TR.tString,
           'name',
           false,
           (o) => () => o!.name as T,
@@ -825,13 +783,12 @@ class TestDataWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       case 'id':
         return FieldReflection<TestDataWithReflection, T>(
           this,
           TestDataWithReflection,
-          TypeReflection.tBigInt,
+          __TR.tBigInt,
           'id',
           false,
           (o) => () => o!.id as T,
@@ -839,13 +796,12 @@ class TestDataWithReflection$reflection
           obj,
           false,
           false,
-          null,
         );
       case 'bytes':
         return FieldReflection<TestDataWithReflection, T>(
           this,
           TestDataWithReflection,
-          TypeReflection<Uint8List>(Uint8List),
+          __TR<Uint8List>(Uint8List),
           'bytes',
           false,
           (o) => () => o!.bytes as T,
@@ -853,13 +809,12 @@ class TestDataWithReflection$reflection
           obj,
           false,
           false,
-          null,
         );
       case 'domain':
         return FieldReflection<TestDataWithReflection, T>(
           this,
           TestDataWithReflection,
-          TypeReflection<TestDomainWithReflection>(TestDomainWithReflection),
+          __TR<TestDomainWithReflection>(TestDomainWithReflection),
           'domain',
           true,
           (o) => () => o!.domain as T,
@@ -867,13 +822,12 @@ class TestDataWithReflection$reflection
           obj,
           false,
           false,
-          null,
         );
       case 'hashcode':
         return FieldReflection<TestDataWithReflection, T>(
           this,
           TestDataWithReflection,
-          TypeReflection.tInt,
+          __TR.tInt,
           'hashCode',
           false,
           (o) => () => o!.hashCode as T,
@@ -918,7 +872,7 @@ class TestDataWithReflection$reflection
 }
 
 class TestDomainWithReflection$reflection
-    extends ClassReflection<TestDomainWithReflection> {
+    extends ClassReflection<TestDomainWithReflection> with __ReflectionMixin {
   TestDomainWithReflection$reflection([TestDomainWithReflection? object])
       : super(TestDomainWithReflection, 'TestDomainWithReflection', object);
 
@@ -934,9 +888,6 @@ class TestDomainWithReflection$reflection
 
   @override
   Version get languageVersion => Version.parse('2.17.0');
-
-  @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
 
   @override
   TestDomainWithReflection$reflection withObject(
@@ -996,22 +947,14 @@ class TestDomainWithReflection$reflection
                     bool Function()? extraFunction]) =>
                 TestDomainWithReflection(
                     name, suffix, domainFunction, extraFunction),
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 'name', false, true, null, null),
-              ParameterReflection(
-                  TypeReflection.tString, 'suffix', false, true, null, null)
+            const <__PR>[
+              __PR(__TR.tString, 'name', false, true),
+              __PR(__TR.tString, 'suffix', false, true)
             ],
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection<DomainFunction>(DomainFunction),
-                  'domainFunction',
-                  true,
-                  false,
-                  null,
-                  null),
-              ParameterReflection(TypeReflection.tFunction, 'extraFunction',
-                  true, false, null, null)
+            const <__PR>[
+              __PR(__TR<DomainFunction>(DomainFunction), 'domainFunction', true,
+                  false),
+              __PR(__TR.tFunction, 'extraFunction', true, false)
             ],
             null,
             null);
@@ -1032,20 +975,13 @@ class TestDomainWithReflection$reflection
                     extraFunction: extraFunction),
             null,
             null,
-            const <String, ParameterReflection>{
-              'domainFunction': ParameterReflection(
-                  TypeReflection<DomainFunction>(DomainFunction),
-                  'domainFunction',
-                  true,
-                  false,
-                  null,
-                  null),
-              'extraFunction': ParameterReflection(TypeReflection.tFunction,
-                  'extraFunction', true, false, null, null),
-              'name': ParameterReflection(
-                  TypeReflection.tString, 'name', false, true, null, null),
-              'suffix': ParameterReflection(
-                  TypeReflection.tString, 'suffix', false, false, 'net', null)
+            const <String, __PR>{
+              'domainFunction': __PR(__TR<DomainFunction>(DomainFunction),
+                  'domainFunction', true, false),
+              'extraFunction':
+                  __PR(__TR.tFunction, 'extraFunction', true, false),
+              'name': __PR(__TR.tString, 'name', false, true),
+              'suffix': __PR(__TR.tString, 'suffix', false, false, 'net')
             },
             null);
       case 'parse':
@@ -1054,10 +990,7 @@ class TestDomainWithReflection$reflection
             TestDomainWithReflection,
             'parse',
             () => (String s) => TestDomainWithReflection.parse(s),
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 's', false, true, null, null)
-            ],
+            const <__PR>[__PR(__TR.tString, 's', false, true)],
             null,
             null,
             null);
@@ -1068,13 +1001,6 @@ class TestDomainWithReflection$reflection
 
   @override
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
-
-  @override
-  List<ClassReflection> siblingsClassReflection() =>
-      _siblingsReflection().whereType<ClassReflection>().toList();
-
-  @override
-  List<Reflection> siblingsReflection() => _siblingsReflection();
 
   @override
   List<Type> get supperTypes => const <Type>[];
@@ -1109,7 +1035,7 @@ class TestDomainWithReflection$reflection
         return FieldReflection<TestDomainWithReflection, T>(
           this,
           TestDomainWithReflection,
-          TypeReflection.tString,
+          __TR.tString,
           'name',
           false,
           (o) => () => o!.name as T,
@@ -1117,13 +1043,12 @@ class TestDomainWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       case 'suffix':
         return FieldReflection<TestDomainWithReflection, T>(
           this,
           TestDomainWithReflection,
-          TypeReflection.tString,
+          __TR.tString,
           'suffix',
           false,
           (o) => () => o!.suffix as T,
@@ -1131,13 +1056,12 @@ class TestDomainWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       case 'domainfunction':
         return FieldReflection<TestDomainWithReflection, T>(
           this,
           TestDomainWithReflection,
-          TypeReflection<DomainFunction>(DomainFunction),
+          __TR<DomainFunction>(DomainFunction),
           'domainFunction',
           true,
           (o) => () => o!.domainFunction as T,
@@ -1145,13 +1069,12 @@ class TestDomainWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       case 'extrafunction':
         return FieldReflection<TestDomainWithReflection, T>(
           this,
           TestDomainWithReflection,
-          TypeReflection.tFunction,
+          __TR.tFunction,
           'extraFunction',
           true,
           (o) => () => o!.extraFunction as T,
@@ -1159,13 +1082,12 @@ class TestDomainWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       case 'hashcode':
         return FieldReflection<TestDomainWithReflection, T>(
           this,
           TestDomainWithReflection,
-          TypeReflection.tInt,
+          __TR.tInt,
           'hashCode',
           false,
           (o) => () => o!.hashCode as T,
@@ -1206,22 +1128,19 @@ class TestDomainWithReflection$reflection
             this,
             TestDomainWithReflection,
             'typedFunction',
-            TypeReflection.tBool,
+            __TR.tBool,
             false,
             (o) => o!.typedFunction,
             obj,
             false,
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection<TypedFunction<dynamic>>(
-                      TypedFunction, <TypeReflection>[TypeReflection.tDynamic]),
+            const <__PR>[
+              __PR(
+                  __TR<TypedFunction<dynamic>>(
+                      TypedFunction, <__TR>[__TR.tDynamic]),
                   'f',
                   false,
-                  true,
-                  null,
-                  null),
-              ParameterReflection(
-                  TypeReflection.tDynamic, 'x', false, true, null, null)
+                  true),
+              __PR(__TR.tDynamic, 'x', false, true)
             ],
             null,
             null,
@@ -1231,7 +1150,7 @@ class TestDomainWithReflection$reflection
             this,
             TestDomainWithReflection,
             'toJson',
-            TypeReflection.tString,
+            __TR.tString,
             false,
             (o) => o!.toJson,
             obj,
@@ -1245,7 +1164,7 @@ class TestDomainWithReflection$reflection
             this,
             TestDomainWithReflection,
             'toString',
-            TypeReflection.tString,
+            __TR.tString,
             false,
             (o) => o!.toString,
             obj,
@@ -1270,7 +1189,7 @@ class TestDomainWithReflection$reflection
 }
 
 class TestEnumWithReflection$reflection
-    extends EnumReflection<TestEnumWithReflection> {
+    extends EnumReflection<TestEnumWithReflection> with __ReflectionMixin {
   TestEnumWithReflection$reflection([TestEnumWithReflection? object])
       : super(TestEnumWithReflection, 'TestEnumWithReflection', object);
 
@@ -1286,9 +1205,6 @@ class TestEnumWithReflection$reflection
 
   @override
   Version get languageVersion => Version.parse('2.17.0');
-
-  @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -1317,13 +1233,6 @@ class TestEnumWithReflection$reflection
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
 
   @override
-  List<EnumReflection> siblingsEnumReflection() =>
-      _siblingsReflection().whereType<EnumReflection>().toList();
-
-  @override
-  List<Reflection> siblingsReflection() => _siblingsReflection();
-
-  @override
   List<String> get fieldsNames => const <String>['Z', 'x', 'y', 'z'];
 
   @override
@@ -1339,10 +1248,12 @@ class TestEnumWithReflection$reflection
   List<TestEnumWithReflection> get values => TestEnumWithReflection.values;
 }
 
-class TestOpAWithReflection$reflection
-    extends ClassReflection<TestOpAWithReflection> {
-  TestOpAWithReflection$reflection([TestOpAWithReflection? object])
-      : super(TestOpAWithReflection, 'TestOpAWithReflection', object);
+class TestFranchiseWithReflection$reflection
+    extends ClassReflection<TestFranchiseWithReflection>
+    with __ReflectionMixin {
+  TestFranchiseWithReflection$reflection([TestFranchiseWithReflection? object])
+      : super(
+            TestFranchiseWithReflection, 'TestFranchiseWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1358,7 +1269,219 @@ class TestOpAWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
+  TestFranchiseWithReflection$reflection withObject(
+          [TestFranchiseWithReflection? obj]) =>
+      TestFranchiseWithReflection$reflection(obj);
+
+  static TestFranchiseWithReflection$reflection? _withoutObjectInstance;
+  @override
+  TestFranchiseWithReflection$reflection withoutObjectInstance() =>
+      _withoutObjectInstance ??= super.withoutObjectInstance()
+          as TestFranchiseWithReflection$reflection;
+
+  static TestFranchiseWithReflection$reflection get staticInstance =>
+      _withoutObjectInstance ??= TestFranchiseWithReflection$reflection();
+
+  @override
+  TestFranchiseWithReflection$reflection getStaticInstance() => staticInstance;
+
+  static bool _boot = false;
+  static void boot() {
+    if (_boot) return;
+    _boot = true;
+    TestFranchiseWithReflection$reflection.staticInstance;
+  }
+
+  @override
+  bool get hasDefaultConstructor => false;
+  @override
+  TestFranchiseWithReflection? createInstanceWithDefaultConstructor() => null;
+
+  @override
+  bool get hasEmptyConstructor => false;
+  @override
+  TestFranchiseWithReflection? createInstanceWithEmptyConstructor() => null;
+  @override
+  bool get hasNoRequiredArgsConstructor => false;
+  @override
+  TestFranchiseWithReflection? createInstanceWithNoRequiredArgsConstructor() =>
+      null;
+
+  @override
+  List<String> get constructorsNames => const <String>[''];
+
+  @override
+  ConstructorReflection<TestFranchiseWithReflection>? constructor<R>(
+      String constructorName) {
+    var lc = constructorName.trim().toLowerCase();
+
+    switch (lc) {
+      case '':
+        return ConstructorReflection<TestFranchiseWithReflection>(
+            this,
+            TestFranchiseWithReflection,
+            '',
+            () => (String name,
+                    Map<String, TestAddressWithReflection> addresses) =>
+                TestFranchiseWithReflection(name, addresses),
+            const <__PR>[
+              __PR(__TR.tString, 'name', false, true),
+              __PR(
+                  __TR<Map<String, TestAddressWithReflection>>(Map, <__TR>[
+                    __TR.tString,
+                    __TR<TestAddressWithReflection>(TestAddressWithReflection)
+                  ]),
+                  'addresses',
+                  false,
+                  true)
+            ],
+            null,
+            null,
+            null);
+      default:
+        return null;
+    }
+  }
+
+  @override
+  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+
+  @override
+  List<Type> get supperTypes => const <Type>[];
+
+  @override
+  bool get hasMethodToJson => false;
+
+  @override
+  Object? callMethodToJson([TestFranchiseWithReflection? obj]) => null;
+
+  @override
+  List<String> get fieldsNames =>
+      const <String>['addresses', 'hashCode', 'name'];
+
+  @override
+  FieldReflection<TestFranchiseWithReflection, T>? field<T>(String fieldName,
+      [TestFranchiseWithReflection? obj]) {
+    obj ??= object;
+
+    var lc = fieldName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'name':
+        return FieldReflection<TestFranchiseWithReflection, T>(
+          this,
+          TestFranchiseWithReflection,
+          __TR.tString,
+          'name',
+          false,
+          (o) => () => o!.name as T,
+          null,
+          obj,
+          false,
+          true,
+        );
+      case 'addresses':
+        return FieldReflection<TestFranchiseWithReflection, T>(
+          this,
+          TestFranchiseWithReflection,
+          __TR<Map<String, TestAddressWithReflection>>(Map, <__TR>[
+            __TR.tString,
+            __TR<TestAddressWithReflection>(TestAddressWithReflection)
+          ]),
+          'addresses',
+          false,
+          (o) => () => o!.addresses as T,
+          (o) => (T? v) =>
+              o!.addresses = v as Map<String, TestAddressWithReflection>,
+          obj,
+          false,
+          false,
+        );
+      case 'hashcode':
+        return FieldReflection<TestFranchiseWithReflection, T>(
+          this,
+          TestFranchiseWithReflection,
+          __TR.tInt,
+          'hashCode',
+          false,
+          (o) => () => o!.hashCode as T,
+          null,
+          obj,
+          false,
+          false,
+          [override],
+        );
+      default:
+        return null;
+    }
+  }
+
+  @override
+  List<String> get staticFieldsNames => const <String>[];
+
+  @override
+  FieldReflection<TestFranchiseWithReflection, T>? staticField<T>(
+      String fieldName) {
+    return null;
+  }
+
+  @override
+  List<String> get methodsNames => const <String>['toString'];
+
+  @override
+  MethodReflection<TestFranchiseWithReflection, R>? method<R>(String methodName,
+      [TestFranchiseWithReflection? obj]) {
+    obj ??= object;
+
+    var lc = methodName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'tostring':
+        return MethodReflection<TestFranchiseWithReflection, R>(
+            this,
+            TestFranchiseWithReflection,
+            'toString',
+            __TR.tString,
+            false,
+            (o) => o!.toString,
+            obj,
+            false,
+            null,
+            null,
+            null,
+            [override]);
+      default:
+        return null;
+    }
+  }
+
+  @override
+  List<String> get staticMethodsNames => const <String>[];
+
+  @override
+  MethodReflection<TestFranchiseWithReflection, R>? staticMethod<R>(
+      String methodName) {
+    return null;
+  }
+}
+
+class TestOpAWithReflection$reflection
+    extends ClassReflection<TestOpAWithReflection> with __ReflectionMixin {
+  TestOpAWithReflection$reflection([TestOpAWithReflection? object])
+      : super(TestOpAWithReflection, 'TestOpAWithReflection', object);
+
+  static bool _registered = false;
+  @override
+  void register() {
+    if (!_registered) {
+      _registered = true;
+      super.register();
+      _registerSiblingsReflection();
+    }
+  }
+
+  @override
+  Version get languageVersion => Version.parse('2.17.0');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -1412,10 +1535,7 @@ class TestOpAWithReflection$reflection
             TestOpAWithReflection,
             '',
             () => (int value) => TestOpAWithReflection(value),
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tInt, 'value', false, true, null, null)
-            ],
+            const <__PR>[__PR(__TR.tInt, 'value', false, true)],
             null,
             null,
             null);
@@ -1426,13 +1546,6 @@ class TestOpAWithReflection$reflection
 
   @override
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
-
-  @override
-  List<ClassReflection> siblingsClassReflection() =>
-      _siblingsReflection().whereType<ClassReflection>().toList();
-
-  @override
-  List<Reflection> siblingsReflection() => _siblingsReflection();
 
   @override
   List<Type> get supperTypes => const <Type>[TestOpWithReflection];
@@ -1458,7 +1571,7 @@ class TestOpAWithReflection$reflection
         return FieldReflection<TestOpAWithReflection, T>(
           this,
           TestOpAWithReflection,
-          TypeReflection.tInt,
+          __TR.tInt,
           'value',
           false,
           (o) => () => o!.value as T,
@@ -1472,7 +1585,7 @@ class TestOpAWithReflection$reflection
         return FieldReflection<TestOpAWithReflection, T>(
           this,
           TestOpWithReflection,
-          TypeReflection.tString,
+          __TR.tString,
           'type',
           false,
           (o) => () => o!.type as T,
@@ -1480,7 +1593,6 @@ class TestOpAWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       default:
         return null;
@@ -1499,7 +1611,7 @@ class TestOpAWithReflection$reflection
         return FieldReflection<TestOpAWithReflection, T>(
           this,
           TestOpAWithReflection,
-          TypeReflection.tInt,
+          __TR.tInt,
           'staticFieldA',
           false,
           (o) => () => TestOpAWithReflection.staticFieldA as T,
@@ -1530,7 +1642,7 @@ class TestOpAWithReflection$reflection
             this,
             TestOpAWithReflection,
             'methodA',
-            TypeReflection.tBool,
+            __TR.tBool,
             false,
             (o) => o!.methodA,
             obj,
@@ -1544,7 +1656,7 @@ class TestOpAWithReflection$reflection
             this,
             TestOpWithReflection,
             'isEmptyType',
-            TypeReflection.tBool,
+            __TR.tBool,
             false,
             (o) => o!.isEmptyType,
             obj,
@@ -1569,7 +1681,7 @@ class TestOpAWithReflection$reflection
 }
 
 class TestOpBWithReflection$reflection
-    extends ClassReflection<TestOpBWithReflection> {
+    extends ClassReflection<TestOpBWithReflection> with __ReflectionMixin {
   TestOpBWithReflection$reflection([TestOpBWithReflection? object])
       : super(TestOpBWithReflection, 'TestOpBWithReflection', object);
 
@@ -1585,9 +1697,6 @@ class TestOpBWithReflection$reflection
 
   @override
   Version get languageVersion => Version.parse('2.17.0');
-
-  @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -1641,10 +1750,7 @@ class TestOpBWithReflection$reflection
             TestOpBWithReflection,
             '',
             () => (double amount) => TestOpBWithReflection(amount),
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tDouble, 'amount', false, true, null, null)
-            ],
+            const <__PR>[__PR(__TR.tDouble, 'amount', false, true)],
             null,
             null,
             null);
@@ -1655,13 +1761,6 @@ class TestOpBWithReflection$reflection
 
   @override
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
-
-  @override
-  List<ClassReflection> siblingsClassReflection() =>
-      _siblingsReflection().whereType<ClassReflection>().toList();
-
-  @override
-  List<Reflection> siblingsReflection() => _siblingsReflection();
 
   @override
   List<Type> get supperTypes => const <Type>[TestOpWithReflection];
@@ -1687,7 +1786,7 @@ class TestOpBWithReflection$reflection
         return FieldReflection<TestOpBWithReflection, T>(
           this,
           TestOpBWithReflection,
-          TypeReflection.tDouble,
+          __TR.tDouble,
           'amount',
           false,
           (o) => () => o!.amount as T,
@@ -1695,13 +1794,12 @@ class TestOpBWithReflection$reflection
           obj,
           false,
           false,
-          null,
         );
       case 'type':
         return FieldReflection<TestOpBWithReflection, T>(
           this,
           TestOpWithReflection,
-          TypeReflection.tString,
+          __TR.tString,
           'type',
           false,
           (o) => () => o!.type as T,
@@ -1709,13 +1807,12 @@ class TestOpBWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       case 'value':
         return FieldReflection<TestOpBWithReflection, T>(
           this,
           TestOpWithReflection,
-          TypeReflection.tDynamic,
+          __TR.tDynamic,
           'value',
           true,
           (o) => () => o!.value as T,
@@ -1723,7 +1820,6 @@ class TestOpBWithReflection$reflection
           obj,
           false,
           false,
-          null,
         );
       default:
         return null;
@@ -1754,7 +1850,7 @@ class TestOpBWithReflection$reflection
             this,
             TestOpBWithReflection,
             'methodB',
-            TypeReflection.tSetDynamic,
+            __TR.tSetDynamic,
             false,
             (o) => o!.methodB,
             obj,
@@ -1768,7 +1864,7 @@ class TestOpBWithReflection$reflection
             this,
             TestOpWithReflection,
             'isEmptyType',
-            TypeReflection.tBool,
+            __TR.tBool,
             false,
             (o) => o!.isEmptyType,
             obj,
@@ -1796,7 +1892,7 @@ class TestOpBWithReflection$reflection
             this,
             TestOpBWithReflection,
             'staticMethodB',
-            TypeReflection.tBool,
+            __TR.tBool,
             false,
             (o) => TestOpBWithReflection.staticMethodB,
             null,
@@ -1812,7 +1908,7 @@ class TestOpBWithReflection$reflection
 }
 
 class TestOpWithReflection$reflection
-    extends ClassReflection<TestOpWithReflection> {
+    extends ClassReflection<TestOpWithReflection> with __ReflectionMixin {
   TestOpWithReflection$reflection([TestOpWithReflection? object])
       : super(TestOpWithReflection, 'TestOpWithReflection', object);
 
@@ -1828,9 +1924,6 @@ class TestOpWithReflection$reflection
 
   @override
   Version get languageVersion => Version.parse('2.17.0');
-
-  @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -1887,11 +1980,9 @@ class TestOpWithReflection$reflection
             '',
             () => (String type, dynamic value) =>
                 TestOpWithReflection(type, value),
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 'type', false, true, null, null),
-              ParameterReflection(
-                  TypeReflection.tDynamic, 'value', true, true, null, null)
+            const <__PR>[
+              __PR(__TR.tString, 'type', false, true),
+              __PR(__TR.tDynamic, 'value', true, true)
             ],
             null,
             null,
@@ -1913,13 +2004,6 @@ class TestOpWithReflection$reflection
 
   @override
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
-
-  @override
-  List<ClassReflection> siblingsClassReflection() =>
-      _siblingsReflection().whereType<ClassReflection>().toList();
-
-  @override
-  List<Reflection> siblingsReflection() => _siblingsReflection();
 
   @override
   List<Type> get supperTypes => const <Type>[];
@@ -1945,7 +2029,7 @@ class TestOpWithReflection$reflection
         return FieldReflection<TestOpWithReflection, T>(
           this,
           TestOpWithReflection,
-          TypeReflection.tString,
+          __TR.tString,
           'type',
           false,
           (o) => () => o!.type as T,
@@ -1953,13 +2037,12 @@ class TestOpWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       case 'value':
         return FieldReflection<TestOpWithReflection, T>(
           this,
           TestOpWithReflection,
-          TypeReflection.tDynamic,
+          __TR.tDynamic,
           'value',
           true,
           (o) => () => o!.value as T,
@@ -1967,7 +2050,6 @@ class TestOpWithReflection$reflection
           obj,
           false,
           false,
-          null,
         );
       default:
         return null;
@@ -1986,7 +2068,7 @@ class TestOpWithReflection$reflection
         return FieldReflection<TestOpWithReflection, T>(
           this,
           TestOpWithReflection,
-          TypeReflection.tInt,
+          __TR.tInt,
           'staticField',
           false,
           (o) => () => TestOpWithReflection.staticField as T,
@@ -2017,7 +2099,7 @@ class TestOpWithReflection$reflection
             this,
             TestOpWithReflection,
             'isEmptyType',
-            TypeReflection.tBool,
+            __TR.tBool,
             false,
             (o) => o!.isEmptyType,
             obj,
@@ -2045,7 +2127,7 @@ class TestOpWithReflection$reflection
             this,
             TestOpWithReflection,
             'staticMethod',
-            TypeReflection.tBool,
+            __TR.tBool,
             false,
             (o) => TestOpWithReflection.staticMethod,
             null,
@@ -2061,7 +2143,8 @@ class TestOpWithReflection$reflection
 }
 
 class TestTransactionWithReflection$reflection
-    extends ClassReflection<TestTransactionWithReflection> {
+    extends ClassReflection<TestTransactionWithReflection>
+    with __ReflectionMixin {
   TestTransactionWithReflection$reflection(
       [TestTransactionWithReflection? object])
       : super(TestTransactionWithReflection, 'TestTransactionWithReflection',
@@ -2079,9 +2162,6 @@ class TestTransactionWithReflection$reflection
 
   @override
   Version get languageVersion => Version.parse('2.17.0');
-
-  @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
 
   @override
   TestTransactionWithReflection$reflection withObject(
@@ -2140,25 +2220,12 @@ class TestTransactionWithReflection$reflection
             () => (int amount, TestUserWithReflection fromUser,
                     TestUserWithReflection toUser) =>
                 TestTransactionWithReflection.fromTo(amount, fromUser, toUser),
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tInt, 'amount', false, true, null, null),
-              ParameterReflection(
-                  TypeReflection<TestUserWithReflection>(
-                      TestUserWithReflection),
-                  'fromUser',
-                  false,
-                  true,
-                  null,
-                  null),
-              ParameterReflection(
-                  TypeReflection<TestUserWithReflection>(
-                      TestUserWithReflection),
-                  'toUser',
-                  false,
-                  true,
-                  null,
-                  null)
+            const <__PR>[
+              __PR(__TR.tInt, 'amount', false, true),
+              __PR(__TR<TestUserWithReflection>(TestUserWithReflection),
+                  'fromUser', false, true),
+              __PR(__TR<TestUserWithReflection>(TestUserWithReflection),
+                  'toUser', false, true)
             ],
             null,
             null,
@@ -2170,13 +2237,6 @@ class TestTransactionWithReflection$reflection
 
   @override
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
-
-  @override
-  List<ClassReflection> siblingsClassReflection() =>
-      _siblingsReflection().whereType<ClassReflection>().toList();
-
-  @override
-  List<Reflection> siblingsReflection() => _siblingsReflection();
 
   @override
   List<Type> get supperTypes => const <Type>[];
@@ -2203,7 +2263,7 @@ class TestTransactionWithReflection$reflection
         return FieldReflection<TestTransactionWithReflection, T>(
           this,
           TestTransactionWithReflection,
-          TypeReflection<TestUserWithReflection>(TestUserWithReflection),
+          __TR<TestUserWithReflection>(TestUserWithReflection),
           'fromUser',
           false,
           (o) => () => o!.fromUser as T,
@@ -2211,13 +2271,12 @@ class TestTransactionWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       case 'touser':
         return FieldReflection<TestTransactionWithReflection, T>(
           this,
           TestTransactionWithReflection,
-          TypeReflection<TestUserWithReflection>(TestUserWithReflection),
+          __TR<TestUserWithReflection>(TestUserWithReflection),
           'toUser',
           false,
           (o) => () => o!.toUser as T,
@@ -2225,13 +2284,12 @@ class TestTransactionWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       case 'amount':
         return FieldReflection<TestTransactionWithReflection, T>(
           this,
           TestTransactionWithReflection,
-          TypeReflection.tInt,
+          __TR.tInt,
           'amount',
           false,
           (o) => () => o!.amount as T,
@@ -2239,7 +2297,6 @@ class TestTransactionWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       default:
         return null;
@@ -2278,7 +2335,7 @@ class TestTransactionWithReflection$reflection
 }
 
 class TestUserWithReflection$reflection
-    extends ClassReflection<TestUserWithReflection> {
+    extends ClassReflection<TestUserWithReflection> with __ReflectionMixin {
   TestUserWithReflection$reflection([TestUserWithReflection? object])
       : super(TestUserWithReflection, 'TestUserWithReflection', object);
 
@@ -2294,9 +2351,6 @@ class TestUserWithReflection$reflection
 
   @override
   Version get languageVersion => Version.parse('2.17.0');
-
-  @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
@@ -2357,30 +2411,19 @@ class TestUserWithReflection$reflection
                     int? id}) =>
                 TestUserWithReflection.fields(name, email, passphrase,
                     enabled: enabled, axis: axis, level: level, id: id),
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 'name', false, true, null, null),
-              ParameterReflection(
-                  TypeReflection.tString, 'email', true, true, null, null),
-              ParameterReflection(TypeReflection.tString, 'passphrase', false,
-                  true, null, [JsonFieldAlias('password')])
+            const <__PR>[
+              __PR(__TR.tString, 'name', false, true),
+              __PR(__TR.tString, 'email', true, true),
+              __PR(__TR.tString, 'passphrase', false, true, null,
+                  [JsonFieldAlias('password')])
             ],
             null,
-            const <String, ParameterReflection>{
-              'axis': ParameterReflection(
-                  TypeReflection<TestEnumWithReflection>(
-                      TestEnumWithReflection),
-                  'axis',
-                  false,
-                  false,
-                  TestEnumWithReflection.x,
-                  null),
-              'enabled': ParameterReflection(
-                  TypeReflection.tBool, 'enabled', false, false, true, null),
-              'id': ParameterReflection(
-                  TypeReflection.tInt, 'id', true, false, null, null),
-              'level': ParameterReflection(
-                  TypeReflection.tInt, 'level', true, false, null, null)
+            const <String, __PR>{
+              'axis': __PR(__TR<TestEnumWithReflection>(TestEnumWithReflection),
+                  'axis', false, false, TestEnumWithReflection.x),
+              'enabled': __PR(__TR.tBool, 'enabled', false, false, true),
+              'id': __PR(__TR.tInt, 'id', true, false),
+              'level': __PR(__TR.tInt, 'level', true, false)
             },
             null);
       case '':
@@ -2400,13 +2443,6 @@ class TestUserWithReflection$reflection
 
   @override
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
-
-  @override
-  List<ClassReflection> siblingsClassReflection() =>
-      _siblingsReflection().whereType<ClassReflection>().toList();
-
-  @override
-  List<Reflection> siblingsReflection() => _siblingsReflection();
 
   @override
   List<Type> get supperTypes => const <Type>[];
@@ -2443,7 +2479,7 @@ class TestUserWithReflection$reflection
         return FieldReflection<TestUserWithReflection, T>(
           this,
           TestUserWithReflection,
-          TypeReflection.tInt,
+          __TR.tInt,
           'id',
           true,
           (o) => () => o!.id as T,
@@ -2451,13 +2487,12 @@ class TestUserWithReflection$reflection
           obj,
           false,
           false,
-          null,
         );
       case 'name':
         return FieldReflection<TestUserWithReflection, T>(
           this,
           TestUserWithReflection,
-          TypeReflection.tString,
+          __TR.tString,
           'name',
           false,
           (o) => () => o!.name as T,
@@ -2465,13 +2500,12 @@ class TestUserWithReflection$reflection
           obj,
           false,
           true,
-          null,
         );
       case 'email':
         return FieldReflection<TestUserWithReflection, T>(
           this,
           TestUserWithReflection,
-          TypeReflection.tString,
+          __TR.tString,
           'email',
           true,
           (o) => () => o!.email as T,
@@ -2479,13 +2513,12 @@ class TestUserWithReflection$reflection
           obj,
           false,
           false,
-          null,
         );
       case 'password':
         return FieldReflection<TestUserWithReflection, T>(
           this,
           TestUserWithReflection,
-          TypeReflection.tString,
+          __TR.tString,
           'password',
           false,
           (o) => () => o!.password as T,
@@ -2493,13 +2526,12 @@ class TestUserWithReflection$reflection
           obj,
           false,
           false,
-          null,
         );
       case 'enabled':
         return FieldReflection<TestUserWithReflection, T>(
           this,
           TestUserWithReflection,
-          TypeReflection.tBool,
+          __TR.tBool,
           'enabled',
           false,
           (o) => () => o!.enabled as T,
@@ -2507,13 +2539,12 @@ class TestUserWithReflection$reflection
           obj,
           false,
           false,
-          null,
         );
       case 'axis':
         return FieldReflection<TestUserWithReflection, T>(
           this,
           TestUserWithReflection,
-          TypeReflection<TestEnumWithReflection>(TestEnumWithReflection),
+          __TR<TestEnumWithReflection>(TestEnumWithReflection),
           'axis',
           false,
           (o) => () => o!.axis as T,
@@ -2521,13 +2552,12 @@ class TestUserWithReflection$reflection
           obj,
           false,
           false,
-          null,
         );
       case 'level':
         return FieldReflection<TestUserWithReflection, T>(
           this,
           TestUserWithReflection,
-          TypeReflection.tInt,
+          __TR.tInt,
           'level',
           true,
           (o) => () => o!.level as T,
@@ -2541,7 +2571,7 @@ class TestUserWithReflection$reflection
         return FieldReflection<TestUserWithReflection, T>(
           this,
           TestUserWithReflection,
-          TypeReflection.tBool,
+          __TR.tBool,
           'isEnabled',
           false,
           (o) => () => o!.isEnabled as T,
@@ -2555,7 +2585,7 @@ class TestUserWithReflection$reflection
         return FieldReflection<TestUserWithReflection, T>(
           this,
           TestUserWithReflection,
-          TypeReflection.tBool,
+          __TR.tBool,
           'isNotEnabled',
           false,
           (o) => () => o!.isNotEnabled as T,
@@ -2569,7 +2599,7 @@ class TestUserWithReflection$reflection
         return FieldReflection<TestUserWithReflection, T>(
           this,
           TestUserWithReflection,
-          TypeReflection.tInt,
+          __TR.tInt,
           'hashCode',
           false,
           (o) => () => o!.hashCode as T,
@@ -2597,7 +2627,7 @@ class TestUserWithReflection$reflection
         return FieldReflection<TestUserWithReflection, T>(
           this,
           TestUserWithReflection,
-          TypeReflection.tDouble,
+          __TR.tDouble,
           'version',
           false,
           (o) => () => TestUserWithReflection.version as T,
@@ -2611,7 +2641,7 @@ class TestUserWithReflection$reflection
         return FieldReflection<TestUserWithReflection, T>(
           this,
           TestUserWithReflection,
-          TypeReflection.tBool,
+          __TR.tBool,
           'withReflection',
           false,
           (o) => () => TestUserWithReflection.withReflection as T,
@@ -2643,15 +2673,12 @@ class TestUserWithReflection$reflection
             this,
             TestUserWithReflection,
             'checkPassword',
-            TypeReflection.tBool,
+            __TR.tBool,
             false,
             (o) => o!.checkPassword,
             obj,
             false,
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 'password', false, true, null, null)
-            ],
+            const <__PR>[__PR(__TR.tString, 'password', false, true)],
             null,
             null,
             null);
@@ -2660,19 +2687,13 @@ class TestUserWithReflection$reflection
             this,
             TestUserWithReflection,
             'getField',
-            TypeReflection.tDynamic,
+            __TR.tDynamic,
             true,
             (o) => o!.getField,
             obj,
             false,
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 'key', false, true, null, null)
-            ],
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tDynamic, 'def', true, false, null, null)
-            ],
+            const <__PR>[__PR(__TR.tString, 'key', false, true)],
+            const <__PR>[__PR(__TR.tDynamic, 'def', true, false)],
             null,
             null);
       case 'setfield':
@@ -2680,21 +2701,18 @@ class TestUserWithReflection$reflection
             this,
             TestUserWithReflection,
             'setField',
-            TypeReflection.tVoid,
+            __TR.tVoid,
             false,
             (o) => o!.setField,
             obj,
             false,
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 'key', false, true, null, null),
-              ParameterReflection(
-                  TypeReflection.tDynamic, 'value', true, true, null, null)
+            const <__PR>[
+              __PR(__TR.tString, 'key', false, true),
+              __PR(__TR.tDynamic, 'value', true, true)
             ],
             null,
-            const <String, ParameterReflection>{
-              'def': ParameterReflection(
-                  TypeReflection.tDynamic, 'def', true, false, null, null)
+            const <String, __PR>{
+              'def': __PR(__TR.tDynamic, 'def', true, false)
             },
             null);
       case 'tostring':
@@ -2702,7 +2720,7 @@ class TestUserWithReflection$reflection
             this,
             TestUserWithReflection,
             'toString',
-            TypeReflection.tString,
+            __TR.tString,
             false,
             (o) => o!.toString,
             obj,
@@ -2730,15 +2748,12 @@ class TestUserWithReflection$reflection
             this,
             TestUserWithReflection,
             'isVersion',
-            TypeReflection.tBool,
+            __TR.tBool,
             false,
             (o) => TestUserWithReflection.isVersion,
             null,
             true,
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tDouble, 'ver', false, true, null, null)
-            ],
+            const <__PR>[__PR(__TR.tDouble, 'ver', false, true)],
             null,
             null,
             null);
@@ -2856,6 +2871,31 @@ extension TestEnumWithReflection$reflectionExtension on TestEnumWithReflection {
   /// Returns an encoded JSON [String] for type [TestEnumWithReflection]. (Generated by [ReflectionFactory])
   String toJsonEncoded({bool pretty = false}) =>
       reflection.toJsonEncoded(pretty: pretty);
+}
+
+extension TestFranchiseWithReflection$reflectionExtension
+    on TestFranchiseWithReflection {
+  /// Returns a [ClassReflection] for type [TestFranchiseWithReflection]. (Generated by [ReflectionFactory])
+  ClassReflection<TestFranchiseWithReflection> get reflection =>
+      TestFranchiseWithReflection$reflection(this);
+
+  /// Returns a JSON for type [TestFranchiseWithReflection]. (Generated by [ReflectionFactory])
+  Object? toJson({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJson(null, null, duplicatedEntitiesAsID);
+
+  /// Returns a JSON [Map] for type [TestFranchiseWithReflection]. (Generated by [ReflectionFactory])
+  Map<String, dynamic>? toJsonMap({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+
+  /// Returns an encoded JSON [String] for type [TestFranchiseWithReflection]. (Generated by [ReflectionFactory])
+  String toJsonEncoded(
+          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonEncoded(
+          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+
+  /// Returns a JSON for type [TestFranchiseWithReflection] using the class fields. (Generated by [ReflectionFactory])
+  Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
+      .toJsonFromFields(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 }
 
 extension TestOpAWithReflection$reflectionExtension on TestOpAWithReflection {
@@ -2983,6 +3023,7 @@ List<Reflection> _listSiblingsReflection() => <Reflection>[
       TestUserWithReflection$reflection(),
       TestAddressWithReflection$reflection(),
       TestCompanyWithReflection$reflection(),
+      TestFranchiseWithReflection$reflection(),
       TestDataWithReflection$reflection(),
       TestDomainWithReflection$reflection(),
       TestOpWithReflection$reflection(),

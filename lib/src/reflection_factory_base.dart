@@ -20,7 +20,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.2.17';
+  static const String VERSION = '1.2.18';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -156,7 +156,16 @@ abstract class Reflection<O> {
   /// The reflection level (complexity).
   int get reflectionLevel;
 
-  /// Cast [list] to [classType] if [type] == [classType] or return `null`.
+  TypeReflection<O>? _typeReflection;
+
+  /// Returns [reflectedType] as a [TypeReflection].
+  TypeReflection<O> get asTypeReflection =>
+      _typeReflection ??= TypeReflection<O>(reflectedType);
+
+  /// Returns [reflectedType] as a [TypeInfo].
+  TypeInfo get typeInfo => asTypeReflection.typeInfo;
+
+  /// Cast [list] to [reflectedType] if [type] == [reflectedType] or return `null`.
   /// - If [nullable] is `true` casts to a [List] of nullable values.
   List? castList(List list, Type type, {bool nullable = false}) {
     if (type == reflectedType) {
@@ -191,7 +200,7 @@ abstract class Reflection<O> {
     return l;
   }
 
-  /// Cast [set] to [classType] if [type] == [classType] or return `null`.
+  /// Cast [set] to [reflectedType] if [type] == [reflectedType] or return `null`.
   /// - If [nullable] is `true` casts to a [Set] of nullable values.
   Set? castSet(Set set, Type type, {bool nullable = false}) {
     if (type == reflectedType) {
@@ -226,7 +235,7 @@ abstract class Reflection<O> {
     return l;
   }
 
-  /// Cast [itr] to [classType] if [type] == [classType] or return `null`.
+  /// Cast [itr] to [reflectedType] if [type] == [reflectedType] or return `null`.
   /// - If [nullable] is `true` casts to an [Iterable] of nullable values.
   Iterable? castIterable(Iterable itr, Type type, {bool nullable = false}) {
     if (type == reflectedType) {
@@ -260,9 +269,115 @@ abstract class Reflection<O> {
     return l;
   }
 
-  /// Cast [map] values to [classType] if [type] == [classType] or return `null`.
-  /// - If [nullable] is `true` casts to a [Map] of nullable values.
+  /// Cast [map] keys & values to [reflectedType] if [type] == [reflectedType] or return `null`.
+  /// - If [nullable] is `true` casts to a [Map] of nullable key & values.
+  /// - See [castMapKeys] and [castMapValues].
   Map? castMap(Map map, TypeInfo typeInfo, {bool nullable = false}) {
+    if (!typeInfo.isMap) {
+      return map;
+    }
+
+    var keyType = typeInfo.argumentType(0) ?? TypeInfo.tDynamic;
+    var valueType = typeInfo.argumentType(1) ?? TypeInfo.tDynamic;
+
+    if (keyType.type == reflectedType && valueType.type == reflectedType) {
+      var m = nullable
+          ? map.map<O?, O?>((key, value) => MapEntry<O?, O?>(key, value))
+          : map.map<O, O>((key, value) => MapEntry<O, O>(key, value));
+
+      return m;
+    } else if (keyType.type == reflectedType) {
+      Map? callVal<V>() => map is Map<O, V>
+          ? map
+          : map.map<O, V>((key, value) => MapEntry<O, V>(key, value));
+      Map? callValNullable<V>() => map is Map<O?, V>
+          ? map
+          : map.map<O?, V>((key, value) => MapEntry<O?, V>(key, value));
+
+      var m = nullable
+          ? valueType.callCasted(callValNullable)
+          : valueType.callCasted(callVal);
+
+      return m;
+    } else if (valueType.type == reflectedType) {
+      Map? callKey<K>() => map is Map<K, O>
+          ? map
+          : map.map<K, O>((key, value) => MapEntry<K, O>(key, value));
+      Map? callKeyNullable<K>() => map is Map<K, O?>
+          ? map
+          : map.map<K, O?>((key, value) => MapEntry<K, O?>(key, value));
+
+      var m = nullable
+          ? keyType.callCasted(callKeyNullable)
+          : keyType.callCasted(callKey);
+
+      return m;
+    } else {
+      Map? callKey<K>() => valueType.callCasted(<V>() {
+            return map is Map<K, V>
+                ? map
+                : map.map<K, V>((key, value) => MapEntry<K, V>(key, value));
+          });
+
+      Map? callKeyNullable<K>() => valueType.callCasted(<V>() {
+            return map is Map<K, V?>
+                ? map
+                : map.map<K, V?>((key, value) => MapEntry<K, V?>(key, value));
+          });
+
+      var m = nullable
+          ? keyType.callCasted(callKeyNullable)
+          : keyType.callCasted(callKey);
+      return m;
+    }
+  }
+
+  /// Cast [map] keys to [reflectedType] if [type] == [reflectedType] or return `null`.
+  /// - If [nullable] is `true` casts to a [Map] of nullable keys.
+  Map? castMapKeys(Map map, TypeInfo typeInfo, {bool nullable = false}) {
+    if (!typeInfo.isMap) {
+      return map;
+    }
+
+    var keyType = typeInfo.argumentType(0) ?? TypeInfo.tDynamic;
+    var valueType = typeInfo.argumentType(1) ?? TypeInfo.tDynamic;
+
+    if (keyType.type == reflectedType) {
+      Map? callVal<V>() => map is Map<O, V>
+          ? map
+          : map.map<O, V>((key, value) => MapEntry<O, V>(key, value));
+      Map? callValNullable<V>() => map is Map<O?, V>
+          ? map
+          : map.map<O?, V>((key, value) => MapEntry<O?, V>(key, value));
+
+      var m = nullable
+          ? valueType.callCasted(callValNullable)
+          : valueType.callCasted(callVal);
+
+      return m;
+    } else {
+      Map? callKey<K>() => valueType.callCasted(<V>() {
+            return map is Map<K, V>
+                ? map
+                : map.map<K, V>((key, value) => MapEntry<K, V>(key, value));
+          });
+
+      Map? callKeyNullable<K>() => valueType.callCasted(<V>() {
+            return map is Map<K, V?>
+                ? map
+                : map.map<K, V?>((key, value) => MapEntry<K, V?>(key, value));
+          });
+
+      var m = nullable
+          ? keyType.callCasted(callKeyNullable)
+          : keyType.callCasted(callKey);
+      return m;
+    }
+  }
+
+  /// Cast [map] values to [reflectedType] if [type] == [reflectedType] or return `null`.
+  /// - If [nullable] is `true` casts to a [Map] of nullable values.
+  Map? castMapValues(Map map, TypeInfo typeInfo, {bool nullable = false}) {
     if (!typeInfo.isMap) {
       return map;
     }
@@ -364,7 +479,7 @@ abstract class Reflection<O> {
 
 /// Base for Enum reflection.
 abstract class EnumReflection<O> extends Reflection<O>
-    implements Comparable<EnumReflection<O>> {
+    implements Comparable<EnumReflection> {
   /// Then reflected enum [Type].
   final Type enumType;
 
@@ -426,7 +541,8 @@ abstract class EnumReflection<O> extends Reflection<O>
   }
 
   /// Returns a [List] of siblings [ClassReflection] (declared in the same code unit).
-  List<EnumReflection> siblingsEnumReflection();
+  List<EnumReflection> siblingsEnumReflection() =>
+      siblingsReflection().whereType<EnumReflection>().toList();
 
   /// Returns a [siblingsEnumReflection] for [type], [obj] or [T].
   EnumReflection<T>? siblingEnumReflectionFor<T>({T? obj, Type? type}) {
@@ -591,7 +707,7 @@ abstract class EnumReflection<O> extends Reflection<O>
   }
 
   @override
-  int compareTo(EnumReflection<O> other) =>
+  int compareTo(EnumReflection other) =>
       reflectionLevel.compareTo(other.reflectionLevel);
 
   @override
@@ -608,7 +724,7 @@ typedef OnConstructorInvocationError = void Function(
 
 /// Base for Class reflection.
 abstract class ClassReflection<O> extends Reflection<O>
-    implements Comparable<ClassReflection<O>> {
+    implements Comparable<ClassReflection> {
   /// The reflected class [Type].
   final Type classType;
 
@@ -664,8 +780,8 @@ abstract class ClassReflection<O> extends Reflection<O>
   int get reflectionLevel =>
       fieldsNames.length +
       staticFieldsNames.length +
-      methodsNames.length +
-      staticMethodsNames.length;
+      (methodsNames.length * 2) +
+      (staticMethodsNames.length * 2);
 
   /// Calls [function] with correct casting for [ClassReflection].
   @override
@@ -674,7 +790,8 @@ abstract class ClassReflection<O> extends Reflection<O>
   }
 
   /// Returns a [List] of siblings [ClassReflection] (declared in the same code unit).
-  List<ClassReflection> siblingsClassReflection();
+  List<ClassReflection> siblingsClassReflection() =>
+      siblingsReflection().whereType<ClassReflection>().toList();
 
   /// Returns a [siblingsClassReflection] for [type], [obj] or [T].
   ClassReflection<T>? siblingClassReflectionFor<T>({T? obj, Type? type}) {
@@ -1643,7 +1760,7 @@ abstract class ClassReflection<O> extends Reflection<O>
   }
 
   @override
-  int compareTo(ClassReflection<O> other) =>
+  int compareTo(ClassReflection other) =>
       reflectionLevel.compareTo(other.reflectionLevel);
 
   @override
@@ -1805,7 +1922,7 @@ class ParameterReflection {
       : _annotationsEmpty;
 
   const ParameterReflection(this.type, this.name, this.nullable, this.required,
-      this.defaultValue, this._annotations);
+      [this.defaultValue, this._annotations]);
 
   /// Returns `true` if [defaultValue] is NOT `null`.
   bool get hasDefaultValue => defaultValue != null;
@@ -2288,7 +2405,24 @@ class TypeReflection<T> {
       isIterableType && hasArguments && arguments.first.isEntityType;
 
   /// The [TypeReflection] of the [List] elements type.
-  TypeReflection? get listEntityType => isIterableType ? arguments.first : null;
+  TypeReflection? get listEntityType =>
+      isIterableEntity ? arguments.first : null;
+
+  /// The [TypeReflection] of the [List] elements type.
+  TypeReflection? get listType => isIterableType ? arguments.firstOrNull : null;
+
+  /// The [TypeReflection] of the [Map] key type.
+  TypeReflection? get mapKeyType => isMapType ? arguments.firstOrNull : null;
+
+  /// The [TypeReflection] of the [Map] value type.
+  TypeReflection? get mapValueType {
+    if (isMapType) {
+      var args = arguments;
+      return args.length > 1 ? args[1] : null;
+    } else {
+      return null;
+    }
+  }
 
   @override
   bool operator ==(Object other) =>
@@ -2385,18 +2519,18 @@ class FieldReflection<O, T> extends ElementReflection<O>
       jsonAnnotations.whereType<JsonFieldAlias>().toList();
 
   FieldReflection(
-    ClassReflection<O> classReflection,
-    Type declaringType,
-    this.type,
-    this.name,
-    this.nullable,
-    this.getterAccessor,
-    this.setterAccessor,
-    this.object,
-    bool isStatic,
-    this.isFinal,
-    List<Object>? annotations,
-  )   : _annotations = annotations == null || annotations.isEmpty
+      ClassReflection<O> classReflection,
+      Type declaringType,
+      this.type,
+      this.name,
+      this.nullable,
+      this.getterAccessor,
+      this.setterAccessor,
+      this.object,
+      bool isStatic,
+      this.isFinal,
+      [List<Object>? annotations])
+      : _annotations = annotations == null || annotations.isEmpty
             ? _annotationsEmpty
             : List<Object>.unmodifiable(annotations),
         super(classReflection, declaringType, isStatic);

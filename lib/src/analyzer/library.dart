@@ -3,6 +3,7 @@
 // Original source: https://github.com/dart-lang/source_gen
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:collection/collection.dart';
 
 import 'reader.dart';
 import 'type_checker.dart';
@@ -39,6 +40,20 @@ class LibraryReader {
       }
     }
   }
+
+  /// All of the elements names in this library
+  /// (classes, enums, mixins, functions, extensions, typeAliases, topLevelVariables).
+  Iterable<String> get elementsNames => element.units
+      .expand((CompilationUnitElement cu) => <String?>[
+            ...cu.classes.map((e) => e.name),
+            ...cu.enums2.map((e) => e.name),
+            ...cu.mixins2.map((e) => e.name),
+            ...cu.functions.map((e) => e.name),
+            ...cu.extensions.map((e) => e.name),
+            ...cu.typeAliases.map((e) => e.name),
+            ...cu.topLevelVariables.map((e) => e.name),
+          ])
+      .whereNotNull();
 
   /// All of the elements representing classes in this library.
   Iterable<ClassElement> get classes =>

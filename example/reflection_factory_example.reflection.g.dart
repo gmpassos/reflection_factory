@@ -1,15 +1,28 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.2.17
+// BUILDER: reflection_factory/1.2.18
 // BUILD COMMAND: dart run build_runner build
 //
 
 // coverage:ignore-file
+// ignore_for_file: unused_element
 // ignore_for_file: unnecessary_const
 // ignore_for_file: unnecessary_cast
 // ignore_for_file: unnecessary_type_check
 
 part of 'reflection_factory_example.dart';
+
+typedef __TR<T> = TypeReflection<T>;
+typedef __TI<T> = TypeInfo<T>;
+typedef __PR = ParameterReflection;
+
+mixin __ReflectionMixin {
+  static final Version _version = Version.parse('1.2.18');
+
+  Version get reflectionFactoryVersion => _version;
+
+  List<Reflection> siblingsReflection() => _siblingsReflection();
+}
 
 // ignore: non_constant_identifier_names
 User User$fromJson(Map<String, Object?> map) =>
@@ -18,7 +31,7 @@ User User$fromJson(Map<String, Object?> map) =>
 User User$fromJsonEncoded(String jsonEncoded) =>
     User$reflection.staticInstance.fromJsonEncoded(jsonEncoded);
 
-class User$reflection extends ClassReflection<User> {
+class User$reflection extends ClassReflection<User> with __ReflectionMixin {
   User$reflection([User? object]) : super(User, 'User', object);
 
   static bool _registered = false;
@@ -33,9 +46,6 @@ class User$reflection extends ClassReflection<User> {
 
   @override
   Version get languageVersion => Version.parse('2.17.0');
-
-  @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
 
   @override
   User$reflection withObject([User? obj]) => User$reflection(obj);
@@ -86,11 +96,9 @@ class User$reflection extends ClassReflection<User> {
             User,
             '',
             () => (String? email, String pass) => User(email, pass),
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 'email', true, true, null, null),
-              ParameterReflection(
-                  TypeReflection.tString, 'pass', false, true, null, null)
+            const <__PR>[
+              __PR(__TR.tString, 'email', true, true),
+              __PR(__TR.tString, 'pass', false, true)
             ],
             null,
             null,
@@ -105,13 +113,6 @@ class User$reflection extends ClassReflection<User> {
 
   @override
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
-
-  @override
-  List<ClassReflection> siblingsClassReflection() =>
-      _siblingsReflection().whereType<ClassReflection>().toList();
-
-  @override
-  List<Reflection> siblingsReflection() => _siblingsReflection();
 
   @override
   List<Type> get supperTypes => const <Type>[];
@@ -136,7 +137,7 @@ class User$reflection extends ClassReflection<User> {
         return FieldReflection<User, T>(
           this,
           User,
-          TypeReflection.tString,
+          __TR.tString,
           'email',
           true,
           (o) => () => o!.email as T,
@@ -144,13 +145,12 @@ class User$reflection extends ClassReflection<User> {
           obj,
           false,
           false,
-          null,
         );
       case 'pass':
         return FieldReflection<User, T>(
           this,
           User,
-          TypeReflection.tString,
+          __TR.tString,
           'pass',
           false,
           (o) => () => o!.pass as T,
@@ -158,13 +158,12 @@ class User$reflection extends ClassReflection<User> {
           obj,
           false,
           false,
-          null,
         );
       case 'hasemail':
         return FieldReflection<User, T>(
           this,
           User,
-          TypeReflection.tBool,
+          __TR.tBool,
           'hasEmail',
           false,
           (o) => () => o!.hasEmail as T,
@@ -172,7 +171,6 @@ class User$reflection extends ClassReflection<User> {
           obj,
           false,
           false,
-          null,
         );
       default:
         return null;
@@ -202,15 +200,12 @@ class User$reflection extends ClassReflection<User> {
             this,
             User,
             'checkPassword',
-            TypeReflection.tBool,
+            __TR.tBool,
             false,
             (o) => o!.checkPassword,
             obj,
             false,
-            const <ParameterReflection>[
-              ParameterReflection(
-                  TypeReflection.tString, 'pass', false, true, null, null)
-            ],
+            const <__PR>[__PR(__TR.tString, 'pass', false, true)],
             null,
             null,
             null);
