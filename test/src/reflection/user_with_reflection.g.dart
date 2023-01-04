@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.2.17
+// BUILDER: reflection_factory/1.2.18
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -50,6 +50,15 @@ TestDomainWithReflection TestDomainWithReflection$fromJsonEncoded(
 // ignore: non_constant_identifier_names
 TestEnumWithReflection? TestEnumWithReflection$from(Object? o) =>
     TestEnumWithReflection$reflection.staticInstance.from(o);
+// ignore: non_constant_identifier_names
+TestFranchiseWithReflection TestFranchiseWithReflection$fromJson(
+        Map<String, Object?> map) =>
+    TestFranchiseWithReflection$reflection.staticInstance.fromJson(map);
+// ignore: non_constant_identifier_names
+TestFranchiseWithReflection TestFranchiseWithReflection$fromJsonEncoded(
+        String jsonEncoded) =>
+    TestFranchiseWithReflection$reflection.staticInstance
+        .fromJsonEncoded(jsonEncoded);
 // ignore: non_constant_identifier_names
 TestOpAWithReflection TestOpAWithReflection$fromJson(
         Map<String, Object?> map) =>
@@ -112,7 +121,7 @@ class TestAddressWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
+  Version get reflectionFactoryVersion => Version.parse('1.2.18');
 
   @override
   TestAddressWithReflection$reflection withObject(
@@ -374,7 +383,7 @@ class TestCompanyWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
+  Version get reflectionFactoryVersion => Version.parse('1.2.18');
 
   @override
   TestCompanyWithReflection$reflection withObject(
@@ -701,7 +710,7 @@ class TestDataWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
+  Version get reflectionFactoryVersion => Version.parse('1.2.18');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -936,7 +945,7 @@ class TestDomainWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
+  Version get reflectionFactoryVersion => Version.parse('1.2.18');
 
   @override
   TestDomainWithReflection$reflection withObject(
@@ -1288,7 +1297,7 @@ class TestEnumWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
+  Version get reflectionFactoryVersion => Version.parse('1.2.18');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -1339,6 +1348,240 @@ class TestEnumWithReflection$reflection
   List<TestEnumWithReflection> get values => TestEnumWithReflection.values;
 }
 
+class TestFranchiseWithReflection$reflection
+    extends ClassReflection<TestFranchiseWithReflection> {
+  TestFranchiseWithReflection$reflection([TestFranchiseWithReflection? object])
+      : super(
+            TestFranchiseWithReflection, 'TestFranchiseWithReflection', object);
+
+  static bool _registered = false;
+  @override
+  void register() {
+    if (!_registered) {
+      _registered = true;
+      super.register();
+      _registerSiblingsReflection();
+    }
+  }
+
+  @override
+  Version get languageVersion => Version.parse('2.17.0');
+
+  @override
+  Version get reflectionFactoryVersion => Version.parse('1.2.18');
+
+  @override
+  TestFranchiseWithReflection$reflection withObject(
+          [TestFranchiseWithReflection? obj]) =>
+      TestFranchiseWithReflection$reflection(obj);
+
+  static TestFranchiseWithReflection$reflection? _withoutObjectInstance;
+  @override
+  TestFranchiseWithReflection$reflection withoutObjectInstance() =>
+      _withoutObjectInstance ??= super.withoutObjectInstance()
+          as TestFranchiseWithReflection$reflection;
+
+  static TestFranchiseWithReflection$reflection get staticInstance =>
+      _withoutObjectInstance ??= TestFranchiseWithReflection$reflection();
+
+  @override
+  TestFranchiseWithReflection$reflection getStaticInstance() => staticInstance;
+
+  static bool _boot = false;
+  static void boot() {
+    if (_boot) return;
+    _boot = true;
+    TestFranchiseWithReflection$reflection.staticInstance;
+  }
+
+  @override
+  bool get hasDefaultConstructor => false;
+  @override
+  TestFranchiseWithReflection? createInstanceWithDefaultConstructor() => null;
+
+  @override
+  bool get hasEmptyConstructor => false;
+  @override
+  TestFranchiseWithReflection? createInstanceWithEmptyConstructor() => null;
+  @override
+  bool get hasNoRequiredArgsConstructor => false;
+  @override
+  TestFranchiseWithReflection? createInstanceWithNoRequiredArgsConstructor() =>
+      null;
+
+  @override
+  List<String> get constructorsNames => const <String>[''];
+
+  @override
+  ConstructorReflection<TestFranchiseWithReflection>? constructor<R>(
+      String constructorName) {
+    var lc = constructorName.trim().toLowerCase();
+
+    switch (lc) {
+      case '':
+        return ConstructorReflection<TestFranchiseWithReflection>(
+            this,
+            TestFranchiseWithReflection,
+            '',
+            () => (String name,
+                    Map<String, TestAddressWithReflection> addresses) =>
+                TestFranchiseWithReflection(name, addresses),
+            const <ParameterReflection>[
+              ParameterReflection(
+                  TypeReflection.tString, 'name', false, true, null, null),
+              ParameterReflection(
+                  TypeReflection<Map<String, TestAddressWithReflection>>(
+                      Map, <TypeReflection>[
+                    TypeReflection.tString,
+                    TypeReflection<TestAddressWithReflection>(
+                        TestAddressWithReflection)
+                  ]),
+                  'addresses',
+                  false,
+                  true,
+                  null,
+                  null)
+            ],
+            null,
+            null,
+            null);
+      default:
+        return null;
+    }
+  }
+
+  @override
+  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+
+  @override
+  List<ClassReflection> siblingsClassReflection() =>
+      _siblingsReflection().whereType<ClassReflection>().toList();
+
+  @override
+  List<Reflection> siblingsReflection() => _siblingsReflection();
+
+  @override
+  List<Type> get supperTypes => const <Type>[];
+
+  @override
+  bool get hasMethodToJson => false;
+
+  @override
+  Object? callMethodToJson([TestFranchiseWithReflection? obj]) => null;
+
+  @override
+  List<String> get fieldsNames =>
+      const <String>['addresses', 'hashCode', 'name'];
+
+  @override
+  FieldReflection<TestFranchiseWithReflection, T>? field<T>(String fieldName,
+      [TestFranchiseWithReflection? obj]) {
+    obj ??= object;
+
+    var lc = fieldName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'name':
+        return FieldReflection<TestFranchiseWithReflection, T>(
+          this,
+          TestFranchiseWithReflection,
+          TypeReflection.tString,
+          'name',
+          false,
+          (o) => () => o!.name as T,
+          null,
+          obj,
+          false,
+          true,
+          null,
+        );
+      case 'addresses':
+        return FieldReflection<TestFranchiseWithReflection, T>(
+          this,
+          TestFranchiseWithReflection,
+          TypeReflection<Map<String, TestAddressWithReflection>>(
+              Map, <TypeReflection>[
+            TypeReflection.tString,
+            TypeReflection<TestAddressWithReflection>(TestAddressWithReflection)
+          ]),
+          'addresses',
+          false,
+          (o) => () => o!.addresses as T,
+          (o) => (T? v) =>
+              o!.addresses = v as Map<String, TestAddressWithReflection>,
+          obj,
+          false,
+          false,
+          null,
+        );
+      case 'hashcode':
+        return FieldReflection<TestFranchiseWithReflection, T>(
+          this,
+          TestFranchiseWithReflection,
+          TypeReflection.tInt,
+          'hashCode',
+          false,
+          (o) => () => o!.hashCode as T,
+          null,
+          obj,
+          false,
+          false,
+          [override],
+        );
+      default:
+        return null;
+    }
+  }
+
+  @override
+  List<String> get staticFieldsNames => const <String>[];
+
+  @override
+  FieldReflection<TestFranchiseWithReflection, T>? staticField<T>(
+      String fieldName) {
+    return null;
+  }
+
+  @override
+  List<String> get methodsNames => const <String>['toString'];
+
+  @override
+  MethodReflection<TestFranchiseWithReflection, R>? method<R>(String methodName,
+      [TestFranchiseWithReflection? obj]) {
+    obj ??= object;
+
+    var lc = methodName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'tostring':
+        return MethodReflection<TestFranchiseWithReflection, R>(
+            this,
+            TestFranchiseWithReflection,
+            'toString',
+            TypeReflection.tString,
+            false,
+            (o) => o!.toString,
+            obj,
+            false,
+            null,
+            null,
+            null,
+            [override]);
+      default:
+        return null;
+    }
+  }
+
+  @override
+  List<String> get staticMethodsNames => const <String>[];
+
+  @override
+  MethodReflection<TestFranchiseWithReflection, R>? staticMethod<R>(
+      String methodName) {
+    return null;
+  }
+}
+
 class TestOpAWithReflection$reflection
     extends ClassReflection<TestOpAWithReflection> {
   TestOpAWithReflection$reflection([TestOpAWithReflection? object])
@@ -1358,7 +1601,7 @@ class TestOpAWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
+  Version get reflectionFactoryVersion => Version.parse('1.2.18');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -1587,7 +1830,7 @@ class TestOpBWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
+  Version get reflectionFactoryVersion => Version.parse('1.2.18');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -1830,7 +2073,7 @@ class TestOpWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
+  Version get reflectionFactoryVersion => Version.parse('1.2.18');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -2081,7 +2324,7 @@ class TestTransactionWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
+  Version get reflectionFactoryVersion => Version.parse('1.2.18');
 
   @override
   TestTransactionWithReflection$reflection withObject(
@@ -2296,7 +2539,7 @@ class TestUserWithReflection$reflection
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  Version get reflectionFactoryVersion => Version.parse('1.2.17');
+  Version get reflectionFactoryVersion => Version.parse('1.2.18');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
@@ -2858,6 +3101,31 @@ extension TestEnumWithReflection$reflectionExtension on TestEnumWithReflection {
       reflection.toJsonEncoded(pretty: pretty);
 }
 
+extension TestFranchiseWithReflection$reflectionExtension
+    on TestFranchiseWithReflection {
+  /// Returns a [ClassReflection] for type [TestFranchiseWithReflection]. (Generated by [ReflectionFactory])
+  ClassReflection<TestFranchiseWithReflection> get reflection =>
+      TestFranchiseWithReflection$reflection(this);
+
+  /// Returns a JSON for type [TestFranchiseWithReflection]. (Generated by [ReflectionFactory])
+  Object? toJson({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJson(null, null, duplicatedEntitiesAsID);
+
+  /// Returns a JSON [Map] for type [TestFranchiseWithReflection]. (Generated by [ReflectionFactory])
+  Map<String, dynamic>? toJsonMap({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+
+  /// Returns an encoded JSON [String] for type [TestFranchiseWithReflection]. (Generated by [ReflectionFactory])
+  String toJsonEncoded(
+          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonEncoded(
+          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+
+  /// Returns a JSON for type [TestFranchiseWithReflection] using the class fields. (Generated by [ReflectionFactory])
+  Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
+      .toJsonFromFields(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+}
+
 extension TestOpAWithReflection$reflectionExtension on TestOpAWithReflection {
   /// Returns a [ClassReflection] for type [TestOpAWithReflection]. (Generated by [ReflectionFactory])
   ClassReflection<TestOpAWithReflection> get reflection =>
@@ -2983,6 +3251,7 @@ List<Reflection> _listSiblingsReflection() => <Reflection>[
       TestUserWithReflection$reflection(),
       TestAddressWithReflection$reflection(),
       TestCompanyWithReflection$reflection(),
+      TestFranchiseWithReflection$reflection(),
       TestDataWithReflection$reflection(),
       TestDomainWithReflection$reflection(),
       TestOpWithReflection$reflection(),

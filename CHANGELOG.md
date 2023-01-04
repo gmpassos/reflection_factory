@@ -1,3 +1,15 @@
+## 1.2.18
+
+- `Reflection`:
+  - Fix `castMap`:
+  - Added `castMapKeys` and `castMapValues`.
+  - Added getters: `listType`, `mapKeyType` and `mapValueType`.
+- `JsonCodec`:
+  - Added field `mapCaster`.
+- `_JsonDecoder`:
+  - Now supports `Map` casting when decoding an entity field.
+- Added `castMapType`.
+
 ## 1.2.17
 
 - `FunctionReflection.parametersNamesWhere`:

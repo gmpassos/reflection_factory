@@ -205,6 +205,34 @@ class TestCompanyWithReflection {
 }
 
 @EnableReflection()
+class TestFranchiseWithReflection {
+  final String name;
+
+  Map<String, TestAddressWithReflection> addresses;
+
+  TestFranchiseWithReflection(this.name, this.addresses);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TestFranchiseWithReflection &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          MapEquality<String, TestAddressWithReflection>()
+              .equals(addresses, other.addresses);
+
+  @override
+  int get hashCode =>
+      name.hashCode ^
+      MapEquality<String, TestAddressWithReflection>().hash(addresses);
+
+  @override
+  String toString() {
+    return 'TestFranchiseWithReflection{name: $name, addresses: $addresses}';
+  }
+}
+
+@EnableReflection()
 class TestDataWithReflection {
   final String name;
 

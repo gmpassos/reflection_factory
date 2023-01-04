@@ -487,6 +487,7 @@ void main() {
             TestUserWithReflection,
             TestAddressWithReflection,
             TestCompanyWithReflection,
+            TestFranchiseWithReflection,
             TestDataWithReflection,
             TestDomainWithReflection,
             TestOpWithReflection,

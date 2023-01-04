@@ -3,7 +3,7 @@
 [![pub package](https://img.shields.io/pub/v/reflection_factory.svg?logo=dart&logoColor=00b9fc)](https://pub.dev/packages/reflection_factory)
 [![Null Safety](https://img.shields.io/badge/null-safety-brightgreen)](https://dart.dev/null-safety)
 [![Codecov](https://img.shields.io/codecov/c/github/gmpassos/reflection_factory)](https://app.codecov.io/gh/gmpassos/reflection_factory)
-[![CI](https://img.shields.io/github/workflow/status/gmpassos/reflection_factory/Dart%20CI/master?logo=github-actions&logoColor=white)](https://github.com/gmpassos/reflection_factory/actions)
+[![Dart CI](https://github.com/gmpassos/reflection_factory/actions/workflows/dart.yml/badge.svg?branch=master)](https://github.com/gmpassos/reflection_factory/actions/workflows/dart.yml)
 [![GitHub Tag](https://img.shields.io/github/v/tag/gmpassos/reflection_factory?logo=git&logoColor=white)](https://github.com/gmpassos/reflection_factory/releases)
 [![New Commits](https://img.shields.io/github/commits-since/gmpassos/reflection_factory/latest?logo=git&logoColor=white)](https://github.com/gmpassos/reflection_factory/network)
 [![Last Commits](https://img.shields.io/github/last-commit/gmpassos/reflection_factory?logo=git&logoColor=white)](https://github.com/gmpassos/reflection_factory/commits/master)

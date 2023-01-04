@@ -251,6 +251,22 @@ void main() {
         TestAddressWithReflection('State3', city: 'City3')
       ], isNot(isA<List<TestAddressWithReflection>>()));
 
+      expect(
+          JsonCodec().toJson(TestFranchiseWithReflection(
+            'FooInc',
+            {
+              'main': TestAddressWithReflection('State1', city: 'City1'),
+              'extra': TestAddressWithReflection('State1', city: 'City2')
+            },
+          )),
+          equals({
+            'addresses': {
+              'main': {'state': 'State1', 'city': 'City1'},
+              'extra': {'state': 'State1', 'city': 'City2'}
+            },
+            'name': 'FooInc'
+          }));
+
       // List:
 
       expect(
@@ -659,6 +675,21 @@ void main() {
                 TestAddressWithReflection('State2', city: 'City2'),
                 TestAddressWithReflection('State3', city: 'City3')
               ])));
+
+      expect(
+          await JsonCodec.defaultCodec.fromJsonAsync(
+              Future.value({
+                'addresses': {
+                  'a': {'state': 'State', 'city': 'A'},
+                  'b': {'state': 'State', 'city': 'B'}
+                },
+                'name': 'FooFranchise'
+              }),
+              type: TestFranchiseWithReflection),
+          equals(TestFranchiseWithReflection('FooFranchise', {
+            'a': TestAddressWithReflection('State', city: 'A'),
+            'b': TestAddressWithReflection('State', city: 'B'),
+          })));
 
       expect(
           JsonCodec.defaultCodec.fromJsonList([
