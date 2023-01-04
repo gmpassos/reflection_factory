@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:reflection_factory/reflection_factory.dart';
 import 'package:test/test.dart';
 
@@ -605,6 +606,24 @@ void main() {
             TestOpAWithReflection,
             TestOpBWithReflection,
             TestTransactionWithReflection,
+          ]));
+
+      expect(
+          userReflection
+              .siblingsClassReflection()
+              .sorted()
+              .map((e) => e.classType),
+          equals([
+            TestTransactionWithReflection,
+            TestFranchiseWithReflection,
+            TestDataWithReflection,
+            TestOpWithReflection,
+            TestOpAWithReflection,
+            TestAddressWithReflection,
+            TestCompanyWithReflection,
+            TestOpBWithReflection,
+            TestDomainWithReflection,
+            TestUserWithReflection
           ]));
 
       expect(

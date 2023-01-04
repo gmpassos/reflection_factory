@@ -102,13 +102,15 @@ void main() {
               contains(
                   'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
               contains("part of 'foo.dart'"),
+              contains(
+                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')"),
             ),
             allOf(
               contains('User\$reflection'),
               contains('User\$reflectionExtension'),
             ),
             matches(RegExp(
-                r"'ignoreCase':\s*ParameterReflection\(\s*TypeReflection.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*false\s*,\s*null\s*\)")),
+                r"'ignoreCase':\s*__PR\(\s*__TR.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*false\s*\)")),
             allOf(
               contains("TestAnnotation(['static method', 'version checker'])"),
               contains("TestAnnotation(['method', 'password checker'])"),
@@ -205,13 +207,13 @@ void main() {
                   'Domain? createInstanceWithNoRequiredArgsConstructor() => Domain.empty();'),
             ),
             matches(RegExp(
-                r"'suffix':\s*ParameterReflection\(\s*TypeReflection.tString\s*,\s*'suffix'\s*,\s*false\s*,\s*false\s*,\s*'net'\s*,\s*null\s*\)")),
+                r"'suffix':\s*__PR\(\s*__TR.tString\s*,\s*'suffix'\s*,\s*false\s*,\s*false\s*,\s*'net'\s*\)")),
             allOf(
                 matches(RegExp(
-                    r"case 'callfx':.*?const <ParameterReflection>\[\s*ParameterReflection\(\s*TypeReflection<Fx>\(Fx\), 'f', true, false, null, null\)\s*\]",
+                    r"case 'callfx':.*?const <__PR>\[\s*__PR\(\s*__TR<Fx>\(Fx\), 'f', true, false\)\s*\]",
                     dotAll: true)),
                 matches(RegExp(
-                    r"case 'callallfx':.*?ParameterReflection\(\s*TypeReflection<List<Function>>\(\s*List, <TypeInfo>\[TypeInfo.tFunction\]\),\s*'fxs',\s*false,\s*true,\s*null,\s*null\)",
+                    r"case 'callallfx':.*?__PR\(\s*__TR<List<Function>>\(\s*List, <__TI>\[__TI.tFunction\]\),\s*'fxs',\s*false,\s*true\)",
                     dotAll: true)),
                 matches(RegExp(
                     r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\(')),
@@ -325,11 +327,11 @@ void main() {
               contains("case 'value':"),
               contains("fieldsNames => const <String>['type', 'value']"),
               matches(RegExp(
-                  r"TypeReflection<List<Set<int>>>\(\s*List, <TypeReflection>\[TypeReflection.tSetInt\]\)")),
+                  r"__TR<List<Set<int>>>\(\s*List, <__TR>\[__TR.tSetInt\]\)")),
               matches(RegExp(
-                  r"TypeReflection<List<Set<int\?>>>\(\s*List, <TypeReflection>\[TypeReflection.tSetInt\]\)")),
+                  r"__TR<List<Set<int\?>>>\(\s*List, <__TR>\[__TR.tSetInt\]\)")),
               matches(RegExp(
-                  r"TypeReflection<Set<List<dynamic>>>\(\s*Set, <TypeReflection>\[TypeReflection.tListDynamic\]\)")),
+                  r"__TR<Set<List<dynamic>>>\(\s*Set, <__TR>\[__TR.tListDynamic\]\)")),
             ),
           )),
         },

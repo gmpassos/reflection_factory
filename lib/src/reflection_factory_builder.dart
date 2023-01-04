@@ -72,7 +72,10 @@ class ReflectionBuilder implements Builder {
           "Can't generate multiple `reflection` files. Multiple reflection parts directives: $siblingParts AND $subParts");
     }
 
-    var codeTable = await _buildCodeTable(buildStep, libraryReader);
+    var typeAliasTable = _TypeAliasTable.fromLibraryReader(libraryReader);
+
+    var codeTable =
+        await _buildCodeTable(buildStep, libraryReader, typeAliasTable);
 
     if (codeTable.isEmpty) {
       return;
@@ -100,6 +103,7 @@ class ReflectionBuilder implements Builder {
 
     var genId = isSiblingPart ? genSiblingId : genSubId;
 
+    var reflectionMixin = _buildReflectionMixin(codeTable, typeAliasTable);
     var siblingsClassReflection = _buildSiblingsClassReflection(codeTable);
 
     var fullCode = StringBuffer();
@@ -112,6 +116,7 @@ class ReflectionBuilder implements Builder {
     fullCode.write('// \n\n');
 
     fullCode.write('// coverage:ignore-file\n');
+    fullCode.write('// ignore_for_file: unused_element\n');
     fullCode.write('// ignore_for_file: unnecessary_const\n');
     fullCode.write('// ignore_for_file: unnecessary_cast\n');
     fullCode.write('// ignore_for_file: unnecessary_type_check\n\n');
@@ -121,6 +126,9 @@ class ReflectionBuilder implements Builder {
     } else {
       fullCode.write("part of '../$inputFile';\n\n");
     }
+
+    fullCode.write(typeAliasTable.code);
+    fullCode.write(reflectionMixin);
 
     var codeKeys = codeTable.allKeys.toList();
     _sortCodeKeys(codeKeys);
@@ -194,8 +202,8 @@ class ReflectionBuilder implements Builder {
     return <String>[outputFileSibling, outputFileSub];
   }
 
-  Future<_CodeTable> _buildCodeTable(
-      BuildStep buildStep, LibraryReader libraryReader) async {
+  Future<_CodeTable> _buildCodeTable(BuildStep buildStep,
+      LibraryReader libraryReader, _TypeAliasTable typeAliasTable) async {
     var codeTable = _CodeTable();
 
     var annotatedReflectionBridge =
@@ -203,7 +211,8 @@ class ReflectionBuilder implements Builder {
 
     for (var annotated in annotatedReflectionBridge) {
       if (annotated.element.kind == ElementKind.CLASS) {
-        var codes = await _reflectionBridge(buildStep, annotated);
+        var codes =
+            await _reflectionBridge(buildStep, annotated, typeAliasTable);
         codeTable.addAllClasses(codes);
       }
     }
@@ -221,23 +230,15 @@ class ReflectionBuilder implements Builder {
       if (annotated.element.kind == ElementKind.CLASS) {
         var classElement = annotated.element as ClassElement;
 
-        var codes = await _enableReflectionClass(
-          buildStep,
-          classElement,
-          reflectionClassName,
-          reflectionExtensionName,
-        );
+        var codes = await _enableReflectionClass(buildStep, classElement,
+            reflectionClassName, reflectionExtensionName, typeAliasTable);
 
         codeTable.addAllClasses(codes);
       } else if (annotated.element.kind == ElementKind.ENUM) {
         var enumElement = annotated.element;
 
-        var codes = await _enableReflectionEnum(
-          buildStep,
-          enumElement,
-          reflectionClassName,
-          reflectionExtensionName,
-        );
+        var codes = await _enableReflectionEnum(buildStep, enumElement,
+            reflectionClassName, reflectionExtensionName, typeAliasTable);
 
         codeTable.addAllClasses(codes);
       }
@@ -248,7 +249,7 @@ class ReflectionBuilder implements Builder {
 
     for (var annotated in annotatedClassProxy) {
       if (annotated.element.kind == ElementKind.CLASS) {
-        var codes = await _classProxy(buildStep, annotated);
+        var codes = await _classProxy(buildStep, annotated, typeAliasTable);
         codeTable.addProxies(codes);
       }
     }
@@ -273,8 +274,8 @@ class ReflectionBuilder implements Builder {
     return idx >= 0 ? s.substring(idx + 1) : s;
   }
 
-  Future<Map<String, String>> _classProxy(
-      BuildStep buildStep, AnnotatedElement annotated) async {
+  Future<Map<String, String>> _classProxy(BuildStep buildStep,
+      AnnotatedElement annotated, _TypeAliasTable typeAliasTable) async {
     var annotation = annotated.annotation;
     var annotatedClass = annotated.element as ClassElement;
 
@@ -316,6 +317,7 @@ class ReflectionBuilder implements Builder {
     var classElement = candidateClasses.first;
 
     var classTree = _ClassTree(
+      typeAliasTable,
       classElement,
       '?%',
       '?%',
@@ -390,8 +392,8 @@ class ReflectionBuilder implements Builder {
     return candidateClasses;
   }
 
-  Future<Map<String, String>> _reflectionBridge(
-      BuildStep buildStep, AnnotatedElement annotated) async {
+  Future<Map<String, String>> _reflectionBridge(BuildStep buildStep,
+      AnnotatedElement annotated, _TypeAliasTable typeAliasTable) async {
     var annotation = annotated.annotation;
     var annotatedClass = annotated.element as ClassElement;
 
@@ -432,6 +434,7 @@ class ReflectionBuilder implements Builder {
       var reflectionExtensionName = reflectionExtensionNames[classType] ?? '';
 
       var classTree = _ClassTree(
+        typeAliasTable,
         classElement,
         reflectionClassName,
         reflectionExtensionName,
@@ -446,8 +449,8 @@ class ReflectionBuilder implements Builder {
 
       codeTable.putIfAbsent(classTree.classGlobalFunction('_'),
           () => classTree.buildClassGlobalFunctions());
-      codeTable.putIfAbsent(
-          classTree.reflectionClass, () => classTree.buildReflectionClass());
+      codeTable.putIfAbsent(classTree.reflectionClass,
+          () => classTree.buildReflectionClass(typeAliasTable));
       codeTable.putIfAbsent(classTree.reflectionExtension,
           () => classTree.buildReflectionExtension());
     }
@@ -505,7 +508,8 @@ class ReflectionBuilder implements Builder {
       BuildStep buildStep,
       Element enumElement,
       String reflectionClassName,
-      String reflectionExtensionName) async {
+      String reflectionExtensionName,
+      _TypeAliasTable typeAliasTable) async {
     var enumLibrary = await _getElementLibrary(buildStep, enumElement);
 
     var enumTree = _EnumTree(
@@ -521,7 +525,7 @@ class ReflectionBuilder implements Builder {
     }
 
     var enumGlobalFunctions = enumTree.buildEnumGlobalFunctions();
-    var reflectionClassCode = enumTree.buildReflectionEnum();
+    var reflectionClassCode = enumTree.buildReflectionEnum(typeAliasTable);
     var reflectionExtensionCode = enumTree.buildReflectionExtension();
 
     return {
@@ -535,10 +539,12 @@ class ReflectionBuilder implements Builder {
       BuildStep buildStep,
       ClassElement classElement,
       String reflectionClassName,
-      String reflectionExtensionName) async {
+      String reflectionExtensionName,
+      _TypeAliasTable typeAliasTable) async {
     var classLibrary = await _getElementLibrary(buildStep, classElement);
 
     var classTree = _ClassTree(
+      typeAliasTable,
       classElement,
       reflectionClassName,
       reflectionExtensionName,
@@ -552,7 +558,7 @@ class ReflectionBuilder implements Builder {
     }
 
     var classGlobalFunctions = classTree.buildClassGlobalFunctions();
-    var reflectionClassCode = classTree.buildReflectionClass();
+    var reflectionClassCode = classTree.buildReflectionClass(typeAliasTable);
     var reflectionExtensionCode = classTree.buildReflectionExtension();
 
     return {
@@ -568,6 +574,28 @@ class ReflectionBuilder implements Builder {
     var classAssetId = await resolver.assetIdForElement(element);
     var library = await resolver.libraryFor(classAssetId);
     return library;
+  }
+
+  String _buildReflectionMixin(
+      _CodeTable codeTable, _TypeAliasTable typeAliasTable) {
+    if (codeTable.reflectionClassesIsEmpty) return '';
+
+    var str = StringBuffer();
+
+    str.write('mixin ${typeAliasTable.reflectionMixinName} {\n');
+
+    str.write(
+        "  static final Version _version = Version.parse('${ReflectionFactory.VERSION}');\n\n");
+
+    str.write("  Version get reflectionFactoryVersion => _version;\n\n");
+
+    str.write(
+        '  List<Reflection> siblingsReflection() => _siblingsReflection();\n\n');
+
+    str.write('}\n\n');
+
+    var code = str.toString();
+    return code;
   }
 
   String _buildSiblingsClassReflection(_CodeTable codeTable) {
@@ -674,6 +702,45 @@ extension IterableLibraryElementExtension on Iterable<LibraryElement> {
         ...expand((l) => l.allClassesFromExportedClassesUnits),
         ...expand((l) => l.allImportedClassesFromExportedClasses),
       };
+}
+
+class _TypeAliasTable {
+  late final String trName;
+  late final String tiName;
+  late final String prName;
+  late final String reflectionMixinName;
+  late final String code;
+
+  factory _TypeAliasTable.fromLibraryReader(LibraryReader libraryReader) {
+    var privateNames =
+        libraryReader.elementsNames.where((e) => e.startsWith('_')).toList();
+    return _TypeAliasTable(privateNames);
+  }
+
+  _TypeAliasTable(List<String> privateNames) {
+    trName = _buildAliasName('__TR', privateNames);
+    tiName = _buildAliasName('__TI', privateNames);
+    prName = _buildAliasName('__PR', privateNames);
+    reflectionMixinName = _buildAliasName('__ReflectionMixin', privateNames);
+
+    var str = StringBuffer();
+
+    str.write('typedef $trName<T> = TypeReflection<T>;\n');
+    str.write('typedef $tiName<T> = TypeInfo<T>;\n');
+    str.write('typedef $prName = ParameterReflection;\n\n');
+
+    code = str.toString();
+  }
+
+  String _buildAliasName(String prefix, Iterable<String> usedNames) {
+    if (!usedNames.contains(prefix)) return prefix;
+
+    var i = 0;
+    while (true) {
+      var name = '$prefix$i';
+      if (!usedNames.contains(name)) return name;
+    }
+  }
 }
 
 class _CodeTable {
@@ -823,12 +890,13 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
     return str.toString();
   }
 
-  String buildReflectionEnum() {
+  String buildReflectionEnum(_TypeAliasTable typeAliasTable) {
     var str = StringBuffer();
 
     var reflectionClass = this.reflectionClass;
 
-    str.write('class $reflectionClass extends EnumReflection<$enumName> {\n\n');
+    str.write(
+        'class $reflectionClass extends EnumReflection<$enumName> with ${typeAliasTable.reflectionMixinName} {\n\n');
 
     str.write(
         '  $reflectionClass([$enumName? object]) : super($enumName, \'$enumName\', object);\n\n');
@@ -846,10 +914,6 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
     str.write('  @override\n');
     str.write(
         "  Version get languageVersion => Version.parse('$languageVersion');\n\n");
-
-    str.write('  @override\n');
-    str.write(
-        "  Version get reflectionFactoryVersion => Version.parse('${ReflectionFactory.VERSION}');\n\n");
 
     str.write('  @override\n');
     str.write(
@@ -888,14 +952,6 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
       str.write(
           '  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);\n\n');
     }
-
-    str.write('\n  @override\n');
-    str.write(
-        '  List<EnumReflection> siblingsEnumReflection() => _siblingsReflection().whereType<EnumReflection>().toList();\n\n');
-
-    str.write('\n  @override\n');
-    str.write(
-        '  List<Reflection> siblingsReflection() => _siblingsReflection();\n\n');
 
     _buildField(str);
 
@@ -989,6 +1045,8 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
 }
 
 class _ClassTree<T> extends RecursiveElementVisitor<T> {
+  final _TypeAliasTable typeAliasTable;
+
   final ClassElement _classElement;
 
   final String reflectionClassName;
@@ -1002,6 +1060,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
   final String className;
 
   _ClassTree(
+      this.typeAliasTable,
       this._classElement,
       this.reflectionClassName,
       this.reflectionExtensionName,
@@ -1260,13 +1319,13 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     return str.toString();
   }
 
-  String buildReflectionClass() {
+  String buildReflectionClass(_TypeAliasTable typeAliasTable) {
     var str = StringBuffer();
 
     var reflectionClass = this.reflectionClass;
 
     str.write(
-        'class $reflectionClass extends ClassReflection<$className> {\n\n');
+        'class $reflectionClass extends ClassReflection<$className> with ${typeAliasTable.reflectionMixinName} {\n\n');
 
     str.write(
         '  $reflectionClass([$className? object]) : super($className, \'$className\', object);\n\n');
@@ -1284,10 +1343,6 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  @override\n');
     str.write(
         "  Version get languageVersion => Version.parse('$languageVersion');\n\n");
-
-    str.write('  @override\n');
-    str.write(
-        "  Version get reflectionFactoryVersion => Version.parse('${ReflectionFactory.VERSION}');\n\n");
 
     str.write('  @override\n');
     str.write(
@@ -1328,14 +1383,6 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       str.write(
           '  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);\n\n');
     }
-
-    str.write('\n  @override\n');
-    str.write(
-        '  List<ClassReflection> siblingsClassReflection() => _siblingsReflection().whereType<ClassReflection>().toList();\n\n');
-
-    str.write('\n  @override\n');
-    str.write(
-        '  List<Reflection> siblingsReflection() => _siblingsReflection();\n\n');
 
     str.write('\n  @override\n');
     str.write(
@@ -1476,7 +1523,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       }
 
       var declaringType = field.declaringType!.typeNameResolvable;
-      var typeCode = field.typeAsCode;
+      var typeCode = field.typeAsCode(typeAliasTable);
       var fullType = field.typeNameAsNullableCode;
       var nullable = field.nullable ? 'true' : 'false';
       var isFinal = field.isFinal ? 'true' : 'false';
@@ -1491,7 +1538,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
           "$typeCode, '$name', $nullable, "
           "$getter , $setter , "
           "obj, false, $isFinal, "
-          "$annotations, "
+          "${annotations != 'null' ? '$annotations, ' : ''} "
           ")";
     });
 
@@ -1516,7 +1563,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       }
 
       var declaringType = field.declaringType!.typeNameResolvable;
-      var typeCode = field.typeAsCode;
+      var typeCode = field.typeAsCode(typeAliasTable);
       var fullType = field.typeNameAsNullableCode;
       var nullable = field.nullable ? 'true' : 'false';
       var isFinal = field.isFinal ? 'true' : 'false';
@@ -1639,7 +1686,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   Map<String, _Method> _toMethodsEntries(Set<MethodElement> elements) {
     return Map.fromEntries(elements.map((m) {
-      return MapEntry(m.name, _Method(m));
+      return MapEntry(m.name, _Method(this, m));
     }));
   }
 
@@ -1848,7 +1895,8 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
       str.write(' {\n');
 
-      var returnTypeAsCode = proxyMethod.returnType.asTypeReflectionCode;
+      var returnTypeAsCode =
+          proxyMethod.returnType.asTypeReflectionCode(typeAliasTable);
 
       var call = StringBuffer();
 
@@ -2176,6 +2224,8 @@ class _Constructor<T> extends _Element {
   _Constructor(this.classTree, this.constructorElement)
       : super(constructorElement);
 
+  _TypeAliasTable get typeAliasTable => classTree.typeAliasTable;
+
   String get name => constructorElement.name;
 
   bool get returnNullable => constructorElement.returnType.isNullable;
@@ -2186,7 +2236,7 @@ class _Constructor<T> extends _Element {
       constructorElement.returnType.typeNameAsCode;
 
   String get returnTypeAsCode =>
-      constructorElement.returnType.asTypeReflectionCode;
+      constructorElement.returnType.asTypeReflectionCode(typeAliasTable);
 
   List<_Parameter> get normalParameters =>
       constructorElement.type.normalParameters;
@@ -2198,15 +2248,16 @@ class _Constructor<T> extends _Element {
       constructorElement.type.namedParameters;
 
   String get normalParametersAsCode =>
-      _buildParameterReflectionList(normalParameters,
+      _buildParameterReflectionList(typeAliasTable, normalParameters,
           nullOnEmpty: true, required: true);
 
   String get optionalParametersAsCode =>
-      _buildParameterReflectionList(optionalParameters,
+      _buildParameterReflectionList(typeAliasTable, optionalParameters,
           nullOnEmpty: true, required: false);
 
   String get namedParametersAsCode =>
-      _buildNamedParameterReflectionMap(namedParameters, nullOnEmpty: true);
+      _buildNamedParameterReflectionMap(typeAliasTable, namedParameters,
+          nullOnEmpty: true);
 
   String get asCallerCode {
     var s = StringBuffer();
@@ -2329,9 +2380,12 @@ class _Constructor<T> extends _Element {
 }
 
 class _Method extends _Element {
+  final _ClassTree classTree;
   final MethodElement methodElement;
 
-  _Method(this.methodElement) : super(methodElement);
+  _Method(this.classTree, this.methodElement) : super(methodElement);
+
+  _TypeAliasTable get typeAliasTable => classTree.typeAliasTable;
 
   String get name => methodElement.name;
 
@@ -2341,7 +2395,8 @@ class _Method extends _Element {
 
   String get returnTypeNameAsCode => methodElement.returnType.typeNameAsCode;
 
-  String get returnTypeAsCode => methodElement.returnType.asTypeReflectionCode;
+  String get returnTypeAsCode =>
+      methodElement.returnType.asTypeReflectionCode(typeAliasTable);
 
   List<_Parameter> get normalParameters => methodElement.type.normalParameters;
 
@@ -2356,15 +2411,16 @@ class _Method extends _Element {
       .isNotEmpty;
 
   String get normalParametersAsCode =>
-      _buildParameterReflectionList(normalParameters,
+      _buildParameterReflectionList(typeAliasTable, normalParameters,
           nullOnEmpty: true, required: true);
 
   String get optionalParametersAsCode =>
-      _buildParameterReflectionList(optionalParameters,
+      _buildParameterReflectionList(typeAliasTable, optionalParameters,
           nullOnEmpty: true, required: false);
 
   String get namedParametersAsCode =>
-      _buildNamedParameterReflectionMap(namedParameters, nullOnEmpty: true);
+      _buildNamedParameterReflectionMap(typeAliasTable, namedParameters,
+          nullOnEmpty: true);
 
   @override
   String toString() {
@@ -2401,7 +2457,8 @@ class _Field extends _Element {
 
   String get typeNameAsNullableCode => fieldElement.type.typeNameAsNullableCode;
 
-  String get typeAsCode => fieldElement.type.asTypeReflectionCode;
+  String typeAsCode(_TypeAliasTable typeAliasTable) =>
+      fieldElement.type.asTypeReflectionCode(typeAliasTable);
 
   @override
   String toString() {
@@ -2435,22 +2492,26 @@ extension _ListDartTypeExtension on List<DartType> {
   List<String> get typesNamesResolvable =>
       map((a) => a.typeNameResolvable).toList();
 
-  String get toListOfConstTypeCode {
+  String toListOfConstTypeCode(_TypeAliasTable typeAliasTable) {
+    final tr = typeAliasTable.trName;
+    final ti = typeAliasTable.tiName;
+
     var listConstTypeReflection =
-        map((e) => e.asConstTypeReflectionCode).toList(growable: false);
+        map((e) => e.asConstTypeReflectionCode(typeAliasTable))
+            .toList(growable: false);
     if (listConstTypeReflection.every((e) => e != null)) {
-      return '<TypeReflection>[${listConstTypeReflection.join(',')}]';
+      return '<$tr>[${listConstTypeReflection.join(',')}]';
     }
 
-    var listConstTypeInfo =
-        map((e) => e.asConstTypeInfoCode).toList(growable: false);
+    var listConstTypeInfo = map((e) => e.asConstTypeInfoCode(typeAliasTable))
+        .toList(growable: false);
     if (listConstTypeInfo.every((e) => e != null)) {
-      return '<TypeInfo>[${listConstTypeInfo.join(',')}]';
+      return '<$ti>[${listConstTypeInfo.join(',')}]';
     }
 
-    var listTypeReflection =
-        map((e) => e.asTypeReflectionCode).toList(growable: false);
-    return '<TypeReflection>[${listTypeReflection.join(',')}]';
+    var listTypeReflection = map((e) => e.asTypeReflectionCode(typeAliasTable))
+        .toList(growable: false);
+    return '<$tr>[${listTypeReflection.join(',')}]';
   }
 
   String get typesNames =>
@@ -2586,11 +2647,13 @@ extension _DartTypeExtension on DartType {
           ? '$typeNameAsCode?'
           : typeNameAsCode;
 
-  String? get asConstTypeReflectionCode {
+  String? asConstTypeReflectionCode(_TypeAliasTable typeAliasTable) {
     var self = this;
 
+    final tr = typeAliasTable.trName;
+
     if (self is VoidType) {
-      return 'TypeReflection.tVoid';
+      return '$tr.tVoid';
     }
 
     if (self is FunctionType) {
@@ -2598,7 +2661,7 @@ extension _DartTypeExtension on DartType {
       if (alias != null) {
         return null;
       } else {
-        return 'TypeReflection.tFunction';
+        return '$tr.tFunction';
       }
     }
 
@@ -2611,7 +2674,7 @@ extension _DartTypeExtension on DartType {
 
         var constName = TypeReflection.getConstantName(name, typeArgs);
         if (constName != null) {
-          return 'TypeReflection.$constName';
+          return '$tr.$constName';
         }
       }
 
@@ -2619,20 +2682,21 @@ extension _DartTypeExtension on DartType {
     } else {
       var constName = _getTypeReflectionConstantName(name);
       if (constName != null) {
-        return 'TypeReflection.$constName';
+        return '$tr.$constName';
       } else if (this is TypeParameterType) {
-        return 'TypeReflection.tDynamic';
+        return '$tr.tDynamic';
       }
 
       return null;
     }
   }
 
-  String get asTypeReflectionCode {
+  String asTypeReflectionCode(_TypeAliasTable typeAliasTable) {
     var self = this;
+    final tr = typeAliasTable.trName;
 
     if (self is VoidType) {
-      return 'TypeReflection.tVoid';
+      return '$tr.tVoid';
     }
 
     if (self is FunctionType) {
@@ -2642,12 +2706,12 @@ extension _DartTypeExtension on DartType {
         List<DartType> arguments = alias.typeArguments;
 
         if (arguments.isEmpty) {
-          return 'TypeReflection<$name>($name)';
+          return '$tr<$name>($name)';
         } else {
-          return 'TypeReflection<$name<${arguments.typesNames}>>($name, ${arguments.toListOfConstTypeCode})';
+          return '$tr<$name<${arguments.typesNames}>>($name, ${arguments.toListOfConstTypeCode(typeAliasTable)})';
         }
       } else {
-        return 'TypeReflection.tFunction';
+        return '$tr.tFunction';
       }
     }
 
@@ -2660,23 +2724,23 @@ extension _DartTypeExtension on DartType {
 
         var constName = TypeReflection.getConstantName(name, typeArgs);
         if (constName != null) {
-          return 'TypeReflection.$constName';
+          return '$tr.$constName';
         }
       }
 
       var argsT = arguments.typesNames;
-      var argsCode = arguments.toListOfConstTypeCode;
+      var argsCode = arguments.toListOfConstTypeCode(typeAliasTable);
 
-      return 'TypeReflection<$name<$argsT>>($name, $argsCode)';
+      return '$tr<$name<$argsT>>($name, $argsCode)';
     } else {
       var constName = _getTypeReflectionConstantName(name);
       if (constName != null) {
-        return 'TypeReflection.$constName';
+        return '$tr.$constName';
       } else {
         if (this is TypeParameterType) {
-          return 'TypeReflection.tDynamic';
+          return '$tr.tDynamic';
         } else {
-          return 'TypeReflection<$name>($name)';
+          return '$tr<$name>($name)';
         }
       }
     }
@@ -2704,9 +2768,10 @@ extension _DartTypeExtension on DartType {
     return TypeReflection.getConstantName(name, args);
   }
 
-  String? get asConstTypeInfoCode {
+  String? asConstTypeInfoCode(_TypeAliasTable typeAliasTable) {
+    final ti = typeAliasTable.tiName;
     var constName = _getTypeReflectionConstantName();
-    return constName == null ? null : 'TypeInfo.$constName';
+    return constName == null ? null : '$ti.$constName';
   }
 }
 
@@ -2789,42 +2854,55 @@ String _buildStringListCode(Iterable? o,
   }
 }
 
-String _buildParameterReflectionList(Iterable<_Parameter>? o,
+String _buildParameterReflectionList(
+    _TypeAliasTable typeAliasTable, Iterable<_Parameter>? o,
     {required bool nullOnEmpty, required bool required}) {
+  final pr = typeAliasTable.prName;
+
   if (o == null || o.isEmpty) {
-    return nullOnEmpty ? 'null' : 'const <ParameterReflection>[]';
+    return nullOnEmpty ? 'null' : 'const <$pr>[]';
   } else {
-    var parameters = o
-        .map((e) => "ParameterReflection( "
-            "${e.type.asTypeReflectionCode} , "
-            "'${e.name}' , "
-            "${e.isNullable ? 'true' : 'false'} , "
-            "$required , "
-            "${e.defaultValue ?? 'null'} , "
-            "${e.annotationsAsListCode}"
-            ")")
-        .join(', ');
-    return 'const <ParameterReflection>[$parameters]';
+    var parameters = o.map((e) {
+      var defaultValue = e.defaultValue ?? 'null';
+      var annotationsAsListCode = e.annotationsAsListCode;
+
+      return "$pr( "
+          "${e.type.asTypeReflectionCode(typeAliasTable)} , "
+          "'${e.name}' , "
+          "${e.isNullable} , "
+          "$required"
+          "${defaultValue == 'null' && annotationsAsListCode == 'null' ? '' : ', $defaultValue '}"
+          "${annotationsAsListCode == 'null' ? '' : ', $annotationsAsListCode'}"
+          ")";
+    }).join(', ');
+
+    return 'const <$pr>[$parameters]';
   }
 }
 
-String _buildNamedParameterReflectionMap(Map<String, _Parameter>? o,
+String _buildNamedParameterReflectionMap(
+    _TypeAliasTable typeAliasTable, Map<String, _Parameter>? o,
     {bool nullOnEmpty = false}) {
+  final pr = typeAliasTable.prName;
+
   if (o == null || o.isEmpty) {
     return nullOnEmpty ? 'null' : 'const <String,Type>{}}';
   } else {
     var parameters = o.entries.map((e) {
       var key = e.key;
       var value = e.value;
-      return "'$key': ParameterReflection( "
-          "${value.type.asTypeReflectionCode} , "
+      var defaultValue = e.value.defaultValue ?? 'null';
+      var annotationsAsListCode = e.value.annotationsAsListCode;
+
+      return "'$key': $pr( "
+          "${value.type.asTypeReflectionCode(typeAliasTable)} , "
           "'${e.value.name}' , "
-          "${e.value.isNullable ? 'true' : 'false'} , "
-          "${e.value.required ? 'true' : 'false'} , "
-          "${e.value.defaultValue ?? 'null'} , "
-          "${e.value.annotationsAsListCode}"
+          "${e.value.isNullable} , "
+          "${e.value.required} "
+          "${defaultValue == 'null' && annotationsAsListCode == 'null' ? '' : ', $defaultValue '}"
+          "${annotationsAsListCode == 'null' ? '' : ', $annotationsAsListCode'}"
           ")";
     }).join(', ');
-    return 'const <String,ParameterReflection>{$parameters}';
+    return 'const <String,$pr>{$parameters}';
   }
 }

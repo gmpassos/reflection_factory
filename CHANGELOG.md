@@ -9,6 +9,8 @@
 - `_JsonDecoder`:
   - Now supports `Map` casting when decoding an entity field.
 - Added `castMapType`.
+- `ReflectionBuilder`:
+  - Optimize and reduce generated code.
 - build: ^2.3.1
 - analyzer: ^4.7.0
 - dart_style: ^2.2.4

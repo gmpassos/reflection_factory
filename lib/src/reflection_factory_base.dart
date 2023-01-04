@@ -479,7 +479,7 @@ abstract class Reflection<O> {
 
 /// Base for Enum reflection.
 abstract class EnumReflection<O> extends Reflection<O>
-    implements Comparable<EnumReflection<O>> {
+    implements Comparable<EnumReflection> {
   /// Then reflected enum [Type].
   final Type enumType;
 
@@ -541,7 +541,8 @@ abstract class EnumReflection<O> extends Reflection<O>
   }
 
   /// Returns a [List] of siblings [ClassReflection] (declared in the same code unit).
-  List<EnumReflection> siblingsEnumReflection();
+  List<EnumReflection> siblingsEnumReflection() =>
+      siblingsReflection().whereType<EnumReflection>().toList();
 
   /// Returns a [siblingsEnumReflection] for [type], [obj] or [T].
   EnumReflection<T>? siblingEnumReflectionFor<T>({T? obj, Type? type}) {
@@ -706,7 +707,7 @@ abstract class EnumReflection<O> extends Reflection<O>
   }
 
   @override
-  int compareTo(EnumReflection<O> other) =>
+  int compareTo(EnumReflection other) =>
       reflectionLevel.compareTo(other.reflectionLevel);
 
   @override
@@ -723,7 +724,7 @@ typedef OnConstructorInvocationError = void Function(
 
 /// Base for Class reflection.
 abstract class ClassReflection<O> extends Reflection<O>
-    implements Comparable<ClassReflection<O>> {
+    implements Comparable<ClassReflection> {
   /// The reflected class [Type].
   final Type classType;
 
@@ -779,8 +780,8 @@ abstract class ClassReflection<O> extends Reflection<O>
   int get reflectionLevel =>
       fieldsNames.length +
       staticFieldsNames.length +
-      methodsNames.length +
-      staticMethodsNames.length;
+      (methodsNames.length * 2) +
+      (staticMethodsNames.length * 2);
 
   /// Calls [function] with correct casting for [ClassReflection].
   @override
@@ -789,7 +790,8 @@ abstract class ClassReflection<O> extends Reflection<O>
   }
 
   /// Returns a [List] of siblings [ClassReflection] (declared in the same code unit).
-  List<ClassReflection> siblingsClassReflection();
+  List<ClassReflection> siblingsClassReflection() =>
+      siblingsReflection().whereType<ClassReflection>().toList();
 
   /// Returns a [siblingsClassReflection] for [type], [obj] or [T].
   ClassReflection<T>? siblingClassReflectionFor<T>({T? obj, Type? type}) {
@@ -1758,7 +1760,7 @@ abstract class ClassReflection<O> extends Reflection<O>
   }
 
   @override
-  int compareTo(ClassReflection<O> other) =>
+  int compareTo(ClassReflection other) =>
       reflectionLevel.compareTo(other.reflectionLevel);
 
   @override
@@ -1920,7 +1922,7 @@ class ParameterReflection {
       : _annotationsEmpty;
 
   const ParameterReflection(this.type, this.name, this.nullable, this.required,
-      this.defaultValue, this._annotations);
+      [this.defaultValue, this._annotations]);
 
   /// Returns `true` if [defaultValue] is NOT `null`.
   bool get hasDefaultValue => defaultValue != null;
@@ -2517,18 +2519,18 @@ class FieldReflection<O, T> extends ElementReflection<O>
       jsonAnnotations.whereType<JsonFieldAlias>().toList();
 
   FieldReflection(
-    ClassReflection<O> classReflection,
-    Type declaringType,
-    this.type,
-    this.name,
-    this.nullable,
-    this.getterAccessor,
-    this.setterAccessor,
-    this.object,
-    bool isStatic,
-    this.isFinal,
-    List<Object>? annotations,
-  )   : _annotations = annotations == null || annotations.isEmpty
+      ClassReflection<O> classReflection,
+      Type declaringType,
+      this.type,
+      this.name,
+      this.nullable,
+      this.getterAccessor,
+      this.setterAccessor,
+      this.object,
+      bool isStatic,
+      this.isFinal,
+      [List<Object>? annotations])
+      : _annotations = annotations == null || annotations.isEmpty
             ? _annotationsEmpty
             : List<Object>.unmodifiable(annotations),
         super(classReflection, declaringType, isStatic);
