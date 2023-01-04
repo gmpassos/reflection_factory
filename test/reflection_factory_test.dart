@@ -464,6 +464,46 @@ void main() {
                       'Joe', 'joe@mail.com', '123')
                 }),
                 isA<Map<String, TestUserWithReflection>>()));
+
+        var tMapKV1 = TypeInfo<
+                Map<TestUserWithReflection,
+                    TestAddressWithReflection>>.fromMapType(
+            TestUserWithReflection, TestAddressWithReflection);
+
+        var mapKV1 = tMapKV1.castMap(<Object, Object>{
+          TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
+              TestAddressWithReflection('NY', city: 'New York')
+        });
+
+        expect(
+            mapKV1,
+            allOf(
+                equals(<TestUserWithReflection, TestAddressWithReflection>{
+                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
+                      TestAddressWithReflection('NY', city: 'New York')
+                }),
+                isA<Map<TestUserWithReflection, TestAddressWithReflection>>()));
+
+        var tMapKV2 = TypeInfo<
+                Map<TestAddressWithReflection,
+                    TestAddressWithReflection>>.fromMapType(
+            TestAddressWithReflection, TestAddressWithReflection);
+
+        var mapKV2 = tMapKV2.castMap(<Object, Object>{
+          TestAddressWithReflection('CA', city: 'Los Angeles'):
+              TestAddressWithReflection('NY', city: 'New York')
+        });
+
+        expect(
+            mapKV2,
+            allOf(
+                equals(<TestAddressWithReflection, TestAddressWithReflection>{
+                  TestAddressWithReflection('CA', city: 'Los Angeles'):
+                      TestAddressWithReflection('NY', city: 'New York')
+                }),
+                isA<
+                    Map<TestAddressWithReflection,
+                        TestAddressWithReflection>>()));
       }
 
       expect(

@@ -3,7 +3,7 @@
 - `Reflection`:
   - Fix `castMap`:
   - Added `castMapKeys` and `castMapValues`.
-  - Added getters: `listType`, `mapKeyType` and `mapValueType`.
+  - Added getters: `asTypeReflection`, `typeInfo`, `listType`, `mapKeyType` and `mapValueType`.
 - `JsonCodec`:
   - Added field `mapCaster`.
 - `_JsonDecoder`:

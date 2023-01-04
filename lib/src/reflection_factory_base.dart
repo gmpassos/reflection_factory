@@ -156,6 +156,15 @@ abstract class Reflection<O> {
   /// The reflection level (complexity).
   int get reflectionLevel;
 
+  TypeReflection<O>? _typeReflection;
+
+  /// Returns [reflectedType] as a [TypeReflection].
+  TypeReflection<O> get asTypeReflection =>
+      _typeReflection ??= TypeReflection<O>(reflectedType);
+
+  /// Returns [reflectedType] as a [TypeInfo].
+  TypeInfo get typeInfo => asTypeReflection.typeInfo;
+
   /// Cast [list] to [reflectedType] if [type] == [reflectedType] or return `null`.
   /// - If [nullable] is `true` casts to a [List] of nullable values.
   List? castList(List list, Type type, {bool nullable = false}) {
@@ -273,8 +282,8 @@ abstract class Reflection<O> {
 
     if (keyType.type == reflectedType && valueType.type == reflectedType) {
       var m = nullable
-          ? map.map<O, O>((key, value) => MapEntry<O, O>(key, value))
-          : map.map<O?, O?>((key, value) => MapEntry<O?, O?>(key, value));
+          ? map.map<O?, O?>((key, value) => MapEntry<O?, O?>(key, value))
+          : map.map<O, O>((key, value) => MapEntry<O, O>(key, value));
 
       return m;
     } else if (keyType.type == reflectedType) {

@@ -1514,19 +1514,26 @@ class TypeInfo<T> {
             reflectionFactory.getRegisterEnumReflection(valueType.type);
 
     if (keyReflection != null && valueReflection != null) {
-      var mapKeysCast = keyReflection.castMap(
-              map, TypeInfo.fromMapType(keyType, TypeInfo.tDynamic),
-              nullable: nullable) ??
-          map;
+      var tMap = TypeInfo.fromMapType(
+          keyReflection.typeInfo, valueReflection.typeInfo);
 
-      var mapCast =
-          valueReflection.castMap(mapKeysCast, this, nullable: nullable) ?? map;
+      if (valueReflection == keyReflection) {
+        return keyReflection.castMap(map, tMap, nullable: nullable) ?? map;
+      } else {
+        var mapKeysCast =
+            keyReflection.castMapKeys(map, tMap, nullable: nullable) ?? map;
 
-      return mapCast;
+        var mapCast = valueReflection.castMapValues(mapKeysCast, this,
+                nullable: nullable) ??
+            map;
+
+        return mapCast;
+      }
     } else if (keyReflection != null) {
-      return keyReflection.castMap(map, this, nullable: nullable) ?? map;
+      return keyReflection.castMapKeys(map, this, nullable: nullable) ?? map;
     } else if (valueReflection != null) {
-      return valueReflection.castMap(map, this, nullable: nullable) ?? map;
+      return valueReflection.castMapValues(map, this, nullable: nullable) ??
+          map;
     }
 
     if (keyType.isValidGenericType && valueType.isValidGenericType) {
