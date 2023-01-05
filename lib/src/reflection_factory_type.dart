@@ -1176,6 +1176,10 @@ class TypeInfo<T> {
   /// Returns `true` if [type] is primitive ([bool], [int], [double], [num] or [String]).
   bool get isPrimitiveType => _typeWrapper.isPrimitiveType;
 
+  /// Returns `true` if [type] [isPrimitiveType] or [isDynamicOrObject].
+  bool get isPrimitiveOrDynamicOrObjectType =>
+      _typeWrapper.isPrimitiveType || _typeWrapper.isDynamicOrObject;
+
   /// Returns `true` if [type] is a collection ([List], [Iterable], [Map] or [Set]).
   bool get isCollection => _typeWrapper.isCollection;
 
@@ -1246,9 +1250,12 @@ class TypeInfo<T> {
   /// Returns `true` if [type] is `void`.
   bool get isVoid => _typeWrapper.isVoid;
 
+  /// Returns `true` if [type] can be an entity (![isDynamicOrObject] && ![isBasicType]).
+  bool get isEntityType => !isDynamicOrObject && !isBasicType;
+
   /// Returns `true` if [type] is a [List] of entities.
   bool get isListEntity =>
-      isList && hasArguments && !_arguments.first.isPrimitiveType;
+      isList && hasArguments && _arguments.first.isEntityType;
 
   /// The [TypeInfo] of the [List] elements type.
   TypeInfo? get listEntityType => isListEntity ? _arguments.first : null;

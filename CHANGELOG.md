@@ -1,3 +1,9 @@
+## 1.2.19
+
+- `TypeInfo`:
+  - Added `isPrimitiveOrDynamicOrObjectType` and `isEntityType`.
+- Fix `castMapType` for `Map<String,dynamic>`.
+
 ## 1.2.18
 
 - `Reflection`:
