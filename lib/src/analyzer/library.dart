@@ -22,7 +22,7 @@ class LibraryReader {
   LibraryReader(this.element);
 
   /// All the compilation unit of this element ([CompilationUnitElement]).
-  Iterable<PartElement> get allParts => element.parts2;
+  Iterable<PartElement> get allParts => element.parts;
 
   /// All of the declarations in this library.
   Iterable<Element> get allElements => element.topLevelElements;
@@ -46,8 +46,8 @@ class LibraryReader {
   Iterable<String> get elementsNames => element.units
       .expand((CompilationUnitElement cu) => <String?>[
             ...cu.classes.map((e) => e.name),
-            ...cu.enums2.map((e) => e.name),
-            ...cu.mixins2.map((e) => e.name),
+            ...cu.enums.map((e) => e.name),
+            ...cu.mixins.map((e) => e.name),
             ...cu.functions.map((e) => e.name),
             ...cu.extensions.map((e) => e.name),
             ...cu.typeAliases.map((e) => e.name),
@@ -60,5 +60,5 @@ class LibraryReader {
       element.units.expand((CompilationUnitElement cu) => cu.classes);
 
   /// All of the elements representing enums in this library.
-  Iterable<EnumElement> get enums => element.units.expand((cu) => cu.enums2);
+  Iterable<EnumElement> get enums => element.units.expand((cu) => cu.enums);
 }
