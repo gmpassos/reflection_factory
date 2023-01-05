@@ -1071,37 +1071,36 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     scan(_classElement);
   }
 
-  final Set<ClassElement> supperTypes = <ClassElement>{};
+  final Set<InterfaceElement> supperTypes = <InterfaceElement>{};
 
-  final Queue<ClassElement> _visitingClassStack = Queue<ClassElement>();
+  final Queue<InterfaceElement> _visitingTypeStack = Queue<InterfaceElement>();
 
-  ClassElement? get _visitingClass => _visitingClassStack.last;
+  InterfaceElement? get _visitingType => _visitingTypeStack.last;
 
-  bool get _isVisitingSupperClass => _visitingClass != _classElement;
+  bool get _isVisitingSupperType => _visitingType != _classElement;
 
-  void scan(ClassElement classElement) {
+  void scan(InterfaceElement interfaceElement) {
     try {
-      _visitingClassStack.addLast(classElement);
+      _visitingTypeStack.addLast(interfaceElement);
 
-      if (classElement != _classElement) {
-        supperTypes.add(classElement);
+      if (interfaceElement != _classElement) {
+        supperTypes.add(interfaceElement);
       }
 
-      classElement.visitChildren(this);
+      interfaceElement.visitChildren(this);
 
-      for (var t in classElement.allSupertypes) {
+      for (var t in interfaceElement.allSupertypes) {
         var superClass = t.element;
-        if (superClass is! ClassElement) continue;
 
-        if (superClass.isDartCoreObject) {
+        if (superClass is ClassElement && superClass.isDartCoreObject) {
           continue;
         }
 
         scan(superClass);
       }
     } finally {
-      var c = _visitingClassStack.removeLast();
-      if (c != classElement) {
+      var c = _visitingTypeStack.removeLast();
+      if (c != interfaceElement) {
         throw StateError('_visitingClassStack error!');
       }
     }
@@ -1192,7 +1191,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       return super.visitConstructorElement(element);
     }
 
-    if (!_isVisitingSupperClass) {
+    if (!_isVisitingSupperType) {
       _addWithUniqueName(constructors, element);
     }
 
@@ -1251,7 +1250,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     }
 
     if (element.isStatic) {
-      if (!_isVisitingSupperClass) {
+      if (!_isVisitingSupperType) {
         _addWithUniqueName(staticMethods, element);
       }
     } else {
@@ -1289,7 +1288,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     }
 
     if (element.isStatic) {
-      if (!_isVisitingSupperClass) {
+      if (!_isVisitingSupperType) {
         _addWithUniqueName(staticFields, element);
       }
     } else {
@@ -1522,7 +1521,14 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         print(field);
       }
 
-      var declaringType = field.declaringType!.typeNameResolvable;
+      var fieldDeclaringType = field.declaringType;
+
+      if (fieldDeclaringType == null) {
+        throw StateError(
+            "Can't determine `declaringType` for field `$name`: $field");
+      }
+
+      var declaringType = fieldDeclaringType.typeNameResolvable;
       var typeCode = field.typeAsCode(typeAliasTable);
       var fullType = field.typeNameAsNullableCode;
       var nullable = field.nullable ? 'true' : 'false';
@@ -1957,9 +1963,9 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     List<InterfaceType> supertypes;
 
     if (typeElement is ClassElement) {
-      supertypes = typeElement.allSupertypes;
+      supertypes = typeElement.allSupertypes.toList();
     } else if (typeElement is InterfaceType) {
-      supertypes = typeElement.allSupertypes;
+      supertypes = typeElement.allSupertypes.toList();
     } else {
       return false;
     }
@@ -2136,13 +2142,13 @@ class _Element {
 
   DartType? get declaringType {
     var element = _element;
-    if (element is ClassElement) {
+    if (element is InterfaceElement) {
       return null;
     }
 
     var enclosingElement = element.enclosingElement;
 
-    if (enclosingElement is ClassElement) {
+    if (enclosingElement is InterfaceElement) {
       return enclosingElement.thisType;
     }
 
@@ -2580,7 +2586,7 @@ extension _DartTypeExtension on DartType {
 
   InterfaceType? get interfaceType {
     var element = elementDeclaration;
-    if (element is ClassElement) {
+    if (element is InterfaceElement) {
       return element.thisType;
     }
     return null;

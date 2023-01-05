@@ -1,3 +1,8 @@
+## 1.2.21
+
+- `ClassReflection`:
+  - Fix generated `supperTypes`.
+
 ## 1.2.20
 
 - Migrate to `analyzer: ^5.4.0`.

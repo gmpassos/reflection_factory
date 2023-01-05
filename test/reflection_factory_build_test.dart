@@ -276,9 +276,15 @@ void main() {
         
           part 'foo.reflection.g.dart';
           
+          mixin WithType {
+            String get type ;
+          }
+          
           @EnableReflection()
-          abstract class Op {
+          abstract class Op with WithType {
+            @override
             final String type;
+            
             Op(this.type);
             
             List<Set<int>> opMethod() => <Set<int>>[{1},{2}] ;
@@ -326,6 +332,7 @@ void main() {
               contains("case 'type':"),
               contains("case 'value':"),
               contains("fieldsNames => const <String>['type', 'value']"),
+              contains("supperTypes => const <Type>[Op, WithType];"),
               matches(RegExp(
                   r"__TR<List<Set<int>>>\(\s*List, <__TR>\[__TR.tSetInt\]\)")),
               matches(RegExp(

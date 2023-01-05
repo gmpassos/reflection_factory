@@ -150,7 +150,8 @@ abstract class TypeChecker {
     if (element == null) return false;
 
     return isExactly(element) ||
-        (element is ClassElement && element.allSupertypes.any(isExactlyType));
+        (element is InterfaceElement &&
+            element.allSupertypes.any(isExactlyType));
   }
 
   /// Returns `true` if [staticType] can be assigned to this type.
@@ -169,7 +170,7 @@ abstract class TypeChecker {
   /// This check only takes into account the *extends* hierarchy. If you wish
   /// to check mixins and interfaces, use [isAssignableFrom].
   bool isSuperOf(Element element) {
-    if (element is ClassElement) {
+    if (element is InterfaceElement) {
       var theSuper = element.supertype;
 
       while (theSuper != null) {
