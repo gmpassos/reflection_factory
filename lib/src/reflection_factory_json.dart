@@ -1987,6 +1987,10 @@ Map castMapType<K, V>(Map map, Type keyType, Type valueType) {
     return _castMapValueType<BigInt>(map, keyType, valueType);
   } else if (keyType == Uint8List) {
     return _castMapValueType<Uint8List>(map, keyType, valueType);
+  } else if (keyType == dynamic) {
+    return _castMapValueType<dynamic>(map, keyType, valueType);
+  } else if (keyType == Object) {
+    return _castMapValueType<Object>(map, keyType, valueType);
   } else {
     return map;
   }
@@ -2011,6 +2015,10 @@ Map _castMapValueType<K>(Map map, Type keyType, Type valueType) {
     return map.cast<K, BigInt>();
   } else if (valueType == Uint8List) {
     return map.cast<K, Uint8List>();
+  } else if (valueType == dynamic) {
+    return map.cast<K, dynamic>();
+  } else if (valueType == Object) {
+    return map.cast<K, Object>();
   } else {
     return map;
   }

@@ -204,6 +204,50 @@ void main() {
           castMapType(
               <dynamic, dynamic>{Uint8List(10): 'b'}, Uint8List, String),
           isA<Map<Uint8List, String>>());
+
+      expect(castMapType(<dynamic, dynamic>{'a': 1}, String, dynamic),
+          isA<Map<String, dynamic>>());
+
+      expect(castMapType(<dynamic, dynamic>{'a': 1}, String, Object),
+          isA<Map<String, Object>>());
+
+      expect(castMapType(<dynamic, dynamic>{}, String, dynamic),
+          isA<Map<String, dynamic>>());
+
+      expect(castMapType(<dynamic, dynamic>{}, String, Object),
+          isA<Map<String, Object>>());
+
+      expect(
+          castMapType(
+            <dynamic, dynamic>{1: 'a', 'n': 'b'},
+            Object,
+            String,
+          ),
+          isA<Map<dynamic, String>>());
+
+      expect(
+          castMapType(
+            <dynamic, dynamic>{1: 'a', 'n': 'b'},
+            Object,
+            String,
+          ),
+          isA<Map<Object, String>>());
+
+      expect(
+          castMapType(
+            <dynamic, dynamic>{},
+            Object,
+            String,
+          ),
+          isA<Map<dynamic, String>>());
+
+      expect(
+          castMapType(
+            <dynamic, dynamic>{},
+            Object,
+            String,
+          ),
+          isA<Map<Object, String>>());
     });
   });
 

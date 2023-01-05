@@ -20,7 +20,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.2.18';
+  static const String VERSION = '1.2.19';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -1507,11 +1507,13 @@ abstract class ClassReflection<O> extends Reflection<O>
       MethodInvocation methodInvocation,
       Map<String, dynamic> map,
       Object? error) {
+    var stack = error is Error ? error.stackTrace : StackTrace.current;
     print('Error invoking[$i]>\n'
         '  - constructor: $constructor\n'
         '  - map: $map\n'
         '  - methodInvocation: $methodInvocation\n'
         '  - error: $error\n');
+    print(stack);
   }
 
   /// Creates an instance with [constructor] using [map] entries as parameters.
@@ -2393,8 +2395,8 @@ class TypeReflection<T> {
   /// Returns `true` if [type] [isPrimitiveType] or [isCollection].
   bool get isBasicType => isPrimitiveType || isCollectionType;
 
-  /// Returns `true` if [type] can be an entity (![isBasicType]).
-  bool get isEntityType => !isBasicType;
+  /// Returns `true` if [type] can be an entity (![isObjectOrDynamicType] && ![isBasicType]).
+  bool get isEntityType => !isObjectOrDynamicType && !isBasicType;
 
   /// Returns `true` if [type] is a [List] of entities.
   bool get isListEntity =>
