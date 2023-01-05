@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/1.2.20
+// BUILDER: reflection_factory/1.2.21
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -17,7 +17,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('1.2.20');
+  static final Version _version = Version.parse('1.2.21');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -1548,7 +1548,7 @@ class TestOpAWithReflection$reflection
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
 
   @override
-  List<Type> get supperTypes => const <Type>[TestOpWithReflection];
+  List<Type> get supperTypes => const <Type>[TestOpWithReflection, WithValue];
 
   @override
   bool get hasMethodToJson => false;
@@ -1763,7 +1763,7 @@ class TestOpBWithReflection$reflection
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
 
   @override
-  List<Type> get supperTypes => const <Type>[TestOpWithReflection];
+  List<Type> get supperTypes => const <Type>[TestOpWithReflection, WithValue];
 
   @override
   bool get hasMethodToJson => false;
@@ -1811,7 +1811,7 @@ class TestOpBWithReflection$reflection
       case 'value':
         return FieldReflection<TestOpBWithReflection, T>(
           this,
-          TestOpWithReflection,
+          WithValue,
           __TR.tDynamic,
           'value',
           true,
@@ -2006,7 +2006,7 @@ class TestOpWithReflection$reflection
   List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
 
   @override
-  List<Type> get supperTypes => const <Type>[];
+  List<Type> get supperTypes => const <Type>[WithValue];
 
   @override
   bool get hasMethodToJson => false;
@@ -2041,7 +2041,7 @@ class TestOpWithReflection$reflection
       case 'value':
         return FieldReflection<TestOpWithReflection, T>(
           this,
-          TestOpWithReflection,
+          WithValue,
           __TR.tDynamic,
           'value',
           true,

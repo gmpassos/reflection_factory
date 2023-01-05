@@ -307,16 +307,21 @@ class TestDomainWithReflection {
   String toString() => '$name.$suffix';
 }
 
+mixin WithValue<T> {
+  T? value;
+}
+
 @EnableReflection()
-class TestOpWithReflection<T> {
+class TestOpWithReflection<T> with WithValue<T> {
   static int staticField = 1;
 
   static bool staticMethod() => true;
 
   final String type;
-  T? value;
 
-  TestOpWithReflection(this.type, this.value);
+  TestOpWithReflection(this.type, T? value) {
+    this.value = value;
+  }
 
   TestOpWithReflection.empty() : this('', null);
 

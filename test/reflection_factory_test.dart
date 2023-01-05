@@ -1150,6 +1150,8 @@ void main() {
 
       var domainReflection = TestDomainWithReflection$reflection.staticInstance;
 
+      expect(domainReflection.supperTypes, isEmpty);
+
       expect(
           domainReflection.fieldsNames,
           equals([
@@ -1204,9 +1206,11 @@ void main() {
       var opAReflection = TestOpAWithReflection$reflection.staticInstance;
       var opBReflection = TestOpBWithReflection$reflection.staticInstance;
 
-      expect(opReflection.supperTypes, isEmpty);
-      expect(opAReflection.supperTypes, equals([TestOpWithReflection]));
-      expect(opBReflection.supperTypes, equals([TestOpWithReflection]));
+      expect(opReflection.supperTypes, equals([WithValue]));
+      expect(
+          opAReflection.supperTypes, equals([TestOpWithReflection, WithValue]));
+      expect(
+          opBReflection.supperTypes, equals([TestOpWithReflection, WithValue]));
 
       expect(opReflection.fieldsNames, equals(['type', 'value']));
       expect(opAReflection.fieldsNames, equals(['type', 'value']));
