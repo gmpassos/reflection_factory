@@ -216,6 +216,38 @@ void main() {
 
       expect(castMapType(<dynamic, dynamic>{}, String, Object),
           isA<Map<String, Object>>());
+
+      expect(
+          castMapType(
+            <dynamic, dynamic>{1: 'a', 'n': 'b'},
+            Object,
+            String,
+          ),
+          isA<Map<dynamic, String>>());
+
+      expect(
+          castMapType(
+            <dynamic, dynamic>{1: 'a', 'n': 'b'},
+            Object,
+            String,
+          ),
+          isA<Map<Object, String>>());
+
+      expect(
+          castMapType(
+            <dynamic, dynamic>{},
+            Object,
+            String,
+          ),
+          isA<Map<dynamic, String>>());
+
+      expect(
+          castMapType(
+            <dynamic, dynamic>{},
+            Object,
+            String,
+          ),
+          isA<Map<Object, String>>());
     });
   });
 
