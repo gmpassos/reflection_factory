@@ -416,7 +416,19 @@ void main() {
         expect(TypeInfo.from(List).isPrimitiveType, isFalse);
         expect(TypeInfo.from(Map).isPrimitiveType, isFalse);
         expect(TypeInfo.from(Set).isPrimitiveType, isFalse);
+        expect(TypeInfo.from(dynamic).isPrimitiveType, isFalse);
+        expect(TypeInfo.from(Object).isPrimitiveType, isFalse);
         expect(TypeInfo.from(TestUserSimple).isPrimitiveType, isFalse);
+      }
+
+      {
+        expect(TypeInfo.from(dynamic).isPrimitiveOrDynamicOrObjectType, isTrue);
+        expect(TypeInfo.from(Object).isPrimitiveOrDynamicOrObjectType, isTrue);
+        expect(TypeInfo.from(int).isPrimitiveOrDynamicOrObjectType, isTrue);
+        expect(TypeInfo.from(bool).isPrimitiveOrDynamicOrObjectType, isTrue);
+
+        expect(TypeInfo.from(TestUserSimple).isPrimitiveOrDynamicOrObjectType,
+            isFalse);
       }
 
       {
@@ -445,6 +457,33 @@ void main() {
         expect(TypeInfo.from(Uint8List).isBasicType, isFalse);
 
         expect(TypeInfo.from(TestUserSimple).isBasicType, isFalse);
+      }
+
+      {
+        expect(TypeInfo.from(int).isEntityType, isFalse);
+        expect(TypeInfo.from(bool).isEntityType, isFalse);
+        expect(TypeInfo.from(String).isEntityType, isFalse);
+        expect(TypeInfo.from(Object).isEntityType, isFalse);
+        expect(TypeInfo.from(dynamic).isEntityType, isFalse);
+
+        expect(TypeInfo.from(TestUserSimple).isEntityType, isTrue);
+      }
+
+      {
+        expect(TypeInfo.fromListType(int).isListEntity, isFalse);
+        expect(TypeInfo.fromListType(Object).isListEntity, isFalse);
+        expect(TypeInfo.fromListType(dynamic).isListEntity, isFalse);
+
+        expect(TypeInfo.fromListType(TestUserSimple).isListEntity, isTrue);
+      }
+
+      {
+        expect(TypeInfo.fromListType(int).listEntityType, isNull);
+        expect(TypeInfo.fromListType(Object).listEntityType, isNull);
+        expect(TypeInfo.fromListType(dynamic).listEntityType, isNull);
+
+        expect(TypeInfo.fromListType(TestUserSimple).listEntityType,
+            equals(TypeInfo.from(TestUserSimple)));
       }
 
       {

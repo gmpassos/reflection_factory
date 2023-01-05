@@ -208,8 +208,14 @@ void main() {
       expect(castMapType(<dynamic, dynamic>{'a': 1}, String, dynamic),
           isA<Map<String, dynamic>>());
 
+      expect(castMapType(<dynamic, dynamic>{'a': 1}, String, Object),
+          isA<Map<String, Object>>());
+
       expect(castMapType(<dynamic, dynamic>{}, String, dynamic),
           isA<Map<String, dynamic>>());
+
+      expect(castMapType(<dynamic, dynamic>{}, String, Object),
+          isA<Map<String, Object>>());
     });
   });
 
