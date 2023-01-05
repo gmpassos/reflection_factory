@@ -1,3 +1,8 @@
+## 1.2.20
+
+- Migrate to `analyzer: ^5.4.0`.
+- analyzer: ^5.4.0
+
 ## 1.2.19
 
 - `TypeInfo`:

@@ -1090,7 +1090,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       classElement.visitChildren(this);
 
       for (var t in classElement.allSupertypes) {
-        var superClass = t.element2;
+        var superClass = t.element;
         if (superClass is! ClassElement) continue;
 
         if (superClass.isDartCoreObject) {
@@ -2140,7 +2140,7 @@ class _Element {
       return null;
     }
 
-    var enclosingElement = element.enclosingElement3;
+    var enclosingElement = element.enclosingElement;
 
     if (enclosingElement is ClassElement) {
       return enclosingElement.thisType;

@@ -333,7 +333,7 @@ extension DartTypeExtension on DartType {
   Element? get elementDeclaration {
     var self = this;
     if (self is InterfaceType) {
-      return self.element2;
+      return self.element;
     }
     return null;
   }
