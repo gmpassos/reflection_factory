@@ -72,12 +72,8 @@ class ReflectionBuilder implements Builder {
           "Can't generate multiple `reflection` files. Multiple reflection parts directives: $siblingParts AND $subParts");
     }
 
-    var typeAliasTable = _TypeAliasTable.fromLibraryReader(libraryReader);
-
-    var codeTable =
-        await _buildCodeTable(buildStep, libraryReader, typeAliasTable);
-
-    if (codeTable.isEmpty) {
+    var hasCodeToGenerate = await _hasCodeToGenerate(buildStep, libraryReader);
+    if (!hasCodeToGenerate) {
       return;
     }
 
@@ -91,6 +87,7 @@ class ReflectionBuilder implements Builder {
 
       var outputsPaths =
           _reflectionPartDirectivesPaths(libraryReader, inputFile);
+
       throw StateError(
           "Code generated but NO reflection part directive was found for input file: $inputId\n"
           "  > Can't generate ONE of the output files:\n"
@@ -99,6 +96,15 @@ class ReflectionBuilder implements Builder {
           "  > Please ADD one of the directives below to the input file:\n"
           "${outputsPaths.map((p) => '    part \'$p\';').join('\n')}\n"
           "  > Found part directives: $gParts");
+    }
+
+    var typeAliasTable = _TypeAliasTable.fromLibraryReader(libraryReader);
+
+    var codeTable =
+        await _buildCodeTable(buildStep, libraryReader, typeAliasTable);
+
+    if (codeTable.isEmpty) {
+      throw StateError("Generated code expected for: $inputId");
     }
 
     var genId = isSiblingPart ? genSiblingId : genSubId;
@@ -202,9 +208,53 @@ class ReflectionBuilder implements Builder {
     return <String>[outputFileSibling, outputFileSub];
   }
 
+  Future<bool> _hasCodeToGenerate(
+      BuildStep buildStep, LibraryReader libraryReader) async {
+    var annotatedEnableReflection =
+        libraryReader.annotatedWith(typeEnableReflection).toList();
+
+    for (var annotated in annotatedEnableReflection) {
+      var kind = annotated.element.kind;
+
+      if (kind == ElementKind.CLASS || kind == ElementKind.ENUM) {
+        return true;
+      }
+    }
+
+    var annotatedReflectionBridge =
+        libraryReader.annotatedWith(typeReflectionBridge).toList();
+
+    for (var annotated in annotatedReflectionBridge) {
+      if (annotated.element.kind == ElementKind.CLASS) {
+        return true;
+      }
+    }
+
+    var annotatedClassProxy =
+        libraryReader.annotatedWith(typeClassProxy).toList();
+
+    for (var annotated in annotatedClassProxy) {
+      if (annotated.element.kind == ElementKind.CLASS) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   Future<_CodeTable> _buildCodeTable(BuildStep buildStep,
       LibraryReader libraryReader, _TypeAliasTable typeAliasTable) async {
     var codeTable = _CodeTable();
+
+    var annotatedClassProxy =
+        libraryReader.annotatedWith(typeClassProxy).toList();
+
+    for (var annotated in annotatedClassProxy) {
+      if (annotated.element.kind == ElementKind.CLASS) {
+        var codes = await _classProxy(buildStep, annotated, typeAliasTable);
+        codeTable.addProxies(codes);
+      }
+    }
 
     var annotatedReflectionBridge =
         libraryReader.annotatedWith(typeReflectionBridge).toList();
@@ -241,16 +291,6 @@ class ReflectionBuilder implements Builder {
             reflectionClassName, reflectionExtensionName, typeAliasTable);
 
         codeTable.addAllClasses(codes);
-      }
-    }
-
-    var annotatedClassProxy =
-        libraryReader.annotatedWith(typeClassProxy).toList();
-
-    for (var annotated in annotatedClassProxy) {
-      if (annotated.element.kind == ElementKind.CLASS) {
-        var codes = await _classProxy(buildStep, annotated, typeAliasTable);
-        codeTable.addProxies(codes);
       }
     }
 

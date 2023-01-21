@@ -1,3 +1,13 @@
+## 1.2.22
+
+- Attempt to avoid `build` issue:
+  - `InconsistentAnalysisException: Requested result might be inconsistent with previously returned results` #2689
+  - https://github.com/dart-lang/build/issues/2689
+- mime: ^1.0.4
+- build_test: ^2.1.6
+- test: ^1.22.2
+- coverage: ^1.6.2
+
 ## 1.2.21
 
 - `ClassReflection`:
