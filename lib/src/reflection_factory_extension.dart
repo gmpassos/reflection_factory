@@ -147,3 +147,101 @@ extension IterableMethodReflectionExtension<O, R>
 final ListEquality<Type> _listEqualityType = ListEquality<Type>();
 final ListEquality<Object> _listEqualityObject = ListEquality<Object>();
 final MapEquality<String, Type> _mapEqualityType = MapEquality<String, Type>();
+
+extension ReflectionDurationExtension on Duration {
+  static const int microsecondsPerMillisecond = 1000;
+
+  static const int millisecondsPerSecond = 1000;
+
+  static const int secondsPerMinute = 60;
+
+  static const int minutesPerHour = 60;
+
+  static const int hoursPerDay = 24;
+
+  static const int microsecondsPerSecond =
+      microsecondsPerMillisecond * millisecondsPerSecond;
+
+  static const int microsecondsPerMinute =
+      microsecondsPerSecond * secondsPerMinute;
+
+  static const int microsecondsPerHour = microsecondsPerMinute * minutesPerHour;
+
+  static const int millisecondsPerMinute =
+      millisecondsPerSecond * secondsPerMinute;
+
+  static const int millisecondsPerHour = millisecondsPerMinute * minutesPerHour;
+
+  String toHumanReadable() {
+    var microseconds = inMicroseconds;
+    var sign = (microseconds < 0) ? "-" : "";
+
+    var hours = microseconds ~/ microsecondsPerHour;
+    hours = hours.abs();
+    microseconds = microseconds.remainder(microsecondsPerHour);
+
+    if (microseconds < 0) microseconds = -microseconds;
+
+    var minutes = microseconds ~/ microsecondsPerMinute;
+    microseconds = microseconds.remainder(microsecondsPerMinute);
+
+    var seconds = microseconds ~/ microsecondsPerSecond;
+    microseconds = microseconds.remainder(microsecondsPerSecond);
+
+    var milliseconds = microseconds ~/ microsecondsPerMillisecond;
+    microseconds = microseconds.remainder(microsecondsPerMillisecond);
+
+    var hasHour = hours > 0;
+    var hasMin = minutes > 0;
+    var hasSec = seconds > 0;
+    var hasMs = milliseconds > 0;
+
+    var l = [
+      if (hasHour) "$sign$hours h",
+      if (hasMin || (hasHour && (hasSec || hasMs))) "$minutes min",
+      if (hasSec || ((hasHour || hasMin) && (hasSec || hasMs))) "$seconds sec",
+      if (hasMs) "$milliseconds ms"
+    ];
+
+    return l.isEmpty ? '0' : l.join(' ');
+  }
+}
+
+Duration? tryParseDuration(String? v, [Duration? def]) {
+  if (v == null || v.isEmpty) return def;
+
+  var n = int.tryParse(v);
+  if (n != null) {
+    return Duration(milliseconds: n);
+  }
+
+  var s = v.toLowerCase().trim().replaceAll(RegExp(r'\s+'), '');
+
+  n = int.tryParse(s.replaceAll(RegExp(r'\D+'), ''));
+
+  if (n == null) return def;
+  if (n == 0) return Duration();
+
+  if (s.endsWith("h") ||
+      s.endsWith("hr") ||
+      s.endsWith("hs") ||
+      s.endsWith("hour") ||
+      s.endsWith("hours")) {
+    return Duration(hours: n);
+  } else if (s.endsWith("ms") ||
+      s.endsWith("milliseconds") ||
+      s.endsWith("millisecond")) {
+    return Duration(milliseconds: n);
+  } else if (s.endsWith("min") ||
+      s.endsWith("minutes") ||
+      s.endsWith("minute")) {
+    return Duration(minutes: n);
+  } else if (s.endsWith("sec") ||
+      s.endsWith("seconds") ||
+      s.endsWith("second") ||
+      s.endsWith("s")) {
+    return Duration(seconds: n);
+  } else {
+    return def;
+  }
+}

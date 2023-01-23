@@ -1,3 +1,17 @@
+## 1.2.23
+
+- `ReflectionBuilder`
+  - New `sequential` and `buildStepTimeout`.
+  - Build now is sequential by default:
+    - Only one `BuildStep` is processed at a time.
+    - Avoid `InconsistentAnalysisException` (`build` issue #2689).
+- Added `build.yaml` options (`verbose`,`sequential`, `timeout`).
+- Improved logging.
+- Added `ClassProxy` test using `libraryPath`.
+- `reflection_factory/build.yaml`:
+  - `generate_for`:
+    - Added `bin/*`
+
 ## 1.2.22
 
 - Attempt to avoid `build` issue:
