@@ -578,6 +578,16 @@ void main() {
             void nothing2() {}
           }
         ''',
+        '$_pkgName|lib/nothing_api.dart': '''
+        
+          class NothingAPI {
+            final String name;
+            
+            NothingAPI(this.name);
+            
+            void nothing2() {}
+          }
+        ''',
         '$_pkgName|lib/foo.dart': '''
         
           import 'package:reflection_factory/reflection_factory.dart';
