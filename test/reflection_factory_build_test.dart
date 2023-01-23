@@ -510,6 +510,131 @@ void main() {
       );
     });
 
+    test('ClassProxy: SimpleAPI (through libraryPath)', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/simple_api.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'reflection/simple_api.g.dart';
+          
+          @EnableReflection()
+          class SimpleAPI {
+            final String name;
+            
+            SimpleAPI(this.name);
+            
+            void nothing() {}
+            
+            int compute() => 1;
+            
+            int computeSum(int a, int? b) => a + (b ?? 0) ;
+            
+            Future<int?>? computeMultiply(int a, int b) async => a * b ;
+            
+            FutureOr<int?>? computeDivide(int a, int b, Future future) => a / b ;
+            
+            int computeSum3(int a, {int? b, int? c}) => a + (b ?? 0) + (c ?? 0) ;
+            
+            R computeFunction<R>( R Function() callback ) => callback();
+            
+            Future<R> computeFunctionAsync<R>( FutureOr<R> Function() callback ) => callback(); 
+            
+            @override
+            String toString() => 'SimpleAPI{ name: \$name }';
+          }
+        ''',
+        '$_pkgName|lib/extra_api.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'reflection/extra_api.g.dart';
+          
+          @EnableReflection()
+          class ExtraAPI {
+            final String name;
+            
+            ExtraAPI(this.name);
+            
+            void nothing2() {}
+          }
+        ''',
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'foo.reflection.g.dart';
+          
+          @ClassProxy('SimpleAPI', libraryPath: 'package:$_pkgName/simple_api.dart')
+          class SimpleAPIProxy implements ClassProxyListener {
+          }
+        ''',
+      };
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        reader: await PackageAssetReader.currentIsolate(),
+        generateFor: {
+          '$_pkgName|lib/simple_api.dart',
+          '$_pkgName|lib/foo.dart',
+          '$_pkgName|lib/extra_api.dart',
+        },
+        outputs: {
+          '$_pkgName|lib/reflection/simple_api.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of '../simple_api.dart'"),
+              contains('SimpleAPI\$reflection'),
+            ),
+          )),
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of 'foo.dart'"),
+              contains('SimpleAPIProxy\$reflectionProxy'),
+            ),
+            allOf(
+              contains('void nothing() {'),
+              contains('int compute() {'),
+              contains('int computeSum(int a, int? b) {'),
+              contains('Future<int?>? computeMultiply(int a, int b) {'),
+              contains(
+                  'FutureOr<int?>? computeDivide(int a, int b, Future<dynamic> future) {'),
+            ),
+            allOf(
+              contains('int computeSum3(int a, {int? b, int? c}) {'),
+              contains(
+                  'Future<R> computeFunctionAsync<R>(FutureOr<R> Function() callback) {'),
+              matches(RegExp(
+                  "onCall(\nthis,\n'computeSum3',\n<String, dynamic>{\n'a': a,\n'b': b,\n'c': c,\n},"
+                      .replaceAll('\n', r'\s+')
+                      .replaceAll('(', r'\(')
+                      .replaceAll(')', r'\)'))),
+            ),
+          )),
+          '$_pkgName|lib/reflection/extra_api.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of '../extra_api.dart'"),
+              contains('ExtraAPI\$reflection'),
+            ),
+          )),
+        },
+        onLog: (msg) {
+          print(msg);
+        },
+      );
+    });
+
     test('ClassProxy: SimpleAPI', () async {
       var builder = ReflectionBuilder(verbose: true);
 
@@ -524,6 +649,7 @@ void main() {
           class SimpleAPIProxy implements ClassProxyListener {
           }
           
+          @EnableReflection()
           class SimpleAPI {
             final String name;
             

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:analyzer/dart/analysis/results.dart';
@@ -41,9 +42,27 @@ class ReflectionBuilder implements Builder {
 
   static const TypeChecker typeClassProxy = TypeChecker.fromRuntime(ClassProxy);
 
+  /// Ensures that only one [BuildStep] at [build] is processed at a time.
+  Future<void>? _buildChaing;
+
   @override
-  Future<void> build(BuildStep buildStep) async {
-    var inputLib = await buildStep.inputLibrary;
+  Future<void> build(BuildStep buildStep) {
+    var buildChaing = _buildChaing;
+
+    Future<void> build;
+
+    if (buildChaing == null) {
+      _buildChaing = build = _buildImpl(buildStep);
+    } else {
+      _buildChaing = build = buildChaing.then((_) => _buildImpl(buildStep));
+    }
+
+    return build;
+  }
+
+  Future<void> _buildImpl(BuildStep buildStep) async {
+    var resolver = buildStep.resolver;
+
     var inputId = buildStep.inputId;
 
     if (inputId.package == 'reflection_factory') {
@@ -51,13 +70,43 @@ class ReflectionBuilder implements Builder {
           !inputId.path.startsWith('test/')) {
         return;
       }
-    } else if (inputLib.name == 'reflection_factory' ||
+    }
+
+    var inputLib = await buildStep.inputLibrary;
+
+    if (inputLib.name == 'reflection_factory' ||
         inputLib.name.startsWith('reflection_factory.')) {
       return;
     }
 
     var libraryReader = LibraryReader(inputLib);
 
+    var genPart = await buildStep.trackStage('Resolving `part` to generate',
+        () => _resolveGeneratedPart(buildStep, inputId, libraryReader));
+
+    if (genPart == null) {
+      return;
+    }
+
+    var typeAliasTable = _TypeAliasTable.fromLibraryReader(libraryReader);
+
+    var codeTable = await buildStep.trackStage('Generating reflection code',
+        () => _buildCodeTable(buildStep, libraryReader, typeAliasTable));
+
+    if (codeTable.isEmpty) {
+      throw StateError("Generated code expected for: $inputId");
+    }
+
+    await buildStep.trackStage('Writing generated code',
+        () => _writeFullCode(buildStep, genPart, codeTable));
+
+    if (resolver is ReleasableResolver) {
+      resolver.release();
+    }
+  }
+
+  Future<_GeneratedPart?> _resolveGeneratedPart(
+      BuildStep buildStep, AssetId inputId, LibraryReader libraryReader) async {
     var inputFile = inputId.pathSegments.last;
 
     var allParts = _readReflectionPartDirectives(libraryReader, inputFile);
@@ -74,12 +123,14 @@ class ReflectionBuilder implements Builder {
 
     var hasCodeToGenerate = await _hasCodeToGenerate(buildStep, libraryReader);
     if (!hasCodeToGenerate) {
-      return;
+      return null;
     }
 
     var genSiblingId = inputId.changeExtension('.reflection.g.dart');
     var genSubId =
         inputId.changeExtension('.g.dart').withParentDirectory('reflection');
+
+    var genId = isSiblingPart ? genSiblingId : genSubId;
 
     // No `part` directive!
     if (siblingParts.isEmpty && subParts.isEmpty) {
@@ -98,20 +149,12 @@ class ReflectionBuilder implements Builder {
           "  > Found part directives: $gParts");
     }
 
-    var typeAliasTable = _TypeAliasTable.fromLibraryReader(libraryReader);
+    return _GeneratedPart(
+        genId.path, genId, isSiblingPart ? inputFile : '../$inputFile');
+  }
 
-    var codeTable =
-        await _buildCodeTable(buildStep, libraryReader, typeAliasTable);
-
-    if (codeTable.isEmpty) {
-      throw StateError("Generated code expected for: $inputId");
-    }
-
-    var genId = isSiblingPart ? genSiblingId : genSubId;
-
-    var reflectionMixin = _buildReflectionMixin(codeTable, typeAliasTable);
-    var siblingsClassReflection = _buildSiblingsClassReflection(codeTable);
-
+  Future<void> _writeFullCode(
+      BuildStep buildStep, _GeneratedPart genPart, _CodeTable codeTable) async {
     var fullCode = StringBuffer();
 
     fullCode.write('// \n');
@@ -127,14 +170,10 @@ class ReflectionBuilder implements Builder {
     fullCode.write('// ignore_for_file: unnecessary_cast\n');
     fullCode.write('// ignore_for_file: unnecessary_type_check\n\n');
 
-    if (isSiblingPart) {
-      fullCode.write("part of '$inputFile';\n\n");
-    } else {
-      fullCode.write("part of '../$inputFile';\n\n");
-    }
+    fullCode.write("part of '${genPart.partOf}';\n\n");
 
-    fullCode.write(typeAliasTable.code);
-    fullCode.write(reflectionMixin);
+    fullCode.write(codeTable.typeAliasTable.code);
+    fullCode.write(codeTable.codeReflectionMixin);
 
     var codeKeys = codeTable.allKeys.toList();
     _sortCodeKeys(codeKeys);
@@ -146,21 +185,23 @@ class ReflectionBuilder implements Builder {
       }
     }
 
-    fullCode.write(siblingsClassReflection);
+    fullCode.write(codeTable.codeSiblingsClassReflection);
 
     var generatedCode = fullCode.toString();
 
     var dartFormatter = DartFormatter();
     var formattedCode = dartFormatter.format(generatedCode);
 
+    var genId = genPart.genId;
+
     await buildStep.writeAsString(genId, formattedCode);
 
-    print('** GENERATED:\n'
+    log.info(' >> GENERATED:\n'
         '  -- Elements: $codeKeys\n'
-        '  -- Code file: $genId\n');
+        '  -- Code file: $genId\n\n');
 
     if (verbose) {
-      print('<<<\n$formattedCode\n>>>');
+      log.info('<<<<<<\n$formattedCode\n>>>>>>\n');
     }
   }
 
@@ -244,7 +285,7 @@ class ReflectionBuilder implements Builder {
 
   Future<_CodeTable> _buildCodeTable(BuildStep buildStep,
       LibraryReader libraryReader, _TypeAliasTable typeAliasTable) async {
-    var codeTable = _CodeTable();
+    var codeTable = _CodeTable(typeAliasTable);
 
     var annotatedClassProxy =
         libraryReader.annotatedWith(typeClassProxy).toList();
@@ -294,6 +335,9 @@ class ReflectionBuilder implements Builder {
       }
     }
 
+    _buildReflectionMixin(codeTable);
+    _buildSiblingsClassReflection(codeTable);
+
     return codeTable;
   }
 
@@ -334,12 +378,12 @@ class ReflectionBuilder implements Builder {
       reflectionProxyName = annotatedClass.name;
     }
 
-    print('** ClassProxy:\n'
+    log.info(' <ClassProxy>\n'
         '  -- Target Class Name: $className\n'
         '  -- Always Return Future: $alwaysReturnFuture\n'
         '  -- reflectionProxyName: $reflectionProxyName\n'
         '  -- traverseReturnTypes: $traverseReturnTypes\n'
-        '  -- ignoreParametersTypes: $ignoreParametersTypes\n');
+        '  -- ignoreParametersTypes: $ignoreParametersTypes\n\n');
 
     var codeTable = <String, String>{};
 
@@ -367,7 +411,7 @@ class ReflectionBuilder implements Builder {
     );
 
     if (verbose) {
-      print(classTree);
+      log.info(' >> $classTree');
     }
 
     codeTable.putIfAbsent(
@@ -454,11 +498,11 @@ class ReflectionBuilder implements Builder {
         .mapValue
         .map((k, v) => MapEntry(k!.toTypeValue()!, v!.toStringValue()!));
 
-    print('** ReflectionBridge:\n'
+    log.info(' <ReflectionBridge>\n'
         '  -- classesTypes: $classesTypes\n'
         '  -- bridgeExtensionName: $bridgeExtensionName\n'
         '  -- reflectionClassNames: $reflectionClassNames\n'
-        '  -- reflectionExtensionNames: $reflectionExtensionNames\n');
+        '  -- reflectionExtensionNames: $reflectionExtensionNames\n\n');
 
     var codeTable = <String, String>{};
 
@@ -484,7 +528,7 @@ class ReflectionBuilder implements Builder {
       );
 
       if (verbose) {
-        print(classTree);
+        log.info(' >> $classTree');
       }
 
       codeTable.putIfAbsent(classTree.classGlobalFunction('_'),
@@ -561,7 +605,7 @@ class ReflectionBuilder implements Builder {
     );
 
     if (verbose) {
-      print(enumTree);
+      log.info(' >> $enumTree');
     }
 
     var enumGlobalFunctions = enumTree.buildEnumGlobalFunctions();
@@ -594,7 +638,7 @@ class ReflectionBuilder implements Builder {
     );
 
     if (verbose) {
-      print(classTree);
+      log.info(' >> $classTree');
     }
 
     var classGlobalFunctions = classTree.buildClassGlobalFunctions();
@@ -616,13 +660,12 @@ class ReflectionBuilder implements Builder {
     return library;
   }
 
-  String _buildReflectionMixin(
-      _CodeTable codeTable, _TypeAliasTable typeAliasTable) {
-    if (codeTable.reflectionClassesIsEmpty) return '';
+  void _buildReflectionMixin(_CodeTable codeTable) {
+    if (codeTable.reflectionClassesIsEmpty) return;
 
     var str = StringBuffer();
 
-    str.write('mixin ${typeAliasTable.reflectionMixinName} {\n');
+    str.write('mixin ${codeTable.typeAliasTable.reflectionMixinName} {\n');
 
     str.write(
         "  static final Version _version = Version.parse('${ReflectionFactory.VERSION}');\n\n");
@@ -634,12 +677,11 @@ class ReflectionBuilder implements Builder {
 
     str.write('}\n\n');
 
-    var code = str.toString();
-    return code;
+    codeTable.codeReflectionMixin = str.toString();
   }
 
-  String _buildSiblingsClassReflection(_CodeTable codeTable) {
-    if (codeTable.reflectionClassesIsEmpty) return '';
+  void _buildSiblingsClassReflection(_CodeTable codeTable) {
+    if (codeTable.reflectionClassesIsEmpty) return;
 
     var str = StringBuffer();
 
@@ -667,9 +709,16 @@ class ReflectionBuilder implements Builder {
     str.write('  assert(length > 0);\n');
     str.write('}\n\n');
 
-    var code = str.toString();
-    return code;
+    codeTable.codeSiblingsClassReflection = str.toString();
   }
+}
+
+class _GeneratedPart {
+  final String partPath;
+  final AssetId genId;
+  final String partOf;
+
+  _GeneratedPart(this.partPath, this.genId, this.partOf);
 }
 
 extension _AssetIdExtension on AssetId {
@@ -784,6 +833,13 @@ class _TypeAliasTable {
 }
 
 class _CodeTable {
+  final _TypeAliasTable typeAliasTable;
+
+  String codeReflectionMixin = '';
+  String codeSiblingsClassReflection = '';
+
+  _CodeTable(this.typeAliasTable);
+
   final Map<String, String> _reflectionClasses = <String, String>{};
   final Map<String, String> _reflectionProxies = <String, String>{};
 
@@ -1457,7 +1513,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     _buildSwitches(str, 'constructorName', entries.keys, (name) {
       var constructor = entries[name]!;
       if (verbose) {
-        print(constructor);
+        log.info('[CONSTRUCTOR] $constructor');
       }
 
       var declaringType = constructor.declaringType!.typeNameResolvable;
@@ -1558,7 +1614,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       var field = entries[name]!;
 
       if (verbose) {
-        print(field);
+        log.info('[FIELD] $field');
       }
 
       var fieldDeclaringType = field.declaringType;
@@ -1605,7 +1661,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     _buildSwitches(str, 'fieldName', entries.keys, (name) {
       var field = entries[name]!;
       if (verbose) {
-        print(field);
+        log.info('[FIELD] $field');
       }
 
       var declaringType = field.declaringType!.typeNameResolvable;
@@ -1671,7 +1727,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     _buildSwitches(str, 'methodName', entries.keys, (name) {
       var method = entries[name]!;
       if (verbose) {
-        print(method);
+        log.info('[METHOD] $method');
       }
 
       var declaringType = method.declaringType!.typeNameResolvable;
@@ -1704,7 +1760,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     _buildSwitches(str, 'methodName', entries.keys, (name) {
       var method = entries[name]!;
       if (verbose) {
-        print(method);
+        log.info('[METHOD] $method');
       }
 
       var declaringType = method.declaringType!.typeNameResolvable;

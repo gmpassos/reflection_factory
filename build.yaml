@@ -5,6 +5,7 @@ targets:
     builders:
       reflection_factory:
         generate_for:
+          - bin/*
           - example/*
           - lib/**
           - test/**

@@ -1,3 +1,13 @@
+## 1.2.23
+
+- Build now is sequencial (avoid `build` issue #2689).
+  - Only one `BuildStep` is processed at a time.
+- Improved logging.
+- Added `ClassProxy` test using `libraryPath`.
+- `build.yaml`:
+  - `generate_for`:
+    - Added `bin/*`
+
 ## 1.2.22
 
 - Attempt to avoid `build` issue:
