@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 void main() {
   group('extensions', () {
-    test('tryParseDuration', () {
+    test('Duration.toHumanReadable', () {
       expect(Duration(hours: 10).toHumanReadable(), equals('10 h'));
       expect(Duration(hours: 3).toHumanReadable(), equals('3 h'));
       expect(Duration(hours: 0).toHumanReadable(), equals('0'));
