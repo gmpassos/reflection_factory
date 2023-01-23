@@ -8,16 +8,18 @@ import 'src/reflection_factory_builder.dart';
 
 export 'src/reflection_factory_base.dart';
 
-Builder reflectionFactory([BuilderOptions options = BuilderOptions.empty]) {
+ReflectionBuilder reflectionFactory(
+    [BuilderOptions options = BuilderOptions.empty]) {
   var verbose = options.getAsBool(['verbose']);
-  var sequential = options.getAsBool(['sequential', 'serial'], true);
+  var sequential =
+      options.getAsBool(['sequential', 'sequencial', 'serial'], true);
   var buildStepTimeout = options.getAsDuration(
       ['buildStepTimeout', 'build_step_timeout', 'timeout'],
       Duration(seconds: 30));
 
   var reflectionFactory = ReflectionBuilder(
       verbose: verbose,
-      sequencial: sequential,
+      sequential: sequential,
       buildStepTimeout: buildStepTimeout);
 
   log.info('Builder:\n\n${reflectionFactory.toString(indent: '  ')}');

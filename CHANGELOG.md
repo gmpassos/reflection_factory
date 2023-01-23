@@ -1,8 +1,8 @@
 ## 1.2.23
 
 - `ReflectionBuilder`
-  - New `sequencial` and `buildStepTimeout`.
-  - Build now is sequencial by default:
+  - New `sequential` and `buildStepTimeout`.
+  - Build now is sequential by default:
     - Only one `BuildStep` is processed at a time.
     - Avoid `InconsistentAnalysisException` (`build` issue #2689).
 - Added `build.yaml` options (`verbose`,`sequential`, `timeout`).

@@ -26,16 +26,16 @@ class ReflectionBuilder implements Builder {
   final bool verbose;
 
   /// If `true` will build the [BuildStep] sequentially. See [build].
-  final bool sequencial;
+  final bool sequential;
 
   /// The sequential [BuildStep] timeout (default: 30 sec). See [build].
   final Duration buildStepTimeout;
 
   ReflectionBuilder({
     this.verbose = false,
-    bool sequencial = true,
+    bool sequential = true,
     this.buildStepTimeout = const Duration(seconds: 30),
-  }) : sequencial = sequencial && buildStepTimeout.inMilliseconds > 0;
+  }) : sequential = sequential && buildStepTimeout.inMilliseconds > 0;
 
   /// The [ReflectionFactory.VERSION].
   String get version => ReflectionFactory.VERSION;
@@ -44,7 +44,7 @@ class ReflectionBuilder implements Builder {
   String toString({String indent = ''}) {
     return '${indent}ReflectionBuilder[$version]:\n'
         '$indent  -- verbose: $verbose\n'
-        '$indent  -- sequencial: $sequencial\n'
+        '$indent  -- sequential: $sequential\n'
         '$indent  -- buildStepTimeout: ${buildStepTimeout.toHumanReadable()}\n';
   }
 
@@ -66,7 +66,7 @@ class ReflectionBuilder implements Builder {
 
   Future<void> _buildChaing = Future<void>.value();
 
-  /// If [sequencial] is `true` every [BuildStep] is processed sequentially (only one at a time):
+  /// If [sequential] is `true` every [BuildStep] is processed sequentially (only one at a time):
   /// - The default timeout to process a [BuildStep] is 30 sec ([buildStepTimeout]).
   ///   If the timeout is reached the next [BuildStep] starts to be processed.
   /// - `build_runner` will wait for ALL the [BuildStep]s to complete (regardless of any timeout).
@@ -77,7 +77,7 @@ class ReflectionBuilder implements Builder {
       return Future<void>.value();
     }
 
-    if (!sequencial) {
+    if (!sequential) {
       return _buildImpl(buildStep);
     }
 

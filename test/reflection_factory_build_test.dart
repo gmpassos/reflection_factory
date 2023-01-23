@@ -1,7 +1,8 @@
 @TestOn('vm')
 @Tags(['build', 'slow'])
+import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
-import 'package:reflection_factory/src/reflection_factory_base.dart';
+import 'package:reflection_factory/builder.dart';
 import 'package:reflection_factory/src/reflection_factory_builder.dart';
 import 'package:test/test.dart';
 
@@ -511,7 +512,23 @@ void main() {
     });
 
     void testClassProxyLlibraryPath(bool sequential) async {
-      var builder = ReflectionBuilder(verbose: true, sequencial: sequential);
+      var builder = reflectionFactory(BuilderOptions({
+        'verbose': true,
+        'sequential': sequential,
+        'timeout': '45 sec',
+      }));
+
+      expect(builder.verbose, isTrue);
+      expect(builder.sequential, equals(sequential));
+      expect(builder.buildStepTimeout, equals(Duration(seconds: 45)));
+
+      expect(
+          builder.toString(),
+          allOf(
+            contains('verbose: true'),
+            contains('sequential: $sequential'),
+            contains('buildStepTimeout: 45 sec'),
+          ));
 
       var sourceAssets = {
         '$_pkgName|lib/simple_api.dart': '''
