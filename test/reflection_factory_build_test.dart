@@ -510,8 +510,8 @@ void main() {
       );
     });
 
-    test('ClassProxy: SimpleAPI (through libraryPath)', () async {
-      var builder = ReflectionBuilder(verbose: true);
+    void testClassProxyLlibraryPath(bool sequential) async {
+      var builder = ReflectionBuilder(verbose: true, sequencial: sequential);
 
       var sourceAssets = {
         '$_pkgName|lib/simple_api.dart': '''
@@ -633,7 +633,13 @@ void main() {
           print(msg);
         },
       );
-    });
+    }
+
+    test('ClassProxy: SimpleAPI (through libraryPath) +sequential',
+        () => testClassProxyLlibraryPath(true));
+
+    test('ClassProxy: SimpleAPI (through libraryPath) -sequential',
+        () => testClassProxyLlibraryPath(false));
 
     test('ClassProxy: SimpleAPI', () async {
       var builder = ReflectionBuilder(verbose: true);

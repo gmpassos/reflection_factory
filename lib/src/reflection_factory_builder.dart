@@ -18,13 +18,35 @@ import 'analyzer/library.dart';
 import 'analyzer/type_checker.dart';
 import 'reflection_factory_annotation.dart';
 import 'reflection_factory_base.dart';
+import 'reflection_factory_extension.dart';
 
 /// The reflection builder.
 class ReflectionBuilder implements Builder {
-  /// If `true` builds code in verbose mode.
-  bool verbose;
+  /// If `true` builds the reflection code in verbose mode.
+  final bool verbose;
 
-  ReflectionBuilder({this.verbose = false});
+  /// If `true` will build the [BuildStep] sequentially. See [build].
+  final bool sequencial;
+
+  /// The sequential [BuildStep] timeout (default: 30 sec). See [build].
+  final Duration buildStepTimeout;
+
+  ReflectionBuilder({
+    this.verbose = false,
+    bool sequencial = true,
+    this.buildStepTimeout = const Duration(seconds: 30),
+  }) : sequencial = sequencial && buildStepTimeout.inMilliseconds > 0;
+
+  /// The [ReflectionFactory.VERSION].
+  String get version => ReflectionFactory.VERSION;
+
+  @override
+  String toString({String indent = ''}) {
+    return '${indent}ReflectionBuilder[$version]:\n'
+        '$indent  -- verbose: $verbose\n'
+        '$indent  -- sequencial: $sequencial\n'
+        '$indent  -- buildStepTimeout: ${buildStepTimeout.toHumanReadable()}\n';
+  }
 
   @override
   final buildExtensions = const {
@@ -42,35 +64,72 @@ class ReflectionBuilder implements Builder {
 
   static const TypeChecker typeClassProxy = TypeChecker.fromRuntime(ClassProxy);
 
-  /// Ensures that only one [BuildStep] at [build] is processed at a time.
-  Future<void>? _buildChaing;
+  Future<void> _buildChaing = Future<void>.value();
 
+  /// If [sequencial] is `true` every [BuildStep] is processed sequentially (only one at a time):
+  /// - The default timeout to process a [BuildStep] is 30 sec ([buildStepTimeout]).
+  ///   If the timeout is reached the next [BuildStep] starts to be processed.
+  /// - `build_runner` will wait for ALL the [BuildStep]s to complete (regardless of any timeout).
   @override
   Future<void> build(BuildStep buildStep) {
-    var buildChaing = _buildChaing;
-
-    Future<void> build;
-
-    if (buildChaing == null) {
-      _buildChaing = build = _buildImpl(buildStep);
-    } else {
-      _buildChaing = build = buildChaing.then((_) => _buildImpl(buildStep));
+    // Skip code from `reflection_factory` library.
+    if (_isReflectionFactoryLibraryCode(buildStep.inputId)) {
+      return Future<void>.value();
     }
 
+    if (!sequencial) {
+      return _buildImpl(buildStep);
+    }
+
+    var buildChaing = _buildChaing;
+
+    var buildTimeouted = Completer<void>();
+    void complete(_) => buildTimeouted.complete();
+
+    Future<void> callBuildImpl(_) {
+      var future = _buildImpl(buildStep);
+
+      future
+          .timeout(buildStepTimeout,
+              onTimeout: () => _onBuildTimeout(buildStep))
+          .then(complete, onError: complete);
+
+      return future;
+    }
+
+    var build = buildChaing.then(callBuildImpl, onError: callBuildImpl);
+
+    // The chain wil have a schedulled timeout only
+    // for the last running [BuildStep].
+    _buildChaing = buildTimeouted.future;
+
+    // Return the call without timeout for the `build_runner`.
     return build;
   }
 
+  bool _isReflectionFactoryLibraryCode(AssetId assetId) {
+    if (assetId.package == 'reflection_factory') {
+      if (!assetId.path.startsWith('example/') &&
+          !assetId.path.startsWith('test/')) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void _onBuildTimeout(BuildStep buildStep) {
+    log.warning(
+        'Build timeout (${buildStepTimeout.toHumanReadable()}): ${buildStep.inputId} >> Will continue with the next `BuildStep`...');
+  }
+
   Future<void> _buildImpl(BuildStep buildStep) async {
+    final initTime = DateTime.now();
+
+    log.info(" analyzing...");
+
     var resolver = buildStep.resolver;
 
     var inputId = buildStep.inputId;
-
-    if (inputId.package == 'reflection_factory') {
-      if (!inputId.path.startsWith('example/') &&
-          !inputId.path.startsWith('test/')) {
-        return;
-      }
-    }
 
     var inputLib = await buildStep.inputLibrary;
 
@@ -85,6 +144,9 @@ class ReflectionBuilder implements Builder {
         () => _resolveGeneratedPart(buildStep, inputId, libraryReader));
 
     if (genPart == null) {
+      final elapsedTime = DateTime.now().difference(initTime);
+      log.info(
+          " no reflection to generate. (${elapsedTime.inMilliseconds} ms)");
       return;
     }
 
@@ -98,7 +160,7 @@ class ReflectionBuilder implements Builder {
     }
 
     await buildStep.trackStage('Writing generated code',
-        () => _writeFullCode(buildStep, genPart, codeTable));
+        () => _writeFullCode(buildStep, genPart, codeTable, initTime));
 
     if (resolver is ReleasableResolver) {
       resolver.release();
@@ -153,8 +215,8 @@ class ReflectionBuilder implements Builder {
         genId.path, genId, isSiblingPart ? inputFile : '../$inputFile');
   }
 
-  Future<void> _writeFullCode(
-      BuildStep buildStep, _GeneratedPart genPart, _CodeTable codeTable) async {
+  Future<void> _writeFullCode(BuildStep buildStep, _GeneratedPart genPart,
+      _CodeTable codeTable, DateTime initTime) async {
     var fullCode = StringBuffer();
 
     fullCode.write('// \n');
@@ -196,9 +258,12 @@ class ReflectionBuilder implements Builder {
 
     await buildStep.writeAsString(genId, formattedCode);
 
+    final elapsedTime = DateTime.now().difference(initTime);
+
     log.info(' >> GENERATED:\n'
         '  -- Elements: $codeKeys\n'
-        '  -- Code file: $genId\n\n');
+        '  -- File: $genId\n'
+        '  -- Time: ${elapsedTime.inMilliseconds} ms\n\n');
 
     if (verbose) {
       log.info('<<<<<<\n$formattedCode\n>>>>>>\n');

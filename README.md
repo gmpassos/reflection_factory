@@ -285,6 +285,27 @@ To generate the reflection code just run `build_runner` in your Dart project:
 $> dart run build_runner build
 ```
 
+## Options
+
+You can configure the builder declaring a `build.yaml` file in your project:
+
+**File:** *build.yaml*
+```yaml
+targets:
+  $default:
+    builders:
+      reflection_factory:
+        options:
+          verbose: true
+          sequential: true
+          timeout: 2 sec
+```
+
+- Options:
+  - `verbose`: If `true` builds the reflection code in verbose mode (default: `false`).
+  - `sequential`: If `true` will build the `BuildStep` sequentially (default: `true`).
+  - `timeout`: The sequential `BuildStep` timeout (default: `30 sec`).
+
 ## Source
 
 The official source code is [hosted @ GitHub][github_reflection_factory]:
