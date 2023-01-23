@@ -191,11 +191,16 @@ extension ReflectionDurationExtension on Duration {
     var milliseconds = microseconds ~/ microsecondsPerMillisecond;
     microseconds = microseconds.remainder(microsecondsPerMillisecond);
 
+    var hasHour = hours > 0;
+    var hasMin = minutes > 0;
+    var hasSec = seconds > 0;
+    var hasMs = milliseconds > 0;
+
     var l = [
-      if (hours > 0) "$sign$hours h",
-      if (hours > 0 || minutes > 0) "$minutes min",
-      if (hours > 0 || minutes > 0 || seconds > 0) "$seconds sec",
-      if (milliseconds > 0) "$milliseconds ms"
+      if (hasHour) "$sign$hours h",
+      if (hasMin || (hasHour && (hasSec || hasMs))) "$minutes min",
+      if (hasSec || ((hasHour || hasMin) && (hasSec || hasMs)) ) "$seconds sec",
+      if (hasMs) "$milliseconds ms"
     ];
 
     return l.isEmpty ? '0' : l.join(' ');
