@@ -199,7 +199,7 @@ extension ReflectionDurationExtension on Duration {
     var l = [
       if (hasHour) "$sign$hours h",
       if (hasMin || (hasHour && (hasSec || hasMs))) "$minutes min",
-      if (hasSec || ((hasHour || hasMin) && (hasSec || hasMs)) ) "$seconds sec",
+      if (hasSec || ((hasHour || hasMin) && (hasSec || hasMs))) "$seconds sec",
       if (hasMs) "$milliseconds ms"
     ];
 
