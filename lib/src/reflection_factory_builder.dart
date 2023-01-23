@@ -25,7 +25,7 @@ class ReflectionBuilder implements Builder {
   /// If `true` builds the reflection code in verbose mode.
   final bool verbose;
 
-  /// If `true` will build the [BuildStep] sequentially. See [build].
+  /// If `true` will process the [BuildStep]s sequentially. See [build].
   final bool sequential;
 
   /// The sequential [BuildStep] timeout (default: 30 sec). See [build].

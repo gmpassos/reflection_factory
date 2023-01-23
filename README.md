@@ -303,7 +303,7 @@ targets:
 
 - Options:
   - `verbose`: If `true` builds the reflection code in verbose mode (default: `false`).
-  - `sequential`: If `true` will build the `BuildStep` sequentially (default: `true`).
+  - `sequential`: If `true` will process the `BuildStep`s sequentially. (default: `true`).
   - `timeout`: The sequential `BuildStep` timeout (default: `30 sec`).
 
 ## Source
