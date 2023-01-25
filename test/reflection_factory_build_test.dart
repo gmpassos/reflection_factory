@@ -445,7 +445,7 @@ void main() {
         builder,
         sourceAssets,
         reader: await PackageAssetReader.currentIsolate(),
-        generateFor: {'$_pkgName|lib/foo.dart'},
+        generateFor: {'$_pkgName|lib/foo.dart', '$_pkgName|lib/foo_extra.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
             contains('GENERATED CODE - DO NOT MODIFY BY HAND'),

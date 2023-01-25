@@ -132,7 +132,16 @@ class ReflectionBuilder implements Builder {
 
     var inputId = buildStep.inputId;
 
-    var inputLib = await buildStep.inputLibrary;
+    var isPart = await _isPartCompilationUnit(buildStep, inputId);
+
+    if (isPart) {
+      final elapsedTime = DateTime.now().difference(initTime);
+      log.info(
+          " skipping `part` compilation unit. (${elapsedTime.inMilliseconds} ms)");
+      return;
+    }
+
+    final inputLib = await buildStep.inputLibrary;
 
     if (inputLib.name == 'reflection_factory' ||
         inputLib.name.startsWith('reflection_factory.')) {
@@ -166,6 +175,18 @@ class ReflectionBuilder implements Builder {
     if (resolver is ReleasableResolver) {
       resolver.release();
     }
+  }
+
+  Future<bool> _isPartCompilationUnit(
+      BuildStep buildStep, AssetId assetID) async {
+    var compUnit = await buildStep.resolver.compilationUnitFor(assetID);
+    var partOf = _getCompilationUnitPartOf(compUnit);
+    return partOf != null;
+  }
+
+  PartOfDirective? _getCompilationUnitPartOf(CompilationUnit compUnit) {
+    var partOf = compUnit.directives.whereType<PartOfDirective>().firstOrNull;
+    return partOf;
   }
 
   Future<_GeneratedPart?> _resolveGeneratedPart(
@@ -725,8 +746,7 @@ class ReflectionBuilder implements Builder {
 
     var classCompUnit = await resolver.compilationUnitFor(classAssetId);
 
-    var partOf =
-        classCompUnit.directives.whereType<PartOfDirective>().firstOrNull;
+    var partOf = _getCompilationUnitPartOf(classCompUnit);
 
     if (partOf != null) {
       var uri = partOf.uri?.stringValue ?? '';
