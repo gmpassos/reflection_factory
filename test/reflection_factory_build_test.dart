@@ -407,6 +407,59 @@ void main() {
       );
     });
 
+    test('EnableReflection + source with part file', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo_extra.dart': '''
+
+          part of 'foo.dart';
+
+          @EnableReflection()
+          class FooExtra extends Foo {
+            int c ;
+
+            FooExtra(super.a, super.b, this.c);
+          }
+
+        ''',
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'foo.reflection.g.dart';
+          
+          part 'foo_extra.dart';
+          
+          @EnableReflection()
+          class Foo {
+            int a ;
+            int b ;
+            Foo(this.a, this.b);
+          }
+        
+        '''
+      };
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        reader: await PackageAssetReader.currentIsolate(),
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+            contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+            contains("part of 'foo.dart'"),
+            contains('Foo\$reflection'),
+            contains('FooExtra\$reflection'),
+          ))
+        },
+        onLog: (msg) {
+          print(msg);
+        },
+      );
+    });
+
     test('ReflectionBridge', () async {
       var builder = ReflectionBuilder(verbose: true);
 

@@ -656,7 +656,6 @@ void main() {
         expect(typeInfo1.isEquivalent(typeInfo2), isFalse);
 
         //expect(typeInfo.equalsArgumentsTypes([TestOpWithReflection]), isTrue);
-
       }
     });
 
