@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
@@ -721,6 +722,24 @@ class ReflectionBuilder implements Builder {
       BuildStep buildStep, Element element) async {
     var resolver = buildStep.resolver;
     var classAssetId = await resolver.assetIdForElement(element);
+
+    var classCompUnit = await resolver.compilationUnitFor(classAssetId);
+
+    var partOf =
+        classCompUnit.directives.whereType<PartOfDirective>().firstOrNull;
+
+    if (partOf != null) {
+      var uri = partOf.uri?.stringValue ?? '';
+      var dir = pack_path.dirname(classAssetId.path);
+      var fullPath = uri.startsWith('/') ? uri : '$dir/$uri';
+
+      var path2 = pack_path.normalize(fullPath);
+      var partOfAssetId = AssetId(classAssetId.package, path2);
+
+      var library = await resolver.libraryFor(partOfAssetId);
+      return library;
+    }
+
     var library = await resolver.libraryFor(classAssetId);
     return library;
   }
