@@ -1,3 +1,7 @@
+## 1.2.25
+
+- Extra fix: issue when a source has a `part of` directive.
+
 ## 1.2.24
 
 - Fix issue when a source has a `part of` directive.
