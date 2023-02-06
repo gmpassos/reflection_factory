@@ -2674,10 +2674,17 @@ class FieldReflection<O, T> extends ElementReflection<O>
     }
 
     if (setter != null) {
-      try {
-        setter(v as T);
-      } catch (e) {
-        throw ArgumentError("Field can't be null: $className.$name ($T)");
+      if (v == null) {
+        T vNull;
+        try {
+          vNull = null as T;
+        } catch (e) {
+          throw ArgumentError(
+              "Field can't be set to `null`: $className.$name ($T)");
+        }
+        setter(vNull);
+      } else {
+        setter(v);
       }
     } else {
       if (isFinal) {
