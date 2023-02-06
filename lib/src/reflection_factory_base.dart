@@ -1749,7 +1749,7 @@ abstract class ClassReflection<O> extends Reflection<O>
 
       if (key == null) {
         if (!field.isFinal && field.nullable) {
-          field.set(null);
+          field.setNullable(null);
         }
         continue;
       }
@@ -1771,7 +1771,7 @@ abstract class ClassReflection<O> extends Reflection<O>
         }
       } else if (field.nullable) {
         if (field.hasSetter) {
-          field.set(null);
+          field.setNullable(null);
         }
       }
     }
