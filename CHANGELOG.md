@@ -1,3 +1,21 @@
+## 2.0.0
+
+- `ClassReflection`:
+  - `constructor`:
+    - removed `<R>` type.
+  - `field`:
+    - Ggenerated implementation declares `T` of `FieldReflection<$class,T>` statically.
+  - Optimized:
+    - `allFields`, `allMethods`: object instances derived from cached `no-object` instances.
+    - `construtor`, `staticField`, `field`, `method`:
+      - Caching instances.
+      - Object instances derived from cached `no-object` instances.
+- `FieldReflection`:
+  - Added `setNullable`.
+- benchmark: ^0.3.0
+  - `benchmark/reflection_factory_benchmark.dart`
+- meta: ^1.9.0
+
 ## 1.2.25
 
 - Extra fix: issue when a source has a `part of` directive.

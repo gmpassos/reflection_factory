@@ -606,6 +606,8 @@ void main() {
             TestOpAWithReflection,
             TestOpBWithReflection,
             TestTransactionWithReflection,
+            TestName,
+            TestEmpty,
           ]));
 
       expect(
@@ -614,16 +616,18 @@ void main() {
               .sorted()
               .map((e) => e.classType),
           equals([
+            TestEmpty,
             TestTransactionWithReflection,
             TestFranchiseWithReflection,
             TestDataWithReflection,
+            TestName,
             TestOpWithReflection,
             TestOpAWithReflection,
             TestAddressWithReflection,
             TestCompanyWithReflection,
             TestOpBWithReflection,
             TestDomainWithReflection,
-            TestUserWithReflection
+            TestUserWithReflection,
           ]));
 
       expect(
@@ -1329,6 +1333,18 @@ void main() {
 
       expect(ReflectionFactory.toJsonEncodable(address),
           equals({'state': 'CA', 'city': 'Los Angeles'}));
+
+      expect(TestEmpty$reflection().allFields(), isEmpty);
+      expect(TestEmpty$reflection().field('foo'), isNull);
+
+      expect(TestEmpty$reflection().allStaticFields(), isEmpty);
+      expect(TestEmpty$reflection().staticField('foo'), isNull);
+
+      expect(TestEmpty$reflection().allMethods(), isEmpty);
+      expect(TestEmpty$reflection().method('foo'), isNull);
+
+      expect(TestEmpty$reflection().allStaticMethods(), isEmpty);
+      expect(TestEmpty$reflection().staticMethod('foo'), isNull);
     });
 
     test('ReflectionBridge', () async {

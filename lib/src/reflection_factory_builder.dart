@@ -274,7 +274,14 @@ class ReflectionBuilder implements Builder {
     var generatedCode = fullCode.toString();
 
     var dartFormatter = DartFormatter();
-    var formattedCode = dartFormatter.format(generatedCode);
+
+    String formattedCode;
+    try {
+      formattedCode = dartFormatter.format(generatedCode);
+    } catch (e, s) {
+      log.severe("Error formatting generated code> $e\n$generatedCode", s);
+      rethrow;
+    }
 
     var genId = genPart.genId;
 
@@ -1610,9 +1617,26 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  @override\n');
     str.write('  List<String> get constructorsNames => $names;\n\n');
 
+    str.write(
+        '  static final Map<String,ConstructorReflection<$className>> _constructors = <String,ConstructorReflection<$className>>{};\n\n');
+
     str.write('  @override\n');
     str.write(
-        '  ConstructorReflection<$className>? constructor<R>(String constructorName) {\n');
+        '  ConstructorReflection<$className>? constructor(String constructorName) {\n');
+
+    //str.write('    return _constructorImpl(constructorName);\n');
+
+    str.write('    var c = _constructors[constructorName];\n');
+    str.write('    if (c != null) return c;\n');
+    str.write('    c = _constructorImpl(constructorName);\n');
+    str.write('    if (c == null) return null;\n');
+    str.write('    _constructors[constructorName] = c;\n');
+    str.write('    return c ;\n');
+
+    str.write('  }\n\n');
+
+    str.write(
+        '  ConstructorReflection<$className>? _constructorImpl(String constructorName) {\n');
 
     _buildSwitches(str, 'constructorName', entries.keys, (name) {
       var constructor = entries[name]!;
@@ -1709,9 +1733,64 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  @override\n');
     str.write('  List<String> get fieldsNames => $names;\n\n');
 
+    if (entries.isEmpty) {
+      str.write('  @override\n');
+      str.write(
+          '  FieldReflection<$className,T>? field<T>(String fieldName, [$className? obj]) => null;\n');
+      return;
+    }
+
+    str.write(
+        '  static final Map<String,FieldReflection<$className,dynamic>> _fieldsNoObject = <String,FieldReflection<$className,dynamic>>{};\n\n');
+
+    str.write(
+        '  final Map<String,FieldReflection<$className,dynamic>> _fieldsObject = <String,FieldReflection<$className,dynamic>>{};\n\n');
+
     str.write('  @override\n');
     str.write(
         '  FieldReflection<$className,T>? field<T>(String fieldName, [$className? obj]) {\n');
+
+    //str.write('    return _fieldImpl<T>(fieldName, obj);\n');
+
+    str.write('    if (obj == null) {\n');
+    str.write('      if (object != null) {\n');
+    str.write('        return _fieldObjectImpl<T>(fieldName);\n');
+    str.write('      } else {\n');
+    str.write('        return _fieldNoObjectImpl<T>(fieldName);\n');
+    str.write('      }\n');
+    str.write('    } else if (identical(obj, object)) {\n');
+    str.write('        return _fieldObjectImpl<T>(fieldName);\n');
+    str.write('    }\n');
+    str.write(
+        '    return _fieldNoObjectImpl<T>(fieldName)?.withObject(obj);\n');
+
+    str.write('  }\n\n');
+
+    str.write(
+        '  FieldReflection<$className,T>? _fieldNoObjectImpl<T>(String fieldName) {\n');
+    str.write('      final f = _fieldsNoObject[fieldName];\n');
+    str.write(
+        '      if (f != null) {return f as FieldReflection<$className, T>;}\n');
+    str.write('      final f2 = _fieldImpl(fieldName, null);\n');
+    str.write('      if (f2 == null) return null;\n');
+    str.write('      _fieldsNoObject[fieldName] = f2;\n');
+    str.write('      return f2 as FieldReflection<$className, T>;\n');
+    str.write('  }\n\n');
+
+    str.write(
+        '  FieldReflection<$className,T>? _fieldObjectImpl<T>(String fieldName) {\n');
+    str.write('      final f = _fieldsObject[fieldName];\n');
+    str.write(
+        '      if (f != null) {return f as FieldReflection<$className, T>;}\n');
+    str.write('      var f2 = _fieldNoObjectImpl<T>(fieldName);\n');
+    str.write('      if (f2 == null) return null;\n');
+    str.write('      f2 = f2.withObject(object!);\n');
+    str.write('      _fieldsObject[fieldName] = f2;\n');
+    str.write('      return f2 ;\n');
+    str.write('  }\n\n');
+
+    str.write(
+        '  FieldReflection<$className,dynamic>? _fieldImpl(String fieldName, $className? obj) {\n');
     str.write('    obj ??= object;\n\n');
 
     _buildSwitches(str, 'fieldName', entries.keys, (name) {
@@ -1733,14 +1812,12 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       var fullType = field.typeNameAsNullableCode;
       var nullable = field.nullable ? 'true' : 'false';
       var isFinal = field.isFinal ? 'true' : 'false';
-      var getter = '(o) => () => o!.$name as T';
-      var setter = !field.allowSetter
-          ? 'null'
-          : '(o) => (T? v) => o!.$name = v as $fullType';
+      var getter = '(o) => () => o!.$name';
+      var setter = !field.allowSetter ? 'null' : '(o) => (v) => o!.$name = v';
 
       var annotations = field.annotationsAsListCode;
 
-      return "FieldReflection<$className,T>(this, $declaringType, "
+      return "FieldReflection<$className,$fullType>(this, $declaringType, "
           "$typeCode, '$name', $nullable, "
           "$getter , $setter , "
           "obj, false, $isFinal, "
@@ -1758,9 +1835,32 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  @override\n');
     str.write('  List<String> get staticFieldsNames => $names;\n\n');
 
+    if (entries.isEmpty) {
+      str.write('  @override\n');
+      str.write(
+          '  FieldReflection<$className,T>? staticField<T>(String fieldName) => null;\n\n');
+      return;
+    }
+
+    str.write(
+        '  static final Map<String,FieldReflection<$className,dynamic>> _staticFields = <String,FieldReflection<$className,dynamic>>{};\n\n');
+
     str.write('  @override\n');
     str.write(
         '  FieldReflection<$className,T>? staticField<T>(String fieldName) {\n');
+
+    str.write('    var f = _staticFields[fieldName];\n');
+    str.write(
+        '    if (f != null) {return f as FieldReflection<$className,T>;}\n');
+    str.write('    f = _staticFieldImpl(fieldName);\n');
+    str.write('    if (f == null) return null;\n');
+    str.write('    _staticFields[fieldName] = f;\n');
+    str.write('    return f as FieldReflection<$className,T>;\n');
+
+    str.write('  }\n\n');
+
+    str.write(
+        '  FieldReflection<$className,dynamic>? _staticFieldImpl(String fieldName) {\n');
 
     _buildSwitches(str, 'fieldName', entries.keys, (name) {
       var field = entries[name]!;
@@ -1773,12 +1873,11 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       var fullType = field.typeNameAsNullableCode;
       var nullable = field.nullable ? 'true' : 'false';
       var isFinal = field.isFinal ? 'true' : 'false';
-      var getter = '(o) => () => $className.$name as T';
-      var setter = !field.allowSetter
-          ? 'null'
-          : '(o) => (T? v) => $className.$name = v as $fullType';
+      var getter = '(o) => () => $className.$name';
+      var setter =
+          !field.allowSetter ? 'null' : '(o) => (v) => $className.$name = v';
 
-      return "FieldReflection<$className,T>(this, $declaringType, "
+      return "FieldReflection<$className,$fullType>(this, $declaringType, "
           "$typeCode, '$name', $nullable, "
           "$getter , $setter , "
           "null, true, $isFinal, "
@@ -1823,9 +1922,64 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  @override\n');
     str.write('  List<String> get methodsNames => $names;\n\n');
 
+    if (entries.isEmpty) {
+      str.write('  @override\n');
+      str.write(
+          '  MethodReflection<$className,R>? method<R>(String methodName, [$className? obj]) => null;\n');
+      return;
+    }
+
+    str.write(
+        '  static final Map<String,MethodReflection<$className,dynamic>> _methodsNoObject = <String,MethodReflection<$className,dynamic>>{};\n\n');
+
+    str.write(
+        '  final Map<String,MethodReflection<$className,dynamic>> _methodsObject = <String,MethodReflection<$className,dynamic>>{};\n\n');
+
     str.write('  @override\n');
     str.write(
         '  MethodReflection<$className,R>? method<R>(String methodName, [$className? obj]) {\n');
+
+    //str.write('    return _methodImpl<R>(methodName, obj);\n');
+
+    str.write('    if (obj == null) {\n');
+    str.write('      if (object != null) {\n');
+    str.write('        return _methodObjectImpl<R>(methodName);\n');
+    str.write('      } else {\n');
+    str.write('        return _methodNoObjectImpl<R>(methodName);\n');
+    str.write('      }\n');
+    str.write('    } else if (identical(obj, object)) {\n');
+    str.write('      return _methodObjectImpl<R>(methodName);\n');
+    str.write('    }\n');
+    str.write(
+        '    return _methodNoObjectImpl<R>(methodName)?.withObject(obj);\n');
+
+    str.write('  }\n\n');
+
+    str.write(
+        '  MethodReflection<$className,R>? _methodNoObjectImpl<R>(String methodName) {\n');
+    str.write('    final m = _methodsNoObject[methodName];\n');
+    str.write(
+        '    if (m != null) {return m as MethodReflection<$className, R>;}\n');
+    str.write('    final m2 = _methodImpl(methodName, null);\n');
+    str.write('    if (m2 == null) return null;\n');
+    str.write('    _methodsNoObject[methodName] = m2;\n');
+    str.write('    return m2 as MethodReflection<$className, R>;\n');
+    str.write('  }\n\n');
+
+    str.write(
+        '  MethodReflection<$className,R>? _methodObjectImpl<R>(String methodName) {\n');
+    str.write('    final m = _methodsObject[methodName];\n');
+    str.write(
+        '    if (m != null) {return m as MethodReflection<$className, R>;}\n');
+    str.write('    var m2 = _methodNoObjectImpl<R>(methodName);\n');
+    str.write('    if (m2 == null) return null;\n');
+    str.write('    m2 = m2.withObject(object!);\n');
+    str.write('    _methodsObject[methodName] = m2;\n');
+    str.write('    return m2;\n');
+    str.write('  }\n\n');
+
+    str.write(
+        '  MethodReflection<$className,dynamic>? _methodImpl(String methodName, $className? obj) {\n');
     str.write('    obj ??= object;\n\n');
 
     _buildSwitches(str, 'methodName', entries.keys, (name) {
@@ -1835,10 +1989,11 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       }
 
       var declaringType = method.declaringType!.typeNameResolvable;
+      var returnType = method.returnTypeNameAsCode;
       var returnTypeAsCode = method.returnTypeAsCode;
       var nullable = method.returnNullable ? 'true' : 'false';
 
-      return "MethodReflection<$className,R>("
+      return "MethodReflection<$className,$returnType>("
           "this, $declaringType, '$name', $returnTypeAsCode, $nullable, (o) => o!.$name , obj , false, "
           "${method.normalParametersAsCode} , "
           "${method.optionalParametersAsCode}, "
@@ -1857,9 +2012,32 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  @override\n');
     str.write('  List<String> get staticMethodsNames => $names;\n\n');
 
+    if (entries.isEmpty) {
+      str.write('  @override\n');
+      str.write(
+          '  MethodReflection<$className,R>? staticMethod<R>(String methodName) => null;\n\n');
+      return;
+    }
+
+    str.write(
+        '  static final Map<String,MethodReflection<$className,dynamic>> _staticMethods = <String,MethodReflection<$className,dynamic>>{};\n\n');
+
     str.write('  @override\n');
     str.write(
         '  MethodReflection<$className,R>? staticMethod<R>(String methodName) {\n');
+
+    str.write('    var m = _staticMethods[methodName];\n');
+    str.write(
+        '    if (m != null) {return m as MethodReflection<$className,R>;}\n');
+    str.write('    m = _staticMethodImpl(methodName);\n');
+    str.write('    if (m == null) return null;\n');
+    str.write('    _staticMethods[methodName] = m;\n');
+    str.write('    return m as MethodReflection<$className,R>;\n');
+
+    str.write('  }\n\n');
+
+    str.write(
+        '  MethodReflection<$className,dynamic>? _staticMethodImpl(String methodName) {\n');
 
     _buildSwitches(str, 'methodName', entries.keys, (name) {
       var method = entries[name]!;
@@ -1868,10 +2046,11 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       }
 
       var declaringType = method.declaringType!.typeNameResolvable;
+      var returnType = method.returnTypeNameAsCode;
       var returnTypeAsCode = method.returnTypeAsCode;
       var nullable = method.returnNullable ? 'true' : 'false';
 
-      return "MethodReflection<$className,R>("
+      return "MethodReflection<$className,$returnType>("
           "this, $declaringType, '$name', $returnTypeAsCode, $nullable, (o) => $className.$name , null , true, "
           "${method.normalParametersAsCode} , "
           "${method.optionalParametersAsCode}, "
@@ -2439,7 +2618,7 @@ class _Constructor<T> extends _Element {
   bool get isStatic => constructorElement.isStatic;
 
   String get returnTypeNameAsCode =>
-      constructorElement.returnType.typeNameAsCode;
+      constructorElement.returnType.typeNameAsNullableCode;
 
   String get returnTypeAsCode =>
       constructorElement.returnType.asTypeReflectionCode(typeAliasTable);
@@ -2599,7 +2778,8 @@ class _Method extends _Element {
 
   bool get isStatic => methodElement.isStatic;
 
-  String get returnTypeNameAsCode => methodElement.returnType.typeNameAsCode;
+  String get returnTypeNameAsCode =>
+      methodElement.returnType.typeNameAsNullableCode;
 
   String get returnTypeAsCode =>
       methodElement.returnType.asTypeReflectionCode(typeAliasTable);
@@ -2842,7 +3022,7 @@ extension _DartTypeExtension on DartType {
     var arguments = resolvedTypeArguments;
 
     if (arguments.isNotEmpty) {
-      return '$name<${arguments.map((e) => e.typeNameAsCode).join(', ')}>';
+      return '$name<${arguments.map((e) => e.typeNameAsNullableCode).join(', ')}>';
     } else {
       return name;
     }
