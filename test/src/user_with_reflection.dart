@@ -366,3 +366,23 @@ class TestTransactionWithReflection {
 
   TestTransactionWithReflection.fromTo(this.amount, this.fromUser, this.toUser);
 }
+
+@EnableReflection()
+class TestName {
+  String? name;
+
+  bool get isEmpty => nameNormalized().isEmpty;
+
+  String nameNormalized() {
+    var n = name ?? '';
+    return n.toLowerCase().trim();
+  }
+
+  @override
+  String toString() {
+    return 'TestName{name: $name}';
+  }
+}
+
+@EnableReflection()
+class TestEmpty {}

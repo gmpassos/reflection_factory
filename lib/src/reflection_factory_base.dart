@@ -20,7 +20,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '1.2.25';
+  static const String VERSION = '2.0.0';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -903,7 +903,7 @@ abstract class ClassReflection<O> extends Reflection<O>
           constructorsNames.map((e) => constructor(e)!));
 
   /// Returns a [ConstructorReflection] for [constructorName].
-  ConstructorReflection<O>? constructor<R>(String constructorName);
+  ConstructorReflection<O>? constructor(String constructorName);
 
   /// Returns the best [ConstructorReflection] for [requiredParameters], [optionalParameters],
   /// [nullableParameters] and [presentParameters].
@@ -1086,14 +1086,35 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   List<FieldReflection<O, dynamic>>? _allFieldsNoObject;
 
+  List<FieldReflection<O, dynamic>> _allFieldsNoObjectImpl() =>
+      _allFieldsNoObject ??= List<FieldReflection<O, dynamic>>.unmodifiable(
+          fieldsNames.map((e) => field(e)!));
+
+  List<FieldReflection<O, dynamic>>? _allFieldsObject;
+
+  List<FieldReflection<O, dynamic>> _allFieldsObjectImpl() {
+    final obj = object;
+    if (obj == null) {
+      throw StateError("Null `object`");
+    }
+    return _allFieldsObject ??= List<FieldReflection<O, dynamic>>.unmodifiable(
+        _allFieldsNoObjectImpl().map((e) => e.withObject(obj)));
+  }
+
   /// Returns a [List] with all fields [FieldReflection].
   List<FieldReflection<O, dynamic>> allFields([O? obj]) {
-    if (obj == null && object == null) {
-      _allFieldsNoObject ??= List<FieldReflection<O, dynamic>>.unmodifiable(
-          fieldsNames.map((e) => field(e, obj)!));
+    if (obj == null) {
+      if (object != null) {
+        return _allFieldsObjectImpl();
+      } else {
+        return _allFieldsNoObjectImpl();
+      }
+    } else if (identical(obj, object)) {
+      return _allFieldsObjectImpl();
     }
 
-    return fieldsNames.map((e) => field(e, obj)!).toList();
+    final o = obj;
+    return _allFieldsNoObjectImpl().map((f) => f.withObject(o)).toList();
   }
 
   bool? _hasFinalField;
@@ -1173,15 +1194,36 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   List<MethodReflection<O, dynamic>>? _allMethodsNoObject;
 
+  List<MethodReflection<O, dynamic>> _allMethodsNoObjectImpl() =>
+      _allMethodsNoObject ??= List<MethodReflection<O, dynamic>>.unmodifiable(
+          methodsNames.map((e) => method(e)!));
+
+  List<MethodReflection<O, dynamic>>? _allMethodsObject;
+
+  List<MethodReflection<O, dynamic>> _allMethodsObjectImpl() {
+    final obj = object;
+    if (obj == null) {
+      throw StateError("Null `object`");
+    }
+    return _allMethodsObject ??=
+        List<MethodReflection<O, dynamic>>.unmodifiable(
+            _allMethodsNoObjectImpl().map((e) => e.withObject(obj)));
+  }
+
   /// Returns a [List] with all methods [MethodReflection].
   List<MethodReflection<O, dynamic>> allMethods([O? obj]) {
-    if (obj == null && object == null) {
-      return _allMethodsNoObject ??=
-          List<MethodReflection<O, dynamic>>.unmodifiable(
-              methodsNames.map((e) => method(e)!));
+    if (obj == null) {
+      if (object != null) {
+        return _allMethodsObjectImpl();
+      } else {
+        return _allMethodsNoObjectImpl();
+      }
+    } else if (identical(obj, object)) {
+      return _allMethodsObjectImpl();
     }
 
-    return methodsNames.map((e) => method(e, obj)!).toList();
+    final o = obj;
+    return _allMethodsNoObjectImpl().map((m) => m.withObject(o)).toList();
   }
 
   /// Returns a `const` [List] of static methods names.
@@ -1707,7 +1749,7 @@ abstract class ClassReflection<O> extends Reflection<O>
 
       if (key == null) {
         if (!field.isFinal && field.nullable) {
-          field.set(null);
+          field.setNullable(null);
         }
         continue;
       }
@@ -1729,7 +1771,7 @@ abstract class ClassReflection<O> extends Reflection<O>
         }
       } else if (field.nullable) {
         if (field.hasSetter) {
-          field.set(null);
+          field.setNullable(null);
         }
       }
     }
@@ -2442,7 +2484,7 @@ class TypeReflection<T> {
 }
 
 typedef FieldGetter<T> = T Function();
-typedef FieldSetter<T> = void Function(T? v);
+typedef FieldSetter<T> = void Function(T v);
 
 typedef FieldReflectionGetterAccessor<O, T> = FieldGetter<T> Function(O? obj);
 typedef FieldReflectionSetterAccessor<O, T> = FieldSetter<T> Function(O? obj);
@@ -2604,7 +2646,8 @@ class FieldReflection<O, T> extends ElementReflection<O>
   bool get hasSetter => _setter != null || setterAccessor != null;
 
   /// Sets this field value.
-  void set(T? v) {
+  /// See [setNullable].
+  void set(T v) {
     var setter = _setter;
     if (setter == null && setterAccessor != null) {
       setter = _setter = setterAccessor!(object);
@@ -2617,6 +2660,37 @@ class FieldReflection<O, T> extends ElementReflection<O>
         throw StateError('Final field: $className.$name');
       } else {
         throw StateError('Field without setter: $className.$name');
+      }
+    }
+  }
+
+  /// Sets this field value, allowing a nullable value.
+  /// Throws an [ArgumentError] if [v] can't be `null`.
+  /// See [set].
+  void setNullable(T? v) {
+    var setter = _setter;
+    if (setter == null && setterAccessor != null) {
+      setter = _setter = setterAccessor!(object);
+    }
+
+    if (setter != null) {
+      if (v == null) {
+        T vNull;
+        try {
+          vNull = null as T;
+        } catch (e) {
+          throw ArgumentError(
+              "Field can't be set to `null`: $className.$name ($T)");
+        }
+        setter(vNull);
+      } else {
+        setter(v);
+      }
+    } else {
+      if (isFinal) {
+        throw StateError('Final field: $className.$name ($T)');
+      } else {
+        throw StateError('Field without setter: $className.$name ($T)');
       }
     }
   }
