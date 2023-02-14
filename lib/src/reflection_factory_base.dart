@@ -20,7 +20,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.0.0';
+  static const String VERSION = '2.0.1';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -879,7 +879,8 @@ abstract class ClassReflection<O> extends Reflection<O>
   O? createInstanceWithNoRequiredArgsConstructor();
 
   /// Creates an instances calling [createInstanceWithDefaultConstructor] or
-  /// [createInstanceWithEmptyConstructor].
+  /// [createInstanceWithEmptyConstructor] or
+  /// [createInstanceWithNoRequiredArgsConstructor].
   O? createInstance() =>
       createInstanceWithDefaultConstructor() ??
       createInstanceWithEmptyConstructor() ??
@@ -1502,6 +1503,9 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   /// Creates an instance with the constructor returned by [getBestConstructorForMap],
   /// using [map] entries as parameters.
+  /// - Throws [UnresolvedParameterError] when it's its impossible to call any
+  ///   constructor due to unresovled parameters.
+  /// - Throws any error thrown by a constructor invocation.
   O? createInstanceWithBestConstructor(Map<String, Object?> map,
       {FieldNameResolver? fieldNameResolver,
       FieldValueResolver? fieldValueResolver}) {
@@ -1523,10 +1527,17 @@ abstract class ClassReflection<O> extends Reflection<O>
     }
 
     for (var c in constructors) {
-      var o = createInstanceWithConstructor(c, map,
-          fieldNameResolver: fieldNameResolver,
-          fieldValueResolver: fieldValueResolver,
-          onInvocationError: catchInvokeError);
+      O? o;
+      try {
+        o = createInstanceWithConstructor(c, map,
+            fieldNameResolver: fieldNameResolver,
+            fieldValueResolver: fieldValueResolver,
+            onInvocationError: catchInvokeError);
+      } on UnresolvedParameterError catch (e) {
+        invocationErrors.add([c, null, map, e]);
+        continue;
+      }
+
       if (o != null) return o;
     }
 
@@ -1536,7 +1547,12 @@ abstract class ClassReflection<O> extends Reflection<O>
         _showInvokeError(i, args[0], args[1], args[2], args[3]);
       }
 
-      var error = invocationErrors.first[3];
+      var mainInvicatuibError = invocationErrors
+          .firstWhereOrNull((e) => e[3] is! UnresolvedParameterError);
+
+      mainInvicatuibError ??= invocationErrors.first;
+
+      var error = mainInvicatuibError[3];
       throw error;
     }
 
@@ -1546,15 +1562,19 @@ abstract class ClassReflection<O> extends Reflection<O>
   void _showInvokeError(
       int i,
       ConstructorReflection constructor,
-      MethodInvocation methodInvocation,
+      MethodInvocation? methodInvocation,
       Map<String, dynamic> map,
       Object? error) {
     var stack = error is Error ? error.stackTrace : StackTrace.current;
-    print('Error invoking[$i]>\n'
-        '  - constructor: $constructor\n'
-        '  - map: $map\n'
-        '  - methodInvocation: $methodInvocation\n'
-        '  - error: $error\n');
+
+    var info = [
+      '  - constructor: $constructor',
+      '  - map: $map',
+      if (methodInvocation != null) '  - methodInvocation: $methodInvocation',
+      if (error != null) '  - error: $error',
+    ].join('\n');
+
+    print('Error invoking[$i]>\n$info');
     print(stack);
   }
 
@@ -1720,7 +1740,10 @@ abstract class ClassReflection<O> extends Reflection<O>
       FieldValueResolver? fieldValueResolver}) {
     fieldNameResolver ??= _defaultFieldNameResolver;
 
+    var triedBestConstructor = false;
+
     if (hasFieldWithoutSetter || !canCreateInstanceWithoutArguments) {
+      triedBestConstructor = true;
       var o = createInstanceWithBestConstructor(map,
           fieldNameResolver: fieldNameResolver,
           fieldValueResolver: fieldValueResolver);
@@ -1733,7 +1756,8 @@ abstract class ClassReflection<O> extends Reflection<O>
     var fieldsNamesInMap =
         fieldsNames.where((f) => fieldsResolved.containsKey(f)).toList();
 
-    if (!_canSetFieldsInMap(fieldsNamesInMap, fieldsResolved)) {
+    if (!triedBestConstructor &&
+        !_canSetFieldsInMap(fieldsNamesInMap, fieldsResolved)) {
       var o = createInstanceWithBestConstructor(map,
           fieldNameResolver: fieldNameResolver,
           fieldValueResolver: fieldValueResolver);
@@ -2733,34 +2757,47 @@ class FieldReflection<O, T> extends ElementReflection<O>
   }
 }
 
-final Object absentParameterValue = _AbsentParameterValue();
+const Object absentParameterValue = _AbsentParameterValue();
+const Object absentParameterValueRequired =
+    _AbsentParameterValue(required: true);
 
-final Object unresolvedParameterValue = _UnresolvedParameterValue();
+const Object unresolvedParameterValue = _UnresolvedParameterValue();
+const Object unresolvedParameterValueRequired =
+    _UnresolvedParameterValue(required: true);
 
-class _AbsentParameterValue {
-  const _AbsentParameterValue();
+abstract class _ParameterValue {
+  final bool required;
+  final int _hashCode;
+
+  const _ParameterValue({this.required = false, required int hashCode})
+      : _hashCode = hashCode;
+
+  String get type;
 
   @override
   bool operator ==(Object other) => identical(this, other);
 
   @override
-  int get hashCode => 1;
+  int get hashCode => _hashCode;
 
   @override
-  String toString() => '<absent_parameter>';
+  String toString() => required ? '<$type>[required]' : '<$type>';
 }
 
-class _UnresolvedParameterValue {
-  const _UnresolvedParameterValue();
+class _AbsentParameterValue extends _ParameterValue {
+  const _AbsentParameterValue({super.required})
+      : super(hashCode: required ? 1 : 2);
 
   @override
-  bool operator ==(Object other) => identical(this, other);
+  String get type => 'absent_parameter';
+}
+
+class _UnresolvedParameterValue extends _ParameterValue {
+  const _UnresolvedParameterValue({super.required})
+      : super(hashCode: required ? 11 : 12);
 
   @override
-  int get hashCode => 2;
-
-  @override
-  String toString() => '<unresolved_parameter>';
+  String get type => 'unresolved_parameter';
 }
 
 typedef ParameterProvider = Object? Function(
@@ -3081,14 +3118,30 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
           }
           return valRevived;
         }
+
         if (contains) {
-          return val == null ? null : unresolvedParameterValue;
+          if (val == null) {
+            return null;
+          } else {
+            return p.required
+                ? unresolvedParameterValueRequired
+                : unresolvedParameterValue;
+          }
         } else {
-          return absentParameterValue;
+          return p.required
+              ? absentParameterValueRequired
+              : absentParameterValue;
         }
       } else {
         if (val != null) return val;
-        return contains ? null : absentParameterValue;
+
+        if (contains) {
+          return null;
+        } else {
+          return p.required
+              ? absentParameterValueRequired
+              : absentParameterValue;
+        }
       }
     }
 
@@ -3174,10 +3227,8 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
       if (_hasUnresolvedParameterValue(normalValues) ||
           _hasUnresolvedParameterValue(optionalValues) ||
           _hasUnresolvedParameterValue(namedValues.entries)) {
-        throw StateError(
-            "Unresolved parameter value> normal: ${normalValues.asStringSimple} ; "
-            "optional: ${optionalValues.asStringSimple} ; "
-            "named: ${namedValues.entries.asStringSimple}");
+        throw UnresolvedParameterError(
+            this, normalValues, optionalValues, namedValues);
       }
     }
 
@@ -3296,9 +3347,12 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
 }
 
 extension _ObjectExtension on Object? {
-  bool get isAbsentParameterValue => this == absentParameterValue;
+  bool get isAbsentParameterValue =>
+      this == absentParameterValue || this == absentParameterValueRequired;
 
-  bool get isUnresolvedParameterValue => this == unresolvedParameterValue;
+  bool get isUnresolvedParameterValue =>
+      this == unresolvedParameterValue ||
+      this == unresolvedParameterValueRequired;
 
   String get asStringSimple {
     var val = this;
@@ -3567,6 +3621,27 @@ class MethodInvocation<T> {
   String toString() {
     return 'MethodInvocation{normalParameters: $normalParameters, optionalParameters: $optionalParameters, namedParameters: $namedParameters}';
   }
+}
+
+/// [Error] thrown when [MethodInvocation] can't be defined due to
+/// an unresolved parameter value.
+class UnresolvedParameterError extends Error {
+  final FunctionReflection function;
+  final List<MapEntry<String, Object?>> normalValues;
+  final List<MapEntry<String, Object?>> optionalValues;
+  final Map<String, dynamic> namedValues;
+
+  UnresolvedParameterError(
+      this.function, this.normalValues, this.optionalValues, this.namedValues);
+
+  String get message =>
+      "${function is ConstructorReflection ? 'Constructor' : 'Method'}[${function.className}.${function.name}] Unresolved parameter value> "
+      "normal: ${normalValues.asStringSimple} ; "
+      "optional: ${optionalValues.asStringSimple} ; "
+      "named: ${namedValues.entries.asStringSimple}";
+
+  @override
+  String toString() => message;
 }
 
 final ListEquality<TypeReflection> _listEqualityTypeReflection =

@@ -1,3 +1,11 @@
+## 2.0.1
+
+- `ClassReflection.createInstanceWithBestConstructor`:
+  - Now throws `UnresolvedParameterError` instead of `StateError` for unresolved parameters.
+- analyzer: ^5.5.0
+- test: ^1.23.1
+- coverage: ^1.6.3
+
 ## 2.0.0
 
 - `ClassReflection`:
