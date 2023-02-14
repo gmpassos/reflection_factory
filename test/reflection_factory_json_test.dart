@@ -1484,10 +1484,8 @@ void main() {
               () => jsonCodec.decode(encodedJson,
                   type: TestTransactionWithReflection,
                   duplicatedEntitiesAsID: true),
-              throwsA(isA<StateError>().having(
-                  (e) => e.message,
-                  'With unresolved_parameter',
-                  contains('<unresolved_parameter>'))));
+              throwsA(isA<UnresolvedParameterError>().having((e) => e.message,
+                  'message', contains('<unresolved_parameter>'))));
         }
 
         {
@@ -1500,7 +1498,7 @@ void main() {
               () => jsonCodec.decode(encodedJson,
                   type: TestTransactionWithReflection,
                   duplicatedEntitiesAsID: true),
-              throwsA(isA<StateError>().having(
+              throwsA(isA<UnresolvedParameterError>().having(
                   (e) => e.message,
                   'With unresolved_parameter',
                   contains('<unresolved_parameter>'))));
