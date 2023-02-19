@@ -411,19 +411,31 @@ class ReflectionBuilder implements Builder {
           annotation.peek('reflectionClassName')!.stringValue;
       var reflectionExtensionName =
           annotated.annotation.peek('reflectionExtensionName')!.stringValue;
+      var optimizeReflectionInstances =
+          annotated.annotation.peek('optimizeReflectionInstances')!.boolValue;
 
       if (annotated.element.kind == ElementKind.CLASS) {
         var classElement = annotated.element as ClassElement;
 
-        var codes = await _enableReflectionClass(buildStep, classElement,
-            reflectionClassName, reflectionExtensionName, typeAliasTable);
+        var codes = await _enableReflectionClass(
+            buildStep,
+            classElement,
+            reflectionClassName,
+            reflectionExtensionName,
+            optimizeReflectionInstances,
+            typeAliasTable);
 
         codeTable.addAllClasses(codes);
       } else if (annotated.element.kind == ElementKind.ENUM) {
         var enumElement = annotated.element;
 
-        var codes = await _enableReflectionEnum(buildStep, enumElement,
-            reflectionClassName, reflectionExtensionName, typeAliasTable);
+        var codes = await _enableReflectionEnum(
+            buildStep,
+            enumElement,
+            reflectionClassName,
+            reflectionExtensionName,
+            optimizeReflectionInstances,
+            typeAliasTable);
 
         codeTable.addAllClasses(codes);
       }
@@ -500,6 +512,7 @@ class ReflectionBuilder implements Builder {
       '?%',
       '?%',
       reflectionProxyName,
+      false,
       classElement.library.languageVersion.effective,
       verbose: verbose,
     );
@@ -591,12 +604,15 @@ class ReflectionBuilder implements Builder {
         .peek('reflectionExtensionNames')!
         .mapValue
         .map((k, v) => MapEntry(k!.toTypeValue()!, v!.toStringValue()!));
+    var optimizeReflectionInstances =
+        annotated.annotation.peek('optimizeReflectionInstances')!.boolValue;
 
     log.info(' <ReflectionBridge>\n'
         '  -- classesTypes: $classesTypes\n'
         '  -- bridgeExtensionName: $bridgeExtensionName\n'
         '  -- reflectionClassNames: $reflectionClassNames\n'
-        '  -- reflectionExtensionNames: $reflectionExtensionNames\n\n');
+        '  -- reflectionExtensionNames: $reflectionExtensionNames\n'
+        '  -- optimizeReflectionInstances: $optimizeReflectionInstances\n\n');
 
     var codeTable = <String, String>{};
 
@@ -617,6 +633,7 @@ class ReflectionBuilder implements Builder {
         reflectionClassName,
         reflectionExtensionName,
         '?%',
+        optimizeReflectionInstances,
         classLibrary.languageVersion.effective,
         verbose: verbose,
       );
@@ -687,6 +704,7 @@ class ReflectionBuilder implements Builder {
       Element enumElement,
       String reflectionClassName,
       String reflectionExtensionName,
+      bool optimizeReflectionInstances,
       _TypeAliasTable typeAliasTable) async {
     var enumLibrary = await _getElementLibrary(buildStep, enumElement);
 
@@ -694,6 +712,7 @@ class ReflectionBuilder implements Builder {
       enumElement,
       reflectionClassName,
       reflectionExtensionName,
+      optimizeReflectionInstances,
       enumLibrary.languageVersion.effective,
       verbose: verbose,
     );
@@ -718,6 +737,7 @@ class ReflectionBuilder implements Builder {
       ClassElement classElement,
       String reflectionClassName,
       String reflectionExtensionName,
+      bool optimizeReflectionInstances,
       _TypeAliasTable typeAliasTable) async {
     var classLibrary = await _getElementLibrary(buildStep, classElement);
 
@@ -727,6 +747,7 @@ class ReflectionBuilder implements Builder {
       reflectionClassName,
       reflectionExtensionName,
       '?%',
+      optimizeReflectionInstances,
       classLibrary.languageVersion.effective,
       verbose: verbose,
     );
@@ -1033,14 +1054,20 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
   final String reflectionClassName;
   final String reflectionExtensionName;
 
+  final bool optimizeReflectionInstances;
+
   final Version languageVersion;
 
   final bool verbose;
 
   final String enumName;
 
-  _EnumTree(this._enumElement, this.reflectionClassName,
-      this.reflectionExtensionName, this.languageVersion,
+  _EnumTree(
+      this._enumElement,
+      this.reflectionClassName,
+      this.reflectionExtensionName,
+      this.optimizeReflectionInstances,
+      this.languageVersion,
       {this.verbose = false})
       : enumName = _enumElement.name! {
     _enumElement.visitChildren(this);
@@ -1105,8 +1132,22 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
     str.write(
         'class $reflectionClass extends EnumReflection<$enumName> with ${typeAliasTable.reflectionMixinName} {\n\n');
 
+    if (optimizeReflectionInstances) {
+      str.write(
+          '  static final Expando<$reflectionClass> _objectReflections = Expando();\n\n');
+
+      str.write('  factory $reflectionClass([$enumName? object]) {\n');
+      str.write('  if (object == null) return staticInstance;\n');
+      str.write(
+          '  return _objectReflections[object] ??= $reflectionClass._(object);\n');
+      str.write('}\n\n');
+    } else {
+      str.write(
+          '  $reflectionClass([$enumName? object]) : this._(object);\n\n');
+    }
+
     str.write(
-        '  $reflectionClass([$enumName? object]) : super($enumName, \'$enumName\', object);\n\n');
+        '  $reflectionClass._([$enumName? object]) : super($enumName, \'$enumName\', object);\n\n');
 
     str.write('  static bool _registered = false;\n');
     str.write('  @override\n');
@@ -1132,7 +1173,7 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
         '  $reflectionClass withoutObjectInstance() => _withoutObjectInstance ??= super.withoutObjectInstance() as $reflectionClass;\n\n');
 
     str.write(
-        '  static $reflectionClass get staticInstance => _withoutObjectInstance ??= $reflectionClass();\n\n');
+        '  static $reflectionClass get staticInstance => _withoutObjectInstance ??= $reflectionClass._();\n\n');
 
     str.write('  @override\n');
     str.write(
@@ -1260,6 +1301,8 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
   final String reflectionExtensionName;
   final String reflectionProxyName;
 
+  final bool optimizeReflectionInstances;
+
   final Version languageVersion;
 
   final bool verbose;
@@ -1272,6 +1315,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       this.reflectionClassName,
       this.reflectionExtensionName,
       this.reflectionProxyName,
+      this.optimizeReflectionInstances,
       this.languageVersion,
       {this.verbose = false})
       : className = _classElement.name {
@@ -1533,8 +1577,22 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write(
         'class $reflectionClass extends ClassReflection<$className> with ${typeAliasTable.reflectionMixinName} {\n\n');
 
+    if (optimizeReflectionInstances) {
+      str.write(
+          '  static final Expando<$reflectionClass> _objectReflections = Expando();\n\n');
+
+      str.write('  factory $reflectionClass([$className? object]) {\n');
+      str.write('  if (object == null) return staticInstance;\n');
+      str.write(
+          '  return _objectReflections[object] ??= $reflectionClass._(object);\n');
+      str.write('}\n\n');
+    } else {
+      str.write(
+          '  $reflectionClass([$className? object]) : this._(object);\n\n');
+    }
+
     str.write(
-        '  $reflectionClass([$className? object]) : super($className, \'$className\', object);\n\n');
+        '  $reflectionClass._([$className? object]) : super($className, \'$className\', object);\n\n');
 
     str.write('  static bool _registered = false;\n');
     str.write('  @override\n');
@@ -1560,7 +1618,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         '  $reflectionClass withoutObjectInstance() => _withoutObjectInstance ??= super.withoutObjectInstance() as $reflectionClass;\n\n');
 
     str.write(
-        '  static $reflectionClass get staticInstance => _withoutObjectInstance ??= $reflectionClass();\n\n');
+        '  static $reflectionClass get staticInstance => _withoutObjectInstance ??= $reflectionClass._();\n\n');
 
     str.write('  @override\n');
     str.write(

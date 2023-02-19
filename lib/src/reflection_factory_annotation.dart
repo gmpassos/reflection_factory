@@ -15,9 +15,15 @@ class EnableReflection {
   /// - Example: `User$reflectionExtension`
   final String reflectionExtensionName;
 
+  /// If true the [ClassReflection] implementation will use a `factory`
+  /// constructor and cache the instances by `object` in an [Expando].
+  /// Default: `true`
+  final bool optimizeReflectionInstances;
+
   const EnableReflection({
     this.reflectionClassName = '',
     this.reflectionExtensionName = '',
+    this.optimizeReflectionInstances = true,
   });
 }
 
@@ -40,11 +46,17 @@ class ReflectionBridge {
   /// See [EnableReflection.reflectionExtensionName].
   final Map<Type, String> reflectionExtensionNames;
 
+  /// If true the [ClassReflection] implementation will use a `factory`
+  /// constructor and cache the instances by `object` in an [Expando].
+  /// Default: `true`
+  final bool optimizeReflectionInstances;
+
   const ReflectionBridge(
     this.classesTypes, {
     this.bridgeExtensionName = '',
     this.reflectionClassNames = const <Type, String>{},
     this.reflectionExtensionNames = const <Type, String>{},
+    this.optimizeReflectionInstances = true,
   });
 }
 
@@ -148,4 +160,16 @@ extension IterableJsonFieldAliasExtension on Iterable<JsonFieldAlias> {
     }
     return name;
   }
+}
+
+/// Indicates the constructor to be used to instantiate an entity from JSON/[Map].
+// `TargetKind.constructor` is not defined yet!:
+// @Target({TargetKind.constructor})
+class JsonConstructor extends JsonAnnotation {
+  /// If `true` indicates that this is the only constructor to be used for JSON.
+  /// If multiple constructos are declared as mandatory,
+  /// only the 1st to work with the passed parameters will be used.
+  final bool mandatory;
+
+  const JsonConstructor({this.mandatory = false});
 }

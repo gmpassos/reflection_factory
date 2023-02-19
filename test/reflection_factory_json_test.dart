@@ -280,13 +280,13 @@ void main() {
           equals({'a': 1, 'b': 2, 'foo': '51:x'}));
 
       expect(
-          JsonCodec()
-              .toJson(TestAddressWithReflection('LA', city: 'Los Angeles')),
+          JsonCodec().toJson(
+              TestAddressWithReflection.withCity('LA', city: 'Los Angeles')),
           equals({'state': 'LA', 'city': 'Los Angeles'}));
 
       expect(
-          JsonCodec(removeField: (k) => k == 'city')
-              .toJson(TestAddressWithReflection('LA', city: 'Los Angeles')),
+          JsonCodec(removeField: (k) => k == 'city').toJson(
+              TestAddressWithReflection.withCity('LA', city: 'Los Angeles')),
           equals({'state': 'LA'}));
 
       TestUserWithReflection$reflection();
@@ -325,11 +325,11 @@ void main() {
           equals('joe@mail.com'));
 
       expect(
-          JsonCodec().toJson(TestCompanyWithReflection(
-              'FooInc', TestAddressWithReflection('State1', city: 'City1'),
+          JsonCodec().toJson(TestCompanyWithReflection('FooInc',
+              TestAddressWithReflection.withCity('State1', city: 'City1'),
               extraAddresses: [
-                TestAddressWithReflection('State2', city: 'City2'),
-                TestAddressWithReflection('State3', city: 'City3')
+                TestAddressWithReflection.withCity('State2', city: 'City2'),
+                TestAddressWithReflection.withCity('State3', city: 'City3')
               ])),
           equals({
             'branchesAddresses': [],
@@ -343,16 +343,18 @@ void main() {
           }));
 
       expect(<dynamic>[
-        TestAddressWithReflection('State2', city: 'City2'),
-        TestAddressWithReflection('State3', city: 'City3')
+        TestAddressWithReflection.withCity('State2', city: 'City2'),
+        TestAddressWithReflection.withCity('State3', city: 'City3')
       ], isNot(isA<List<TestAddressWithReflection>>()));
 
       expect(
           JsonCodec().toJson(TestFranchiseWithReflection(
             'FooInc',
             {
-              'main': TestAddressWithReflection('State1', city: 'City1'),
-              'extra': TestAddressWithReflection('State1', city: 'City2')
+              'main':
+                  TestAddressWithReflection.withCity('State1', city: 'City1'),
+              'extra':
+                  TestAddressWithReflection.withCity('State1', city: 'City2')
             },
           )),
           equals({
@@ -368,15 +370,15 @@ void main() {
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<dynamic>[
-            TestAddressWithReflection('State2', city: 'City2'),
-            TestAddressWithReflection('State3', city: 'City3')
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State3', city: 'City3')
           ], TypeInfo.fromType(List, [TestAddressWithReflection])),
           isA<List<TestAddressWithReflection>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance.castCollection(
               <dynamic>[
-                TestAddressWithReflection('State2', city: 'City2'),
+                TestAddressWithReflection.withCity('State2', city: 'City2'),
                 null
               ],
               TypeInfo.fromType(List, [TestAddressWithReflection]),
@@ -386,15 +388,15 @@ void main() {
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<dynamic>[
-            TestAddressWithReflection('State2', city: 'City2'),
-            TestAddressWithReflection('State3', city: 'City3')
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State3', city: 'City3')
           ], TypeInfo.fromType(List, [Object])),
           isA<List<Object>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<dynamic>[
-            TestAddressWithReflection('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
             null
           ], TypeInfo.fromType(List, [Object]), nullable: true),
           isA<List<Object?>>());
@@ -402,8 +404,8 @@ void main() {
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<dynamic>[
-            TestAddressWithReflection('State2', city: 'City2'),
-            TestAddressWithReflection('State3', city: 'City3')
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State3', city: 'City3')
           ], TypeInfo.fromType(List, [dynamic])),
           isA<List<dynamic>>());
 
@@ -423,15 +425,15 @@ void main() {
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<dynamic>[
-            TestAddressWithReflection('State2', city: 'City2'),
-            TestAddressWithReflection('State3', city: 'City3')
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State3', city: 'City3')
           ], TypeInfo.fromType(Iterable, [TestAddressWithReflection])),
           isA<Iterable<TestAddressWithReflection>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance.castCollection(
               <dynamic>[
-                TestAddressWithReflection('State2', city: 'City2'),
+                TestAddressWithReflection.withCity('State2', city: 'City2'),
                 null
               ],
               TypeInfo.fromType(Iterable, [TestAddressWithReflection]),
@@ -441,15 +443,15 @@ void main() {
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<dynamic>[
-            TestAddressWithReflection('State2', city: 'City2'),
-            TestAddressWithReflection('State3', city: 'City3')
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State3', city: 'City3')
           ], TypeInfo.fromType(Iterable, [Object])),
           isA<Iterable<Object>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<dynamic>[
-            TestAddressWithReflection('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
             null
           ], TypeInfo.fromType(Iterable, [Object]), nullable: true),
           isA<Iterable<Object?>>());
@@ -457,8 +459,8 @@ void main() {
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<dynamic>[
-            TestAddressWithReflection('State2', city: 'City2'),
-            TestAddressWithReflection('State3', city: 'City3')
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State3', city: 'City3')
           ], TypeInfo.fromType(Iterable, [dynamic])),
           isA<Iterable<dynamic>>());
 
@@ -478,15 +480,15 @@ void main() {
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<dynamic>{
-            TestAddressWithReflection('State2', city: 'City2'),
-            TestAddressWithReflection('State3', city: 'City3')
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State3', city: 'City3')
           }, TypeInfo.fromType(Set, [TestAddressWithReflection])),
           isA<Set<TestAddressWithReflection>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance.castCollection(
               <dynamic>{
-                TestAddressWithReflection('State2', city: 'City2'),
+                TestAddressWithReflection.withCity('State2', city: 'City2'),
                 null
               },
               TypeInfo.fromType(Set, [TestAddressWithReflection]),
@@ -496,15 +498,15 @@ void main() {
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<dynamic>{
-            TestAddressWithReflection('State2', city: 'City2'),
-            TestAddressWithReflection('State3', city: 'City3')
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State3', city: 'City3')
           }, TypeInfo.fromType(Set, [Object])),
           isA<Set<Object>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<dynamic>{
-            TestAddressWithReflection('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
             null
           }, TypeInfo.fromType(Set, [Object]), nullable: true),
           isA<Set<Object?>>());
@@ -512,8 +514,8 @@ void main() {
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<dynamic>{
-            TestAddressWithReflection('State2', city: 'City2'),
-            TestAddressWithReflection('State3', city: 'City3')
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State3', city: 'City3')
           }, TypeInfo.fromType(Set, [dynamic])),
           isA<Set<dynamic>>());
 
@@ -533,82 +535,81 @@ void main() {
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<Object, dynamic>{
-            'a': TestAddressWithReflection('State2', city: 'City2'),
-            'b': TestAddressWithReflection('State3', city: 'City3')
+            'a': TestAddressWithReflection.withCity('State2', city: 'City2'),
+            'b': TestAddressWithReflection.withCity('State3', city: 'City3')
           }, TypeInfo.fromType(Map, [String, TestAddressWithReflection])),
           isA<Map<String, TestAddressWithReflection>>());
 
       expect(
-          TestAddressWithReflection$reflection.staticInstance.castCollection(
-              <Object, dynamic>{
-                'a': TestAddressWithReflection('State2', city: 'City2'),
-                'b': null
-              },
-              TypeInfo.fromType(Map, [String, TestAddressWithReflection]),
-              nullable: true),
+          TestAddressWithReflection$reflection.staticInstance
+              .castCollection(<Object, dynamic>{
+            'a': TestAddressWithReflection.withCity('State2', city: 'City2'),
+            'b': null
+          }, TypeInfo.fromType(Map, [String, TestAddressWithReflection]),
+                  nullable: true),
           isA<Map<String, TestAddressWithReflection?>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<Object, dynamic>{
-            'a': TestAddressWithReflection('State2', city: 'City2'),
-            'b': TestAddressWithReflection('State3', city: 'City3')
+            'a': TestAddressWithReflection.withCity('State2', city: 'City2'),
+            'b': TestAddressWithReflection.withCity('State3', city: 'City3')
           }, TypeInfo.fromType(Map, [String, dynamic])),
           isA<Map<String, dynamic>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<Object, dynamic>{
-            'a': TestAddressWithReflection('State2', city: 'City2'),
-            'b': TestAddressWithReflection('State3', city: 'City3')
+            'a': TestAddressWithReflection.withCity('State2', city: 'City2'),
+            'b': TestAddressWithReflection.withCity('State3', city: 'City3')
           }, TypeInfo.fromType(Map, [String, Object])),
           isA<Map<String, Object>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<Object, dynamic>{
-            'a': TestAddressWithReflection('State2', city: 'City2'),
-            'b': TestAddressWithReflection('State3', city: 'City3')
+            'a': TestAddressWithReflection.withCity('State2', city: 'City2'),
+            'b': TestAddressWithReflection.withCity('State3', city: 'City3')
           }, TypeInfo.fromType(Map, [Object, TestAddressWithReflection])),
           isA<Map<Object, TestAddressWithReflection>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<Object, dynamic>{
-            'a': TestAddressWithReflection('State2', city: 'City2'),
-            'b': TestAddressWithReflection('State3', city: 'City3')
+            'a': TestAddressWithReflection.withCity('State2', city: 'City2'),
+            'b': TestAddressWithReflection.withCity('State3', city: 'City3')
           }, TypeInfo.fromType(Map, [Object, dynamic])),
           isA<Map<Object, dynamic>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<Object, dynamic>{
-            'a': TestAddressWithReflection('State2', city: 'City2'),
-            'b': TestAddressWithReflection('State3', city: 'City3')
+            'a': TestAddressWithReflection.withCity('State2', city: 'City2'),
+            'b': TestAddressWithReflection.withCity('State3', city: 'City3')
           }, TypeInfo.fromType(Map, [Object, Object])),
           isA<Map<Object, Object>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<Object, dynamic>{
-            'a': TestAddressWithReflection('State2', city: 'City2'),
-            'b': TestAddressWithReflection('State3', city: 'City3')
+            'a': TestAddressWithReflection.withCity('State2', city: 'City2'),
+            'b': TestAddressWithReflection.withCity('State3', city: 'City3')
           }, TypeInfo.fromType(Map, [dynamic, TestAddressWithReflection])),
           isA<Map<dynamic, TestAddressWithReflection>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<Object, dynamic>{
-            'a': TestAddressWithReflection('State2', city: 'City2'),
-            'b': TestAddressWithReflection('State3', city: 'City3')
+            'a': TestAddressWithReflection.withCity('State2', city: 'City2'),
+            'b': TestAddressWithReflection.withCity('State3', city: 'City3')
           }, TypeInfo.fromType(Map, [dynamic, Object])),
           isA<Map<dynamic, Object>>());
 
       expect(
           TestAddressWithReflection$reflection.staticInstance
               .castCollection(<Object, dynamic>{
-            'a': TestAddressWithReflection('State2', city: 'City2'),
-            'b': TestAddressWithReflection('State3', city: 'City3')
+            'a': TestAddressWithReflection.withCity('State2', city: 'City2'),
+            'b': TestAddressWithReflection.withCity('State3', city: 'City3')
           }, TypeInfo.fromType(Map, [dynamic, dynamic])),
           isA<Map<dynamic, dynamic>>());
 
@@ -681,20 +682,22 @@ void main() {
       expect(
           JsonCodec().fromJson({'state': 'LA', 'city': 'Los Angeles'},
               type: TestAddressWithReflection),
-          equals(TestAddressWithReflection('LA', city: 'Los Angeles')));
+          equals(
+              TestAddressWithReflection.withCity('LA', city: 'Los Angeles')));
 
       expect(
           JsonCodec().fromJson({
             'city': 'Los Angeles',
             'state': 'LA',
           }, type: TestAddressWithReflection),
-          equals(TestAddressWithReflection('LA', city: 'Los Angeles')));
+          equals(
+              TestAddressWithReflection.withCity('LA', city: 'Los Angeles')));
 
       expect(
           JsonCodec().fromJson({
             'state': 'LA',
           }, type: TestAddressWithReflection),
-          equals(TestAddressWithReflection('LA')));
+          equals(TestAddressWithReflection.withCity('LA')));
 
       expect(
           JsonCodec().fromJson({
@@ -706,11 +709,11 @@ void main() {
             'name': 'FooInc',
             'extraNames': ['BarInc', 'BazIn'],
           }, type: TestCompanyWithReflection),
-          equals(TestCompanyWithReflection(
-              'FooInc', TestAddressWithReflection('State1', city: 'City1'),
+          equals(TestCompanyWithReflection('FooInc',
+              TestAddressWithReflection.withCity('State1', city: 'City1'),
               extraAddresses: [
-                TestAddressWithReflection('State2', city: 'City2'),
-                TestAddressWithReflection('State3', city: 'City3')
+                TestAddressWithReflection.withCity('State2', city: 'City2'),
+                TestAddressWithReflection.withCity('State3', city: 'City3')
               ],
               extraNames: [
                 'BarInc',
@@ -726,11 +729,11 @@ void main() {
             'mainAddress': {'state': 'State1', 'city': 'City1'},
             'name': 'FooInc'
           }),
-          equals(TestCompanyWithReflection(
-              'FooInc', TestAddressWithReflection('State1', city: 'City1'),
+          equals(TestCompanyWithReflection('FooInc',
+              TestAddressWithReflection.withCity('State1', city: 'City1'),
               extraAddresses: [
-                TestAddressWithReflection('State2', city: 'City2'),
-                TestAddressWithReflection('State3', city: 'City3')
+                TestAddressWithReflection.withCity('State2', city: 'City2'),
+                TestAddressWithReflection.withCity('State3', city: 'City3')
               ])));
 
       expect(
@@ -743,11 +746,11 @@ void main() {
             'mainAddress': {'state': 'State1', 'city': 'City1'},
             'name': 'FooInc'
           }),
-          equals(TestCompanyWithReflection(
-              'FooInc', TestAddressWithReflection('State1', city: 'City1'),
+          equals(TestCompanyWithReflection('FooInc',
+              TestAddressWithReflection.withCity('State1', city: 'City1'),
               extraAddresses: [
-                TestAddressWithReflection('State2', city: 'City2'),
-                TestAddressWithReflection('State3', city: 'City3')
+                TestAddressWithReflection.withCity('State2', city: 'City2'),
+                TestAddressWithReflection.withCity('State3', city: 'City3')
               ],
               extraNames: [
                 'BarIn',
@@ -765,11 +768,11 @@ void main() {
                 'name': 'FooInc'
               }),
               type: TestCompanyWithReflection),
-          equals(TestCompanyWithReflection(
-              'FooInc', TestAddressWithReflection('State1', city: 'City1'),
+          equals(TestCompanyWithReflection('FooInc',
+              TestAddressWithReflection.withCity('State1', city: 'City1'),
               extraAddresses: [
-                TestAddressWithReflection('State2', city: 'City2'),
-                TestAddressWithReflection('State3', city: 'City3')
+                TestAddressWithReflection.withCity('State2', city: 'City2'),
+                TestAddressWithReflection.withCity('State3', city: 'City3')
               ])));
 
       expect(
@@ -783,30 +786,30 @@ void main() {
               }),
               type: TestFranchiseWithReflection),
           equals(TestFranchiseWithReflection('FooFranchise', {
-            'a': TestAddressWithReflection('State', city: 'A'),
-            'b': TestAddressWithReflection('State', city: 'B'),
+            'a': TestAddressWithReflection.withCity('State', city: 'A'),
+            'b': TestAddressWithReflection.withCity('State', city: 'B'),
           })));
 
       expect(
           JsonCodec.defaultCodec.fromJsonList([
-            TestAddressWithReflection('State2', city: 'City2'),
-            TestAddressWithReflection('State3', city: 'City3')
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State3', city: 'City3')
           ], type: TestAddressWithReflection),
           equals([
-            TestAddressWithReflection('State2', city: 'City2'),
-            TestAddressWithReflection('State3', city: 'City3')
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State3', city: 'City3')
           ]));
 
       expect(
           await JsonCodec.defaultCodec.fromJsonListAsync(
               Future.value([
-                TestAddressWithReflection('State2', city: 'City2'),
-                TestAddressWithReflection('State3', city: 'City3')
+                TestAddressWithReflection.withCity('State2', city: 'City2'),
+                TestAddressWithReflection.withCity('State3', city: 'City3')
               ]),
               type: TestAddressWithReflection),
           equals([
-            TestAddressWithReflection('State2', city: 'City2'),
-            TestAddressWithReflection('State3', city: 'City3')
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State3', city: 'City3')
           ]));
 
       expect(
@@ -820,7 +823,7 @@ void main() {
               {'state': 'State1', 'city': 'City1'},
               type: TestAddressWithReflection),
           equals(
-            TestAddressWithReflection('State1', city: 'City1'),
+            TestAddressWithReflection.withCity('State1', city: 'City1'),
           ));
 
       expect(
@@ -828,7 +831,7 @@ void main() {
               Future.value({'state': 'State1', 'city': 'City1'}),
               type: TestAddressWithReflection),
           equals(
-            TestAddressWithReflection('State1', city: 'City1'),
+            TestAddressWithReflection.withCity('State1', city: 'City1'),
           ));
 
       expect(
@@ -836,29 +839,29 @@ void main() {
               {'state': 'State1', 'city': Future.value('City1')},
               type: TestAddressWithReflection),
           equals(
-            TestAddressWithReflection('State1', city: 'City1'),
+            TestAddressWithReflection.withCity('State1', city: 'City1'),
           ));
 
       expect(
           JsonCodec().decode(
               '{"extraAddresses":[{"state":"State2","city":"City2"},{"state":"State3","city":"City3"}],"mainAddress":{"state":"State1","city":"City1"},"name":"FooInc"}',
               type: TestCompanyWithReflection),
-          equals(TestCompanyWithReflection(
-              'FooInc', TestAddressWithReflection('State1', city: 'City1'),
+          equals(TestCompanyWithReflection('FooInc',
+              TestAddressWithReflection.withCity('State1', city: 'City1'),
               extraAddresses: [
-                TestAddressWithReflection('State2', city: 'City2'),
-                TestAddressWithReflection('State3', city: 'City3')
+                TestAddressWithReflection.withCity('State2', city: 'City2'),
+                TestAddressWithReflection.withCity('State3', city: 'City3')
               ])));
 
       expect(
           TestCompanyWithReflection$fromJsonEncoded(
             '{"extraAddresses":[{"state":"State2","city":"City2"},{"state":"State3","city":"City3"}],"mainAddress":{"state":"State1","city":"City1"},"name":"FooInc"}',
           ),
-          equals(TestCompanyWithReflection(
-              'FooInc', TestAddressWithReflection('State1', city: 'City1'),
+          equals(TestCompanyWithReflection('FooInc',
+              TestAddressWithReflection.withCity('State1', city: 'City1'),
               extraAddresses: [
-                TestAddressWithReflection('State2', city: 'City2'),
-                TestAddressWithReflection('State3', city: 'City3')
+                TestAddressWithReflection.withCity('State2', city: 'City2'),
+                TestAddressWithReflection.withCity('State3', city: 'City3')
               ])));
 
       expect(
@@ -926,11 +929,11 @@ void main() {
           equals('{"a":1,"pass":"x"}'));
 
       expect(
-          JsonCodec().encode(TestCompanyWithReflection(
-              'FooInc', TestAddressWithReflection('State1', city: 'City1'),
+          JsonCodec().encode(TestCompanyWithReflection('FooInc',
+              TestAddressWithReflection.withCity('State1', city: 'City1'),
               extraAddresses: [
-                TestAddressWithReflection('State2', city: 'City2'),
-                TestAddressWithReflection('State3', city: 'City3')
+                TestAddressWithReflection.withCity('State2', city: 'City2'),
+                TestAddressWithReflection.withCity('State3', city: 'City3')
               ])),
           equals(
               '{"branchesAddresses":[],"extraAddresses":[{"state":"State2","city":"City2"},{"state":"State3","city":"City3"}],"extraNames":[],"mainAddress":{"state":"State1","city":"City1"},"name":"FooInc"}'));
@@ -964,7 +967,7 @@ void main() {
             return (o, j) => 'date:$o';
           }
           return null;
-        }, jsonValueDecoderProvider: (t, v) {
+        }, jsonValueDecoderProvider: (t, v, j) {
           if (t == DateTime || '$v'.startsWith('date:')) {
             return (o, t, j) {
               var s = '$o';
@@ -1017,10 +1020,10 @@ void main() {
       expect(
           JsonCodec().decode('{"state":"State3","city":"City3"}',
               type: TestAddressWithReflection),
-          equals(TestAddressWithReflection('State3', city: 'City3')));
+          equals(TestAddressWithReflection.withCity('State3', city: 'City3')));
 
       expect(
-          JsonCodec(jsomMapDecoderAsyncProvider: (type, map) {
+          JsonCodec(jsomMapDecoderAsyncProvider: (type, map, j) {
             var classReflection =
                 ReflectionFactory().getRegisterClassReflection(type)!;
             return (m, j) {
@@ -1031,7 +1034,7 @@ void main() {
             };
           }).decodeAsync('{"state":"State4","city":"City4"}',
               type: TestAddressWithReflection),
-          equals(TestAddressWithReflection('STATE4', city: 'CITY4')));
+          equals(TestAddressWithReflection.withCity('STATE4', city: 'CITY4')));
     });
 
     test('encode/decode', () {
@@ -1218,7 +1221,8 @@ void main() {
       TestCompanyWithReflection$reflection.boot();
 
       {
-        var address = TestAddressWithReflection('NY', city: 'New York', id: 11);
+        var address =
+            TestAddressWithReflection.withCity('NY', city: 'New York', id: 11);
 
         var addressJson = address.toJson();
         expect(
@@ -1275,14 +1279,14 @@ void main() {
             return TestAddressWithReflection$reflection.staticInstance
                 .createInstanceFromMap(o);
           } else {
-            return TestAddressWithReflection('?', city: '?');
+            return TestAddressWithReflection.withCity('?', city: '?');
           }
         });
 
         try {
           {
-            var mainAddress =
-                TestAddressWithReflection('NY', city: 'New York', id: 11);
+            var mainAddress = TestAddressWithReflection.withCity('NY',
+                city: 'New York', id: 11);
 
             var company = TestCompanyWithReflection('c1', mainAddress);
 
@@ -1321,7 +1325,7 @@ void main() {
                 JsonCodec.defaultCodec
                     .fromJson(companyJson, type: TestCompanyWithReflection),
                 equals(TestCompanyWithReflection(
-                    'c1', TestAddressWithReflection('?', city: '?'))));
+                    'c1', TestAddressWithReflection.withCity('?', city: '?'))));
           }
         } finally {
           JsonDecoder.unregisterTypeDecoder(TestAddressWithReflection);
@@ -1510,7 +1514,7 @@ void main() {
   group('JsonEntityCacheSimple', () {
     test('basic', () {
       var mainAddress =
-          TestAddressWithReflection('NY', city: 'New York', id: 11);
+          TestAddressWithReflection.withCity('NY', city: 'New York', id: 11);
       var company = TestCompanyWithReflection('c1', mainAddress);
 
       var jsonEntityCache1 = JsonEntityCacheSimple();

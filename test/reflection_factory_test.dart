@@ -225,8 +225,37 @@ void main() {
 
       expect(
           TestUserWithReflection$reflection.staticInstance
-              .fromJson({'name': 'Foo', 'email': 'a@a.com', 'password': '123'}),
+              .fromJson({'name': 'Foo', 'email': 'a@a.com', 'Password': '123'}),
           equals(TestUserWithReflection.fields('Foo', 'a@a.com', '123')));
+
+      expect(
+          TestUserWithReflection$reflection.staticInstance.fromJson({
+            'name': 'Foo',
+            'email': 'a@a.com',
+            'password': '123',
+            'foo': 123
+          }),
+          equals(TestUserWithReflection.fields('Foo', 'a@a.com', '123')));
+
+      expect(
+          TestUserWithReflection$reflection.staticInstance.fromJson({
+            'name': 'Foo',
+            'email': 'a@a.com',
+            'password': '123',
+            'level': 1001
+          }),
+          equals(TestUserWithReflection.fields('Foo', 'a@a.com', '123',
+              level: 1001)));
+
+      expect(
+          TestUserWithReflection$reflection.staticInstance.fromJson({
+            'name': 'Foo',
+            'email': 'a@a.com',
+            'password': '123',
+            'thelevel': 1001
+          }),
+          equals(TestUserWithReflection.fields('Foo', 'a@a.com', '123',
+              level: 1001)));
 
       expect(
           TestUserWithReflection.fields('Foo', 'a@a.com', '123').toJsonMap(),
@@ -473,7 +502,7 @@ void main() {
 
         var mapKV1 = tMapKV1.castMap(<Object, Object>{
           TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
-              TestAddressWithReflection('NY', city: 'New York')
+              TestAddressWithReflection.withCity('NY', city: 'New York')
         });
 
         expect(
@@ -481,7 +510,7 @@ void main() {
             allOf(
                 equals(<TestUserWithReflection, TestAddressWithReflection>{
                   TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
-                      TestAddressWithReflection('NY', city: 'New York')
+                      TestAddressWithReflection.withCity('NY', city: 'New York')
                 }),
                 isA<Map<TestUserWithReflection, TestAddressWithReflection>>()));
 
@@ -491,16 +520,16 @@ void main() {
             TestAddressWithReflection, TestAddressWithReflection);
 
         var mapKV2 = tMapKV2.castMap(<Object, Object>{
-          TestAddressWithReflection('CA', city: 'Los Angeles'):
-              TestAddressWithReflection('NY', city: 'New York')
+          TestAddressWithReflection.withCity('CA', city: 'Los Angeles'):
+              TestAddressWithReflection.withCity('NY', city: 'New York')
         });
 
         expect(
             mapKV2,
             allOf(
                 equals(<TestAddressWithReflection, TestAddressWithReflection>{
-                  TestAddressWithReflection('CA', city: 'Los Angeles'):
-                      TestAddressWithReflection('NY', city: 'New York')
+                  TestAddressWithReflection.withCity('CA', city: 'Los Angeles'):
+                      TestAddressWithReflection.withCity('NY', city: 'New York')
                 }),
                 isA<
                     Map<TestAddressWithReflection,
@@ -512,7 +541,7 @@ void main() {
         var mapK2 = TestUserWithReflection$reflection.staticInstance
             .castMap(<Object, Object>{
           TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
-              TestAddressWithReflection('NY', city: 'New York')
+              TestAddressWithReflection.withCity('NY', city: 'New York')
         }, tMapK2);
 
         expect(
@@ -520,7 +549,7 @@ void main() {
             allOf(
                 equals(<TestUserWithReflection, dynamic>{
                   TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
-                      TestAddressWithReflection('NY', city: 'New York')
+                      TestAddressWithReflection.withCity('NY', city: 'New York')
                 }),
                 isA<Map<TestUserWithReflection, dynamic>>()));
 
@@ -529,7 +558,7 @@ void main() {
 
         var mapV2 = TestUserWithReflection$reflection.staticInstance
             .castMap(<Object, Object>{
-          TestAddressWithReflection('NY', city: 'New York'):
+          TestAddressWithReflection.withCity('NY', city: 'New York'):
               TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
         }, tMapV2);
 
@@ -537,7 +566,7 @@ void main() {
             mapV2,
             allOf(
                 equals(<dynamic, TestUserWithReflection>{
-                  TestAddressWithReflection('NY', city: 'New York'):
+                  TestAddressWithReflection.withCity('NY', city: 'New York'):
                       TestUserWithReflection.fields(
                           'Joe', 'joe@mail.com', '123')
                 }),
@@ -1320,7 +1349,8 @@ void main() {
       expect(userStaticReflection.getStaticField('version'), equals(1.1));
       expect(userStaticReflection.getStaticField('withReflection'), isTrue);
 
-      var address = TestAddressWithReflection('CA', city: 'Los Angeles');
+      var address =
+          TestAddressWithReflection.withCity('CA', city: 'Los Angeles');
       var addressReflection = address.reflection;
 
       expect(addressReflection, isNotNull);
@@ -1329,10 +1359,22 @@ void main() {
       expect(addressReflection.fieldsNames,
           equals(['city', 'hashCode', 'id', 'state']));
       expect(addressReflection.methodsNames, equals(['toJson', 'toString']));
-      expect(addressReflection.constructorsNames, equals(['', 'empty']));
+      expect(addressReflection.constructorsNames,
+          equals(['empty', 'simple', 'withCity']));
 
       expect(ReflectionFactory.toJsonEncodable(address),
           equals({'state': 'CA', 'city': 'Los Angeles'}));
+
+      expect(addressReflection.toJson(address),
+          equals({'state': 'CA', 'city': 'Los Angeles'}));
+
+      expect(addressReflection.fromJson({'state': 'NY', 'city': 'New York'}),
+          equals(TestAddressWithReflection.withCity('NY', city: 'New York')));
+
+      expect(
+          addressReflection
+              .fromJson({'state': 'NY2', 'city': 'New York2', 'foo': 123}),
+          equals(TestAddressWithReflection.withCity('NY2', city: 'New York2')));
 
       expect(TestEmpty$reflection().allFields(), isEmpty);
       expect(TestEmpty$reflection().field('foo'), isNull);

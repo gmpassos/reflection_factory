@@ -538,11 +538,11 @@ void main() {
         var t3 = TypeInfo.from([]);
         expect(t3.type, equals(t1.type));
 
-        var company = TestCompanyWithReflection(
-            'FooInc', TestAddressWithReflection('State1', city: 'City1'),
+        var company = TestCompanyWithReflection('FooInc',
+            TestAddressWithReflection.withCity('State1', city: 'City1'),
             extraAddresses: [
-              TestAddressWithReflection('State2', city: 'City2'),
-              TestAddressWithReflection('State3', city: 'City3')
+              TestAddressWithReflection.withCity('State2', city: 'City2'),
+              TestAddressWithReflection.withCity('State3', city: 'City3')
             ]);
 
         var fieldExtraAddressesTypeInfo =
@@ -1012,10 +1012,12 @@ void main() {
         var entityType = TypeInfo<TestCompanyWithReflection>.fromType(
             TestCompanyWithReflection);
 
-        var address1 = TestAddressWithReflection('NY', city: 'New York', id: 1);
-        var address2 =
-            TestAddressWithReflection('CA', city: 'Los Angeles', id: 2);
-        var address3 = TestAddressWithReflection('MA', city: 'Boston', id: 3);
+        var address1 =
+            TestAddressWithReflection.withCity('NY', city: 'New York', id: 1);
+        var address2 = TestAddressWithReflection.withCity('CA',
+            city: 'Los Angeles', id: 2);
+        var address3 =
+            TestAddressWithReflection.withCity('MA', city: 'Boston', id: 3);
 
         var company1 = TestCompanyWithReflection('Comp1', address1,
             branchesAddresses: [address1],
@@ -1120,10 +1122,12 @@ void main() {
         var entityType = TypeInfo<TestCompanyWithReflection>.fromType(
             TestCompanyWithReflection);
 
-        var address1 = TestAddressWithReflection('NY', city: 'New York', id: 1);
-        var address2 =
-            TestAddressWithReflection('CA', city: 'Los Angeles', id: 2);
-        var address3 = TestAddressWithReflection('MA', city: 'Boston', id: 3);
+        var address1 =
+            TestAddressWithReflection.withCity('NY', city: 'New York', id: 1);
+        var address2 = TestAddressWithReflection.withCity('CA',
+            city: 'Los Angeles', id: 2);
+        var address3 =
+            TestAddressWithReflection.withCity('MA', city: 'Boston', id: 3);
 
         var company1 = TestCompanyWithReflection('Comp1', address2,
             branchesAddresses: [address1, address3],
