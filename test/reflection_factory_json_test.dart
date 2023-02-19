@@ -1511,6 +1511,40 @@ void main() {
     });
   });
 
+  group('JsonDecoder', () {
+    test('jsomMapDecoderProvider', () {
+      var jsonDecoderDefault = JsonDecoder();
+
+      var jsonDecoder = JsonDecoder(jsomMapDecoderProvider: (t, m, j) {
+        if (t == TestAddressWithReflection) {
+          return (m, j) {
+            return TestAddressWithReflection.withCity(m['state'] as String,
+                city: (m['city'] as String).toUpperCase(),
+                id: (m['id'] as int) * 10);
+          };
+        }
+      });
+
+      var address1 =
+          TestAddressWithReflection.withCity('NY', city: 'New York', id: 11);
+      var company1 = TestCompanyWithReflection('c1', address1);
+
+      var address2 =
+          TestAddressWithReflection.withCity('NY', city: 'NEW YORK', id: 110);
+      var company2 = TestCompanyWithReflection('c1', address2);
+
+      expect(
+          jsonDecoderDefault.fromJson(company1.toJson(),
+              type: TestCompanyWithReflection),
+          equals(company1));
+
+      expect(
+          jsonDecoder.fromJson(company1.toJson(),
+              type: TestCompanyWithReflection),
+          equals(company2));
+    });
+  });
+
   group('JsonEntityCacheSimple', () {
     test('basic', () {
       var mainAddress =
