@@ -1349,6 +1349,65 @@ void main() {
       expect(userStaticReflection.getStaticField('version'), equals(1.1));
       expect(userStaticReflection.getStaticField('withReflection'), isTrue);
 
+      {
+        final fieldEmail = userReflection.field('email')!;
+
+        expect(user.email, equals('joe@mail.net'));
+
+        fieldEmail.set('some@mail.com');
+        expect(user.email, equals('some@mail.com'));
+
+        fieldEmail.setNullable('some2@mail.com');
+        expect(user.email, equals('some2@mail.com'));
+
+        fieldEmail.setNullable(null);
+        expect(user.email, isNull);
+
+        fieldEmail.set('joe@mail.net');
+        expect(user.email, equals('joe@mail.net'));
+
+        var user2 = TestUserWithReflection.fields(
+            'Joe Thims', 'joetm@mail.net', '987',
+            id: 2002);
+
+        expect(user.email, equals('joe@mail.net'));
+        expect(user2.email, equals('joetm@mail.net'));
+
+        expect(fieldEmail.get(), equals('joe@mail.net'));
+        expect(fieldEmail.getFor(user2), equals('joetm@mail.net'));
+
+        fieldEmail.setFor(user2, 'joetm1@mail.com');
+        expect(user.email, equals('joe@mail.net'));
+        expect(user2.email, equals('joetm1@mail.com'));
+
+        fieldEmail.setNullableFor(user2, 'joetm2@mail.com');
+        expect(user.email, equals('joe@mail.net'));
+        expect(user2.email, equals('joetm2@mail.com'));
+        expect(fieldEmail.getFor(user2), equals('joetm2@mail.com'));
+      }
+
+      {
+        final fieldPassword = userReflection.field('password')!;
+
+        expect(user.password, equals('abc'));
+
+        fieldPassword.set('p0987');
+        expect(user.password, equals('p0987'));
+
+        fieldPassword.setNullable('p09877');
+        expect(user.password, equals('p09877'));
+
+        expect(
+            () => fieldPassword.setNullable(null),
+            throwsA(isA<ArgumentError>().having((e) => e.message, 'message',
+                contains("can't be set to `null`"))));
+
+        expect(user.password, equals('p09877'));
+
+        fieldPassword.set('abc');
+        expect(user.password, equals('abc'));
+      }
+
       var address =
           TestAddressWithReflection.withCity('CA', city: 'Los Angeles');
       var addressReflection = address.reflection;
@@ -1367,6 +1426,34 @@ void main() {
 
       expect(addressReflection.toJson(address),
           equals({'state': 'CA', 'city': 'Los Angeles'}));
+
+      {
+        expect(address.id, isNull);
+
+        addressReflection.setField<int?>('id', 123, address);
+        expect(address.id, equals(123));
+
+        addressReflection.setField<int?>('id', null, address);
+        expect(address.id, isNull);
+      }
+
+      {
+        var fieldId = addressReflection.field<int?>('id')!;
+
+        expect(address.id, isNull);
+
+        fieldId.set(1234);
+        expect(address.id, equals(1234));
+
+        fieldId.set(null);
+        expect(address.id, isNull);
+
+        fieldId.setNullable(12345);
+        expect(address.id, equals(12345));
+
+        fieldId.setNullable(null);
+        expect(address.id, isNull);
+      }
 
       expect(addressReflection.fromJson({'state': 'NY', 'city': 'New York'}),
           equals(TestAddressWithReflection.withCity('NY', city: 'New York')));
