@@ -109,23 +109,25 @@ typedef JsonValueDecoder<O> = O? Function(
     Object? o, Type type, JsonDecoder jsonDecoder);
 
 typedef JsonValueDecoderProvider<O> = JsonValueDecoder<O>? Function(
-    Type type, Object? value);
+    Type type, Object? value, JsonDecoder jsonDecoder);
 
 typedef JsomMapDecoder<O> = O? Function(
     Map<String, Object?> map, JsonDecoder jsonDecoder);
 
 typedef JsomMapDecoderProvider = JsomMapDecoder? Function(
-    Type type, Map<String, Object?> map);
+    Type type, Map<String, Object?> map, JsonDecoder jsonDecoder);
 
 typedef JsomMapDecoderAsync<O> = FutureOr<O?> Function(
     Map<String, Object?> map, JsonDecoder jsonDecoder);
 
 typedef JsomMapDecoderAsyncProvider = JsomMapDecoderAsync? Function(
-    Type type, Map<String, Object?> map);
+    Type type, Map<String, Object?> map, JsonDecoder jsonDecoder);
 
-typedef IterableCaster = Object? Function(Iterable value, TypeReflection type);
+typedef IterableCaster = Object? Function(
+    Iterable value, TypeReflection type, JsonDecoder jsonDecoder);
 
-typedef MapCaster = Object? Function(Map value, TypeReflection type);
+typedef MapCaster = Object? Function(
+    Map value, TypeReflection type, JsonDecoder jsonDecoder);
 
 /// JSON codec integrated with [ReflectionFactory].
 class JsonCodec {
@@ -576,9 +578,7 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
   }
 
   Object? _enumToJson(Enum o) {
-    var s = o.toString();
-    var idx = s.indexOf('.');
-    var name = idx > 0 ? s.substring(idx + 1) : s;
+    var name = o.name;
     return name;
   }
 
@@ -1404,7 +1404,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     var jsomMapDecoderProvider = this.jsomMapDecoderProvider;
     if (jsomMapDecoderProvider != null) {
-      var fromJsonMap = jsomMapDecoderProvider(type, map);
+      var fromJsonMap = jsomMapDecoderProvider(type, map, this);
       if (fromJsonMap != null) {
         var entity = fromJsonMap(map, this);
         _cacheEntity(entity);
@@ -1458,7 +1458,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     var jsonValueDecoderProvider = this.jsonValueDecoderProvider;
     if (jsonValueDecoderProvider != null) {
-      var valueDecoder = jsonValueDecoderProvider(type, s);
+      var valueDecoder = jsonValueDecoderProvider(type, s, this);
       if (valueDecoder != null) {
         var obj = valueDecoder(s, type, this) as O;
         if (obj != null) {
@@ -1539,7 +1539,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     var jsonValueDecoderProvider = this.jsonValueDecoderProvider;
     if (jsonValueDecoderProvider != null) {
-      var valueDecoder = jsonValueDecoderProvider(type, value);
+      var valueDecoder = jsonValueDecoderProvider(type, value, this);
       if (valueDecoder != null) {
         var obj = valueDecoder(value, type, this);
         if (obj != null) {
@@ -1682,7 +1682,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     var jsomMapDecoderAsyncProvider = this.jsomMapDecoderAsyncProvider;
     if (jsomMapDecoderAsyncProvider != null) {
-      var fromJsonMapAsync = jsomMapDecoderAsyncProvider(type, map);
+      var fromJsonMapAsync = jsomMapDecoderAsyncProvider(type, map, this);
       if (fromJsonMapAsync != null) {
         var futureOr = fromJsonMapAsync(map, this);
         return _castFutureOr<O>(futureOr);
@@ -1769,7 +1769,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       Iterable value, TypeReflection type, bool duplicatedEntitiesAsID) {
     var iterableCaster = this.iterableCaster;
     if (iterableCaster != null) {
-      var casted = iterableCaster(value, type);
+      var casted = iterableCaster(value, type, this);
       if (casted != null) {
         return casted;
       }
@@ -1802,7 +1802,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       Map value, TypeReflection type, bool duplicatedEntitiesAsID) {
     var mapCaster = this.mapCaster;
     if (mapCaster != null) {
-      var casted = mapCaster(value, type);
+      var casted = mapCaster(value, type, this);
       if (casted != null) {
         return casted;
       }
@@ -2112,8 +2112,8 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     return null;
   }
 
-  final Map<Type, Map<dynamic, Object>> _entities =
-      <Type, Map<dynamic, Object>>{};
+  final Map<Type, Map<Object, Object>> _entities =
+      <Type, Map<Object, Object>>{};
 
   @override
   void clearCachedEntities() {
@@ -2213,7 +2213,7 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     if (id == null) return;
 
     var type = entity.runtimeType;
-    var typeEntities = _entities.putIfAbsent(type, () => <dynamic, Object>{});
+    var typeEntities = _entities.putIfAbsent(type, () => <Object, Object>{});
     typeEntities[id] = entity!;
   }
 
@@ -2229,16 +2229,19 @@ class JsonEntityCacheSimple implements JsonEntityCache {
       if (entityTYpe != e.runtimeType) {
         entityTYpe = e.runtimeType;
         typeEntities =
-            _entities.putIfAbsent(entityTYpe, () => <dynamic, Object>{});
+            _entities.putIfAbsent(entityTYpe, () => <Object, Object>{});
       }
 
       typeEntities![id] = e!;
     }
   }
 
+  /// Returns the total number of cached entities.
+  int get length => _entities.values.map((e) => e.length).sum;
+
   @override
   String toString() {
-    var total = _entities.values.map((e) => e.length).sum;
+    var total = length;
     var s = 'JsonEntityCacheSimple#$id[$total]';
 
     return total == 0

@@ -1,3 +1,18 @@
+## 2.0.2
+
+- `ClassReflection`:
+  - `getBestConstructorsFor`, `createInstanceWithBestConstructor`, `getBestConstructorForMap`, `getBestConstructorsForMap`:
+    - Added parameter `allowOptionalOnlyConstructors`.
+  - `createInstanceFromMap`:
+    - Improved constructor resolution. 
+- `EnableReflection`, `ReflectionBridge`:
+  - Added parameter `optimizeReflectionInstances = true`:
+    - If `true` all generated `ClassReflection` and `EnumReflection` will have a `factory` constructor and
+      an `Expando` to cache reflection instances.
+- `FunctionReflection`:
+  - `methodInvocationFromMap`: optimize and clean code.
+- Added annotation `JsonConstructor`.
+
 ## 2.0.1
 
 - `ClassReflection.createInstanceWithBestConstructor`:

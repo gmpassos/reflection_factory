@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.0.1
+// BUILDER: reflection_factory/2.0.2
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -17,7 +17,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.0.1');
+  static final Version _version = Version.parse('2.0.2');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -130,6 +130,9 @@ TestUserWithReflection TestUserWithReflection$fromJsonEncoded(
 class TestAddressWithReflection$reflection
     extends ClassReflection<TestAddressWithReflection> with __ReflectionMixin {
   TestAddressWithReflection$reflection([TestAddressWithReflection? object])
+      : this._(object);
+
+  TestAddressWithReflection$reflection._([TestAddressWithReflection? object])
       : super(TestAddressWithReflection, 'TestAddressWithReflection', object);
 
   static bool _registered = false;
@@ -157,7 +160,7 @@ class TestAddressWithReflection$reflection
           super.withoutObjectInstance() as TestAddressWithReflection$reflection;
 
   static TestAddressWithReflection$reflection get staticInstance =>
-      _withoutObjectInstance ??= TestAddressWithReflection$reflection();
+      _withoutObjectInstance ??= TestAddressWithReflection$reflection._();
 
   @override
   TestAddressWithReflection$reflection getStaticInstance() => staticInstance;
@@ -186,7 +189,8 @@ class TestAddressWithReflection$reflection
       TestAddressWithReflection.empty();
 
   @override
-  List<String> get constructorsNames => const <String>['', 'empty'];
+  List<String> get constructorsNames =>
+      const <String>['empty', 'simple', 'withCity'];
 
   static final Map<String, ConstructorReflection<TestAddressWithReflection>>
       _constructors =
@@ -208,20 +212,31 @@ class TestAddressWithReflection$reflection
     var lc = constructorName.trim().toLowerCase();
 
     switch (lc) {
-      case '':
+      case 'simple':
         return ConstructorReflection<TestAddressWithReflection>(
             this,
             TestAddressWithReflection,
-            '',
+            'simple',
+            () => (String state, {int? id}) =>
+                TestAddressWithReflection.simple(state, id: id),
+            const <__PR>[__PR(__TR.tString, 'state', false, true)],
+            null,
+            const <String, __PR>{'id': __PR(__TR.tInt, 'id', true, false)},
+            null);
+      case 'withcity':
+        return ConstructorReflection<TestAddressWithReflection>(
+            this,
+            TestAddressWithReflection,
+            'withCity',
             () => (String state, {String city = '', int? id}) =>
-                TestAddressWithReflection(state, city: city, id: id),
+                TestAddressWithReflection.withCity(state, city: city, id: id),
             const <__PR>[__PR(__TR.tString, 'state', false, true)],
             null,
             const <String, __PR>{
               'city': __PR(__TR.tString, 'city', false, false, ''),
               'id': __PR(__TR.tInt, 'id', true, false)
             },
-            null);
+            [JsonConstructor(mandatory: true)]);
       case 'empty':
         return ConstructorReflection<TestAddressWithReflection>(
             this,
@@ -480,7 +495,17 @@ class TestAddressWithReflection$reflection
 
 class TestCompanyWithReflection$reflection
     extends ClassReflection<TestCompanyWithReflection> with __ReflectionMixin {
-  TestCompanyWithReflection$reflection([TestCompanyWithReflection? object])
+  static final Expando<TestCompanyWithReflection$reflection>
+      _objectReflections = Expando();
+
+  factory TestCompanyWithReflection$reflection(
+      [TestCompanyWithReflection? object]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??=
+        TestCompanyWithReflection$reflection._(object);
+  }
+
+  TestCompanyWithReflection$reflection._([TestCompanyWithReflection? object])
       : super(TestCompanyWithReflection, 'TestCompanyWithReflection', object);
 
   static bool _registered = false;
@@ -508,7 +533,7 @@ class TestCompanyWithReflection$reflection
           super.withoutObjectInstance() as TestCompanyWithReflection$reflection;
 
   static TestCompanyWithReflection$reflection get staticInstance =>
-      _withoutObjectInstance ??= TestCompanyWithReflection$reflection();
+      _withoutObjectInstance ??= TestCompanyWithReflection$reflection._();
 
   @override
   TestCompanyWithReflection$reflection getStaticInstance() => staticInstance;
@@ -884,7 +909,16 @@ class TestCompanyWithReflection$reflection
 
 class TestDataWithReflection$reflection
     extends ClassReflection<TestDataWithReflection> with __ReflectionMixin {
-  TestDataWithReflection$reflection([TestDataWithReflection? object])
+  static final Expando<TestDataWithReflection$reflection> _objectReflections =
+      Expando();
+
+  factory TestDataWithReflection$reflection([TestDataWithReflection? object]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??=
+        TestDataWithReflection$reflection._(object);
+  }
+
+  TestDataWithReflection$reflection._([TestDataWithReflection? object])
       : super(TestDataWithReflection, 'TestDataWithReflection', object);
 
   static bool _registered = false;
@@ -911,7 +945,7 @@ class TestDataWithReflection$reflection
           super.withoutObjectInstance() as TestDataWithReflection$reflection;
 
   static TestDataWithReflection$reflection get staticInstance =>
-      _withoutObjectInstance ??= TestDataWithReflection$reflection();
+      _withoutObjectInstance ??= TestDataWithReflection$reflection._();
 
   @override
   TestDataWithReflection$reflection getStaticInstance() => staticInstance;
@@ -1155,7 +1189,17 @@ class TestDataWithReflection$reflection
 
 class TestDomainWithReflection$reflection
     extends ClassReflection<TestDomainWithReflection> with __ReflectionMixin {
-  TestDomainWithReflection$reflection([TestDomainWithReflection? object])
+  static final Expando<TestDomainWithReflection$reflection> _objectReflections =
+      Expando();
+
+  factory TestDomainWithReflection$reflection(
+      [TestDomainWithReflection? object]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??=
+        TestDomainWithReflection$reflection._(object);
+  }
+
+  TestDomainWithReflection$reflection._([TestDomainWithReflection? object])
       : super(TestDomainWithReflection, 'TestDomainWithReflection', object);
 
   static bool _registered = false;
@@ -1183,7 +1227,7 @@ class TestDomainWithReflection$reflection
           super.withoutObjectInstance() as TestDomainWithReflection$reflection;
 
   static TestDomainWithReflection$reflection get staticInstance =>
-      _withoutObjectInstance ??= TestDomainWithReflection$reflection();
+      _withoutObjectInstance ??= TestDomainWithReflection$reflection._();
 
   @override
   TestDomainWithReflection$reflection getStaticInstance() => staticInstance;
@@ -1578,7 +1622,14 @@ class TestDomainWithReflection$reflection
 
 class TestEmpty$reflection extends ClassReflection<TestEmpty>
     with __ReflectionMixin {
-  TestEmpty$reflection([TestEmpty? object])
+  static final Expando<TestEmpty$reflection> _objectReflections = Expando();
+
+  factory TestEmpty$reflection([TestEmpty? object]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??= TestEmpty$reflection._(object);
+  }
+
+  TestEmpty$reflection._([TestEmpty? object])
       : super(TestEmpty, 'TestEmpty', object);
 
   static bool _registered = false;
@@ -1604,7 +1655,7 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
       super.withoutObjectInstance() as TestEmpty$reflection;
 
   static TestEmpty$reflection get staticInstance =>
-      _withoutObjectInstance ??= TestEmpty$reflection();
+      _withoutObjectInstance ??= TestEmpty$reflection._();
 
   @override
   TestEmpty$reflection getStaticInstance() => staticInstance;
@@ -1698,7 +1749,16 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
 
 class TestEnumWithReflection$reflection
     extends EnumReflection<TestEnumWithReflection> with __ReflectionMixin {
-  TestEnumWithReflection$reflection([TestEnumWithReflection? object])
+  static final Expando<TestEnumWithReflection$reflection> _objectReflections =
+      Expando();
+
+  factory TestEnumWithReflection$reflection([TestEnumWithReflection? object]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??=
+        TestEnumWithReflection$reflection._(object);
+  }
+
+  TestEnumWithReflection$reflection._([TestEnumWithReflection? object])
       : super(TestEnumWithReflection, 'TestEnumWithReflection', object);
 
   static bool _registered = false;
@@ -1725,7 +1785,7 @@ class TestEnumWithReflection$reflection
           super.withoutObjectInstance() as TestEnumWithReflection$reflection;
 
   static TestEnumWithReflection$reflection get staticInstance =>
-      _withoutObjectInstance ??= TestEnumWithReflection$reflection();
+      _withoutObjectInstance ??= TestEnumWithReflection$reflection._();
 
   @override
   TestEnumWithReflection$reflection getStaticInstance() => staticInstance;
@@ -1759,7 +1819,18 @@ class TestEnumWithReflection$reflection
 class TestFranchiseWithReflection$reflection
     extends ClassReflection<TestFranchiseWithReflection>
     with __ReflectionMixin {
-  TestFranchiseWithReflection$reflection([TestFranchiseWithReflection? object])
+  static final Expando<TestFranchiseWithReflection$reflection>
+      _objectReflections = Expando();
+
+  factory TestFranchiseWithReflection$reflection(
+      [TestFranchiseWithReflection? object]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??=
+        TestFranchiseWithReflection$reflection._(object);
+  }
+
+  TestFranchiseWithReflection$reflection._(
+      [TestFranchiseWithReflection? object])
       : super(
             TestFranchiseWithReflection, 'TestFranchiseWithReflection', object);
 
@@ -1788,7 +1859,7 @@ class TestFranchiseWithReflection$reflection
           as TestFranchiseWithReflection$reflection;
 
   static TestFranchiseWithReflection$reflection get staticInstance =>
-      _withoutObjectInstance ??= TestFranchiseWithReflection$reflection();
+      _withoutObjectInstance ??= TestFranchiseWithReflection$reflection._();
 
   @override
   TestFranchiseWithReflection$reflection getStaticInstance() => staticInstance;
@@ -2083,7 +2154,15 @@ class TestFranchiseWithReflection$reflection
 
 class TestName$reflection extends ClassReflection<TestName>
     with __ReflectionMixin {
-  TestName$reflection([TestName? object]) : super(TestName, 'TestName', object);
+  static final Expando<TestName$reflection> _objectReflections = Expando();
+
+  factory TestName$reflection([TestName? object]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??= TestName$reflection._(object);
+  }
+
+  TestName$reflection._([TestName? object])
+      : super(TestName, 'TestName', object);
 
   static bool _registered = false;
   @override
@@ -2107,7 +2186,7 @@ class TestName$reflection extends ClassReflection<TestName>
       super.withoutObjectInstance() as TestName$reflection;
 
   static TestName$reflection get staticInstance =>
-      _withoutObjectInstance ??= TestName$reflection();
+      _withoutObjectInstance ??= TestName$reflection._();
 
   @override
   TestName$reflection getStaticInstance() => staticInstance;
@@ -2358,7 +2437,16 @@ class TestName$reflection extends ClassReflection<TestName>
 
 class TestOpAWithReflection$reflection
     extends ClassReflection<TestOpAWithReflection> with __ReflectionMixin {
-  TestOpAWithReflection$reflection([TestOpAWithReflection? object])
+  static final Expando<TestOpAWithReflection$reflection> _objectReflections =
+      Expando();
+
+  factory TestOpAWithReflection$reflection([TestOpAWithReflection? object]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??=
+        TestOpAWithReflection$reflection._(object);
+  }
+
+  TestOpAWithReflection$reflection._([TestOpAWithReflection? object])
       : super(TestOpAWithReflection, 'TestOpAWithReflection', object);
 
   static bool _registered = false;
@@ -2385,7 +2473,7 @@ class TestOpAWithReflection$reflection
           super.withoutObjectInstance() as TestOpAWithReflection$reflection;
 
   static TestOpAWithReflection$reflection get staticInstance =>
-      _withoutObjectInstance ??= TestOpAWithReflection$reflection();
+      _withoutObjectInstance ??= TestOpAWithReflection$reflection._();
 
   @override
   TestOpAWithReflection$reflection getStaticInstance() => staticInstance;
@@ -2695,7 +2783,16 @@ class TestOpAWithReflection$reflection
 
 class TestOpBWithReflection$reflection
     extends ClassReflection<TestOpBWithReflection> with __ReflectionMixin {
-  TestOpBWithReflection$reflection([TestOpBWithReflection? object])
+  static final Expando<TestOpBWithReflection$reflection> _objectReflections =
+      Expando();
+
+  factory TestOpBWithReflection$reflection([TestOpBWithReflection? object]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??=
+        TestOpBWithReflection$reflection._(object);
+  }
+
+  TestOpBWithReflection$reflection._([TestOpBWithReflection? object])
       : super(TestOpBWithReflection, 'TestOpBWithReflection', object);
 
   static bool _registered = false;
@@ -2722,7 +2819,7 @@ class TestOpBWithReflection$reflection
           super.withoutObjectInstance() as TestOpBWithReflection$reflection;
 
   static TestOpBWithReflection$reflection get staticInstance =>
-      _withoutObjectInstance ??= TestOpBWithReflection$reflection();
+      _withoutObjectInstance ??= TestOpBWithReflection$reflection._();
 
   @override
   TestOpBWithReflection$reflection getStaticInstance() => staticInstance;
@@ -3044,7 +3141,16 @@ class TestOpBWithReflection$reflection
 
 class TestOpWithReflection$reflection
     extends ClassReflection<TestOpWithReflection> with __ReflectionMixin {
-  TestOpWithReflection$reflection([TestOpWithReflection? object])
+  static final Expando<TestOpWithReflection$reflection> _objectReflections =
+      Expando();
+
+  factory TestOpWithReflection$reflection([TestOpWithReflection? object]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??=
+        TestOpWithReflection$reflection._(object);
+  }
+
+  TestOpWithReflection$reflection._([TestOpWithReflection? object])
       : super(TestOpWithReflection, 'TestOpWithReflection', object);
 
   static bool _registered = false;
@@ -3071,7 +3177,7 @@ class TestOpWithReflection$reflection
           super.withoutObjectInstance() as TestOpWithReflection$reflection;
 
   static TestOpWithReflection$reflection get staticInstance =>
-      _withoutObjectInstance ??= TestOpWithReflection$reflection();
+      _withoutObjectInstance ??= TestOpWithReflection$reflection._();
 
   @override
   TestOpWithReflection$reflection getStaticInstance() => staticInstance;
@@ -3419,7 +3525,17 @@ class TestOpWithReflection$reflection
 class TestTransactionWithReflection$reflection
     extends ClassReflection<TestTransactionWithReflection>
     with __ReflectionMixin {
-  TestTransactionWithReflection$reflection(
+  static final Expando<TestTransactionWithReflection$reflection>
+      _objectReflections = Expando();
+
+  factory TestTransactionWithReflection$reflection(
+      [TestTransactionWithReflection? object]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??=
+        TestTransactionWithReflection$reflection._(object);
+  }
+
+  TestTransactionWithReflection$reflection._(
       [TestTransactionWithReflection? object])
       : super(TestTransactionWithReflection, 'TestTransactionWithReflection',
             object);
@@ -3449,7 +3565,7 @@ class TestTransactionWithReflection$reflection
           as TestTransactionWithReflection$reflection;
 
   static TestTransactionWithReflection$reflection get staticInstance =>
-      _withoutObjectInstance ??= TestTransactionWithReflection$reflection();
+      _withoutObjectInstance ??= TestTransactionWithReflection$reflection._();
 
   @override
   TestTransactionWithReflection$reflection getStaticInstance() =>
@@ -3668,7 +3784,16 @@ class TestTransactionWithReflection$reflection
 
 class TestUserWithReflection$reflection
     extends ClassReflection<TestUserWithReflection> with __ReflectionMixin {
-  TestUserWithReflection$reflection([TestUserWithReflection? object])
+  static final Expando<TestUserWithReflection$reflection> _objectReflections =
+      Expando();
+
+  factory TestUserWithReflection$reflection([TestUserWithReflection? object]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??=
+        TestUserWithReflection$reflection._(object);
+  }
+
+  TestUserWithReflection$reflection._([TestUserWithReflection? object])
       : super(TestUserWithReflection, 'TestUserWithReflection', object);
 
   static bool _registered = false;
@@ -3695,7 +3820,7 @@ class TestUserWithReflection$reflection
           super.withoutObjectInstance() as TestUserWithReflection$reflection;
 
   static TestUserWithReflection$reflection get staticInstance =>
-      _withoutObjectInstance ??= TestUserWithReflection$reflection();
+      _withoutObjectInstance ??= TestUserWithReflection$reflection._();
 
   @override
   TestUserWithReflection$reflection getStaticInstance() => staticInstance;

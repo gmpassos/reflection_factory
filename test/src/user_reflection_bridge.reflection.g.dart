@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.0.1
+// BUILDER: reflection_factory/2.0.2
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -17,7 +17,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.0.1');
+  static final Version _version = Version.parse('2.0.2');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -39,7 +39,14 @@ TestUserSimple TestUserSimple$fromJsonEncoded(String jsonEncoded) =>
 
 class TestAddress$reflection extends ClassReflection<TestAddress>
     with __ReflectionMixin {
-  TestAddress$reflection([TestAddress? object])
+  static final Expando<TestAddress$reflection> _objectReflections = Expando();
+
+  factory TestAddress$reflection([TestAddress? object]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??= TestAddress$reflection._(object);
+  }
+
+  TestAddress$reflection._([TestAddress? object])
       : super(TestAddress, 'TestAddress', object);
 
   static bool _registered = false;
@@ -65,7 +72,7 @@ class TestAddress$reflection extends ClassReflection<TestAddress>
       super.withoutObjectInstance() as TestAddress$reflection;
 
   static TestAddress$reflection get staticInstance =>
-      _withoutObjectInstance ??= TestAddress$reflection();
+      _withoutObjectInstance ??= TestAddress$reflection._();
 
   @override
   TestAddress$reflection getStaticInstance() => staticInstance;
@@ -331,7 +338,15 @@ class TestAddress$reflection extends ClassReflection<TestAddress>
 
 class TestUserSimple$reflection extends ClassReflection<TestUserSimple>
     with __ReflectionMixin {
-  TestUserSimple$reflection([TestUserSimple? object])
+  static final Expando<TestUserSimple$reflection> _objectReflections =
+      Expando();
+
+  factory TestUserSimple$reflection([TestUserSimple? object]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??= TestUserSimple$reflection._(object);
+  }
+
+  TestUserSimple$reflection._([TestUserSimple? object])
       : super(TestUserSimple, 'TestUserSimple', object);
 
   static bool _registered = false;
@@ -358,7 +373,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple>
           super.withoutObjectInstance() as TestUserSimple$reflection;
 
   static TestUserSimple$reflection get staticInstance =>
-      _withoutObjectInstance ??= TestUserSimple$reflection();
+      _withoutObjectInstance ??= TestUserSimple$reflection._();
 
   @override
   TestUserSimple$reflection getStaticInstance() => staticInstance;

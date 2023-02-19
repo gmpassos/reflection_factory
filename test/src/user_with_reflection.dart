@@ -106,7 +106,9 @@ class TestUserWithReflection {
           email == other.email &&
           password == other.password &&
           enabled == other.enabled &&
-          axis == other.axis;
+          axis == other.axis &&
+          level == other.level &&
+          id == other.id;
 
   @override
   int get hashCode =>
@@ -114,7 +116,9 @@ class TestUserWithReflection {
       email.hashCode ^
       password.hashCode ^
       enabled.hashCode ^
-      axis.hashCode;
+      axis.hashCode ^
+      level.hashCode ^
+      id.hashCode;
 
   @override
   String toString() {
@@ -122,7 +126,7 @@ class TestUserWithReflection {
   }
 }
 
-@EnableReflection()
+@EnableReflection(optimizeReflectionInstances: false)
 class TestAddressWithReflection {
   int? id;
 
@@ -130,9 +134,12 @@ class TestAddressWithReflection {
 
   final String city;
 
-  TestAddressWithReflection(this.state, {this.city = '', this.id});
+  TestAddressWithReflection.simple(this.state, {this.id}) : city = '';
 
-  TestAddressWithReflection.empty() : this('');
+  @JsonConstructor(mandatory: true)
+  TestAddressWithReflection.withCity(this.state, {this.city = '', this.id});
+
+  TestAddressWithReflection.empty() : this.simple('');
 
   @override
   bool operator ==(Object other) =>

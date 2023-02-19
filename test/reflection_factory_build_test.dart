@@ -460,6 +460,118 @@ void main() {
       );
     });
 
+    test('EnableReflection[optimizeReflectionInstances: true]', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'foo.reflection.g.dart';
+          
+          @EnableReflection(optimizeReflectionInstances: true)
+          enum Status {a,b}
+          
+          @EnableReflection(optimizeReflectionInstances: true)
+          class Foo {
+            int n;
+            Status s;
+            Foo(this.n, {this.status = Status.a});
+          }
+
+        '''
+      };
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        reader: await PackageAssetReader.currentIsolate(),
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of 'foo.dart'"),
+            ),
+            allOf([
+              contains('Status\$reflection'),
+              contains('Status\$reflectionExtension'),
+              contains('Foo\$reflection'),
+              contains('Foo\$reflectionExtension'),
+            ]),
+            allOf([
+              contains('final Expando<Status\$reflection> _objectReflections'),
+              contains('factory Status\$reflection([Status? object]) {'),
+              contains('final Expando<Foo\$reflection> _objectReflections'),
+              contains('factory Foo\$reflection([Foo? object]) {'),
+            ]),
+          )),
+        },
+        onLog: (msg) {
+          print(msg);
+        },
+      );
+    });
+
+    test('EnableReflection[optimizeReflectionInstances: false]', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'foo.reflection.g.dart';
+          
+          @EnableReflection(optimizeReflectionInstances: false)
+          enum Status {a,b}
+          
+          @EnableReflection(optimizeReflectionInstances: false)
+          class Foo {
+            int n;
+            Status s;
+            Foo(this.n, {this.status = Status.a});
+          }
+
+        '''
+      };
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        reader: await PackageAssetReader.currentIsolate(),
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of 'foo.dart'"),
+            ),
+            allOf([
+              contains('Status\$reflection'),
+              contains('Status\$reflectionExtension'),
+              contains('Foo\$reflection'),
+              contains('Foo\$reflectionExtension'),
+            ]),
+            isNot(anyOf([
+              contains('final Expando<Status\$reflection> _objectReflections'),
+              contains('factory Status\$reflection([Status? object]) {'),
+              contains('final Expando<Foo\$reflection> _objectReflections'),
+              contains('factory Foo\$reflection([Foo? object]) {'),
+            ])),
+          )),
+        },
+        onLog: (msg) {
+          print(msg);
+        },
+      );
+    });
+
     test('ReflectionBridge', () async {
       var builder = ReflectionBuilder(verbose: true);
 

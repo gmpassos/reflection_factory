@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.0.1
+// BUILDER: reflection_factory/2.0.2
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -17,7 +17,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.0.1');
+  static final Version _version = Version.parse('2.0.2');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -32,7 +32,14 @@ User User$fromJsonEncoded(String jsonEncoded) =>
     User$reflection.staticInstance.fromJsonEncoded(jsonEncoded);
 
 class User$reflection extends ClassReflection<User> with __ReflectionMixin {
-  User$reflection([User? object]) : super(User, 'User', object);
+  static final Expando<User$reflection> _objectReflections = Expando();
+
+  factory User$reflection([User? object]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??= User$reflection._(object);
+  }
+
+  User$reflection._([User? object]) : super(User, 'User', object);
 
   static bool _registered = false;
   @override
@@ -56,7 +63,7 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
       super.withoutObjectInstance() as User$reflection;
 
   static User$reflection get staticInstance =>
-      _withoutObjectInstance ??= User$reflection();
+      _withoutObjectInstance ??= User$reflection._();
 
   @override
   User$reflection getStaticInstance() => staticInstance;

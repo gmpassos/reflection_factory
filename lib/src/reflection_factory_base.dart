@@ -20,7 +20,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.0.1';
+  static const String VERSION = '2.0.2';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -831,10 +831,19 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// Returns `true` if any field uses a [JsonField.visible].
   bool get hasJsonFieldVisible => fieldsWithJsonFieldVisible.isNotEmpty;
 
+  Map<String, String>? _fieldsJsonNameAliases;
+
   /// Returns a [Map] with the fields names aliases.
-  Map<String, String> get fieldsJsonNameAliases =>
-      Map<String, String>.fromEntries(
-          fieldsWithJsonNameAlias.map((f) => MapEntry(f.name, f.jsonName)));
+  Map<String, String> get fieldsJsonNameAliases => _fieldsJsonNameAliases ??=
+      UnmodifiableMapView(Map<String, String>.fromEntries(
+          fieldsWithJsonNameAlias.map((f) => MapEntry(f.name, f.jsonName))));
+
+  Map<String, String>? _fieldsJsonNameAliasesReverse;
+
+  /// A reverse [Map] (value, key) of [fieldsJsonNameAliases].
+  Map<String, String> get fieldsJsonNameAliasesReverse =>
+      _fieldsJsonNameAliasesReverse ??= UnmodifiableMapView(
+          fieldsJsonNameAliases.map((key, value) => MapEntry(value, key)));
 
   List<FieldReflection<O, dynamic>>? _fieldsWithJsonNameAlias;
 
@@ -850,6 +859,31 @@ abstract class ClassReflection<O> extends Reflection<O>
   bool get hasJsonNameAlias =>
       _hasJsonNameAlias ??= fieldsWithJsonNameAlias.isNotEmpty ||
           allConstructors().any((c) => c.hasJsonNameAlias);
+
+  List<ConstructorReflection<O>>? _jsonConstructors;
+
+  List<ConstructorReflection<O>> get jsonConstructors =>
+      _jsonConstructors ??= List<ConstructorReflection<O>>.unmodifiable(
+          allConstructors().where((e) => e.hasJsonConstructor));
+
+  List<ConstructorReflection<O>>? _jsonConstructorsMandatory;
+
+  List<ConstructorReflection<O>> get jsonConstructorsMandatory =>
+      _jsonConstructorsMandatory ??=
+          List<ConstructorReflection<O>>.unmodifiable(
+              jsonConstructors.where((e) => e.hasJsonConstructorMandatory));
+
+  bool? _hasJsonConstructor;
+
+  /// Returns `true` if some constructor has a [JsonConstructor] annotation.
+  bool get hasJsonConstructor =>
+      _hasJsonConstructor ??= jsonConstructors.isNotEmpty;
+
+  bool? _hasJsonConstructorMandatory;
+
+  /// Returns `true` if some constructor has a [JsonConstructor.mandatory] annotation.
+  bool get hasJsonConstructorMandatory => _hasJsonConstructorMandatory ??=
+      jsonConstructors.any((e) => e.hasJsonConstructorMandatory);
 
   /// Returns `true` if the class has a default constructor.
   bool get hasDefaultConstructor;
@@ -934,6 +968,7 @@ abstract class ClassReflection<O> extends Reflection<O>
       Iterable<String> nullableParameters = const <String>[],
       Iterable<String> presentParameters = const <String>[],
       bool allowEmptyConstructors = true,
+      bool allowOptionalOnlyConstructors = true,
       bool jsonName = false}) {
     if (nullableParameters is! List && nullableParameters is! Set) {
       nullableParameters = nullableParameters.toList(growable: false);
@@ -943,16 +978,29 @@ abstract class ClassReflection<O> extends Reflection<O>
     if (constructors.isEmpty) return <ConstructorReflection<O>>[];
 
     if (!allowEmptyConstructors) {
-      var emptyConstructors = constructors
-          .where((c) =>
-              c.parametersLength == 0 ||
-              (c.normalParameters.isEmpty &&
-                  c.optionalParameters.where((c) => c.required).isEmpty &&
-                  c.namedParameters.values.where((c) => c.required).isEmpty))
+      var emptyConstructors =
+          constructors.where((c) => c.parametersLength == 0).toList();
+
+      if (emptyConstructors.isNotEmpty) {
+        constructors =
+            constructors.where((c) => !emptyConstructors.contains(c)).toList();
+      }
+
+      if (constructors.isEmpty) return <ConstructorReflection<O>>[];
+    }
+
+    if (!allowOptionalOnlyConstructors) {
+      var optionalOnlyConstructors = constructors
+          .where((c) => (c.normalParameters.isEmpty &&
+              c.optionalParameters.none((c) => c.required) &&
+              c.namedParameters.values.none((c) => c.required)))
           .toList();
 
-      constructors =
-          constructors.where((c) => !emptyConstructors.contains(c)).toList();
+      if (optionalOnlyConstructors.isNotEmpty) {
+        constructors = constructors
+            .where((c) => !optionalOnlyConstructors.contains(c))
+            .toList();
+      }
 
       if (constructors.isEmpty) return <ConstructorReflection<O>>[];
     }
@@ -978,7 +1026,9 @@ abstract class ClassReflection<O> extends Reflection<O>
     }).toList();
 
     if (invalidConstructors.isNotEmpty) {
-      constructors.removeWhere((c) => invalidConstructors.contains(c));
+      constructors =
+          constructors.where((c) => !invalidConstructors.contains(c)).toList();
+
       if (constructors.isEmpty) return <ConstructorReflection<O>>[];
     }
 
@@ -1075,9 +1125,11 @@ abstract class ClassReflection<O> extends Reflection<O>
       [T Function(T)? normalizer]) {
     if (normalizer != null) {
       inList = inList.map(normalizer).toList();
-      return list.map(normalizer).where((e) => inList.contains(e));
+      var lIn = list.map(normalizer).where((e) => inList.contains(e));
+      return lIn;
     } else {
-      return list.where((e) => inList.contains(e));
+      var lIn = list.where((e) => inList.contains(e));
+      return lIn;
     }
   }
 
@@ -1387,6 +1439,35 @@ abstract class ClassReflection<O> extends Reflection<O>
         autoResetEntityCache: autoResetEntityCache);
   }
 
+  /// Returns a [Map] from [fieldsNames], calling [getField] for each one.
+  /// See [toJsonFromFields] if you need a JSON [Map] (with valid JSON values).
+  ///
+  /// - If [obj] is not provided, uses [object] as instance.
+  Map<String, dynamic> toMapFromFields([O? obj]) {
+    obj ??= object;
+    if (obj == null) {
+      throw StateError("Null object!");
+    }
+
+    return _toMapFromFieldsImpl(obj);
+  }
+
+  List<FieldReflection<dynamic, dynamic>>? _fieldsForMap;
+
+  Map<String, dynamic> _toMapFromFieldsImpl(O obj) {
+    var fieldsForMap = _fieldsForMap ??=
+        getStaticInstance().fieldsWhere((f) => f.isEntityField).toList();
+
+    var entries = fieldsForMap.map((f) {
+      var val = f.getFor(obj);
+      var name = f.jsonName;
+      return MapEntry(name, val);
+    });
+
+    var map = Map<String, dynamic>.fromEntries(entries);
+    return map;
+  }
+
   /// Returns a JSON [Map] from [fieldsNames], calling [getField] for each one.
   ///
   /// - If [obj] is not provided, uses [object] as instance.
@@ -1397,16 +1478,10 @@ abstract class ClassReflection<O> extends Reflection<O>
       bool? autoResetEntityCache}) {
     obj ??= object;
     if (obj == null) {
-      StateError("Null object!");
+      throw StateError("Null object!");
     }
 
-    var entries = fieldsWhere((f) => f.isEntityField, obj).map((f) {
-      var val = f.get();
-      var name = f.jsonName;
-      return MapEntry(name, val);
-    });
-
-    var map = Map<String, dynamic>.fromEntries(entries);
+    var map = _toMapFromFieldsImpl(obj);
 
     jsonEncoder ??= JsonEncoder.defaultEncoder;
     return jsonEncoder.toJson(map,
@@ -1483,6 +1558,7 @@ abstract class ClassReflection<O> extends Reflection<O>
       }
     }
 
+    // Non matching fields should return `null` (feild not present):
     return null;
   }
 
@@ -1506,14 +1582,42 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// - Throws [UnresolvedParameterError] when it's its impossible to call any
   ///   constructor due to unresovled parameters.
   /// - Throws any error thrown by a constructor invocation.
-  O? createInstanceWithBestConstructor(Map<String, Object?> map,
-      {FieldNameResolver? fieldNameResolver,
-      FieldValueResolver? fieldValueResolver}) {
+  ///
+  /// See [createInstanceWithConstructors].
+  O? createInstanceWithBestConstructor(
+    Map<String, Object?> map, {
+    FieldNameResolver? fieldNameResolver,
+    FieldValueResolver? fieldValueResolver,
+    bool? allowEmptyConstructors,
+    bool? allowOptionalOnlyConstructors,
+  }) {
+    allowOptionalOnlyConstructors ??= map.isEmpty;
+    allowEmptyConstructors ??= map.isEmpty;
+
     var constructors = getBestConstructorsForMap(map,
         fieldNameResolver: fieldNameResolver,
         fieldValueResolver: fieldValueResolver,
-        allowEmptyConstructors: map.isEmpty);
+        allowEmptyConstructors: allowEmptyConstructors,
+        allowOptionalOnlyConstructors: allowOptionalOnlyConstructors);
 
+    return createInstanceWithConstructors(constructors, map,
+        fieldNameResolver: fieldNameResolver,
+        fieldValueResolver: fieldValueResolver);
+  }
+
+  /// Creates an instance with one of the [constructors],
+  /// using [map] entries as parameters.
+  /// - Throws [UnresolvedParameterError] when it's its impossible to call any
+  ///   constructor due to unresovled parameters.
+  /// - Throws any error thrown by a constructor invocation.
+  ///
+  /// See [createInstanceWithBestConstructor].
+  O? createInstanceWithConstructors(
+    List<ConstructorReflection<O>> constructors,
+    Map<String, Object?> map, {
+    FieldNameResolver? fieldNameResolver,
+    FieldValueResolver? fieldValueResolver,
+  }) {
     if (constructors.isEmpty) return null;
 
     var invocationErrors = <List>[];
@@ -1637,11 +1741,13 @@ abstract class ClassReflection<O> extends Reflection<O>
   ConstructorReflection<O>? getBestConstructorForMap(Map<String, Object?> map,
       {FieldNameResolver? fieldNameResolver,
       FieldValueResolver? fieldValueResolver,
-      bool allowEmptyConstructors = true}) {
+      bool allowEmptyConstructors = true,
+      bool allowOptionalOnlyConstructors = true}) {
     var constructors = getBestConstructorsForMap(map,
         fieldNameResolver: fieldNameResolver,
         fieldValueResolver: fieldValueResolver,
-        allowEmptyConstructors: allowEmptyConstructors);
+        allowEmptyConstructors: allowEmptyConstructors,
+        allowOptionalOnlyConstructors: allowOptionalOnlyConstructors);
     return constructors.firstOrNull;
   }
 
@@ -1650,7 +1756,8 @@ abstract class ClassReflection<O> extends Reflection<O>
       Map<String, Object?> map,
       {FieldNameResolver? fieldNameResolver,
       FieldValueResolver? fieldValueResolver,
-      bool allowEmptyConstructors = true}) {
+      bool allowEmptyConstructors = true,
+      bool allowOptionalOnlyConstructors = true}) {
     fieldNameResolver ??= _defaultFieldNameResolver;
 
     var fieldsResolved = _resolveFieldsNames(fieldNameResolver, map);
@@ -1678,15 +1785,15 @@ abstract class ClassReflection<O> extends Reflection<O>
 
       List<ConstructorReflection<O>> list;
       if (hasJsonNameAlias) {
-        list = _getBestConstructorsForMapImpl(
-            presentParameters, allowEmptyConstructors, true);
+        list = _getBestConstructorsForMapImpl(presentParameters,
+            allowEmptyConstructors, allowOptionalOnlyConstructors, true);
         if (list.isEmpty) {
-          list = _getBestConstructorsForMapImpl(
-              presentParameters, allowEmptyConstructors, false);
+          list = _getBestConstructorsForMapImpl(presentParameters,
+              allowEmptyConstructors, allowOptionalOnlyConstructors, false);
         }
       } else {
-        list = _getBestConstructorsForMapImpl(
-            presentParameters, allowEmptyConstructors, false);
+        list = _getBestConstructorsForMapImpl(presentParameters,
+            allowEmptyConstructors, allowOptionalOnlyConstructors, false);
       }
 
       return UnmodifiableListView<ConstructorReflection<O>>(list);
@@ -1698,14 +1805,23 @@ abstract class ClassReflection<O> extends Reflection<O>
   List<ConstructorReflection<O>> _getBestConstructorsForMapImpl(
       List<String> presentParameters,
       bool allowEmptyConstructors,
+      bool allowOptionalOnlyConstructors,
       bool jsonName) {
     var fieldsNotPresent = entityFieldsNamesWhere(
-        (f) => !presentParameters.contains(f.resolveName(jsonName))).toList();
+            (f) =>
+                !presentParameters.containsIgnoreCase(f.resolveName(jsonName)),
+            null,
+            jsonName)
+        .toList();
 
-    var fieldsRequired = entityFieldsNamesWhere((f) => !f.hasSetter).toList();
+    var fieldsRequired =
+        entityFieldsNamesWhere((f) => !f.hasSetter, null, jsonName).toList();
 
     var fieldsOptional = entityFieldsNamesWhere(
-        (f) => !fieldsRequired.contains(f.resolveName(jsonName))).toList();
+            (f) => !fieldsRequired.contains(f.resolveName(jsonName)),
+            null,
+            jsonName)
+        .toList();
 
     var constructors = getBestConstructorsFor(
         requiredParameters: fieldsRequired,
@@ -1713,6 +1829,7 @@ abstract class ClassReflection<O> extends Reflection<O>
         nullableParameters: fieldsNotPresent,
         presentParameters: presentParameters,
         allowEmptyConstructors: allowEmptyConstructors,
+        allowOptionalOnlyConstructors: allowOptionalOnlyConstructors,
         jsonName: jsonName);
 
     if (constructors.isEmpty && fieldsRequired.isNotEmpty) {
@@ -1721,6 +1838,7 @@ abstract class ClassReflection<O> extends Reflection<O>
           nullableParameters: fieldsNotPresent,
           presentParameters: presentParameters,
           allowEmptyConstructors: allowEmptyConstructors,
+          allowOptionalOnlyConstructors: allowOptionalOnlyConstructors,
           jsonName: jsonName);
     }
 
@@ -1729,6 +1847,7 @@ abstract class ClassReflection<O> extends Reflection<O>
           optionalParameters: fieldsOptional,
           presentParameters: presentParameters,
           allowEmptyConstructors: allowEmptyConstructors,
+          allowOptionalOnlyConstructors: allowOptionalOnlyConstructors,
           jsonName: jsonName);
     }
 
@@ -1740,29 +1859,47 @@ abstract class ClassReflection<O> extends Reflection<O>
       FieldValueResolver? fieldValueResolver}) {
     fieldNameResolver ??= _defaultFieldNameResolver;
 
-    var triedBestConstructor = false;
+    if (hasJsonConstructor) {
+      if (hasJsonConstructorMandatory) {
+        return createInstanceWithConstructors(jsonConstructorsMandatory, map,
+            fieldNameResolver: fieldNameResolver,
+            fieldValueResolver: fieldValueResolver);
+      } else {
+        var o = createInstanceWithConstructors(jsonConstructors, map,
+            fieldNameResolver: fieldNameResolver,
+            fieldValueResolver: fieldValueResolver);
+        if (o != null) return o;
+      }
+    }
 
     if (hasFieldWithoutSetter || !canCreateInstanceWithoutArguments) {
-      triedBestConstructor = true;
       var o = createInstanceWithBestConstructor(map,
           fieldNameResolver: fieldNameResolver,
-          fieldValueResolver: fieldValueResolver);
+          fieldValueResolver: fieldValueResolver,
+          allowOptionalOnlyConstructors: true);
+      if (o != null) return o;
+    } else {
+      var o = createInstanceWithBestConstructor(map,
+          fieldNameResolver: fieldNameResolver,
+          fieldValueResolver: fieldValueResolver,
+          allowEmptyConstructors: false,
+          allowOptionalOnlyConstructors: true);
       if (o != null) return o;
     }
 
     // `class.field` to `map.key`:
     var fieldsResolved = _resolveFieldsNames(fieldNameResolver, map);
 
+    var hasUnusedFieldInMap = fieldsResolved.length < map.length;
+
+    // In some fields won't be used by the constructor it indicates that
+    // this is not a complete constructor for the data:
+    if (hasUnusedFieldInMap) {
+      return null;
+    }
+
     var fieldsNamesInMap =
         fieldsNames.where((f) => fieldsResolved.containsKey(f)).toList();
-
-    if (!triedBestConstructor &&
-        !_canSetFieldsInMap(fieldsNamesInMap, fieldsResolved)) {
-      var o = createInstanceWithBestConstructor(map,
-          fieldNameResolver: fieldNameResolver,
-          fieldValueResolver: fieldValueResolver);
-      if (o != null) return o;
-    }
 
     var o = createInstance();
     if (o == null) return null;
@@ -1803,14 +1940,11 @@ abstract class ClassReflection<O> extends Reflection<O>
     return o;
   }
 
-  bool _canSetFieldsInMap(
-      List<String> fieldsNamesInMap, Map<String, String> fieldsResolved) {
-    for (var f in fieldsNamesInMap) {
-      var key = fieldsResolved[f];
-      if (key == null) continue;
-
-      var field = this.field(f)!;
-      if (field.isFinal) {
+  /// Returns `true` if all [fields] can be set using [setField].
+  bool canSetFields(List<String> fields) {
+    for (var f in fields) {
+      var field = this.field(f);
+      if (field == null || field.isFinal || !field.hasSetter) {
         return false;
       }
     }
@@ -2661,7 +2795,13 @@ class FieldReflection<O, T> extends ElementReflection<O>
 
   /// Returns this field value.
   T get() {
-    var getter = _getter ??= getterAccessor(object);
+    final getter = _getter ??= getterAccessor(object);
+    return getter();
+  }
+
+  /// Returns this field value for the [object] instance.
+  T getFor(O object) {
+    final getter = getterAccessor(object);
     return getter();
   }
 
@@ -2669,53 +2809,65 @@ class FieldReflection<O, T> extends ElementReflection<O>
 
   bool get hasSetter => _setter != null || setterAccessor != null;
 
-  /// Sets this field value.
-  /// See [setNullable].
-  void set(T v) {
-    var setter = _setter;
-    if (setter == null && setterAccessor != null) {
-      setter = _setter = setterAccessor!(object);
-    }
-
-    if (setter != null) {
-      setter(v);
-    } else {
+  FieldReflectionSetterAccessor<O, T> _resolveSetterAccessor() {
+    final setterAccessor = this.setterAccessor;
+    if (setterAccessor == null) {
       if (isFinal) {
         throw StateError('Final field: $className.$name');
       } else {
         throw StateError('Field without setter: $className.$name');
       }
     }
+    return setterAccessor;
+  }
+
+  FieldSetter<T> _resolveSetter() =>
+      _setter ??= _resolveSetterAccessor()(object);
+
+  /// Sets this field value.
+  /// See [setNullable].
+  void set(T v) {
+    final setter = _resolveSetter();
+    setter(v);
+  }
+
+  /// Sets this field value for the [object] instance.
+  /// See [setNullable].
+  void setFor(O object, T v) {
+    final setterAccessor = _resolveSetterAccessor();
+    final setter = setterAccessor(object);
+    setter(v);
   }
 
   /// Sets this field value, allowing a nullable value.
   /// Throws an [ArgumentError] if [v] can't be `null`.
   /// See [set].
   void setNullable(T? v) {
-    var setter = _setter;
-    if (setter == null && setterAccessor != null) {
-      setter = _setter = setterAccessor!(object);
-    }
+    final setter = _resolveSetter();
+    _callSetterNullable(setter, v);
+  }
 
-    if (setter != null) {
-      if (v == null) {
-        T vNull;
-        try {
-          vNull = null as T;
-        } catch (e) {
-          throw ArgumentError(
-              "Field can't be set to `null`: $className.$name ($T)");
-        }
-        setter(vNull);
-      } else {
-        setter(v);
+  /// Sets this field value, allowing a nullable value.
+  /// Throws an [ArgumentError] if [v] can't be `null`.
+  /// See [set].
+  void setNullableFor(O object, T? v) {
+    final setterAccessor = _resolveSetterAccessor();
+    final setter = setterAccessor(object);
+    _callSetterNullable(setter, v);
+  }
+
+  void _callSetterNullable(FieldSetter<T> setter, T? v) {
+    if (v == null) {
+      T vNull;
+      try {
+        vNull = null as T;
+      } catch (e) {
+        throw ArgumentError(
+            "Field can't be set to `null`: $className.$name ($T)");
       }
+      setter(vNull);
     } else {
-      if (isFinal) {
-        throw StateError('Final field: $className.$name ($T)');
-      } else {
-        throw StateError('Field without setter: $className.$name ($T)');
-      }
+      setter(v);
     }
   }
 
@@ -3102,102 +3254,132 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
       {FieldValueResolver? reviver,
       FieldNameResolver? nameResolver,
       bool jsonName = false}) {
-    // Resolve the valie, reviving it if needed:
-    Object? resolveValue(
-        ParameterReflection p, String pName, Object? val, bool contains) {
-      if (reviver != null) {
-        var type = p.type;
-        var valRevived = reviver(pName, val, type);
-        if (valRevived != null) {
-          if (valRevived is List &&
-              type.isListEntity &&
-              valRevived.any((e) => e == null)) {
-            var valRevivedUnresolved =
-                valRevived.map((e) => e ?? unresolvedParameterValue).toList();
-            return valRevivedUnresolved;
-          }
-          return valRevived;
-        }
+    if (jsonName) {
+      final fieldsAliases = classReflection.fieldsJsonNameAliases;
+      final fieldsAliasesReverse = classReflection.fieldsJsonNameAliasesReverse;
 
-        if (contains) {
-          if (val == null) {
-            return null;
-          } else {
-            return p.required
-                ? unresolvedParameterValueRequired
-                : unresolvedParameterValue;
-          }
-        } else {
-          return p.required
-              ? absentParameterValueRequired
-              : absentParameterValue;
-        }
-      } else {
-        if (val != null) return val;
+      return methodInvocation((p, i) => _parameterResolverJsonAlias(p, i, map,
+          nameResolver, reviver, fieldsAliases, fieldsAliasesReverse));
+    } else {
+      return methodInvocation(
+          (p, i) => _parameterResolver(p, i, map, nameResolver, reviver));
+    }
+  }
 
-        if (contains) {
-          return null;
-        } else {
-          return p.required
-              ? absentParameterValueRequired
-              : absentParameterValue;
-        }
+  Object? _parameterResolverJsonAlias(
+      ParameterReflection p,
+      int? i,
+      Map<String, dynamic> map,
+      FieldNameResolver? nameResolver,
+      FieldValueResolver? reviver,
+      Map<String, String> fieldsAliases,
+      Map<String, String> fieldsAliasesReverse) {
+    String? pJsonName = p.jsonName;
+    String? pName = p.name;
+
+    final inMap = nameResolver != null
+        ? (String? n) {
+            if (n == null) return null;
+            n = nameResolver(n, map) ?? n;
+            return map.containsKey(n) ? n : null;
+          }
+        : (String? n) {
+            if (n == null) return null;
+            return map.containsKey(n) ? n : null;
+          };
+
+    String? pJsonName2;
+    String? pName2;
+
+    var contains = false;
+    String? name;
+    Object? val;
+
+    if ((pJsonName2 = inMap(pJsonName)) != null) {
+      name = pJsonName;
+      val = map[pJsonName2];
+      contains = true;
+    } else if ((pName2 = inMap(pName)) != null) {
+      name = pName;
+      val = map[pName2];
+      contains = true;
+    } else {
+      var fAlias1 = fieldsAliases[pName];
+      var fAlias2 = fieldsAliasesReverse[pName];
+
+      if ((fAlias1 = inMap(fAlias1)) != null) {
+        name = p.name;
+        val = map[fAlias1];
+        contains = true;
+      } else if ((fAlias2 = inMap(fAlias2)) != null) {
+        name = p.name;
+        val = map[fAlias2];
+        contains = true;
       }
     }
 
-    if (jsonName) {
-      var fieldsAliases = classReflection.fieldsJsonNameAliases;
-      var fieldsAliasesReverse =
-          fieldsAliases.map((key, value) => MapEntry(value, key));
+    return _resolveValue(p, name ?? p.name, val, contains, reviver);
+  }
 
-      return methodInvocation((p, i) {
-        var pJsonName = p.jsonName;
-        var pName = p.name;
-        var fAlias1 = fieldsAliases[pName];
-        var fAlias2 = fieldsAliasesReverse[pName];
+  Object? _parameterResolver(
+      ParameterReflection p,
+      int? i,
+      Map<String, dynamic> map,
+      FieldNameResolver? nameResolver,
+      FieldValueResolver? reviver) {
+    var pName = p.name;
 
-        if (nameResolver != null) {
-          pJsonName = nameResolver(pJsonName, map) ?? pJsonName;
-          pName = nameResolver(pName, map) ?? pName;
+    if (nameResolver != null) {
+      pName = nameResolver(pName, map) ?? pName;
+    }
+
+    var contains = false;
+    Object? val;
+
+    if (map.containsKey(pName)) {
+      val = map[pName];
+      contains = true;
+    }
+
+    return _resolveValue(p, p.name, val, contains, reviver);
+  }
+
+  // Resolve the value, reviving it if needed:
+  Object? _resolveValue(ParameterReflection p, String pName, Object? val,
+      bool contains, FieldValueResolver? reviver) {
+    if (reviver != null) {
+      var type = p.type;
+      var valRevived = reviver(pName, val, type);
+      if (valRevived != null) {
+        if (valRevived is List &&
+            type.isListEntity &&
+            valRevived.any((e) => e == null)) {
+          var valRevivedUnresolved =
+              valRevived.map((e) => e ?? unresolvedParameterValue).toList();
+          return valRevivedUnresolved;
         }
+        return valRevived;
+      }
 
-        var contains = false;
-        Object? val;
-
-        if (map.containsKey(pJsonName)) {
-          val = map[pJsonName];
-          contains = true;
-        } else if (map.containsKey(pName)) {
-          val = map[pName];
-          contains = true;
-        } else if (fAlias1 != null && map.containsKey(fAlias1)) {
-          val = map[fAlias1];
-          contains = true;
-        } else if (fAlias2 != null && map.containsKey(fAlias2)) {
-          val = map[fAlias2];
-          contains = true;
+      if (contains) {
+        if (val == null) {
+          return null;
+        } else {
+          return p.required
+              ? unresolvedParameterValueRequired
+              : unresolvedParameterValue;
         }
-
-        return resolveValue(p, pName, val, contains);
-      });
+      } else {
+        return p.required ? absentParameterValueRequired : absentParameterValue;
+      }
     } else {
-      return methodInvocation((p, i) {
-        var pName = p.name;
+      if (val != null) return val;
 
-        if (nameResolver != null) {
-          pName = nameResolver(pName, map) ?? pName;
-        }
-
-        var contains = false;
-        Object? val;
-
-        if (map.containsKey(pName)) {
-          val = map[pName];
-          contains = true;
-        }
-
-        return resolveValue(p, pName, val, contains);
-      });
+      if (contains) {
+        return null;
+      } else {
+        return p.required ? absentParameterValueRequired : absentParameterValue;
+      }
     }
   }
 
@@ -3217,16 +3399,30 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
     // If has some unresolved parameter tries to resolve it again.
     // This will allow use of the current cached entities in
     // a `JsonEntityCache` (if in use).
-    if (_hasUnresolvedParameterValue(normalValues) ||
-        _hasUnresolvedParameterValue(optionalValues) ||
-        _hasUnresolvedParameterValue(namedValues.entries)) {
-      normalValues = parameterResolver.resolveNormal(normalParameters);
-      optionalValues = parameterResolver.resolveOptional(optionalParameters);
-      namedValues = parameterResolver.resolveNamed(namedParameters);
+    var normalValuesHasUnresolved = _hasUnresolvedParameterValue(normalValues);
+    var optionalValuesHasUnresolved =
+        _hasUnresolvedParameterValue(optionalValues);
+    var namedValuesHasUnresolved =
+        _hasUnresolvedParameterValue(namedValues.entries);
 
-      if (_hasUnresolvedParameterValue(normalValues) ||
-          _hasUnresolvedParameterValue(optionalValues) ||
-          _hasUnresolvedParameterValue(namedValues.entries)) {
+    if (normalValuesHasUnresolved ||
+        optionalValuesHasUnresolved ||
+        namedValuesHasUnresolved) {
+      if (normalValuesHasUnresolved) {
+        normalValues = parameterResolver.resolveNormal(normalParameters);
+      }
+
+      if (optionalValuesHasUnresolved) {
+        optionalValues = parameterResolver.resolveOptional(optionalParameters);
+      }
+
+      if (namedValuesHasUnresolved) {
+        namedValues = parameterResolver.resolveNamed(namedParameters);
+      }
+
+      if (_hasUnresolvedParameterValueRequired(normalValues) ||
+          _hasUnresolvedParameterValueRequired(optionalValues) ||
+          _hasUnresolvedParameterValueRequired(namedValues.entries)) {
         throw UnresolvedParameterError(
             this, normalValues, optionalValues, namedValues);
       }
@@ -3237,7 +3433,8 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
 
       var entry = optionalValues[lastIndex];
       var value = entry.value;
-      var isAbsent = value.isAbsentParameterValue;
+      var isAbsent =
+          value.isAbsentParameterValue || value.isUnresolvedParameterValue;
       if (value != null && !isAbsent) break;
 
       var lastParam = this.optionalParameters[lastIndex];
@@ -3258,7 +3455,8 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
       var p = namedParameters[k]!;
       Object? value = namedValues[k];
 
-      var isAbsent = value.isAbsentParameterValue;
+      var isAbsent =
+          value.isAbsentParameterValue || value.isUnresolvedParameterValue;
 
       if ((value == null || isAbsent) &&
           (p.nullable || p.hasDefaultValue) &&
@@ -3296,7 +3494,8 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
     for (var i = parameters.length - 1; i >= 0; --i) {
       var entry = parameters[i];
       var value = entry.value;
-      var isAbsent = value.isAbsentParameterValue;
+      var isAbsent =
+          value.isAbsentParameterValue || value.isUnresolvedParameterValue;
       if (isAbsent) {
         parameters[i] = MapEntry<String, Object?>(entry.key, null);
       }
@@ -3311,6 +3510,20 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
           return _hasUnresolvedParameterValue(val);
         } else if (val is Map) {
           return _hasUnresolvedParameterValue(val.values);
+        } else {
+          return false;
+        }
+      });
+
+  bool _hasUnresolvedParameterValueRequired(Iterable parameters) =>
+      parameters.any((e) {
+        Object? val = e is MapEntry ? e.value : e;
+        if (val.isUnresolvedParameterValueRequired) {
+          return true;
+        } else if (val is Iterable) {
+          return _hasUnresolvedParameterValueRequired(val);
+        } else if (val is Map) {
+          return _hasUnresolvedParameterValueRequired(val.values);
         } else {
           return false;
         }
@@ -3354,6 +3567,9 @@ extension _ObjectExtension on Object? {
       this == unresolvedParameterValue ||
       this == unresolvedParameterValueRequired;
 
+  bool get isUnresolvedParameterValueRequired =>
+      this == unresolvedParameterValueRequired;
+
   String get asStringSimple {
     var val = this;
 
@@ -3378,6 +3594,10 @@ extension _MapEntryExtension<K, V> on MapEntry<K, V> {
 
 extension _IterableMapEntryExtension on Iterable<MapEntry> {
   String get asStringSimple => '[${map((e) => e.asStringSimple).join(', ')}]';
+}
+
+extension _ListStringExtension on List<String> {
+  bool containsIgnoreCase(String s) => any((e) => equalsIgnoreAsciiCase(s, e));
 }
 
 typedef ConstructorReflectionAccessor = Function Function();
@@ -3417,6 +3637,28 @@ class ConstructorReflection<O> extends FunctionReflection<O, O> {
   bool get isNamed => name.isNotEmpty;
 
   bool get isDefaultConstructor => name.isEmpty && hasNoParameters;
+
+  /// Returns the [JsonAnnotation] of this constructor.
+  ///
+  /// See [JsonConstructor].
+  List<JsonAnnotation> get jsonAnnotations =>
+      annotations.whereType<JsonAnnotation>().toList();
+
+  /// Returns the [JsonConstructor] of this field.
+  List<JsonConstructor> get jsonConstructorAnnotations =>
+      jsonAnnotations.whereType<JsonConstructor>().toList();
+
+  bool? _hasJsonConstructor;
+
+  /// Returns `true` if this constructor has a [JsonConstructor] annotation.
+  bool get hasJsonConstructor =>
+      _hasJsonConstructor ??= jsonConstructorAnnotations.isNotEmpty;
+
+  bool? _hasJsonConstructorMandatory;
+
+  /// Returns `true` if this constructor has a [JsonConstructor.mandatory] annotation.
+  bool get hasJsonConstructorMandatory => _hasJsonConstructorMandatory ??=
+      jsonConstructorAnnotations.any((e) => e.mandatory);
 
   @override
   String toString() {
