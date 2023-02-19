@@ -1,3 +1,8 @@
+## 2.0.3
+
+- `JsonEntityCacheSimple`:
+  - Rename `length` to `totalCachedEntites` to avoid implementation issues. 
+
 ## 2.0.2
 
 - `ClassReflection`:

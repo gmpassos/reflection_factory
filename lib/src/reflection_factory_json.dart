@@ -2237,11 +2237,11 @@ class JsonEntityCacheSimple implements JsonEntityCache {
   }
 
   /// Returns the total number of cached entities.
-  int get length => _entities.values.map((e) => e.length).sum;
+  int get totalCachedEntites => _entities.values.map((e) => e.length).sum;
 
   @override
   String toString() {
-    var total = length;
+    var total = totalCachedEntites;
     var s = 'JsonEntityCacheSimple#$id[$total]';
 
     return total == 0
