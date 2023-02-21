@@ -1299,7 +1299,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
   bool _listHasFuture(List list) => list.where(_valueHasFuture).isNotEmpty;
 
   List<Future> _listElementsToFuture(List list) =>
-      list.map((e) => _valueToFuture(e)).toList();
+      list.map((e) => _valueToFuture(e)).toList(); // ignore: discarded_futures
 
   FutureOr<Map<K, V>> _resolveMap<K, V>(Map map) {
     var hasFuture = _mapHasFuture(map);
