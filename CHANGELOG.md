@@ -1,3 +1,10 @@
+
+- `analysis_options.yaml`:
+  - Added linter rules:
+    - `avoid_dynamic_calls`
+    - `avoid_type_to_string`
+    - `no_runtimeType_toString`
+
 ## 2.0.3
 
 - `JsonEntityCacheSimple`:

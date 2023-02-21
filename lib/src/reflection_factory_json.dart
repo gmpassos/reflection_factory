@@ -748,6 +748,7 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
 
   Object? _entityToJsonDefault(dynamic o, bool duplicatedEntitiesAsID) {
     try {
+      // ignore: avoid_dynamic_calls
       var enc = o.toJson();
       _cacheEntity(o, duplicatedEntitiesAsID);
       return enc;

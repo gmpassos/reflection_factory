@@ -864,6 +864,7 @@ void main() {
               }
             ]));
 
+        // ignore: avoid_dynamic_calls
         var json2WithRef = [usersJson[0], usersJson[0]['id']];
         var usersDecoded2 = typeListOfUser.fromJson(json2WithRef) as List;
 

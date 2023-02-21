@@ -120,6 +120,7 @@ class ReflectionFactory {
     }
 
     try {
+      // ignore: avoid_dynamic_calls
       return object.toJson();
     } catch (e) {
       return object;
