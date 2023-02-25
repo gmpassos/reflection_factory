@@ -20,7 +20,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.0.3';
+  static const String VERSION = '2.0.4';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -119,12 +119,7 @@ class ReflectionFactory {
       return toEncodable(object);
     }
 
-    try {
-      // ignore: avoid_dynamic_calls
-      return object.toJson();
-    } catch (e) {
-      return object;
-    }
+    return JsonEncoder.callToJson(object, fallback: (o) => o);
   }
 }
 
@@ -509,7 +504,8 @@ abstract class EnumReflection<O> extends Reflection<O>
 
   /// Returns a new instances without an [object] instance.
   @override
-  EnumReflection<O> withoutObjectInstance() => hasObject ? withObject() : this;
+  EnumReflection<O> withoutObjectInstance() =>
+      hasObject ? getStaticInstance() : this;
 
   /// Returns the `staticInstance` of the generated [EnumReflection].
   EnumReflection<O> getStaticInstance();
@@ -752,9 +748,37 @@ abstract class ClassReflection<O> extends Reflection<O>
   @override
   ClassReflection<O> withObject([O? obj]);
 
+  /// Setups the internal fields of `this` instance using already computed fields of [o].
+  /// Used by [withObject].
+  void setupInternalsWith(ClassReflection o) => o.setupInternalsOf(this);
+
+  /// Setups the internal fields of [o] instance using already computed fields of `this`.
+  /// Used by [withObject].
+  void setupInternalsOf(ClassReflection o) => o
+    .._allConstructors = _allConstructors
+    .._allFieldsNoObject = _allFieldsNoObject
+    .._allMethodsNoObject = _allMethodsNoObject
+    .._allStaticFields = _allStaticFields
+    .._allStaticMethods = _allStaticMethods
+    .._entityFieldsNoObject = _entityFieldsNoObject
+    .._fieldsJsonNameAliases = _fieldsJsonNameAliases
+    .._fieldsJsonNameAliasesReverse = _fieldsJsonNameAliasesReverse
+    .._fieldsWithJsonFieldHidden = _fieldsWithJsonFieldHidden
+    .._fieldsWithJsonFieldVisible = _fieldsWithJsonFieldVisible
+    .._fieldsWithJsonNameAlias = _fieldsWithJsonNameAlias
+    .._getBestConstructorForMapCache = _getBestConstructorForMapCache
+    .._hasFieldWithoutSetter = _hasFieldWithoutSetter
+    .._hasFinalField = _hasFinalField
+    .._hasJsonConstructor = _hasJsonConstructor
+    .._hasJsonConstructorMandatory = _hasJsonConstructorMandatory
+    .._hasJsonNameAlias = _hasJsonNameAlias
+    .._jsonConstructors = _jsonConstructors
+    .._jsonConstructorsMandatory = _jsonConstructorsMandatory;
+
   /// Returns a new instances without an [object] instance.
   @override
-  ClassReflection<O> withoutObjectInstance() => hasObject ? withObject() : this;
+  ClassReflection<O> withoutObjectInstance() =>
+      hasObject ? getStaticInstance() : this;
 
   /// Returns the `staticInstance` of the generated [ClassReflection].
   ClassReflection<O> getStaticInstance();
@@ -1140,9 +1164,16 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   List<FieldReflection<O, dynamic>>? _allFieldsNoObject;
 
-  List<FieldReflection<O, dynamic>> _allFieldsNoObjectImpl() =>
-      _allFieldsNoObject ??= List<FieldReflection<O, dynamic>>.unmodifiable(
-          fieldsNames.map((e) => field(e)!));
+  List<FieldReflection<O, dynamic>> _allFieldsNoObjectImpl() {
+    var allFieldsNoObject = _allFieldsNoObject;
+    if (allFieldsNoObject == null) {
+      var staticInstance = getStaticInstance();
+      _allFieldsNoObject = allFieldsNoObject =
+          List<FieldReflection<O, dynamic>>.unmodifiable(
+              staticInstance.fieldsNames.map((e) => staticInstance.field(e)!));
+    }
+    return allFieldsNoObject;
+  }
 
   List<FieldReflection<O, dynamic>>? _allFieldsObject;
 
@@ -1167,8 +1198,7 @@ abstract class ClassReflection<O> extends Reflection<O>
       return _allFieldsObjectImpl();
     }
 
-    final o = obj;
-    return _allFieldsNoObjectImpl().map((f) => f.withObject(o)).toList();
+    return _allFieldsNoObjectImpl().map((f) => f.withObject(obj)).toList();
   }
 
   bool? _hasFinalField;
@@ -1199,11 +1229,49 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// Returns a static [FieldReflection] for [fieldName].
   FieldReflection<O, T>? staticField<T>(String fieldName);
 
-  List<FieldReflection<O, dynamic>>? _entityFields;
+  List<FieldReflection<O, dynamic>>? _entityFieldsNoObject;
+
+  List<FieldReflection<O, dynamic>> _entityFieldsNoObjectImpl() {
+    var entityFieldsNoObject = _entityFieldsNoObject;
+    if (entityFieldsNoObject == null) {
+      var staticInstance = getStaticInstance();
+      _entityFieldsNoObject = entityFieldsNoObject = UnmodifiableListView(
+          staticInstance
+              ._allFieldsNoObjectImpl()
+              .where((f) => f.isEntityField)
+              .toList(growable: false));
+    }
+    return entityFieldsNoObject;
+  }
+
+  List<FieldReflection<O, dynamic>>? _entityFieldsObject;
+
+  List<FieldReflection<O, dynamic>> _entityFieldsObjectImpl() {
+    final obj = object;
+    if (obj == null) {
+      throw StateError("Null `object`");
+    }
+
+    return _entityFieldsObject ??= UnmodifiableListView(
+        _entityFieldsNoObjectImpl()
+            .map((f) => f.withObject(obj))
+            .toList(growable: false));
+  }
 
   /// [fieldsWhere] [FieldReflection.isEntityField].
-  List<FieldReflection<O, dynamic>> entityFields([O? obj]) => _entityFields ??=
-      UnmodifiableListView(fieldsWhere((f) => f.isEntityField, obj).toList());
+  List<FieldReflection<O, dynamic>> entityFields([O? obj]) {
+    if (obj == null) {
+      if (object != null) {
+        return _entityFieldsObjectImpl();
+      } else {
+        return _entityFieldsNoObjectImpl();
+      }
+    } else if (identical(obj, object)) {
+      return _entityFieldsObjectImpl();
+    }
+
+    return _entityFieldsNoObjectImpl().map((f) => f.withObject(obj)).toList();
+  }
 
   /// Returns a [List] of fields [FieldReflection] that matches [test].
   Iterable<FieldReflection<O, dynamic>> fieldsWhere(
@@ -1248,9 +1316,17 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   List<MethodReflection<O, dynamic>>? _allMethodsNoObject;
 
-  List<MethodReflection<O, dynamic>> _allMethodsNoObjectImpl() =>
-      _allMethodsNoObject ??= List<MethodReflection<O, dynamic>>.unmodifiable(
-          methodsNames.map((e) => method(e)!));
+  List<MethodReflection<O, dynamic>> _allMethodsNoObjectImpl() {
+    var allMethodsNoObject = _allMethodsNoObject;
+    if (allMethodsNoObject == null) {
+      var staticInstance = getStaticInstance();
+      _allMethodsNoObject = allMethodsNoObject =
+          List<MethodReflection<O, dynamic>>.unmodifiable(staticInstance
+              .methodsNames
+              .map((e) => staticInstance.method(e)!));
+    }
+    return allMethodsNoObject;
+  }
 
   List<MethodReflection<O, dynamic>>? _allMethodsObject;
 
@@ -1276,8 +1352,7 @@ abstract class ClassReflection<O> extends Reflection<O>
       return _allMethodsObjectImpl();
     }
 
-    final o = obj;
-    return _allMethodsNoObjectImpl().map((m) => m.withObject(o)).toList();
+    return _allMethodsNoObjectImpl().map((m) => m.withObject(obj)).toList();
   }
 
   /// Returns a `const` [List] of static methods names.
@@ -1453,13 +1528,8 @@ abstract class ClassReflection<O> extends Reflection<O>
     return _toMapFromFieldsImpl(obj);
   }
 
-  List<FieldReflection<dynamic, dynamic>>? _fieldsForMap;
-
   Map<String, dynamic> _toMapFromFieldsImpl(O obj) {
-    var fieldsForMap = _fieldsForMap ??=
-        getStaticInstance().fieldsWhere((f) => f.isEntityField).toList();
-
-    var entries = fieldsForMap.map((f) {
+    var entries = _entityFieldsNoObjectImpl().map((f) {
       var val = f.getFor(obj);
       var name = f.jsonName;
       return MapEntry(name, val);
@@ -1995,13 +2065,15 @@ class _KeyParametersNames {
     if (_sorted) {
       return _equalsFieldsImpl(other);
     } else if (other._sorted) {
-      return _equalsFieldsImpl(other);
+      return other._equalsFieldsImpl(this);
     } else {
       throw StateError('One of the instances should be sorted');
     }
   }
 
   bool _equalsFieldsImpl(_KeyParametersNames other) {
+    assert(_sorted);
+
     var length = _fields.length;
 
     var otherFields = other._fields;
@@ -2018,11 +2090,18 @@ class _KeyParametersNames {
 
       return true;
     } else {
+      var otherSorted = true;
+
       for (var i = 0; i < length; ++i) {
         var o = otherFields[i];
-        if (binarySearch(_fields, o) < 0) return false;
+        var idx = binarySearch(_fields, o);
+        if (idx < 0) return false;
+        if (i != idx) {
+          otherSorted = false;
+        }
       }
 
+      other._sorted = otherSorted;
       return true;
     }
   }
@@ -2085,7 +2164,7 @@ abstract class ElementReflection<O> {
   String get className => classReflection.className;
 }
 
-final List<Object> _annotationsEmpty = List<Object>.unmodifiable(<Object>[]);
+const List<Object> _annotationsEmpty = <Object>[];
 
 final List<ParameterReflection> _parametersEmpty =
     List<ParameterReflection>.unmodifiable(<ParameterReflection>[]);
@@ -2121,7 +2200,7 @@ class ParameterReflection {
 
   /// The parameter annotations.
   List<Object>? get annotations => _annotations != null
-      ? List<Object>.unmodifiable(_annotations!)
+      ? UnmodifiableListView<Object>(_annotations!)
       : _annotationsEmpty;
 
   const ParameterReflection(this.type, this.name, this.nullable, this.required,
@@ -2735,7 +2814,7 @@ class FieldReflection<O, T> extends ElementReflection<O>
       [List<Object>? annotations])
       : _annotations = annotations == null || annotations.isEmpty
             ? _annotationsEmpty
-            : List<Object>.unmodifiable(annotations),
+            : UnmodifiableListView<Object>(annotations),
         super(classReflection, declaringType, isStatic);
 
   FieldReflection._(
@@ -2765,7 +2844,11 @@ class FieldReflection<O, T> extends ElementReflection<O>
         object,
         isStatic,
         isFinal,
-        _annotations);
+        _annotations)
+      .._hasJsonFieldHidden = _hasJsonFieldHidden
+      .._hasJsonFieldVisible = _hasJsonFieldVisible
+      .._hasJsonNameAlias = _hasJsonNameAlias
+      .._jsonName = _jsonName;
   }
 
   bool? _hasJsonFieldHidden;
@@ -3017,11 +3100,20 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
   /// The named parameters [Type]s of this method.
   final Map<String, ParameterReflection> namedParameters;
 
+  List<String>? _positionalParametersNames;
+
+  /// The names of the positional parameters ([normalParameters] + [optionalParameters]).
+  List<String> get positionalParametersNames =>
+      _positionalParametersNames ??= UnmodifiableListView<String>([
+        ...normalParameters.map((p) => p.name),
+        ...optionalParameters.map((p) => p.name),
+      ]);
+
   List<ParameterReflection>? _allParameters;
 
   /// Returns all the parameters: [normalParameters], [optionalParameters], [namedParameters].
   List<ParameterReflection> get allParameters =>
-      _allParameters ??= List<ParameterReflection>.unmodifiable([
+      _allParameters ??= UnmodifiableListView<ParameterReflection>([
         ...normalParameters,
         ...optionalParameters,
         ...namedParameters.values
@@ -3067,17 +3159,17 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
     List<Object>? annotations,
   )   : normalParameters = normalParameters == null || normalParameters.isEmpty
             ? _parametersEmpty
-            : List<ParameterReflection>.unmodifiable(normalParameters),
+            : UnmodifiableListView<ParameterReflection>(normalParameters),
         optionalParameters =
             optionalParameters == null || optionalParameters.isEmpty
                 ? _parametersEmpty
-                : List<ParameterReflection>.unmodifiable(optionalParameters),
+                : UnmodifiableListView<ParameterReflection>(optionalParameters),
         namedParameters = namedParameters == null || namedParameters.isEmpty
             ? _namedParametersEmpty
             : Map<String, ParameterReflection>.unmodifiable(namedParameters),
         annotations = annotations == null || annotations.isEmpty
             ? _annotationsEmpty
-            : List<Object>.unmodifiable(annotations),
+            : UnmodifiableListView<Object>(annotations),
         super(classReflection, declaringType, isStatic);
 
   FunctionReflection._(
@@ -3163,8 +3255,8 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
   List<String>? _namedParametersNames;
 
   /// Returns the [namedParameters] names.
-  List<String> get namedParametersNames => _namedParametersNames ??=
-      List<String>.unmodifiable(namedParameters.keys.toList());
+  List<String> get namedParametersNames =>
+      _namedParametersNames ??= List<String>.unmodifiable(namedParameters.keys);
 
   /// Returns a [List] of [ParameterReflection] that matches [test].
   Iterable<ParameterReflection> parametersWhere(
@@ -3452,21 +3544,23 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
       }
     }
 
-    for (var k in namedValues.keys.toList(growable: false)) {
-      var p = namedParameters[k]!;
-      Object? value = namedValues[k];
+    if (namedValues.isNotEmpty) {
+      for (var k in namedValues.keys.toList(growable: false)) {
+        var p = namedParameters[k]!;
+        Object? value = namedValues[k];
 
-      var isAbsent =
-          value.isAbsentParameterValue || value.isUnresolvedParameterValue;
+        var isAbsent =
+            value.isAbsentParameterValue || value.isUnresolvedParameterValue;
 
-      if ((value == null || isAbsent) &&
-          (p.nullable || p.hasDefaultValue) &&
-          !p.required) {
-        namedValues.remove(k);
-      } else if (isAbsent) {
-        throw StateError("Required named parameter `${p.name}` "
-            "${p.hasJsonNameAlias ? '(jsonName: p.jsonName)' : ''} "
-            "for `MethodInvocation[${classReflection.classType}.$name]`: $p");
+        if ((value == null || isAbsent) &&
+            (p.nullable || p.hasDefaultValue) &&
+            !p.required) {
+          namedValues.remove(k);
+        } else if (isAbsent) {
+          throw StateError("Required named parameter `${p.name}` "
+              "${p.hasJsonNameAlias ? '(jsonName: p.jsonName)' : ''} "
+              "for `MethodInvocation[${classReflection.classType}.$name]`: $p");
+        }
       }
     }
 
@@ -3475,11 +3569,6 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
 
     var normalParametersValues = normalValues.map((e) => e.value).toList();
     var optionalParametersValues = optionalValues.map((e) => e.value).toList();
-
-    var positionalParametersNames = <String>[
-      ...normalValues.map((e) => e.key),
-      ...optionalValues.map((e) => e.key),
-    ];
 
     return MethodInvocation<O>.withPositionalParametersNames(
       classReflection.classType,
@@ -3734,7 +3823,7 @@ class MethodReflection<O, R> extends FunctionReflection<O, R> {
             annotations);
 
   /// Returns a new instance that references [object].
-  MethodReflection<O, R> withObject(O object) => MethodReflection._(
+  MethodReflection<O, R> withObject(O object) => MethodReflection<O, R>._(
       classReflection,
       declaringType,
       name,
@@ -3746,7 +3835,19 @@ class MethodReflection<O, R> extends FunctionReflection<O, R> {
       normalParameters,
       optionalParameters,
       namedParameters,
-      annotations);
+      annotations)
+    .._allJsonParametersNames = _allJsonParametersNames
+    .._allParameters = _allParameters
+    .._allParametersNames = _allParametersNames
+    .._hasJsonNameAlias = _hasJsonNameAlias
+    .._namedParametersNames = _namedParametersNames
+    .._normalParametersNames = _normalParametersNames
+    .._normalParametersTypeReflection = _normalParametersTypeReflection
+    .._normalParametersTypes = _normalParametersTypes
+    .._optionalParametersNames = _optionalParametersNames
+    .._optionalParametersTypeReflection = _optionalParametersTypeReflection
+    .._optionalParametersTypes = _optionalParametersTypes
+    .._positionalParametersNames = _positionalParametersNames;
 
   Function? _method;
 

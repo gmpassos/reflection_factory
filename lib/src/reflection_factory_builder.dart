@@ -867,15 +867,18 @@ extension _LibraryElementExtension on LibraryElement {
   static final Expando<List<ClassElement>> _exportedClasses =
       Expando<List<ClassElement>>();
 
-  List<ClassElement> get exportedClasses => _exportedClasses[this] ??=
-      UnmodifiableListView(topLevelElements.whereType<ClassElement>().toList());
+  List<ClassElement> get exportedClasses =>
+      _exportedClasses[this] ??= UnmodifiableListView(
+          topLevelElements.whereType<ClassElement>().toList(growable: false));
 
   static final Expando<List<LibraryElement>> _allExports =
       Expando<List<LibraryElement>>();
 
   List<LibraryElement> get allExports =>
-      _allExports[this] ??= UnmodifiableListView(
-          libraryExports.map((e) => e.exportedLibrary).whereNotNull().toList());
+      _allExports[this] ??= UnmodifiableListView(libraryExports
+          .map((e) => e.exportedLibrary)
+          .whereNotNull()
+          .toList(growable: false));
 
   static final Expando<Set<ClassElement>> _allExportedClasses =
       Expando<Set<ClassElement>>();
@@ -1170,7 +1173,7 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
     str.write('  static $reflectionClass? _withoutObjectInstance;\n');
     str.write('  @override\n');
     str.write(
-        '  $reflectionClass withoutObjectInstance() => _withoutObjectInstance ??= super.withoutObjectInstance() as $reflectionClass;\n\n');
+        '  $reflectionClass withoutObjectInstance() => staticInstance;\n\n');
 
     str.write(
         '  static $reflectionClass get staticInstance => _withoutObjectInstance ??= $reflectionClass._();\n\n');
@@ -1189,17 +1192,15 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
     var classElement = _Element(_enumElement);
 
     var classAnnotationListCode = classElement.annotationsAsListCode;
-    if (classAnnotationListCode != 'null') {
-      str.write(
-          '  static const List<Object> _classAnnotations = $classAnnotationListCode; \n\n');
-      str.write('  @override\n');
-      str.write(
-          '  List<Object> get classAnnotations => List<Object>.unmodifiable(_classAnnotations);\n\n');
-    } else {
-      str.write('  @override\n');
-      str.write(
-          '  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);\n\n');
+    if (classAnnotationListCode == 'null') {
+      classAnnotationListCode = '<Object>[]';
     }
+
+    str.write(
+        '  static const List<Object> _classAnnotations = $classAnnotationListCode; \n\n');
+
+    str.write('  @override\n');
+    str.write('  List<Object> get classAnnotations => _classAnnotations;\n\n');
 
     _buildField(str);
 
@@ -1212,16 +1213,20 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
     var entries = _toFieldEntries(fields);
     var names = _buildStringListCode(entries.keys, sorted: true);
 
-    str.write('  @override\n');
-    str.write('  List<String> get fieldsNames => $names;\n\n');
+    str.write('  static const List<String> _fieldsNames = $names;\n\n');
 
     str.write('  @override\n');
+    str.write('  List<String> get fieldsNames => _fieldsNames;\n\n');
+
     str.write(
-        '  Map<String,$enumName> get valuesByName => const <String,$enumName>{\n');
+        '  static const Map<String,$enumName> _valuesByName = const <String,$enumName>{\n');
     for (var name in entries.keys) {
       str.write("  '$name': $enumName.$name,\n");
     }
     str.write('  };\n\n');
+
+    str.write('  @override\n');
+    str.write('  Map<String,$enumName> get valuesByName => _valuesByName;\n');
 
     str.write('  @override\n');
     str.write('  List<$enumName> get values => $enumName.values;\n\n');
@@ -1610,12 +1615,12 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     str.write('  @override\n');
     str.write(
-        '  $reflectionClass withObject([$className? obj]) => $reflectionClass(obj);\n\n');
+        '  $reflectionClass withObject([$className? obj]) => $reflectionClass(obj)..setupInternalsWith(this);\n\n');
 
     str.write('  static $reflectionClass? _withoutObjectInstance;\n');
     str.write('  @override\n');
     str.write(
-        '  $reflectionClass withoutObjectInstance() => _withoutObjectInstance ??= super.withoutObjectInstance() as $reflectionClass;\n\n');
+        '  $reflectionClass withoutObjectInstance() => staticInstance;\n\n');
 
     str.write(
         '  static $reflectionClass get staticInstance => _withoutObjectInstance ??= $reflectionClass._();\n\n');
@@ -1636,21 +1641,21 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     var classElement = _Element(_classElement);
 
     var classAnnotationListCode = classElement.annotationsAsListCode;
-    if (classAnnotationListCode != 'null') {
-      str.write(
-          '  static const List<Object> _classAnnotations = $classAnnotationListCode; \n\n');
-      str.write('  @override\n');
-      str.write(
-          '  List<Object> get classAnnotations => List<Object>.unmodifiable(_classAnnotations);\n\n');
-    } else {
-      str.write('  @override\n');
-      str.write(
-          '  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);\n\n');
+    if (classAnnotationListCode == 'null') {
+      classAnnotationListCode = '<Object>[]';
     }
 
-    str.write('\n  @override\n');
     str.write(
-        '  List<Type> get supperTypes => const <Type>[${supperTypes.map((e) => e.name).join(', ')}];\n\n');
+        '  static const List<Object> _classAnnotations = $classAnnotationListCode; \n\n');
+
+    str.write('  @override\n');
+    str.write('  List<Object> get classAnnotations => _classAnnotations;\n\n');
+
+    str.write(
+        '  static const List<Type> _supperTypes = const <Type>[${supperTypes.map((e) => e.name).join(', ')}];\n\n');
+
+    str.write('\n  @override\n');
+    str.write('  List<Type> get supperTypes => _supperTypes;\n\n');
 
     _buildCallMethodToJson(str);
 
@@ -1672,8 +1677,11 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         _toConstructorEntries(this, constructors.where(_canConstruct).toSet());
     var names = _buildStringListCode(entries.keys, sorted: true);
 
+    str.write('  static const List<String> _constructorsNames = $names;\n\n');
+
     str.write('  @override\n');
-    str.write('  List<String> get constructorsNames => $names;\n\n');
+    str.write(
+        '  List<String> get constructorsNames => _constructorsNames;\n\n');
 
     str.write(
         '  static final Map<String,ConstructorReflection<$className>> _constructors = <String,ConstructorReflection<$className>>{};\n\n');
@@ -1788,8 +1796,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     var entries = _toFieldEntries(fields);
     var names = _buildStringListCode(entries.keys, sorted: true);
 
+    str.write('  static const List<String> _fieldsNames = $names;\n\n');
+
     str.write('  @override\n');
-    str.write('  List<String> get fieldsNames => $names;\n\n');
+    str.write('  List<String> get fieldsNames => _fieldsNames;\n\n');
 
     if (entries.isEmpty) {
       str.write('  @override\n');
@@ -1890,8 +1900,11 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     var entries = _toFieldEntries(staticFields);
     var names = _buildStringListCode(entries.keys, sorted: true);
 
+    str.write('  static const List<String> _staticFieldsNames = $names;\n\n');
+
     str.write('  @override\n');
-    str.write('  List<String> get staticFieldsNames => $names;\n\n');
+    str.write(
+        '  List<String> get staticFieldsNames => _staticFieldsNames;\n\n');
 
     if (entries.isEmpty) {
       str.write('  @override\n');
@@ -1977,8 +1990,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     var entries = _toMethodsEntries(methods);
     var names = _buildStringListCode(entries.keys, sorted: true);
 
+    str.write('  static const List<String> _methodsNames = $names;\n\n');
+
     str.write('  @override\n');
-    str.write('  List<String> get methodsNames => $names;\n\n');
+    str.write('  List<String> get methodsNames => _methodsNames;\n\n');
 
     if (entries.isEmpty) {
       str.write('  @override\n');
@@ -2067,8 +2082,11 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     var entries = _toMethodsEntries(staticMethods);
     var names = _buildStringListCode(entries.keys, sorted: true);
 
+    str.write('  static const List<String> _staticMethodsNames = $names;\n\n');
+
     str.write('  @override\n');
-    str.write('  List<String> get staticMethodsNames => $names;\n\n');
+    str.write(
+        '  List<String> get staticMethodsNames => _staticMethodsNames;\n\n');
 
     if (entries.isEmpty) {
       str.write('  @override\n');
@@ -2625,7 +2643,7 @@ class _Element {
 
   String get annotationsAsListCode {
     var codes = annotationsAsCode;
-    return codes.isEmpty ? 'null' : '[${codes.join(',')}]';
+    return codes.isEmpty ? 'null' : 'const [${codes.join(',')}]';
   }
 }
 

@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.0.3
+// BUILDER: reflection_factory/2.0.4
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -17,7 +17,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.0.3');
+  static final Version _version = Version.parse('2.0.4');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -151,13 +151,12 @@ class TestAddressWithReflection$reflection
   @override
   TestAddressWithReflection$reflection withObject(
           [TestAddressWithReflection? obj]) =>
-      TestAddressWithReflection$reflection(obj);
+      TestAddressWithReflection$reflection(obj)..setupInternalsWith(this);
 
   static TestAddressWithReflection$reflection? _withoutObjectInstance;
   @override
   TestAddressWithReflection$reflection withoutObjectInstance() =>
-      _withoutObjectInstance ??=
-          super.withoutObjectInstance() as TestAddressWithReflection$reflection;
+      staticInstance;
 
   static TestAddressWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestAddressWithReflection$reflection._();
@@ -188,9 +187,14 @@ class TestAddressWithReflection$reflection
   TestAddressWithReflection? createInstanceWithNoRequiredArgsConstructor() =>
       TestAddressWithReflection.empty();
 
+  static const List<String> _constructorsNames = const <String>[
+    'empty',
+    'simple',
+    'withCity'
+  ];
+
   @override
-  List<String> get constructorsNames =>
-      const <String>['empty', 'simple', 'withCity'];
+  List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestAddressWithReflection>>
       _constructors =
@@ -236,7 +240,7 @@ class TestAddressWithReflection$reflection
               'city': __PR(__TR.tString, 'city', false, false, ''),
               'id': __PR(__TR.tInt, 'id', true, false)
             },
-            [JsonConstructor(mandatory: true)]);
+            const [JsonConstructor(mandatory: true)]);
       case 'empty':
         return ConstructorReflection<TestAddressWithReflection>(
             this,
@@ -252,11 +256,15 @@ class TestAddressWithReflection$reflection
     }
   }
 
-  @override
-  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+  static const List<Object> _classAnnotations = <Object>[];
 
   @override
-  List<Type> get supperTypes => const <Type>[];
+  List<Object> get classAnnotations => _classAnnotations;
+
+  static const List<Type> _supperTypes = const <Type>[];
+
+  @override
+  List<Type> get supperTypes => _supperTypes;
 
   @override
   bool get hasMethodToJson => true;
@@ -267,9 +275,15 @@ class TestAddressWithReflection$reflection
     return obj?.toJson();
   }
 
+  static const List<String> _fieldsNames = const <String>[
+    'city',
+    'hashCode',
+    'id',
+    'state'
+  ];
+
   @override
-  List<String> get fieldsNames =>
-      const <String>['city', 'hashCode', 'id', 'state'];
+  List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestAddressWithReflection, dynamic>>
       _fieldsNoObject =
@@ -377,23 +391,30 @@ class TestAddressWithReflection$reflection
           obj,
           false,
           false,
-          [override],
+          const [override],
         );
       default:
         return null;
     }
   }
 
+  static const List<String> _staticFieldsNames = const <String>[];
+
   @override
-  List<String> get staticFieldsNames => const <String>[];
+  List<String> get staticFieldsNames => _staticFieldsNames;
 
   @override
   FieldReflection<TestAddressWithReflection, T>? staticField<T>(
           String fieldName) =>
       null;
 
+  static const List<String> _methodsNames = const <String>[
+    'toJson',
+    'toString'
+  ];
+
   @override
-  List<String> get methodsNames => const <String>['toJson', 'toString'];
+  List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestAddressWithReflection, dynamic>>
       _methodsNoObject =
@@ -478,14 +499,16 @@ class TestAddressWithReflection$reflection
             null,
             null,
             null,
-            [override]);
+            const [override]);
       default:
         return null;
     }
   }
 
+  static const List<String> _staticMethodsNames = const <String>[];
+
   @override
-  List<String> get staticMethodsNames => const <String>[];
+  List<String> get staticMethodsNames => _staticMethodsNames;
 
   @override
   MethodReflection<TestAddressWithReflection, R>? staticMethod<R>(
@@ -524,13 +547,12 @@ class TestCompanyWithReflection$reflection
   @override
   TestCompanyWithReflection$reflection withObject(
           [TestCompanyWithReflection? obj]) =>
-      TestCompanyWithReflection$reflection(obj);
+      TestCompanyWithReflection$reflection(obj)..setupInternalsWith(this);
 
   static TestCompanyWithReflection$reflection? _withoutObjectInstance;
   @override
   TestCompanyWithReflection$reflection withoutObjectInstance() =>
-      _withoutObjectInstance ??=
-          super.withoutObjectInstance() as TestCompanyWithReflection$reflection;
+      staticInstance;
 
   static TestCompanyWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestCompanyWithReflection$reflection._();
@@ -560,8 +582,10 @@ class TestCompanyWithReflection$reflection
   TestCompanyWithReflection? createInstanceWithNoRequiredArgsConstructor() =>
       null;
 
+  static const List<String> _constructorsNames = const <String>[''];
+
   @override
-  List<String> get constructorsNames => const <String>[''];
+  List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestCompanyWithReflection>>
       _constructors =
@@ -630,11 +654,15 @@ class TestCompanyWithReflection$reflection
     }
   }
 
-  @override
-  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+  static const List<Object> _classAnnotations = <Object>[];
 
   @override
-  List<Type> get supperTypes => const <Type>[];
+  List<Object> get classAnnotations => _classAnnotations;
+
+  static const List<Type> _supperTypes = const <Type>[];
+
+  @override
+  List<Type> get supperTypes => _supperTypes;
 
   @override
   bool get hasMethodToJson => false;
@@ -642,16 +670,18 @@ class TestCompanyWithReflection$reflection
   @override
   Object? callMethodToJson([TestCompanyWithReflection? obj]) => null;
 
+  static const List<String> _fieldsNames = const <String>[
+    'branchesAddresses',
+    'extraAddresses',
+    'extraNames',
+    'hashCode',
+    'local',
+    'mainAddress',
+    'name'
+  ];
+
   @override
-  List<String> get fieldsNames => const <String>[
-        'branchesAddresses',
-        'extraAddresses',
-        'extraNames',
-        'hashCode',
-        'local',
-        'mainAddress',
-        'name'
-      ];
+  List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestCompanyWithReflection, dynamic>>
       _fieldsNoObject =
@@ -792,7 +822,7 @@ class TestCompanyWithReflection$reflection
           obj,
           false,
           false,
-          [JsonField.hidden()],
+          const [JsonField.hidden()],
         );
       case 'hashcode':
         return FieldReflection<TestCompanyWithReflection, int>(
@@ -806,23 +836,27 @@ class TestCompanyWithReflection$reflection
           obj,
           false,
           false,
-          [override],
+          const [override],
         );
       default:
         return null;
     }
   }
 
+  static const List<String> _staticFieldsNames = const <String>[];
+
   @override
-  List<String> get staticFieldsNames => const <String>[];
+  List<String> get staticFieldsNames => _staticFieldsNames;
 
   @override
   FieldReflection<TestCompanyWithReflection, T>? staticField<T>(
           String fieldName) =>
       null;
 
+  static const List<String> _methodsNames = const <String>['toString'];
+
   @override
-  List<String> get methodsNames => const <String>['toString'];
+  List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestCompanyWithReflection, dynamic>>
       _methodsNoObject =
@@ -892,14 +926,16 @@ class TestCompanyWithReflection$reflection
             null,
             null,
             null,
-            [override]);
+            const [override]);
       default:
         return null;
     }
   }
 
+  static const List<String> _staticMethodsNames = const <String>[];
+
   @override
-  List<String> get staticMethodsNames => const <String>[];
+  List<String> get staticMethodsNames => _staticMethodsNames;
 
   @override
   MethodReflection<TestCompanyWithReflection, R>? staticMethod<R>(
@@ -936,13 +972,11 @@ class TestDataWithReflection$reflection
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
-      TestDataWithReflection$reflection(obj);
+      TestDataWithReflection$reflection(obj)..setupInternalsWith(this);
 
   static TestDataWithReflection$reflection? _withoutObjectInstance;
   @override
-  TestDataWithReflection$reflection withoutObjectInstance() =>
-      _withoutObjectInstance ??=
-          super.withoutObjectInstance() as TestDataWithReflection$reflection;
+  TestDataWithReflection$reflection withoutObjectInstance() => staticInstance;
 
   static TestDataWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestDataWithReflection$reflection._();
@@ -971,8 +1005,10 @@ class TestDataWithReflection$reflection
   @override
   TestDataWithReflection? createInstanceWithNoRequiredArgsConstructor() => null;
 
+  static const List<String> _constructorsNames = const <String>[''];
+
   @override
-  List<String> get constructorsNames => const <String>[''];
+  List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestDataWithReflection>>
       _constructors = <String, ConstructorReflection<TestDataWithReflection>>{};
@@ -1020,11 +1056,15 @@ class TestDataWithReflection$reflection
     }
   }
 
-  @override
-  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+  static const List<Object> _classAnnotations = <Object>[];
 
   @override
-  List<Type> get supperTypes => const <Type>[];
+  List<Object> get classAnnotations => _classAnnotations;
+
+  static const List<Type> _supperTypes = const <Type>[];
+
+  @override
+  List<Type> get supperTypes => _supperTypes;
 
   @override
   bool get hasMethodToJson => false;
@@ -1032,9 +1072,16 @@ class TestDataWithReflection$reflection
   @override
   Object? callMethodToJson([TestDataWithReflection? obj]) => null;
 
+  static const List<String> _fieldsNames = const <String>[
+    'bytes',
+    'domain',
+    'hashCode',
+    'id',
+    'name'
+  ];
+
   @override
-  List<String> get fieldsNames =>
-      const <String>['bytes', 'domain', 'hashCode', 'id', 'name'];
+  List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestDataWithReflection, dynamic>>
       _fieldsNoObject =
@@ -1156,30 +1203,36 @@ class TestDataWithReflection$reflection
           obj,
           false,
           false,
-          [override],
+          const [override],
         );
       default:
         return null;
     }
   }
 
+  static const List<String> _staticFieldsNames = const <String>[];
+
   @override
-  List<String> get staticFieldsNames => const <String>[];
+  List<String> get staticFieldsNames => _staticFieldsNames;
 
   @override
   FieldReflection<TestDataWithReflection, T>? staticField<T>(
           String fieldName) =>
       null;
 
+  static const List<String> _methodsNames = const <String>[];
+
   @override
-  List<String> get methodsNames => const <String>[];
+  List<String> get methodsNames => _methodsNames;
 
   @override
   MethodReflection<TestDataWithReflection, R>? method<R>(String methodName,
           [TestDataWithReflection? obj]) =>
       null;
+  static const List<String> _staticMethodsNames = const <String>[];
+
   @override
-  List<String> get staticMethodsNames => const <String>[];
+  List<String> get staticMethodsNames => _staticMethodsNames;
 
   @override
   MethodReflection<TestDataWithReflection, R>? staticMethod<R>(
@@ -1218,13 +1271,11 @@ class TestDomainWithReflection$reflection
   @override
   TestDomainWithReflection$reflection withObject(
           [TestDomainWithReflection? obj]) =>
-      TestDomainWithReflection$reflection(obj);
+      TestDomainWithReflection$reflection(obj)..setupInternalsWith(this);
 
   static TestDomainWithReflection$reflection? _withoutObjectInstance;
   @override
-  TestDomainWithReflection$reflection withoutObjectInstance() =>
-      _withoutObjectInstance ??=
-          super.withoutObjectInstance() as TestDomainWithReflection$reflection;
+  TestDomainWithReflection$reflection withoutObjectInstance() => staticInstance;
 
   static TestDomainWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestDomainWithReflection$reflection._();
@@ -1254,8 +1305,14 @@ class TestDomainWithReflection$reflection
   TestDomainWithReflection? createInstanceWithNoRequiredArgsConstructor() =>
       null;
 
+  static const List<String> _constructorsNames = const <String>[
+    '',
+    'named',
+    'parse'
+  ];
+
   @override
-  List<String> get constructorsNames => const <String>['', 'named', 'parse'];
+  List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestDomainWithReflection>>
       _constructors =
@@ -1339,11 +1396,15 @@ class TestDomainWithReflection$reflection
     }
   }
 
-  @override
-  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+  static const List<Object> _classAnnotations = <Object>[];
 
   @override
-  List<Type> get supperTypes => const <Type>[];
+  List<Object> get classAnnotations => _classAnnotations;
+
+  static const List<Type> _supperTypes = const <Type>[];
+
+  @override
+  List<Type> get supperTypes => _supperTypes;
 
   @override
   bool get hasMethodToJson => true;
@@ -1354,14 +1415,16 @@ class TestDomainWithReflection$reflection
     return obj?.toJson();
   }
 
+  static const List<String> _fieldsNames = const <String>[
+    'domainFunction',
+    'extraFunction',
+    'hashCode',
+    'name',
+    'suffix'
+  ];
+
   @override
-  List<String> get fieldsNames => const <String>[
-        'domainFunction',
-        'extraFunction',
-        'hashCode',
-        'name',
-        'suffix'
-      ];
+  List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestDomainWithReflection, dynamic>>
       _fieldsNoObject =
@@ -1482,24 +1545,31 @@ class TestDomainWithReflection$reflection
           obj,
           false,
           false,
-          [override],
+          const [override],
         );
       default:
         return null;
     }
   }
 
+  static const List<String> _staticFieldsNames = const <String>[];
+
   @override
-  List<String> get staticFieldsNames => const <String>[];
+  List<String> get staticFieldsNames => _staticFieldsNames;
 
   @override
   FieldReflection<TestDomainWithReflection, T>? staticField<T>(
           String fieldName) =>
       null;
 
+  static const List<String> _methodsNames = const <String>[
+    'toJson',
+    'toString',
+    'typedFunction'
+  ];
+
   @override
-  List<String> get methodsNames =>
-      const <String>['toJson', 'toString', 'typedFunction'];
+  List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestDomainWithReflection, dynamic>>
       _methodsNoObject =
@@ -1605,14 +1675,16 @@ class TestDomainWithReflection$reflection
             null,
             null,
             null,
-            [override]);
+            const [override]);
       default:
         return null;
     }
   }
 
+  static const List<String> _staticMethodsNames = const <String>[];
+
   @override
-  List<String> get staticMethodsNames => const <String>[];
+  List<String> get staticMethodsNames => _staticMethodsNames;
 
   @override
   MethodReflection<TestDomainWithReflection, R>? staticMethod<R>(
@@ -1647,12 +1719,11 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
 
   @override
   TestEmpty$reflection withObject([TestEmpty? obj]) =>
-      TestEmpty$reflection(obj);
+      TestEmpty$reflection(obj)..setupInternalsWith(this);
 
   static TestEmpty$reflection? _withoutObjectInstance;
   @override
-  TestEmpty$reflection withoutObjectInstance() => _withoutObjectInstance ??=
-      super.withoutObjectInstance() as TestEmpty$reflection;
+  TestEmpty$reflection withoutObjectInstance() => staticInstance;
 
   static TestEmpty$reflection get staticInstance =>
       _withoutObjectInstance ??= TestEmpty$reflection._();
@@ -1681,8 +1752,10 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
   @override
   TestEmpty? createInstanceWithNoRequiredArgsConstructor() => null;
 
+  static const List<String> _constructorsNames = const <String>[''];
+
   @override
-  List<String> get constructorsNames => const <String>[''];
+  List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestEmpty>> _constructors =
       <String, ConstructorReflection<TestEmpty>>{};
@@ -1709,11 +1782,15 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
     }
   }
 
-  @override
-  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+  static const List<Object> _classAnnotations = <Object>[];
 
   @override
-  List<Type> get supperTypes => const <Type>[];
+  List<Object> get classAnnotations => _classAnnotations;
+
+  static const List<Type> _supperTypes = const <Type>[];
+
+  @override
+  List<Type> get supperTypes => _supperTypes;
 
   @override
   bool get hasMethodToJson => false;
@@ -1721,27 +1798,35 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
   @override
   Object? callMethodToJson([TestEmpty? obj]) => null;
 
+  static const List<String> _fieldsNames = const <String>[];
+
   @override
-  List<String> get fieldsNames => const <String>[];
+  List<String> get fieldsNames => _fieldsNames;
 
   @override
   FieldReflection<TestEmpty, T>? field<T>(String fieldName, [TestEmpty? obj]) =>
       null;
+  static const List<String> _staticFieldsNames = const <String>[];
+
   @override
-  List<String> get staticFieldsNames => const <String>[];
+  List<String> get staticFieldsNames => _staticFieldsNames;
 
   @override
   FieldReflection<TestEmpty, T>? staticField<T>(String fieldName) => null;
 
+  static const List<String> _methodsNames = const <String>[];
+
   @override
-  List<String> get methodsNames => const <String>[];
+  List<String> get methodsNames => _methodsNames;
 
   @override
   MethodReflection<TestEmpty, R>? method<R>(String methodName,
           [TestEmpty? obj]) =>
       null;
+  static const List<String> _staticMethodsNames = const <String>[];
+
   @override
-  List<String> get staticMethodsNames => const <String>[];
+  List<String> get staticMethodsNames => _staticMethodsNames;
 
   @override
   MethodReflection<TestEmpty, R>? staticMethod<R>(String methodName) => null;
@@ -1780,9 +1865,7 @@ class TestEnumWithReflection$reflection
 
   static TestEnumWithReflection$reflection? _withoutObjectInstance;
   @override
-  TestEnumWithReflection$reflection withoutObjectInstance() =>
-      _withoutObjectInstance ??=
-          super.withoutObjectInstance() as TestEnumWithReflection$reflection;
+  TestEnumWithReflection$reflection withoutObjectInstance() => staticInstance;
 
   static TestEnumWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestEnumWithReflection$reflection._();
@@ -1797,21 +1880,26 @@ class TestEnumWithReflection$reflection
     TestEnumWithReflection$reflection.staticInstance;
   }
 
-  @override
-  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+  static const List<Object> _classAnnotations = <Object>[];
 
   @override
-  List<String> get fieldsNames => const <String>['Z', 'x', 'y', 'z'];
+  List<Object> get classAnnotations => _classAnnotations;
+
+  static const List<String> _fieldsNames = const <String>['Z', 'x', 'y', 'z'];
 
   @override
-  Map<String, TestEnumWithReflection> get valuesByName =>
+  List<String> get fieldsNames => _fieldsNames;
+
+  static const Map<String, TestEnumWithReflection> _valuesByName =
       const <String, TestEnumWithReflection>{
-        'x': TestEnumWithReflection.x,
-        'y': TestEnumWithReflection.y,
-        'z': TestEnumWithReflection.z,
-        'Z': TestEnumWithReflection.Z,
-      };
+    'x': TestEnumWithReflection.x,
+    'y': TestEnumWithReflection.y,
+    'z': TestEnumWithReflection.z,
+    'Z': TestEnumWithReflection.Z,
+  };
 
+  @override
+  Map<String, TestEnumWithReflection> get valuesByName => _valuesByName;
   @override
   List<TestEnumWithReflection> get values => TestEnumWithReflection.values;
 }
@@ -1850,13 +1938,12 @@ class TestFranchiseWithReflection$reflection
   @override
   TestFranchiseWithReflection$reflection withObject(
           [TestFranchiseWithReflection? obj]) =>
-      TestFranchiseWithReflection$reflection(obj);
+      TestFranchiseWithReflection$reflection(obj)..setupInternalsWith(this);
 
   static TestFranchiseWithReflection$reflection? _withoutObjectInstance;
   @override
   TestFranchiseWithReflection$reflection withoutObjectInstance() =>
-      _withoutObjectInstance ??= super.withoutObjectInstance()
-          as TestFranchiseWithReflection$reflection;
+      staticInstance;
 
   static TestFranchiseWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestFranchiseWithReflection$reflection._();
@@ -1886,8 +1973,10 @@ class TestFranchiseWithReflection$reflection
   TestFranchiseWithReflection? createInstanceWithNoRequiredArgsConstructor() =>
       null;
 
+  static const List<String> _constructorsNames = const <String>[''];
+
   @override
-  List<String> get constructorsNames => const <String>[''];
+  List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestFranchiseWithReflection>>
       _constructors =
@@ -1936,11 +2025,15 @@ class TestFranchiseWithReflection$reflection
     }
   }
 
-  @override
-  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+  static const List<Object> _classAnnotations = <Object>[];
 
   @override
-  List<Type> get supperTypes => const <Type>[];
+  List<Object> get classAnnotations => _classAnnotations;
+
+  static const List<Type> _supperTypes = const <Type>[];
+
+  @override
+  List<Type> get supperTypes => _supperTypes;
 
   @override
   bool get hasMethodToJson => false;
@@ -1948,9 +2041,14 @@ class TestFranchiseWithReflection$reflection
   @override
   Object? callMethodToJson([TestFranchiseWithReflection? obj]) => null;
 
+  static const List<String> _fieldsNames = const <String>[
+    'addresses',
+    'hashCode',
+    'name'
+  ];
+
   @override
-  List<String> get fieldsNames =>
-      const <String>['addresses', 'hashCode', 'name'];
+  List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String,
           FieldReflection<TestFranchiseWithReflection, dynamic>>
@@ -2050,23 +2148,27 @@ class TestFranchiseWithReflection$reflection
           obj,
           false,
           false,
-          [override],
+          const [override],
         );
       default:
         return null;
     }
   }
 
+  static const List<String> _staticFieldsNames = const <String>[];
+
   @override
-  List<String> get staticFieldsNames => const <String>[];
+  List<String> get staticFieldsNames => _staticFieldsNames;
 
   @override
   FieldReflection<TestFranchiseWithReflection, T>? staticField<T>(
           String fieldName) =>
       null;
 
+  static const List<String> _methodsNames = const <String>['toString'];
+
   @override
-  List<String> get methodsNames => const <String>['toString'];
+  List<String> get methodsNames => _methodsNames;
 
   static final Map<String,
           MethodReflection<TestFranchiseWithReflection, dynamic>>
@@ -2137,14 +2239,16 @@ class TestFranchiseWithReflection$reflection
             null,
             null,
             null,
-            [override]);
+            const [override]);
       default:
         return null;
     }
   }
 
+  static const List<String> _staticMethodsNames = const <String>[];
+
   @override
-  List<String> get staticMethodsNames => const <String>[];
+  List<String> get staticMethodsNames => _staticMethodsNames;
 
   @override
   MethodReflection<TestFranchiseWithReflection, R>? staticMethod<R>(
@@ -2178,12 +2282,12 @@ class TestName$reflection extends ClassReflection<TestName>
   Version get languageVersion => Version.parse('2.17.0');
 
   @override
-  TestName$reflection withObject([TestName? obj]) => TestName$reflection(obj);
+  TestName$reflection withObject([TestName? obj]) =>
+      TestName$reflection(obj)..setupInternalsWith(this);
 
   static TestName$reflection? _withoutObjectInstance;
   @override
-  TestName$reflection withoutObjectInstance() => _withoutObjectInstance ??=
-      super.withoutObjectInstance() as TestName$reflection;
+  TestName$reflection withoutObjectInstance() => staticInstance;
 
   static TestName$reflection get staticInstance =>
       _withoutObjectInstance ??= TestName$reflection._();
@@ -2212,8 +2316,10 @@ class TestName$reflection extends ClassReflection<TestName>
   @override
   TestName? createInstanceWithNoRequiredArgsConstructor() => null;
 
+  static const List<String> _constructorsNames = const <String>[''];
+
   @override
-  List<String> get constructorsNames => const <String>[''];
+  List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestName>> _constructors =
       <String, ConstructorReflection<TestName>>{};
@@ -2240,11 +2346,15 @@ class TestName$reflection extends ClassReflection<TestName>
     }
   }
 
-  @override
-  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+  static const List<Object> _classAnnotations = <Object>[];
 
   @override
-  List<Type> get supperTypes => const <Type>[];
+  List<Object> get classAnnotations => _classAnnotations;
+
+  static const List<Type> _supperTypes = const <Type>[];
+
+  @override
+  List<Type> get supperTypes => _supperTypes;
 
   @override
   bool get hasMethodToJson => false;
@@ -2252,8 +2362,10 @@ class TestName$reflection extends ClassReflection<TestName>
   @override
   Object? callMethodToJson([TestName? obj]) => null;
 
+  static const List<String> _fieldsNames = const <String>['isEmpty', 'name'];
+
   @override
-  List<String> get fieldsNames => const <String>['isEmpty', 'name'];
+  List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestName, dynamic>> _fieldsNoObject =
       <String, FieldReflection<TestName, dynamic>>{};
@@ -2336,14 +2448,21 @@ class TestName$reflection extends ClassReflection<TestName>
     }
   }
 
+  static const List<String> _staticFieldsNames = const <String>[];
+
   @override
-  List<String> get staticFieldsNames => const <String>[];
+  List<String> get staticFieldsNames => _staticFieldsNames;
 
   @override
   FieldReflection<TestName, T>? staticField<T>(String fieldName) => null;
 
+  static const List<String> _methodsNames = const <String>[
+    'nameNormalized',
+    'toString'
+  ];
+
   @override
-  List<String> get methodsNames => const <String>['nameNormalized', 'toString'];
+  List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestName, dynamic>>
       _methodsNoObject = <String, MethodReflection<TestName, dynamic>>{};
@@ -2422,14 +2541,16 @@ class TestName$reflection extends ClassReflection<TestName>
             null,
             null,
             null,
-            [override]);
+            const [override]);
       default:
         return null;
     }
   }
 
+  static const List<String> _staticMethodsNames = const <String>[];
+
   @override
-  List<String> get staticMethodsNames => const <String>[];
+  List<String> get staticMethodsNames => _staticMethodsNames;
 
   @override
   MethodReflection<TestName, R>? staticMethod<R>(String methodName) => null;
@@ -2464,13 +2585,11 @@ class TestOpAWithReflection$reflection
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
-      TestOpAWithReflection$reflection(obj);
+      TestOpAWithReflection$reflection(obj)..setupInternalsWith(this);
 
   static TestOpAWithReflection$reflection? _withoutObjectInstance;
   @override
-  TestOpAWithReflection$reflection withoutObjectInstance() =>
-      _withoutObjectInstance ??=
-          super.withoutObjectInstance() as TestOpAWithReflection$reflection;
+  TestOpAWithReflection$reflection withoutObjectInstance() => staticInstance;
 
   static TestOpAWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestOpAWithReflection$reflection._();
@@ -2499,8 +2618,10 @@ class TestOpAWithReflection$reflection
   @override
   TestOpAWithReflection? createInstanceWithNoRequiredArgsConstructor() => null;
 
+  static const List<String> _constructorsNames = const <String>[''];
+
   @override
-  List<String> get constructorsNames => const <String>[''];
+  List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestOpAWithReflection>>
       _constructors = <String, ConstructorReflection<TestOpAWithReflection>>{};
@@ -2536,11 +2657,18 @@ class TestOpAWithReflection$reflection
     }
   }
 
-  @override
-  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+  static const List<Object> _classAnnotations = <Object>[];
 
   @override
-  List<Type> get supperTypes => const <Type>[TestOpWithReflection, WithValue];
+  List<Object> get classAnnotations => _classAnnotations;
+
+  static const List<Type> _supperTypes = const <Type>[
+    TestOpWithReflection,
+    WithValue
+  ];
+
+  @override
+  List<Type> get supperTypes => _supperTypes;
 
   @override
   bool get hasMethodToJson => false;
@@ -2548,8 +2676,10 @@ class TestOpAWithReflection$reflection
   @override
   Object? callMethodToJson([TestOpAWithReflection? obj]) => null;
 
+  static const List<String> _fieldsNames = const <String>['type', 'value'];
+
   @override
-  List<String> get fieldsNames => const <String>['type', 'value'];
+  List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestOpAWithReflection, dynamic>>
       _fieldsNoObject =
@@ -2618,7 +2748,7 @@ class TestOpAWithReflection$reflection
           obj,
           false,
           false,
-          [override, override],
+          const [override, override],
         );
       case 'type':
         return FieldReflection<TestOpAWithReflection, String>(
@@ -2638,8 +2768,10 @@ class TestOpAWithReflection$reflection
     }
   }
 
+  static const List<String> _staticFieldsNames = const <String>['staticFieldA'];
+
   @override
-  List<String> get staticFieldsNames => const <String>['staticFieldA'];
+  List<String> get staticFieldsNames => _staticFieldsNames;
 
   static final Map<String, FieldReflection<TestOpAWithReflection, dynamic>>
       _staticFields =
@@ -2681,8 +2813,13 @@ class TestOpAWithReflection$reflection
     }
   }
 
+  static const List<String> _methodsNames = const <String>[
+    'isEmptyType',
+    'methodA'
+  ];
+
   @override
-  List<String> get methodsNames => const <String>['isEmptyType', 'methodA'];
+  List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestOpAWithReflection, dynamic>>
       _methodsNoObject =
@@ -2772,8 +2909,10 @@ class TestOpAWithReflection$reflection
     }
   }
 
+  static const List<String> _staticMethodsNames = const <String>[];
+
   @override
-  List<String> get staticMethodsNames => const <String>[];
+  List<String> get staticMethodsNames => _staticMethodsNames;
 
   @override
   MethodReflection<TestOpAWithReflection, R>? staticMethod<R>(
@@ -2810,13 +2949,11 @@ class TestOpBWithReflection$reflection
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
-      TestOpBWithReflection$reflection(obj);
+      TestOpBWithReflection$reflection(obj)..setupInternalsWith(this);
 
   static TestOpBWithReflection$reflection? _withoutObjectInstance;
   @override
-  TestOpBWithReflection$reflection withoutObjectInstance() =>
-      _withoutObjectInstance ??=
-          super.withoutObjectInstance() as TestOpBWithReflection$reflection;
+  TestOpBWithReflection$reflection withoutObjectInstance() => staticInstance;
 
   static TestOpBWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestOpBWithReflection$reflection._();
@@ -2845,8 +2982,10 @@ class TestOpBWithReflection$reflection
   @override
   TestOpBWithReflection? createInstanceWithNoRequiredArgsConstructor() => null;
 
+  static const List<String> _constructorsNames = const <String>[''];
+
   @override
-  List<String> get constructorsNames => const <String>[''];
+  List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestOpBWithReflection>>
       _constructors = <String, ConstructorReflection<TestOpBWithReflection>>{};
@@ -2882,11 +3021,18 @@ class TestOpBWithReflection$reflection
     }
   }
 
-  @override
-  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+  static const List<Object> _classAnnotations = <Object>[];
 
   @override
-  List<Type> get supperTypes => const <Type>[TestOpWithReflection, WithValue];
+  List<Object> get classAnnotations => _classAnnotations;
+
+  static const List<Type> _supperTypes = const <Type>[
+    TestOpWithReflection,
+    WithValue
+  ];
+
+  @override
+  List<Type> get supperTypes => _supperTypes;
 
   @override
   bool get hasMethodToJson => false;
@@ -2894,8 +3040,14 @@ class TestOpBWithReflection$reflection
   @override
   Object? callMethodToJson([TestOpBWithReflection? obj]) => null;
 
+  static const List<String> _fieldsNames = const <String>[
+    'amount',
+    'type',
+    'value'
+  ];
+
   @override
-  List<String> get fieldsNames => const <String>['amount', 'type', 'value'];
+  List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestOpBWithReflection, dynamic>>
       _fieldsNoObject =
@@ -2996,15 +3148,22 @@ class TestOpBWithReflection$reflection
     }
   }
 
+  static const List<String> _staticFieldsNames = const <String>[];
+
   @override
-  List<String> get staticFieldsNames => const <String>[];
+  List<String> get staticFieldsNames => _staticFieldsNames;
 
   @override
   FieldReflection<TestOpBWithReflection, T>? staticField<T>(String fieldName) =>
       null;
 
+  static const List<String> _methodsNames = const <String>[
+    'isEmptyType',
+    'methodB'
+  ];
+
   @override
-  List<String> get methodsNames => const <String>['isEmptyType', 'methodB'];
+  List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestOpBWithReflection, dynamic>>
       _methodsNoObject =
@@ -3094,8 +3253,12 @@ class TestOpBWithReflection$reflection
     }
   }
 
+  static const List<String> _staticMethodsNames = const <String>[
+    'staticMethodB'
+  ];
+
   @override
-  List<String> get staticMethodsNames => const <String>['staticMethodB'];
+  List<String> get staticMethodsNames => _staticMethodsNames;
 
   static final Map<String, MethodReflection<TestOpBWithReflection, dynamic>>
       _staticMethods =
@@ -3168,13 +3331,11 @@ class TestOpWithReflection$reflection
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
-      TestOpWithReflection$reflection(obj);
+      TestOpWithReflection$reflection(obj)..setupInternalsWith(this);
 
   static TestOpWithReflection$reflection? _withoutObjectInstance;
   @override
-  TestOpWithReflection$reflection withoutObjectInstance() =>
-      _withoutObjectInstance ??=
-          super.withoutObjectInstance() as TestOpWithReflection$reflection;
+  TestOpWithReflection$reflection withoutObjectInstance() => staticInstance;
 
   static TestOpWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestOpWithReflection$reflection._();
@@ -3205,8 +3366,10 @@ class TestOpWithReflection$reflection
   TestOpWithReflection? createInstanceWithNoRequiredArgsConstructor() =>
       TestOpWithReflection.empty();
 
+  static const List<String> _constructorsNames = const <String>['', 'empty'];
+
   @override
-  List<String> get constructorsNames => const <String>['', 'empty'];
+  List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestOpWithReflection>>
       _constructors = <String, ConstructorReflection<TestOpWithReflection>>{};
@@ -3256,11 +3419,15 @@ class TestOpWithReflection$reflection
     }
   }
 
-  @override
-  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+  static const List<Object> _classAnnotations = <Object>[];
 
   @override
-  List<Type> get supperTypes => const <Type>[WithValue];
+  List<Object> get classAnnotations => _classAnnotations;
+
+  static const List<Type> _supperTypes = const <Type>[WithValue];
+
+  @override
+  List<Type> get supperTypes => _supperTypes;
 
   @override
   bool get hasMethodToJson => false;
@@ -3268,8 +3435,10 @@ class TestOpWithReflection$reflection
   @override
   Object? callMethodToJson([TestOpWithReflection? obj]) => null;
 
+  static const List<String> _fieldsNames = const <String>['type', 'value'];
+
   @override
-  List<String> get fieldsNames => const <String>['type', 'value'];
+  List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestOpWithReflection, dynamic>>
       _fieldsNoObject =
@@ -3357,8 +3526,10 @@ class TestOpWithReflection$reflection
     }
   }
 
+  static const List<String> _staticFieldsNames = const <String>['staticField'];
+
   @override
-  List<String> get staticFieldsNames => const <String>['staticField'];
+  List<String> get staticFieldsNames => _staticFieldsNames;
 
   static final Map<String, FieldReflection<TestOpWithReflection, dynamic>>
       _staticFields =
@@ -3400,8 +3571,10 @@ class TestOpWithReflection$reflection
     }
   }
 
+  static const List<String> _methodsNames = const <String>['isEmptyType'];
+
   @override
-  List<String> get methodsNames => const <String>['isEmptyType'];
+  List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestOpWithReflection, dynamic>>
       _methodsNoObject =
@@ -3477,8 +3650,12 @@ class TestOpWithReflection$reflection
     }
   }
 
+  static const List<String> _staticMethodsNames = const <String>[
+    'staticMethod'
+  ];
+
   @override
-  List<String> get staticMethodsNames => const <String>['staticMethod'];
+  List<String> get staticMethodsNames => _staticMethodsNames;
 
   static final Map<String, MethodReflection<TestOpWithReflection, dynamic>>
       _staticMethods =
@@ -3556,13 +3733,12 @@ class TestTransactionWithReflection$reflection
   @override
   TestTransactionWithReflection$reflection withObject(
           [TestTransactionWithReflection? obj]) =>
-      TestTransactionWithReflection$reflection(obj);
+      TestTransactionWithReflection$reflection(obj)..setupInternalsWith(this);
 
   static TestTransactionWithReflection$reflection? _withoutObjectInstance;
   @override
   TestTransactionWithReflection$reflection withoutObjectInstance() =>
-      _withoutObjectInstance ??= super.withoutObjectInstance()
-          as TestTransactionWithReflection$reflection;
+      staticInstance;
 
   static TestTransactionWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestTransactionWithReflection$reflection._();
@@ -3593,8 +3769,10 @@ class TestTransactionWithReflection$reflection
   TestTransactionWithReflection?
       createInstanceWithNoRequiredArgsConstructor() => null;
 
+  static const List<String> _constructorsNames = const <String>['fromTo'];
+
   @override
-  List<String> get constructorsNames => const <String>['fromTo'];
+  List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestTransactionWithReflection>>
       _constructors =
@@ -3639,11 +3817,15 @@ class TestTransactionWithReflection$reflection
     }
   }
 
-  @override
-  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+  static const List<Object> _classAnnotations = <Object>[];
 
   @override
-  List<Type> get supperTypes => const <Type>[];
+  List<Object> get classAnnotations => _classAnnotations;
+
+  static const List<Type> _supperTypes = const <Type>[];
+
+  @override
+  List<Type> get supperTypes => _supperTypes;
 
   @override
   bool get hasMethodToJson => false;
@@ -3651,9 +3833,14 @@ class TestTransactionWithReflection$reflection
   @override
   Object? callMethodToJson([TestTransactionWithReflection? obj]) => null;
 
+  static const List<String> _fieldsNames = const <String>[
+    'amount',
+    'fromUser',
+    'toUser'
+  ];
+
   @override
-  List<String> get fieldsNames =>
-      const <String>['amount', 'fromUser', 'toUser'];
+  List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String,
           FieldReflection<TestTransactionWithReflection, dynamic>>
@@ -3757,24 +3944,30 @@ class TestTransactionWithReflection$reflection
     }
   }
 
+  static const List<String> _staticFieldsNames = const <String>[];
+
   @override
-  List<String> get staticFieldsNames => const <String>[];
+  List<String> get staticFieldsNames => _staticFieldsNames;
 
   @override
   FieldReflection<TestTransactionWithReflection, T>? staticField<T>(
           String fieldName) =>
       null;
 
+  static const List<String> _methodsNames = const <String>[];
+
   @override
-  List<String> get methodsNames => const <String>[];
+  List<String> get methodsNames => _methodsNames;
 
   @override
   MethodReflection<TestTransactionWithReflection, R>? method<R>(
           String methodName,
           [TestTransactionWithReflection? obj]) =>
       null;
+  static const List<String> _staticMethodsNames = const <String>[];
+
   @override
-  List<String> get staticMethodsNames => const <String>[];
+  List<String> get staticMethodsNames => _staticMethodsNames;
 
   @override
   MethodReflection<TestTransactionWithReflection, R>? staticMethod<R>(
@@ -3811,13 +4004,11 @@ class TestUserWithReflection$reflection
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
-      TestUserWithReflection$reflection(obj);
+      TestUserWithReflection$reflection(obj)..setupInternalsWith(this);
 
   static TestUserWithReflection$reflection? _withoutObjectInstance;
   @override
-  TestUserWithReflection$reflection withoutObjectInstance() =>
-      _withoutObjectInstance ??=
-          super.withoutObjectInstance() as TestUserWithReflection$reflection;
+  TestUserWithReflection$reflection withoutObjectInstance() => staticInstance;
 
   static TestUserWithReflection$reflection get staticInstance =>
       _withoutObjectInstance ??= TestUserWithReflection$reflection._();
@@ -3847,8 +4038,10 @@ class TestUserWithReflection$reflection
   @override
   TestUserWithReflection? createInstanceWithNoRequiredArgsConstructor() => null;
 
+  static const List<String> _constructorsNames = const <String>['', 'fields'];
+
   @override
-  List<String> get constructorsNames => const <String>['', 'fields'];
+  List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestUserWithReflection>>
       _constructors = <String, ConstructorReflection<TestUserWithReflection>>{};
@@ -3885,7 +4078,7 @@ class TestUserWithReflection$reflection
               __PR(__TR.tString, 'name', false, true),
               __PR(__TR.tString, 'email', true, true),
               __PR(__TR.tString, 'passphrase', false, true, null,
-                  [JsonFieldAlias('password')])
+                  const [JsonFieldAlias('password')])
             ],
             null,
             const <String, __PR>{
@@ -3911,11 +4104,15 @@ class TestUserWithReflection$reflection
     }
   }
 
-  @override
-  List<Object> get classAnnotations => List<Object>.unmodifiable(<Object>[]);
+  static const List<Object> _classAnnotations = <Object>[];
 
   @override
-  List<Type> get supperTypes => const <Type>[];
+  List<Object> get classAnnotations => _classAnnotations;
+
+  static const List<Type> _supperTypes = const <Type>[];
+
+  @override
+  List<Type> get supperTypes => _supperTypes;
 
   @override
   bool get hasMethodToJson => false;
@@ -3923,19 +4120,21 @@ class TestUserWithReflection$reflection
   @override
   Object? callMethodToJson([TestUserWithReflection? obj]) => null;
 
+  static const List<String> _fieldsNames = const <String>[
+    'axis',
+    'email',
+    'enabled',
+    'hashCode',
+    'id',
+    'isEnabled',
+    'isNotEnabled',
+    'level',
+    'name',
+    'password'
+  ];
+
   @override
-  List<String> get fieldsNames => const <String>[
-        'axis',
-        'email',
-        'enabled',
-        'hashCode',
-        'id',
-        'isEnabled',
-        'isNotEnabled',
-        'level',
-        'name',
-        'password'
-      ];
+  List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestUserWithReflection, dynamic>>
       _fieldsNoObject =
@@ -4082,7 +4281,7 @@ class TestUserWithReflection$reflection
           obj,
           false,
           false,
-          [JsonFieldAlias('theLevel')],
+          const [JsonFieldAlias('theLevel')],
         );
       case 'isenabled':
         return FieldReflection<TestUserWithReflection, bool>(
@@ -4096,7 +4295,7 @@ class TestUserWithReflection$reflection
           obj,
           false,
           false,
-          [JsonField.visible()],
+          const [JsonField.visible()],
         );
       case 'isnotenabled':
         return FieldReflection<TestUserWithReflection, bool>(
@@ -4110,7 +4309,7 @@ class TestUserWithReflection$reflection
           obj,
           false,
           false,
-          [JsonField.hidden()],
+          const [JsonField.hidden()],
         );
       case 'hashcode':
         return FieldReflection<TestUserWithReflection, int>(
@@ -4124,16 +4323,20 @@ class TestUserWithReflection$reflection
           obj,
           false,
           false,
-          [override],
+          const [override],
         );
       default:
         return null;
     }
   }
 
+  static const List<String> _staticFieldsNames = const <String>[
+    'version',
+    'withReflection'
+  ];
+
   @override
-  List<String> get staticFieldsNames =>
-      const <String>['version', 'withReflection'];
+  List<String> get staticFieldsNames => _staticFieldsNames;
 
   static final Map<String, FieldReflection<TestUserWithReflection, dynamic>>
       _staticFields =
@@ -4189,9 +4392,15 @@ class TestUserWithReflection$reflection
     }
   }
 
+  static const List<String> _methodsNames = const <String>[
+    'checkPassword',
+    'getField',
+    'setField',
+    'toString'
+  ];
+
   @override
-  List<String> get methodsNames =>
-      const <String>['checkPassword', 'getField', 'setField', 'toString'];
+  List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestUserWithReflection, dynamic>>
       _methodsNoObject =
@@ -4308,14 +4517,16 @@ class TestUserWithReflection$reflection
             null,
             null,
             null,
-            [override]);
+            const [override]);
       default:
         return null;
     }
   }
 
+  static const List<String> _staticMethodsNames = const <String>['isVersion'];
+
   @override
-  List<String> get staticMethodsNames => const <String>['isVersion'];
+  List<String> get staticMethodsNames => _staticMethodsNames;
 
   static final Map<String, MethodReflection<TestUserWithReflection, dynamic>>
       _staticMethods =

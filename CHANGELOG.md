@@ -1,9 +1,30 @@
+## 2.0.4
 
+- `JsonEncoder`:
+  - Added `JsonEncoder.callToJson`:
+    - Optimized call of `toJson` and avoid `NoSuchMethodError`.
+- `TypeInfo`
+  - Added static `isPrimitiveTypeFor`
+- `TypeParser`:
+  - Optimize `isPrimitiveType` and `isPrimitiveValue`.
+- `ClassReflection`:
+  - Optimize `withObject`.
+- `FieldReflection`:
+  - Optimize `withObject`.
+- `ReflectionBuilder`:
+  - Optimize generation of getters that can use static fields:
+    - Enums:
+      - `fieldsNames`, `valuesByName`
+    - Classes:
+      - `constructorsNames`, `fieldsNames`, `staticFieldsNames`, `methodsNames`, `staticMethodsNames`.
+  - Fix: ensure that reflected annotations are `const`.  
 - `analysis_options.yaml`:
   - Added linter rules:
     - `avoid_dynamic_calls`
     - `avoid_type_to_string`
     - `no_runtimeType_toString`
+    - `discarded_futures`
+    - `no_adjacent_strings_in_list`
 
 ## 2.0.3
 
