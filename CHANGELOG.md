@@ -3,6 +3,10 @@
 - `JsonEncoder`:
   - Added `JsonEncoder.callToJson`:
     - Optimized call of `toJson` and avoid `NoSuchMethodError`.
+- `TypeInfo`
+  - Added static `isPrimitiveTypeFor`
+- `TypeParser`:
+  - Optimize `isPrimitiveType` and `isPrimitiveValue`.
 - `ClassReflection`:
   - Optimize `withObject`.
 - `FieldReflection`:

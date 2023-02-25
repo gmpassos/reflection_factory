@@ -450,12 +450,23 @@ class TypeParser {
   /// Returns `true` if [type] is primitive ([String], [int], [double], [num] or [bool]).
   static bool isPrimitiveType<T>([Type? type]) {
     type ??= T;
-    return TypeInfo.from(type).isPrimitiveType;
+    return TypeInfo.isPrimitiveTypeFor(type);
   }
 
   /// Returns `true` if [value] is primitive ([String], [int], [double], [num] or [bool]).
   static bool isPrimitiveValue(Object value) {
-    return TypeInfo.from(value).isPrimitiveType;
+    if (value is TypeInfo) return value.isPrimitiveType;
+    if (value is Type) return isPrimitiveType(value);
+
+    if (value is ParameterReflection) {
+      return value.type.typeInfo.isPrimitiveType;
+    }
+
+    if (value is TypeReflection) {
+      return value.typeInfo.isPrimitiveType;
+    }
+
+    return isPrimitiveType(value.runtimeType);
   }
 
   /// Returns `true` if [type] is [Object] or [dynamic].
@@ -1034,6 +1045,14 @@ class TypeInfo<T> {
     }
 
     return TypeInfo<T>._(type, arguments, object);
+  }
+
+  static bool isPrimitiveTypeFor(Type type) {
+    return type == _TypeWrapper.tString ||
+        type == _TypeWrapper.tInt ||
+        type == _TypeWrapper.tDouble ||
+        type == _TypeWrapper.tNum ||
+        type == _TypeWrapper.tBool;
   }
 
   R callCasted<R>(R Function<T>() f) {
