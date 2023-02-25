@@ -267,6 +267,24 @@ void main() {
         expect(entityFieldsNoObj.every((f) => f.object == null), isTrue);
       }
 
+      {
+        var allMethods = userReflection.allMethods();
+        expect(allMethods.every((f) => identical(f.object, user)), isTrue);
+        expect(allMethods.map((f) => f.name),
+            equals(['checkPassword', 'getField', 'setField', 'toString']));
+
+        var user2 = TestUserWithReflection.fields(
+            'Joe2', 'joe2@mail.com', '1234',
+            id: 1002);
+
+        var allMethods2 = userReflection.allFields(user2);
+        expect(allMethods2.every((f) => identical(f.object, user2)), isTrue);
+
+        var allMethodsNoObj =
+            userReflection.withoutObjectInstance().allFields();
+        expect(allMethodsNoObj.every((f) => f.object == null), isTrue);
+      }
+
       expect(
           identical(userReflection.withoutObjectInstance(),
               userReflection.withoutObjectInstance()),
