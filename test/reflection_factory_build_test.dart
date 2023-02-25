@@ -332,8 +332,8 @@ void main() {
             allOf(
               contains("case 'type':"),
               contains("case 'value':"),
-              contains("fieldsNames => const <String>['type', 'value']"),
-              contains("supperTypes => const <Type>[Op, WithType];"),
+              contains("_fieldsNames = const <String>['type', 'value']"),
+              contains("_supperTypes = const <Type>[Op, WithType];"),
               matches(RegExp(
                   r"__TR<List<Set<int>>>\(\s*List, <__TR>\[__TR.tSetInt\]\)")),
               matches(RegExp(

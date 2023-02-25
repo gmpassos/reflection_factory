@@ -466,6 +466,54 @@ abstract class JsonEncoder extends JsonConverter<Object?, String> {
       {bool pretty = false,
       bool duplicatedEntitiesAsID = false,
       bool? autoResetEntityCache});
+
+  static final Map<Type, bool> _callToJsonNoSuchMethodError = <Type, bool>{};
+
+  /// Calls `o.toJson` in a performatic way, avoiding [NoSuchMethodError] and [noSuchMethod] calls.
+  /// - Returns `null` if [o] is `null`.
+  /// - If [o] doesn't have a `toJson` method [fallback] is called.
+  ///   If [fallback] is not provided it will call `o.toString()`.
+  /// - The implementation tracks which [Type]s have a `toJson` method or not
+  ///   and once a [Type] is marked wihtout it due to a [NoSuchMethodError] it
+  ///   will no longer attempt to call `toJson` and will always perform a [fallback].
+  static Object? callToJson(dynamic o,
+      {Object? Function(dynamic o)? fallback}) {
+    if (o == null) return null;
+
+    var t = o.runtimeType;
+
+    var hasNoSuchMethodError = _callToJsonNoSuchMethodError[t];
+
+    if (hasNoSuchMethodError != null) {
+      if (hasNoSuchMethodError) {
+        if (fallback != null) {
+          return fallback(o);
+        } else {
+          return o.toString();
+        }
+      } else {
+        // ignore: avoid_dynamic_calls
+        return o.toJson();
+      }
+    }
+
+    try {
+      // ignore: avoid_dynamic_calls
+      var ret = o.toJson();
+      _callToJsonNoSuchMethodError[t] = false;
+      return ret;
+    } on NoSuchMethodError {
+      _callToJsonNoSuchMethodError[t] = true;
+      if (fallback != null) {
+        return fallback(o);
+      } else {
+        return o.toString();
+      }
+    } catch (_) {
+      _callToJsonNoSuchMethodError[t] = false;
+      rethrow;
+    }
+  }
 }
 
 class _JsonEncoder extends dart_convert.Converter<Object?, String>
@@ -748,8 +796,7 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
 
   Object? _entityToJsonDefault(dynamic o, bool duplicatedEntitiesAsID) {
     try {
-      // ignore: avoid_dynamic_calls
-      var enc = o.toJson();
+      var enc = JsonEncoder.callToJson(o);
       _cacheEntity(o, duplicatedEntitiesAsID);
       return enc;
     } catch (_) {
