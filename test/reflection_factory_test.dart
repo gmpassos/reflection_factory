@@ -277,11 +277,11 @@ void main() {
             'Joe2', 'joe2@mail.com', '1234',
             id: 1002);
 
-        var allMethods2 = userReflection.allFields(user2);
+        var allMethods2 = userReflection.allMethods(user2);
         expect(allMethods2.every((f) => identical(f.object, user2)), isTrue);
 
         var allMethodsNoObj =
-            userReflection.withoutObjectInstance().allFields();
+            userReflection.withoutObjectInstance().allMethods();
         expect(allMethodsNoObj.every((f) => f.object == null), isTrue);
       }
 
