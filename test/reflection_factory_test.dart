@@ -210,6 +210,63 @@ void main() {
       expect(userReflection.hasJsonNameAlias, isTrue);
       expect(userReflection.canCreateInstanceWithoutArguments, isTrue);
 
+      {
+        var allFields = userReflection.allFields();
+        expect(allFields.every((f) => identical(f.object, user)), isTrue);
+        expect(
+            allFields.map((f) => f.name),
+            equals([
+              'axis',
+              'email',
+              'enabled',
+              'hashCode',
+              'id',
+              'isEnabled',
+              'isNotEnabled',
+              'level',
+              'name',
+              'password'
+            ]));
+
+        var user2 = TestUserWithReflection.fields(
+            'Joe2', 'joe2@mail.com', '1234',
+            id: 1002);
+
+        var allFields2 = userReflection.allFields(user2);
+        expect(allFields2.every((f) => identical(f.object, user2)), isTrue);
+
+        var allFieldsNoObj = userReflection.withoutObjectInstance().allFields();
+        expect(allFieldsNoObj.every((f) => f.object == null), isTrue);
+      }
+
+      {
+        var entityFields = userReflection.entityFields();
+        expect(entityFields.every((f) => identical(f.object, user)), isTrue);
+        expect(
+            entityFields.map((f) => f.name),
+            equals([
+              'axis',
+              'email',
+              'enabled',
+              'id',
+              'isEnabled',
+              'level',
+              'name',
+              'password'
+            ]));
+
+        var user2 = TestUserWithReflection.fields(
+            'Joe2', 'joe2@mail.com', '1234',
+            id: 1002);
+
+        var entityFields2 = userReflection.entityFields(user2);
+        expect(entityFields2.every((f) => identical(f.object, user2)), isTrue);
+
+        var entityFieldsNoObj =
+            userReflection.withoutObjectInstance().entityFields();
+        expect(entityFieldsNoObj.every((f) => f.object == null), isTrue);
+      }
+
       expect(
           identical(userReflection.withoutObjectInstance(),
               userReflection.withoutObjectInstance()),
