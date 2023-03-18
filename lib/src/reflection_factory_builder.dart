@@ -471,24 +471,27 @@ class ReflectionBuilder implements Builder {
 
   Map<String, String> _classProxyFuntions(
       BuildStep buildStep, _TypeAliasTable typeAliasTable) {
-    var s = StringBuffer();
+    var fReturnFuture = typeAliasTable.fReturnFuture;
+    var fReturnFutureOr = typeAliasTable.fReturnFutureOr;
 
-    var fName = typeAliasTable.fReturnFuture;
+    var fReturnFutureCode =
+        '\nFuture<T> $fReturnFuture<T>(Object? o) => ClassProxy.returnFuture<T>(o);\n\n';
 
-    s.write(
-        '\nFuture<T> $fName<T>(Object? o) => ClassProxy.returnFuture<T>(o);\n\n');
+    var fReturnFutureOrCode =
+        '\nFutureOr<T> $fReturnFutureOr<T>(Object? o) => ClassProxy.returnFutureOr<T>(o);\n\n';
 
-    var code = s.toString();
-
-    return {fName: code};
+    return {
+      if (typeAliasTable.fReturnFutureUseCount > 0)
+        fReturnFuture: fReturnFutureCode,
+      if (typeAliasTable.fReturnFutureOrUseCount > 0)
+        fReturnFutureOr: fReturnFutureOrCode,
+    };
   }
 
   Future<Map<String, String>> _classProxy(BuildStep buildStep,
       AnnotatedElement annotated, _TypeAliasTable typeAliasTable) async {
     var annotation = annotated.annotation;
     var annotatedClass = annotated.element as ClassElement;
-
-    var fReturnFuture = typeAliasTable.fReturnFuture;
 
     var className = annotation.peek('className')!.stringValue;
     var libraryName = annotation.peek('libraryName')!.stringValue;
@@ -546,11 +549,11 @@ class ReflectionBuilder implements Builder {
         classTree.reflectionProxyExtension,
         () => classTree.buildReflectionProxyClass(
             annotatedClass,
-            fReturnFuture,
             alwaysReturnFuture,
             traverseReturnTypes,
             ignoreParametersTypes,
-            ignoreMethods));
+            ignoreMethods,
+            typeAliasTable));
 
     return codeTable;
   }
@@ -956,7 +959,12 @@ class _TypeAliasTable {
   late final String prName;
   late final String reflectionMixinName;
   late final String fReturnFuture;
+  late final String fReturnFutureOr;
   late final String code;
+
+  int fReturnFutureUseCount = 0;
+
+  int fReturnFutureOrUseCount = 0;
 
   factory _TypeAliasTable.fromLibraryReader(LibraryReader libraryReader) {
     var privateNames =
@@ -970,6 +978,7 @@ class _TypeAliasTable {
     prName = _buildAliasName('__PR', privateNames);
     reflectionMixinName = _buildAliasName('__ReflectionMixin', privateNames);
     fReturnFuture = _buildAliasName('__retFut\$', privateNames);
+    fReturnFutureOr = _buildAliasName('__retFutOr\$', privateNames);
 
     var str = StringBuffer();
 
@@ -2312,11 +2321,11 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   String buildReflectionProxyClass(
       ClassElement proxyClass,
-      String fReturnFuture,
       bool alwaysReturnFuture,
       Set<DartObject> traverseReturnTypes,
       Set<DartObject> ignoreParametersTypes,
-      Set<DartObject> ignoreMethods) {
+      Set<DartObject> ignoreMethods,
+      _TypeAliasTable typeAliasTable) {
     if (!_implementsType(proxyClass, 'ClassProxyListener')) {
       throw StateError(
           "`ClassProxy` is being used in a class that is not implementing `ClassProxyListener`: ${proxyClass.name}");
@@ -2330,12 +2339,12 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     _buildClassProxyMethods(
         str,
-        fReturnFuture,
         alwaysReturnFuture,
         traverseReturnTypes.map((e) => e.toTypeValue()!).toSet(),
         ignoreParametersTypes.map((e) => e.toTypeValue()!).toSet(),
         ignoreMethods.map((e) => e.toStringValue()!).toSet(),
-        typeProvider);
+        typeProvider,
+        typeAliasTable);
 
     str.write('}\n\n');
 
@@ -2344,12 +2353,15 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   void _buildClassProxyMethods(
       StringBuffer codeBuffer,
-      String fReturnFuture,
       bool alwaysReturnFuture,
       Set<DartType> traverseReturnTypes,
       Set<DartType> ignoreParametersTypes,
       Set<String> ignoreMethods,
-      TypeProvider typeProvider) {
+      TypeProvider typeProvider,
+      _TypeAliasTable typeAliasTable) {
+    final fReturnFuture = typeAliasTable.fReturnFuture;
+    final fReturnFutureOr = typeAliasTable.fReturnFutureOr;
+
     var str = StringBuffer();
 
     var traverseReturnInterfaceTypes =
@@ -2425,7 +2437,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         str.write('  var ret = ');
         str.write(call);
 
-        if (proxyMethod.isReturningFuture) {
+        if (proxyMethod.isReturningFuture || proxyMethod.isReturningFutureOr) {
           var acceptsNull = proxyMethod.returnAcceptsNull;
           var futureType = proxyMethod.returnTypeArgument;
 
@@ -2437,7 +2449,13 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
             str.write('  if (ret == null) return null;\n');
           }
 
-          str.write('  return $fReturnFuture<$futureTypeStr>(ret);\n');
+          if (proxyMethod.isReturningFuture) {
+            typeAliasTable.fReturnFutureUseCount++;
+            str.write('  return $fReturnFuture<$futureTypeStr>(ret);\n');
+          } else {
+            typeAliasTable.fReturnFutureOrUseCount++;
+            str.write('  return $fReturnFutureOr<$futureTypeStr>(ret);\n');
+          }
         } else {
           str.write('  return ret as dynamic ;\n');
         }
