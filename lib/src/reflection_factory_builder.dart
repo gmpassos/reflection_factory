@@ -471,8 +471,12 @@ class ReflectionBuilder implements Builder {
 
   Map<String, String> _classProxyFuntions(
       BuildStep buildStep, _TypeAliasTable typeAliasTable) {
+    var fReturnValue = typeAliasTable.fReturnValue;
     var fReturnFuture = typeAliasTable.fReturnFuture;
     var fReturnFutureOr = typeAliasTable.fReturnFutureOr;
+
+    var fReturnValueCode =
+        '\nT $fReturnValue<T>(Object? o) => ClassProxy.returnValue<T>(o);\n\n';
 
     var fReturnFutureCode =
         '\nFuture<T> $fReturnFuture<T>(Object? o) => ClassProxy.returnFuture<T>(o);\n\n';
@@ -481,6 +485,8 @@ class ReflectionBuilder implements Builder {
         '\nFutureOr<T> $fReturnFutureOr<T>(Object? o) => ClassProxy.returnFutureOr<T>(o);\n\n';
 
     return {
+      if (typeAliasTable.fReturnValueUseCount > 0)
+        fReturnValue: fReturnValueCode,
       if (typeAliasTable.fReturnFutureUseCount > 0)
         fReturnFuture: fReturnFutureCode,
       if (typeAliasTable.fReturnFutureOrUseCount > 0)
@@ -958,9 +964,12 @@ class _TypeAliasTable {
   late final String tiName;
   late final String prName;
   late final String reflectionMixinName;
+  late final String fReturnValue;
   late final String fReturnFuture;
   late final String fReturnFutureOr;
   late final String code;
+
+  int fReturnValueUseCount = 0;
 
   int fReturnFutureUseCount = 0;
 
@@ -977,6 +986,7 @@ class _TypeAliasTable {
     tiName = _buildAliasName('__TI', privateNames);
     prName = _buildAliasName('__PR', privateNames);
     reflectionMixinName = _buildAliasName('__ReflectionMixin', privateNames);
+    fReturnValue = _buildAliasName('__retVal\$', privateNames);
     fReturnFuture = _buildAliasName('__retFut\$', privateNames);
     fReturnFutureOr = _buildAliasName('__retFutOr\$', privateNames);
 
@@ -2359,6 +2369,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       Set<String> ignoreMethods,
       TypeProvider typeProvider,
       _TypeAliasTable typeAliasTable) {
+    final fReturnValue = typeAliasTable.fReturnValue;
     final fReturnFuture = typeAliasTable.fReturnFuture;
     final fReturnFutureOr = typeAliasTable.fReturnFutureOr;
 
@@ -2437,8 +2448,9 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         str.write('  var ret = ');
         str.write(call);
 
+        var acceptsNull = proxyMethod.returnAcceptsNull;
+
         if (proxyMethod.isReturningFuture || proxyMethod.isReturningFutureOr) {
-          var acceptsNull = proxyMethod.returnAcceptsNull;
           var futureType = proxyMethod.returnTypeArgument;
 
           var futureTypeStr = futureType != null && futureType is VoidType
@@ -2457,7 +2469,15 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
             str.write('  return $fReturnFutureOr<$futureTypeStr>(ret);\n');
           }
         } else {
-          str.write('  return ret as dynamic ;\n');
+          var valueType = proxyMethod.returnType;
+          var valueTypeStr = valueType.fullTypeNameResolvable();
+
+          if (acceptsNull) {
+            str.write('  if (ret == null) return null;\n');
+          }
+
+          typeAliasTable.fReturnValueUseCount++;
+          str.write('  return $fReturnValue<$valueTypeStr>(ret);\n');
         }
       } else {
         str.write(call);

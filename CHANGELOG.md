@@ -1,7 +1,7 @@
 ## 2.0.5
 
 - `ClassProxy`:
-  - Added `returnFuture`.
+  - Added `returnValue`, `returnFuture` and `returnFutureOr`.
 - Added `ClassProxyCallError`.
 - analyzer: ^5.8.0
 - dart_style: ^2.3.0

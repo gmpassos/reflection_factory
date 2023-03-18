@@ -26,6 +26,8 @@ mixin __ReflectionMixin {
 
 Future<T> __retFut$<T>(Object? o) => ClassProxy.returnFuture<T>(o);
 
+T __retVal$<T>(Object? o) => ClassProxy.returnValue<T>(o);
+
 // ignore: non_constant_identifier_names
 TestAddress TestAddress$fromJson(Map<String, Object?> map) =>
     TestAddress$reflection.staticInstance.fromJson(map);
@@ -917,12 +919,12 @@ extension TestUserSimpleProxy$reflectionProxy on TestUserSimpleProxy {
           'ignoreCase': ignoreCase,
         },
         __TR.tBool);
-    return ret as dynamic;
+    return __retVal$<bool>(ret);
   }
 
   bool hasEmail() {
     var ret = onCall(this, 'hasEmail', <String, dynamic>{}, __TR.tBool);
-    return ret as dynamic;
+    return __retVal$<bool>(ret);
   }
 }
 

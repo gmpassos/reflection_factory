@@ -89,6 +89,14 @@ class ClassProxy {
     this.ignoreParametersTypes = const <Type>{},
   });
 
+  static T returnValue<T>(Object? ret) {
+    if (ret is T) {
+      return ret;
+    } else {
+      throw ClassProxyCallError.returnedValueError(T, ret);
+    }
+  }
+
   static Future<T> returnFuture<T>(Object? ret) {
     if (ret is Future<T>) return ret;
 
