@@ -1,6 +1,6 @@
 name: reflection_factory
 description: Allows Dart reflection with an easy approach, even for third-party classes, using code generation portable for all Dart platforms.
-version: 2.0.4
+version: 2.0.5
 homepage: https://github.com/gmpassos/reflection_factory
 
 environment:
@@ -8,8 +8,8 @@ environment:
 
 dependencies:
   build: ^2.3.1
-  analyzer: ^5.5.0
-  dart_style: ^2.2.4
+  analyzer: ^5.8.0
+  dart_style: ^2.3.0
   meta: ^1.9.0
   mime: ^1.0.4
   base_codecs: ^1.0.1

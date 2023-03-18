@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.0.4
+// BUILDER: reflection_factory/2.0.5
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -17,12 +17,16 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.0.4');
+  static final Version _version = Version.parse('2.0.5');
 
   Version get reflectionFactoryVersion => _version;
 
   List<Reflection> siblingsReflection() => _siblingsReflection();
 }
+
+Future<T> __retFut$<T>(Object? o) => ClassProxy.returnFuture<T>(o);
+
+T __retVal$<T>(Object? o) => ClassProxy.returnValue<T>(o);
 
 // ignore: non_constant_identifier_names
 TestAddress TestAddress$fromJson(Map<String, Object?> map) =>
@@ -915,12 +919,12 @@ extension TestUserSimpleProxy$reflectionProxy on TestUserSimpleProxy {
           'ignoreCase': ignoreCase,
         },
         __TR.tBool);
-    return ret as dynamic;
+    return __retVal$<bool>(ret);
   }
 
   bool hasEmail() {
     var ret = onCall(this, 'hasEmail', <String, dynamic>{}, __TR.tBool);
-    return ret as dynamic;
+    return __retVal$<bool>(ret);
   }
 }
 
@@ -934,20 +938,12 @@ extension TestUserSimpleProxyAsync$reflectionProxy on TestUserSimpleProxyAsync {
           'ignoreCase': ignoreCase,
         },
         __TR.tFutureBool);
-    return ret is Future<bool>
-        ? ret as Future<bool>
-        : (ret is Future
-            ? ret.then((v) => v as bool)
-            : Future<bool>.value(ret as dynamic));
+    return __retFut$<bool>(ret);
   }
 
   Future<bool> hasEmail() {
     var ret = onCall(this, 'hasEmail', <String, dynamic>{}, __TR.tFutureBool);
-    return ret is Future<bool>
-        ? ret as Future<bool>
-        : (ret is Future
-            ? ret.then((v) => v as bool)
-            : Future<bool>.value(ret as dynamic));
+    return __retFut$<bool>(ret);
   }
 }
 

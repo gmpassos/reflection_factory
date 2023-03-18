@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:meta/meta_meta.dart';
 
 import 'reflection_factory_base.dart';
@@ -86,6 +88,59 @@ class ClassProxy {
     this.traverseReturnTypes = const <Type>{},
     this.ignoreParametersTypes = const <Type>{},
   });
+
+  static T returnValue<T>(Object? ret) {
+    if (ret is T) {
+      return ret;
+    } else {
+      throw ClassProxyCallError.returnedValueError(T, ret);
+    }
+  }
+
+  static Future<T> returnFuture<T>(Object? ret) {
+    if (ret is Future<T>) return ret;
+
+    if (ret is Future) {
+      return ret.then((v) {
+        if (v is! T) {
+          throw ClassProxyCallError.returnedValueError(T, v);
+        }
+        return v;
+      });
+    } else {
+      if (ret is! T) {
+        throw ClassProxyCallError.returnedValueError(T, ret);
+      }
+      return Future<T>.value(ret);
+    }
+  }
+
+  static FutureOr<T> returnFutureOr<T>(Object? ret) {
+    if (ret is Future<T>) return ret;
+    if (ret is T) return ret;
+
+    if (ret is Future) {
+      return ret.then((v) {
+        if (v is! T) {
+          throw ClassProxyCallError.returnedValueError(T, v);
+        }
+        return v;
+      });
+    } else {
+      if (ret is! T) {
+        throw ClassProxyCallError.returnedValueError(T, ret);
+      }
+      return ret;
+    }
+  }
+}
+
+/// A [ClassProxy] call error.
+class ClassProxyCallError extends StateError {
+  ClassProxyCallError(super.message) : super();
+
+  ClassProxyCallError.returnedValueError(Type t, Object? value)
+      : this("Can't cast returned value to `$t`: $value");
 }
 
 /// Interface that a proxy class (annotated with [ClassProxy]) should implement

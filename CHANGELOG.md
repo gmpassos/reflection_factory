@@ -1,3 +1,11 @@
+## 2.0.5
+
+- `ClassProxy`:
+  - Added `returnValue`, `returnFuture` and `returnFutureOr`.
+- Added `ClassProxyCallError`.
+- analyzer: ^5.8.0
+- dart_style: ^2.3.0
+
 ## 2.0.4
 
 - `JsonEncoder`:

@@ -391,6 +391,11 @@ class ReflectionBuilder implements Builder {
       }
     }
 
+    if (!codeTable.reflectionProxiesIsEmpty) {
+      var codes = _classProxyFuntions(buildStep, typeAliasTable);
+      codeTable.addFunctions(codes);
+    }
+
     var annotatedReflectionBridge =
         libraryReader.annotatedWith(typeReflectionBridge).toList();
 
@@ -464,6 +469,31 @@ class ReflectionBuilder implements Builder {
     return idx >= 0 ? s.substring(idx + 1) : s;
   }
 
+  Map<String, String> _classProxyFuntions(
+      BuildStep buildStep, _TypeAliasTable typeAliasTable) {
+    var fReturnValue = typeAliasTable.fReturnValue;
+    var fReturnFuture = typeAliasTable.fReturnFuture;
+    var fReturnFutureOr = typeAliasTable.fReturnFutureOr;
+
+    var fReturnValueCode =
+        '\nT $fReturnValue<T>(Object? o) => ClassProxy.returnValue<T>(o);\n\n';
+
+    var fReturnFutureCode =
+        '\nFuture<T> $fReturnFuture<T>(Object? o) => ClassProxy.returnFuture<T>(o);\n\n';
+
+    var fReturnFutureOrCode =
+        '\nFutureOr<T> $fReturnFutureOr<T>(Object? o) => ClassProxy.returnFutureOr<T>(o);\n\n';
+
+    return {
+      if (typeAliasTable.fReturnValueUseCount > 0)
+        fReturnValue: fReturnValueCode,
+      if (typeAliasTable.fReturnFutureUseCount > 0)
+        fReturnFuture: fReturnFutureCode,
+      if (typeAliasTable.fReturnFutureOrUseCount > 0)
+        fReturnFutureOr: fReturnFutureOrCode,
+    };
+  }
+
   Future<Map<String, String>> _classProxy(BuildStep buildStep,
       AnnotatedElement annotated, _TypeAliasTable typeAliasTable) async {
     var annotation = annotated.annotation;
@@ -528,7 +558,8 @@ class ReflectionBuilder implements Builder {
             alwaysReturnFuture,
             traverseReturnTypes,
             ignoreParametersTypes,
-            ignoreMethods));
+            ignoreMethods,
+            typeAliasTable));
 
     return codeTable;
   }
@@ -933,7 +964,16 @@ class _TypeAliasTable {
   late final String tiName;
   late final String prName;
   late final String reflectionMixinName;
+  late final String fReturnValue;
+  late final String fReturnFuture;
+  late final String fReturnFutureOr;
   late final String code;
+
+  int fReturnValueUseCount = 0;
+
+  int fReturnFutureUseCount = 0;
+
+  int fReturnFutureOrUseCount = 0;
 
   factory _TypeAliasTable.fromLibraryReader(LibraryReader libraryReader) {
     var privateNames =
@@ -946,6 +986,9 @@ class _TypeAliasTable {
     tiName = _buildAliasName('__TI', privateNames);
     prName = _buildAliasName('__PR', privateNames);
     reflectionMixinName = _buildAliasName('__ReflectionMixin', privateNames);
+    fReturnValue = _buildAliasName('__retVal\$', privateNames);
+    fReturnFuture = _buildAliasName('__retFut\$', privateNames);
+    fReturnFutureOr = _buildAliasName('__retFutOr\$', privateNames);
 
     var str = StringBuffer();
 
@@ -977,17 +1020,30 @@ class _CodeTable {
 
   final Map<String, String> _reflectionClasses = <String, String>{};
   final Map<String, String> _reflectionProxies = <String, String>{};
+  final Map<String, String> _functions = <String, String>{};
 
   bool get reflectionClassesIsEmpty => _reflectionClasses.isEmpty;
 
-  bool get isEmpty => _reflectionClasses.isEmpty && _reflectionProxies.isEmpty;
+  bool get reflectionProxiesIsEmpty => _reflectionProxies.isEmpty;
+
+  bool get functionsIsEmpty => _functions.isEmpty;
+
+  bool get isEmpty =>
+      _reflectionClasses.isEmpty &&
+      _reflectionProxies.isEmpty &&
+      _functions.isEmpty;
 
   Iterable<String> get reflectionClassesKeys => _reflectionClasses.keys;
 
-  Iterable<String> get reflectionProxiesKeys => _reflectionClasses.keys;
+  Iterable<String> get reflectionProxiesKeys => _reflectionProxies.keys;
 
-  Iterable<String> get allKeys =>
-      <String>[..._reflectionClasses.keys, ..._reflectionProxies.keys];
+  Iterable<String> get functionsKeys => _functions.keys;
+
+  Iterable<String> get allKeys => <String>[
+        ..._reflectionClasses.keys,
+        ..._reflectionProxies.keys,
+        ..._functions.keys,
+      ];
 
   void _checkKey(String key) {
     var code = get(key);
@@ -996,7 +1052,8 @@ class _CodeTable {
     }
   }
 
-  String? get(String key) => _reflectionClasses[key] ?? _reflectionProxies[key];
+  String? get(String key) =>
+      _reflectionClasses[key] ?? _reflectionProxies[key] ?? _functions[key];
 
   void addClass(String key, String code) {
     _checkKey(key);
@@ -1017,6 +1074,17 @@ class _CodeTable {
   void addProxies(Map<String, String> codes) {
     for (var e in codes.entries) {
       addProxy(e.key, e.value);
+    }
+  }
+
+  void addFunction(String key, String code) {
+    _checkKey(key);
+    _functions[key] = code;
+  }
+
+  void addFunctions(Map<String, String> codes) {
+    for (var e in codes.entries) {
+      addFunction(e.key, e.value);
     }
   }
 }
@@ -2266,7 +2334,8 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       bool alwaysReturnFuture,
       Set<DartObject> traverseReturnTypes,
       Set<DartObject> ignoreParametersTypes,
-      Set<DartObject> ignoreMethods) {
+      Set<DartObject> ignoreMethods,
+      _TypeAliasTable typeAliasTable) {
     if (!_implementsType(proxyClass, 'ClassProxyListener')) {
       throw StateError(
           "`ClassProxy` is being used in a class that is not implementing `ClassProxyListener`: ${proxyClass.name}");
@@ -2284,7 +2353,8 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         traverseReturnTypes.map((e) => e.toTypeValue()!).toSet(),
         ignoreParametersTypes.map((e) => e.toTypeValue()!).toSet(),
         ignoreMethods.map((e) => e.toStringValue()!).toSet(),
-        typeProvider);
+        typeProvider,
+        typeAliasTable);
 
     str.write('}\n\n');
 
@@ -2297,7 +2367,12 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       Set<DartType> traverseReturnTypes,
       Set<DartType> ignoreParametersTypes,
       Set<String> ignoreMethods,
-      TypeProvider typeProvider) {
+      TypeProvider typeProvider,
+      _TypeAliasTable typeAliasTable) {
+    final fReturnValue = typeAliasTable.fReturnValue;
+    final fReturnFuture = typeAliasTable.fReturnFuture;
+    final fReturnFutureOr = typeAliasTable.fReturnFutureOr;
+
     var str = StringBuffer();
 
     var traverseReturnInterfaceTypes =
@@ -2373,32 +2448,36 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         str.write('  var ret = ');
         str.write(call);
 
-        if (proxyMethod.isReturningFuture) {
-          var acceptsNull = proxyMethod.returnAcceptsNull;
+        var acceptsNull = proxyMethod.returnAcceptsNull;
 
+        if (proxyMethod.isReturningFuture || proxyMethod.isReturningFutureOr) {
           var futureType = proxyMethod.returnTypeArgument;
 
-          var futureTypeStr = futureType != null && futureType.isVoid
+          var futureTypeStr = futureType != null && futureType is VoidType
               ? 'dynamic'
               : (futureType?.fullTypeNameResolvable() ?? 'dynamic');
-
-          var returnTypeNullableStr = proxyMethod.returnTypeNameResolvable();
-
-          var returnTypeStr = returnTypeNullableStr.endsWith('?')
-              ? returnTypeNullableStr.substring(
-                  0, returnTypeNullableStr.length - 1)
-              : returnTypeNullableStr;
 
           if (acceptsNull) {
             str.write('  if (ret == null) return null;\n');
           }
 
-          str.write(
-              '  return ret is $returnTypeNullableStr ? ret as $returnTypeNullableStr : '
-              '( ret is Future ? ret.then((v) => v as $futureTypeStr) : $returnTypeStr.value(ret as dynamic) '
-              ');\n');
+          if (proxyMethod.isReturningFuture) {
+            typeAliasTable.fReturnFutureUseCount++;
+            str.write('  return $fReturnFuture<$futureTypeStr>(ret);\n');
+          } else {
+            typeAliasTable.fReturnFutureOrUseCount++;
+            str.write('  return $fReturnFutureOr<$futureTypeStr>(ret);\n');
+          }
         } else {
-          str.write('  return ret as dynamic ;\n');
+          var valueType = proxyMethod.returnType;
+          var valueTypeStr = valueType.fullTypeNameResolvable();
+
+          if (acceptsNull) {
+            str.write('  if (ret == null) return null;\n');
+          }
+
+          typeAliasTable.fReturnValueUseCount++;
+          str.write('  return $fReturnValue<$valueTypeStr>(ret);\n');
         }
       } else {
         str.write(call);
@@ -2463,7 +2542,7 @@ class _ProxyMethod {
 
   bool get returnAcceptsNull => returnType.isNullable;
 
-  bool get isReturningVoid => returnType.isVoid;
+  bool get isReturningVoid => returnType is VoidType;
 
   bool get isReturningFuture => returnType.isDartAsyncFuture;
 
