@@ -86,6 +86,27 @@ class ClassProxy {
     this.traverseReturnTypes = const <Type>{},
     this.ignoreParametersTypes = const <Type>{},
   });
+
+  static Future<T> returnFuture<T>(Object? ret) {
+    if (ret is Future<T>) return ret;
+
+    return ret is Future
+        ? ret.then((v) {
+            if (v is! T) {
+              throw ClassProxyCallError.returnedValueError(T, v);
+            }
+            return v;
+          })
+        : Future<T>.value(ret as dynamic);
+  }
+}
+
+/// A [ClassProxy] call error.
+class ClassProxyCallError extends StateError {
+  ClassProxyCallError(super.message) : super();
+
+  ClassProxyCallError.returnedValueError(Type t, Object value)
+      : this("Can't cast returned value to `$t`: $value");
 }
 
 /// Interface that a proxy class (annotated with [ClassProxy]) should implement

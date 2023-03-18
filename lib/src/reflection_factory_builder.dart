@@ -391,6 +391,11 @@ class ReflectionBuilder implements Builder {
       }
     }
 
+    if (!codeTable.reflectionProxiesIsEmpty) {
+      var codes = _classProxyFuntions(buildStep, typeAliasTable);
+      codeTable.addFunctions(codes);
+    }
+
     var annotatedReflectionBridge =
         libraryReader.annotatedWith(typeReflectionBridge).toList();
 
@@ -464,10 +469,26 @@ class ReflectionBuilder implements Builder {
     return idx >= 0 ? s.substring(idx + 1) : s;
   }
 
+  Map<String, String> _classProxyFuntions(
+      BuildStep buildStep, _TypeAliasTable typeAliasTable) {
+    var s = StringBuffer();
+
+    var fName = typeAliasTable.fReturnFuture;
+
+    s.write(
+        '\nFuture<T> $fName<T>(Object? o) => ClassProxy.returnFuture<T>(o);\n\n');
+
+    var code = s.toString();
+
+    return {fName: code};
+  }
+
   Future<Map<String, String>> _classProxy(BuildStep buildStep,
       AnnotatedElement annotated, _TypeAliasTable typeAliasTable) async {
     var annotation = annotated.annotation;
     var annotatedClass = annotated.element as ClassElement;
+
+    var fReturnFuture = typeAliasTable.fReturnFuture;
 
     var className = annotation.peek('className')!.stringValue;
     var libraryName = annotation.peek('libraryName')!.stringValue;
@@ -525,6 +546,7 @@ class ReflectionBuilder implements Builder {
         classTree.reflectionProxyExtension,
         () => classTree.buildReflectionProxyClass(
             annotatedClass,
+            fReturnFuture,
             alwaysReturnFuture,
             traverseReturnTypes,
             ignoreParametersTypes,
@@ -933,6 +955,7 @@ class _TypeAliasTable {
   late final String tiName;
   late final String prName;
   late final String reflectionMixinName;
+  late final String fReturnFuture;
   late final String code;
 
   factory _TypeAliasTable.fromLibraryReader(LibraryReader libraryReader) {
@@ -946,6 +969,7 @@ class _TypeAliasTable {
     tiName = _buildAliasName('__TI', privateNames);
     prName = _buildAliasName('__PR', privateNames);
     reflectionMixinName = _buildAliasName('__ReflectionMixin', privateNames);
+    fReturnFuture = _buildAliasName('__retFut\$', privateNames);
 
     var str = StringBuffer();
 
@@ -977,17 +1001,30 @@ class _CodeTable {
 
   final Map<String, String> _reflectionClasses = <String, String>{};
   final Map<String, String> _reflectionProxies = <String, String>{};
+  final Map<String, String> _functions = <String, String>{};
 
   bool get reflectionClassesIsEmpty => _reflectionClasses.isEmpty;
 
-  bool get isEmpty => _reflectionClasses.isEmpty && _reflectionProxies.isEmpty;
+  bool get reflectionProxiesIsEmpty => _reflectionProxies.isEmpty;
+
+  bool get functionsIsEmpty => _functions.isEmpty;
+
+  bool get isEmpty =>
+      _reflectionClasses.isEmpty &&
+      _reflectionProxies.isEmpty &&
+      _functions.isEmpty;
 
   Iterable<String> get reflectionClassesKeys => _reflectionClasses.keys;
 
-  Iterable<String> get reflectionProxiesKeys => _reflectionClasses.keys;
+  Iterable<String> get reflectionProxiesKeys => _reflectionProxies.keys;
 
-  Iterable<String> get allKeys =>
-      <String>[..._reflectionClasses.keys, ..._reflectionProxies.keys];
+  Iterable<String> get functionsKeys => _functions.keys;
+
+  Iterable<String> get allKeys => <String>[
+        ..._reflectionClasses.keys,
+        ..._reflectionProxies.keys,
+        ..._functions.keys,
+      ];
 
   void _checkKey(String key) {
     var code = get(key);
@@ -996,7 +1033,8 @@ class _CodeTable {
     }
   }
 
-  String? get(String key) => _reflectionClasses[key] ?? _reflectionProxies[key];
+  String? get(String key) =>
+      _reflectionClasses[key] ?? _reflectionProxies[key] ?? _functions[key];
 
   void addClass(String key, String code) {
     _checkKey(key);
@@ -1017,6 +1055,17 @@ class _CodeTable {
   void addProxies(Map<String, String> codes) {
     for (var e in codes.entries) {
       addProxy(e.key, e.value);
+    }
+  }
+
+  void addFunction(String key, String code) {
+    _checkKey(key);
+    _functions[key] = code;
+  }
+
+  void addFunctions(Map<String, String> codes) {
+    for (var e in codes.entries) {
+      addFunction(e.key, e.value);
     }
   }
 }
@@ -2263,6 +2312,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   String buildReflectionProxyClass(
       ClassElement proxyClass,
+      String fReturnFuture,
       bool alwaysReturnFuture,
       Set<DartObject> traverseReturnTypes,
       Set<DartObject> ignoreParametersTypes,
@@ -2280,6 +2330,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     _buildClassProxyMethods(
         str,
+        fReturnFuture,
         alwaysReturnFuture,
         traverseReturnTypes.map((e) => e.toTypeValue()!).toSet(),
         ignoreParametersTypes.map((e) => e.toTypeValue()!).toSet(),
@@ -2293,6 +2344,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   void _buildClassProxyMethods(
       StringBuffer codeBuffer,
+      String fReturnFuture,
       bool alwaysReturnFuture,
       Set<DartType> traverseReturnTypes,
       Set<DartType> ignoreParametersTypes,
@@ -2375,28 +2427,17 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
         if (proxyMethod.isReturningFuture) {
           var acceptsNull = proxyMethod.returnAcceptsNull;
-
           var futureType = proxyMethod.returnTypeArgument;
 
-          var futureTypeStr = futureType != null && futureType.isVoid
+          var futureTypeStr = futureType != null && futureType is VoidType
               ? 'dynamic'
               : (futureType?.fullTypeNameResolvable() ?? 'dynamic');
-
-          var returnTypeNullableStr = proxyMethod.returnTypeNameResolvable();
-
-          var returnTypeStr = returnTypeNullableStr.endsWith('?')
-              ? returnTypeNullableStr.substring(
-                  0, returnTypeNullableStr.length - 1)
-              : returnTypeNullableStr;
 
           if (acceptsNull) {
             str.write('  if (ret == null) return null;\n');
           }
 
-          str.write(
-              '  return ret is $returnTypeNullableStr ? ret as $returnTypeNullableStr : '
-              '( ret is Future ? ret.then((v) => v as $futureTypeStr) : $returnTypeStr.value(ret as dynamic) '
-              ');\n');
+          str.write('  return $fReturnFuture<$futureTypeStr>(ret);\n');
         } else {
           str.write('  return ret as dynamic ;\n');
         }
@@ -2463,7 +2504,7 @@ class _ProxyMethod {
 
   bool get returnAcceptsNull => returnType.isNullable;
 
-  bool get isReturningVoid => returnType.isVoid;
+  bool get isReturningVoid => returnType is VoidType;
 
   bool get isReturningFuture => returnType.isDartAsyncFuture;
 
