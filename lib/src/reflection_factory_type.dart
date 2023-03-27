@@ -358,15 +358,29 @@ class TypeParser {
       return value > 0;
     } else {
       var s = _valueAsString(value).toLowerCase();
-      if (s.isEmpty || s == 'null' || s == 'empty') return def;
+
+      if (s.isEmpty ||
+          s == 'null' ||
+          s == 'empty' ||
+          s == '[]' ||
+          s == 'undef' ||
+          s == 'undefined') {
+        return def;
+      }
 
       if (s == 'true' ||
           s == 't' ||
           s == 'yes' ||
           s == 'y' ||
+          s == 's' ||
           s == '1' ||
           s == '+' ||
-          s == 'ok') {
+          s == 'ok' ||
+          s == 'on' ||
+          s == 'enabled' ||
+          s == 'selected' ||
+          s == 'checked' ||
+          s == 'positive') {
         return true;
       }
 
@@ -379,7 +393,12 @@ class TypeParser {
           s == '-' ||
           s == 'fail' ||
           s == 'error' ||
-          s == 'err') {
+          s == 'err' ||
+          s == 'off' ||
+          s == 'disabled' ||
+          s == 'unselected' ||
+          s == 'unchecked' ||
+          s == 'negative') {
         return false;
       }
 

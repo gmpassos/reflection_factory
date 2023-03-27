@@ -1,3 +1,8 @@
+## 2.0.6
+
+- `TypeParser.parseBool`: improve detected values.
+- analyzer: ^5.10.0
+
 ## 2.0.5
 
 - `ClassProxy`:

@@ -1419,12 +1419,22 @@ void main() {
       expect(TypeParser.parseBool('t'), isTrue);
       expect(TypeParser.parseBool('yes'), isTrue);
       expect(TypeParser.parseBool('ok'), isTrue);
+      expect(TypeParser.parseBool('on'), isTrue);
+      expect(TypeParser.parseBool('enabled'), isTrue);
+      expect(TypeParser.parseBool('selected'), isTrue);
+      expect(TypeParser.parseBool('checked'), isTrue);
+      expect(TypeParser.parseBool('positive'), isTrue);
 
       expect(TypeParser.parseBool('false'), isFalse);
       expect(TypeParser.parseBool('f'), isFalse);
       expect(TypeParser.parseBool('no'), isFalse);
       expect(TypeParser.parseBool('fail'), isFalse);
       expect(TypeParser.parseBool('error'), isFalse);
+      expect(TypeParser.parseBool('off'), isFalse);
+      expect(TypeParser.parseBool('disabled'), isFalse);
+      expect(TypeParser.parseBool('unselected'), isFalse);
+      expect(TypeParser.parseBool('unchecked'), isFalse);
+      expect(TypeParser.parseBool('negative'), isFalse);
     });
 
     test('TypeParser.parseMap', () async {
