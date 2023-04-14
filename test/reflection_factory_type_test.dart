@@ -891,7 +891,11 @@ void main() {
       {
         TestUserWithReflection$reflection.boot();
 
-        var typeListOfUser = TypeInfo.fromType(List, [TestUserWithReflection]);
+        var typeUser =
+            TypeInfo<TestUserWithReflection>.fromType(TestUserWithReflection);
+
+        var typeListOfUser =
+            TypeInfo<List<TestUserWithReflection>>.fromListType(typeUser);
 
         var user1 = TestUserWithReflection.fields(
             'joe', 'joe@mail.com', 'j123456',
@@ -934,10 +938,28 @@ void main() {
         var usersDecoded = typeListOfUser.fromJson(usersJson) as List;
 
         expect(usersDecoded, equals([user1, user2, user1]));
+        expect(usersDecoded, isA<List<TestUserWithReflection>>());
 
         expect(identical(usersDecoded[0], usersDecoded[1]), isFalse);
         expect(identical(usersDecoded[0], usersDecoded[2]), isTrue);
         expect(identical(usersDecoded[1], usersDecoded[2]), isFalse);
+
+        {
+          var typeListOfListOfUser =
+              TypeInfo<List<List<TestUserWithReflection>>>.fromListType(
+                  typeListOfUser);
+
+          var listUsersDecoded =
+              typeListOfListOfUser.fromJson([usersJson]) as List;
+
+          expect(
+              listUsersDecoded,
+              equals([
+                [user1, user2, user1]
+              ]));
+
+          expect(listUsersDecoded, isA<List<List<TestUserWithReflection>>>());
+        }
 
         expect(
             JsonEncoder.defaultEncoder

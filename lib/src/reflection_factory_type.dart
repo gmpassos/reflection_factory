@@ -905,7 +905,27 @@ class TypeInfo<T> {
   Type get genericType => T;
 
   /// Returns `true` if [genericType] matches [type].
-  bool get isValidGenericType => genericType == type;
+  bool get isValidGenericType {
+    var genericType = this.genericType;
+    var type = this.type;
+
+    if (genericType == type) {
+      return true;
+    }
+
+    if (this.isIterable && hasArguments) {
+      var arg = arguments[0];
+      var valid = arg.isValidGenericType;
+      if (valid) {
+        var genericType2 = arg.toListType().genericType;
+        if (genericType2 == genericType) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
 
   /// Returns the [type] name.
   String get typeName {
@@ -1394,7 +1414,7 @@ class TypeInfo<T> {
           jsonDecoder ??= JsonDecoder.defaultDecoder;
 
           list = jsonDecoder.fromJsonList(list,
-              type: arg.type,
+              typeInfo: arg,
               duplicatedEntitiesAsID: duplicatedEntitiesAsID,
               autoResetEntityCache: autoResetEntityCache);
         }
@@ -1446,7 +1466,7 @@ class TypeInfo<T> {
     jsonDecoder ??= JsonDecoder.defaultDecoder;
 
     return jsonDecoder.fromJson(json,
-        type: type,
+        typeInfo: this,
         duplicatedEntitiesAsID: duplicatedEntitiesAsID,
         autoResetEntityCache: autoResetEntityCache);
   }
