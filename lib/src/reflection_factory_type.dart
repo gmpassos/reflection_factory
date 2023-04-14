@@ -915,6 +915,7 @@ class TypeInfo<T> {
 
     if (_typeWrapper.isList && hasArguments) {
       var arg = arguments[0];
+
       var valid = arg.isValidGenericType;
 
       if (valid) {

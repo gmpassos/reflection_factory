@@ -1109,7 +1109,10 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
           : o.map((k, v) => MapEntry(k.toString(), v));
       return _fromJsonMapImpl(map, typeInfo, duplicatedEntitiesAsID);
     } else if (o is Iterable) {
-      return _fromJsonListImpl(o, typeInfo, duplicatedEntitiesAsID) as O?;
+      var listType = typeInfo.isIterable && typeInfo.hasArguments
+          ? typeInfo.arguments[0]
+          : typeInfo;
+      return _fromJsonListImpl(o, listType, duplicatedEntitiesAsID) as O?;
     } else if (o is String) {
       return _entityFromJsonString(typeInfo, o, duplicatedEntitiesAsID);
     } else {
@@ -1258,12 +1261,8 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
   List<O?> _fromJsonListImpl<O>(
       Iterable o, TypeInfo typeInfo, bool duplicatedEntitiesAsID) {
-    var listType = typeInfo.isList && typeInfo.hasArguments
-        ? typeInfo.arguments[0]
-        : typeInfo;
-
     var list = o
-        .map((e) => _fromJsonImpl<O>(e, listType, duplicatedEntitiesAsID))
+        .map((e) => _fromJsonImpl<O>(e, typeInfo, duplicatedEntitiesAsID))
         .toList();
 
     return _castList(list, typeInfo);
