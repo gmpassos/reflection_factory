@@ -913,11 +913,9 @@ class TypeInfo<T> {
       return true;
     }
 
-    if (_typeWrapper.isList && hasArguments) {
+    if (this.isIterable && hasArguments) {
       var arg = arguments[0];
-
       var valid = arg.isValidGenericType;
-
       if (valid) {
         var genericType2 = arg.toListType().genericType;
         if (genericType2 == genericType) {
