@@ -1,3 +1,11 @@
+## 2.0.7 
+
+- `TypeInfo`:
+  - Fix `isValidGenericType` for `List<T>`.
+  - `_fromJsonImpl`: pass `typeInfo` instead of `type`.
+- `JsonDecoder`:
+  - `_fromJsonListImpl`: fix for `List<List<T>>`.
+
 ## 2.0.6
 
 - `TypeParser.parseBool`: improve detected values.

@@ -1258,8 +1258,12 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
   List<O?> _fromJsonListImpl<O>(
       Iterable o, TypeInfo typeInfo, bool duplicatedEntitiesAsID) {
+    var listType = typeInfo.isList && typeInfo.hasArguments
+        ? typeInfo.arguments[0]
+        : typeInfo;
+
     var list = o
-        .map((e) => _fromJsonImpl<O>(e, typeInfo, duplicatedEntitiesAsID))
+        .map((e) => _fromJsonImpl<O>(e, listType, duplicatedEntitiesAsID))
         .toList();
 
     return _castList(list, typeInfo);
