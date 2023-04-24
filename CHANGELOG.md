@@ -1,3 +1,10 @@
+## 2.1.0
+
+- `EnumReflection` (**Breaking Change**):
+  - Now separates fields in `staticFieldsNames` and `fieldsNames`.
+- sdk: '>=2.18.0 <3.0.0'
+- collection: ^1.17.0
+
 ## 2.0.7 
 
 - `TypeInfo`:

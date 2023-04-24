@@ -20,7 +20,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.0.7';
+  static const String VERSION = '2.1.0';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -554,12 +554,18 @@ abstract class EnumReflection<O> extends Reflection<O>
   @override
   List<Object> get classAnnotations;
 
+  /// Returns a `const` [List] of static fields names.
+  List<String> get staticFieldsNames;
+
   /// Returns a `const` [List] of fields names.
   @override
   List<String> get fieldsNames;
 
   /// Returns a `const` [Map] of values by name.
   Map<String, O> get valuesByName;
+
+  /// Returns a [List] of values names.
+  List<String> get valuesNames => valuesByName.keys.toList();
 
   /// Returns the Enum values.
   List<O> get values;

@@ -26,7 +26,12 @@ void main() {
           part 'foo.reflection.g.dart';
           
           @EnableReflection()
-          enum Axis {x, y, z}
+          enum Axis {
+            x, y, z;
+            
+            String get nameLC => name.toLowerCase();
+            static int get length => values.length;
+          }
           
           @EnableReflection()
           class User {

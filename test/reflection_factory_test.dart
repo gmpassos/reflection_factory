@@ -800,7 +800,16 @@ void main() {
       expect(TestEnumWithReflection$reflection().values,
           equals(TestEnumWithReflection.values));
 
-      expect(TestEnumWithReflection$reflection().fieldsNames,
+      expect(TestEnumWithReflection$reflection().staticFieldsNames,
+          equals(['Z', 'length', 'x', 'y', 'z']));
+
+      expect(
+          TestEnumWithReflection$reflection().fieldsNames, equals(['nameLC']));
+
+      expect(TestEnumWithReflection$reflection().valuesNames,
+          equals(['Z', 'x', 'y', 'z']));
+
+      expect(TestEnumWithReflection$reflection().valuesByName.keys,
           equals(['Z', 'x', 'y', 'z']));
 
       expect(TestEnumWithReflection$reflection(TestEnumWithReflection.x).name(),

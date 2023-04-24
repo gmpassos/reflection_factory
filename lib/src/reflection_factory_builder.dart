@@ -1144,6 +1144,14 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
     _enumElement.visitChildren(this);
   }
 
+  DartType? get thisType {
+    var e = _enumElement;
+    if (e is InterfaceElement) {
+      return e.thisType;
+    }
+    return null;
+  }
+
   String classGlobalFunction(String functionName) =>
       _buildClassGlobalFunction(enumName, reflectionClassName, functionName);
 
@@ -1152,6 +1160,8 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
 
   String get reflectionExtension =>
       _buildReflectionExtensionName(enumName, reflectionExtensionName);
+
+  final Set<FieldElement> staticFields = <FieldElement>{};
 
   final Set<FieldElement> fields = <FieldElement>{};
 
@@ -1163,11 +1173,30 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
       return null;
     }
 
-    fields.add(element);
+    if (element.isStatic) {
+      /*var getter = element.getter;
+
+      if (getter == null || getter.isSynthetic) {
+        fields.add(element);
+      }
+
+       */
+
+      _addWithUniqueName(staticFields, element);
+    } else {
+      _addWithUniqueName(fields, element);
+    }
+
     return null;
   }
 
+  List<String> get staticFieldsNames =>
+      staticFields.map((e) => e.name).toList();
+
   List<String> get fieldsNames => fields.map((e) => e.name).toList();
+
+  bool hasStaticField(String filedName) =>
+      staticFields.where((m) => m.name == filedName).isNotEmpty;
 
   bool hasField(String filedName) =>
       fields.where((m) => m.name == filedName).isNotEmpty;
@@ -1177,6 +1206,7 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
     return '_EnumTree{ '
         'enumName: $enumName, '
         'languageVersion: $languageVersion, '
+        'staticFieldsNames: $staticFieldsNames '
         'fields: $fieldsNames '
         '}';
   }
@@ -1270,27 +1300,39 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
     str.write('  @override\n');
     str.write('  List<Object> get classAnnotations => _classAnnotations;\n\n');
 
-    _buildField(str);
+    _buildStaticFields(str);
+    _buildFields(str);
 
     str.write('}\n\n');
 
     return str.toString();
   }
 
-  void _buildField(StringBuffer str) {
-    var entries = _toFieldEntries(fields);
+  void _buildStaticFields(StringBuffer str) {
+    var entries = _toFieldEntries(staticFields);
     var names = _buildStringListCode(entries.keys, sorted: true);
 
-    str.write('  static const List<String> _fieldsNames = $names;\n\n');
+    str.write('  static const List<String> _staticFieldsNames = $names;\n\n');
 
     str.write('  @override\n');
-    str.write('  List<String> get fieldsNames => _fieldsNames;\n\n');
+    str.write(
+        '  List<String> get staticFieldsNames => _staticFieldsNames;\n\n');
 
     str.write(
         '  static const Map<String,$enumName> _valuesByName = const <String,$enumName>{\n');
-    for (var name in entries.keys) {
+
+    final enumType = this.thisType;
+
+    var enumsEntries = entries.entries
+        .where((e) => e.value.thisType == enumType)
+        .sortedBy((e) => e.key)
+        .toList();
+
+    for (var e in enumsEntries) {
+      var name = e.key;
       str.write("  '$name': $enumName.$name,\n");
     }
+
     str.write('  };\n\n');
 
     str.write('  @override\n');
@@ -1298,6 +1340,16 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
 
     str.write('  @override\n');
     str.write('  List<$enumName> get values => $enumName.values;\n\n');
+  }
+
+  void _buildFields(StringBuffer str) {
+    var entries = _toFieldEntries(fields);
+    var names = _buildStringListCode(entries.keys, sorted: true);
+
+    str.write('  static const List<String> _fieldsNames = $names;\n\n');
+
+    str.write('  @override\n');
+    str.write('  List<String> get fieldsNames => _fieldsNames;\n\n');
   }
 
   Map<String, _Field> _toFieldEntries(Set<FieldElement> fields) {
@@ -1520,15 +1572,6 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     }
 
     return null;
-  }
-
-  static bool _addWithUniqueName(Set<Element> set, Element element) {
-    if (set.where((e) => e.name == element.name).isEmpty) {
-      set.add(element);
-      return true;
-    }
-
-    return false;
   }
 
   final Set<MethodElement> staticMethods = <MethodElement>{};
@@ -2674,6 +2717,18 @@ class _Element {
 
   _Element(this._element);
 
+  DartType? get thisType {
+    var e = _element;
+
+    if (e is InterfaceElement) {
+      return e.thisType;
+    } else if (e is FieldElement) {
+      return e.type;
+    }
+
+    return null;
+  }
+
   DartType? get declaringType {
     var element = _element;
     if (element is InterfaceElement) {
@@ -3379,6 +3434,15 @@ extension _FunctionTypeExtension on FunctionType {
 
     return map;
   }
+}
+
+bool _addWithUniqueName(Set<Element> set, Element element) {
+  if (set.where((e) => e.name == element.name).isEmpty) {
+    set.add(element);
+    return true;
+  }
+
+  return false;
 }
 
 String _buildStringListCode(Iterable? o,

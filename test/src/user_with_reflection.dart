@@ -10,7 +10,11 @@ enum TestEnumWithReflection {
   x,
   y,
   z,
-  Z,
+  Z;
+
+  String get nameLC => name.toLowerCase();
+
+  static int get length => values.length;
 }
 
 @EnableReflection()
