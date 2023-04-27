@@ -1,3 +1,8 @@
+## 2.1.2
+
+- `TypeParser`:
+  - Small fixes `parseList`, `parseMap` and `parseMapEntry`.
+
 ## 2.1.1
 
 - `TypeInfo`:

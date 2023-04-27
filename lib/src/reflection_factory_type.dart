@@ -136,6 +136,12 @@ class TypeParser {
       return value;
     } else if (value is Iterable) {
       return value.toList();
+    } else if (value is int) {
+      return [value];
+    } else if (value is double) {
+      return [value];
+    } else if (value is bool) {
+      return [value];
     } else {
       var s = '$value'.trim();
       if (s.isEmpty) return null;
@@ -182,6 +188,10 @@ class TypeParser {
           .map((e) => parseMapEntry<K, V>(e,
               keyParser: keyParser, valueParser: valueParser))
           .whereNotNull());
+    } else if (value is num) {
+      var e = parseMapEntry<K, V>(value,
+          keyParser: keyParser, valueParser: valueParser);
+      return Map<K, V>.fromEntries([if (e != null) e]);
     } else {
       var s = '$value'.trim();
       if (s.isEmpty) return def;
@@ -218,6 +228,8 @@ class TypeParser {
       var k = value.elementAt(0);
       var v = value.elementAt(1);
       return MapEntry(keyParser(k) as K, valueParser(v) as V);
+    } else if (value is num && value is K && null is V) {
+      return MapEntry<K, V>(value as K, null as V);
     } else {
       var s = '$value'.trim();
       if (s.isEmpty) return def;

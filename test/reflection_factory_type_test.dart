@@ -1719,6 +1719,15 @@ void main() {
       expect(TypeParser.parseList('1,2,3', elementParser: TypeParser.parseInt),
           equals([1, 2, 3]));
       expect(TypeParser.parseList<int>('1,2,3'), equals([1, 2, 3]));
+
+      expect(TypeParser.parseList(123), equals([123]));
+      expect(TypeParser.parseList<int>(123), equals([123]));
+
+      expect(TypeParser.parseList(123.0), equals([123.0]));
+      expect(TypeParser.parseList<double>(123), equals([123.0]));
+
+      expect(TypeParser.parseList(123), equals([123]));
+      expect(TypeParser.parseList<num>(123), equals([123.0]));
     });
 
     test('TypeParser.parseSet', () async {
@@ -1727,6 +1736,15 @@ void main() {
       expect(TypeParser.parseSet('1,2,3', elementParser: TypeParser.parseInt),
           equals({1, 2, 3}));
       expect(TypeParser.parseSet<int>('1,2,3'), equals({1, 2, 3}));
+
+      expect(TypeParser.parseSet(123), equals({123}));
+      expect(TypeParser.parseSet<int>(123), equals({123}));
+
+      expect(TypeParser.parseSet(123.0), equals({123.0}));
+      expect(TypeParser.parseSet<double>(123), equals({123.0}));
+
+      expect(TypeParser.parseSet(123), equals({123}));
+      expect(TypeParser.parseSet<num>(123), equals({123.0}));
     });
 
     test('TypeParser.parseMap', () async {
@@ -1739,6 +1757,20 @@ void main() {
           equals({'a': 1, 'b': 2}));
       expect(TypeParser.parseMap<String, int>('a:1&b:2'),
           equals({'a': 1, 'b': 2}));
+
+      expect(TypeParser.parseMap(123), equals({123: null}));
+      expect(TypeParser.parseMap<int, Object?>(123), equals({123: null}));
+
+      expect(() => TypeParser.parseMap<int, String>(123),
+          throwsA(isA<TypeError>()));
+
+      expect(TypeParser.parseMap(12.3), equals({12.3: null}));
+      expect(TypeParser.parseMap([123, 456]), equals({123: null, 456: null}));
+
+      expect(TypeParser.parseMap('123:a ; 456:b'),
+          equals({'123': 'a', '456': 'b'}));
+      expect(TypeParser.parseMap<int, String>('123:a ; 456:b'),
+          equals({123: 'a', 456: 'b'}));
     });
 
     test('TypeParser.parseDateTime', () async {
