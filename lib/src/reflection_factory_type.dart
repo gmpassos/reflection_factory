@@ -1613,6 +1613,74 @@ class TypeInfo<T> {
 
     return map;
   }
+
+  /// The argument at index `0` (in [arguments]).
+  TypeInfo? get arguments0 => argumentType(0);
+
+  /// The argument at index `1` (in [arguments]).
+  TypeInfo? get arguments1 => argumentType(1);
+
+  /// Returns `true` if [o] is a `List<E>` where `E` is [arguments0] `T`.
+  /// - `E` should be valid. See [isValidGenericType].
+  /// - This [TypeInfo] should be a [List]. See [isList].
+  bool isCastedList(Object? o) {
+    if (!isList || o is! List) return false;
+
+    var arg0 = arguments0;
+    return arg0 != null &&
+        arg0.isValidGenericType &&
+        arg0.callCasted(<E>() => o is List<E>);
+  }
+
+  /// Returns `true` if [o] is a `Set<E>` where `E` is [arguments0] `T`.
+  /// - `E` should be valid. See [isValidGenericType].
+  /// - This [TypeInfo] should be a [Set]. See [isSet].
+  bool isCastedSet(Object? o) {
+    if (!isSet || o is! Set) return false;
+
+    var arg0 = arguments0;
+    return arg0 != null &&
+        arg0.isValidGenericType &&
+        arg0.callCasted(<E>() => o is Set<E>);
+  }
+
+  /// Returns `true` if [o] is a `Iterable<E>` where `E` is [arguments0] `T`.
+  /// - `E` should be valid. See [isValidGenericType].
+  /// - This [TypeInfo] should be an [Iterable]. See [isIterable].
+  bool isCastedIterable(Object? o) {
+    if (!isIterable || o is! Iterable) return false;
+
+    var arg0 = arguments0;
+    return arg0 != null &&
+        arg0.isValidGenericType &&
+        arg0.callCasted(<E>() => o is Iterable<E>);
+  }
+
+  /// Returns `true` if [o] is a `Map<K,V>`
+  /// where `K` is [arguments0] `T` and `V` is [arguments1] `T`.
+  /// - `K` or `V` should be valid. See [isValidGenericType].
+  /// - This [TypeInfo] should be a [Map]. See [isMap].
+  bool isCastedMap(Object? o) {
+    if (!isMap || o is! Map) return false;
+
+    var arg0 = arguments0;
+    var arg1 = arguments1;
+
+    var arg0Ok = arg0 != null && arg0.isValidGenericType;
+    var arg1Ok = arg1 != null && arg1.isValidGenericType;
+
+    if (arg0Ok && arg1Ok) {
+      return arg0.callCasted(<K>() {
+        return arg1.callCasted(<V>() => o is Map<K, V>);
+      });
+    } else if (arg0Ok) {
+      return arg0.callCasted(<K>() => o is Map<K, dynamic>);
+    } else if (arg1Ok) {
+      return arg1.callCasted(<V>() => o is Map<dynamic, V>);
+    } else {
+      return false;
+    }
+  }
 }
 
 final TypeInfoListEquality _listEqualityTypeInfo = TypeInfoListEquality();

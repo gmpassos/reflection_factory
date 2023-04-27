@@ -678,6 +678,151 @@ void main() {
       }
     });
 
+    test('isCastedList', () async {
+      {
+        var t = TypeInfo<List<int>>.fromType(List, [int]);
+
+        expect(t.genericType, equals(List<int>));
+        expect(t.arguments0?.genericType, equals(int));
+
+        var list = <int>[1, 2, 3];
+        var listObj = <Object>[1, 2, 3];
+
+        expect(t.isCastedList(list), isTrue);
+        expect(t.isCastedList(listObj), isFalse);
+
+        expect(t.isCastedSet(list), isFalse);
+        expect(t.isCastedIterable(list), isTrue);
+        expect(t.isCastedMap(list), isFalse);
+      }
+    });
+
+    test('isCastedSet', () async {
+      {
+        var t = TypeInfo<Set<int>>.fromType(Set, [int]);
+
+        expect(t.genericType, equals(Set<int>));
+        expect(t.arguments0?.genericType, equals(int));
+
+        var set = <int>{1, 2, 3};
+        var setObj = <Object>{1, 2, 3};
+
+        expect(t.isCastedSet(set), isTrue);
+        expect(t.isCastedSet(setObj), isFalse);
+
+        expect(t.isCastedList(set), isFalse);
+        expect(t.isCastedIterable(set), isTrue);
+        expect(t.isCastedMap(setObj), isFalse);
+      }
+    });
+
+    test('isCastedIterable', () async {
+      {
+        var t = TypeInfo<Iterable<int>>.fromType(Iterable, [int]);
+
+        expect(t.genericType, equals(Iterable<int>));
+        expect(t.arguments0?.genericType, equals(int));
+
+        var list = <int>[1, 2, 3];
+        var listObj = <Object>[1, 2, 3];
+
+        var set = <int>{1, 2, 3};
+        var setObj = <Object>{1, 2, 3};
+
+        expect(t.isCastedIterable(list), isTrue);
+        expect(t.isCastedIterable(set), isTrue);
+        expect(t.isCastedIterable(listObj), isFalse);
+        expect(t.isCastedIterable(setObj), isFalse);
+
+        expect(t.isCastedList(list), isFalse);
+        expect(t.isCastedSet(list), isFalse);
+        expect(t.isCastedList(set), isFalse);
+        expect(t.isCastedSet(set), isFalse);
+
+        expect(t.isCastedMap(setObj), isFalse);
+      }
+    });
+
+    test('isCastedMap<K,V>', () async {
+      {
+        var t = TypeInfo<Map<String, int>>.fromType(Map, [String, int]);
+
+        expect(t.genericType, equals(Map<String, int>));
+        expect(t.arguments0?.genericType, equals(String));
+        expect(t.arguments1?.genericType, equals(int));
+
+        var map = <String, int>{'a': 1, 'b': 2};
+        var mapObjKV = <Object, Object>{'a': 1, 'b': 2};
+        var mapObjV = <String, Object>{'a': 1, 'b': 2};
+        var mapObjK = <Object, int>{'a': 1, 'b': 2};
+
+        expect(t.isCastedMap(map), isTrue);
+        expect(t.isCastedMap(mapObjKV), isFalse);
+        expect(t.isCastedMap(mapObjV), isFalse);
+        expect(t.isCastedMap(mapObjK), isFalse);
+
+        expect(t.isCastedList(map), isFalse);
+        expect(t.isCastedSet(map), isFalse);
+        expect(t.isCastedIterable(map), isFalse);
+      }
+    });
+
+    test('isCastedMap<K>', () async {
+      {
+        var t = TypeInfo<Map<String, dynamic>>.fromType(Map, [String, dynamic]);
+
+        expect(t.genericType, equals(Map<String, dynamic>));
+        expect(t.arguments0?.genericType, equals(String));
+        expect(t.arguments1?.genericType, equals(dynamic));
+
+        expect(t.arguments0?.isValidGenericType, isTrue);
+        expect(t.arguments1?.isValidGenericType, isTrue);
+
+        expect(t.arguments0?.isDynamic, isFalse);
+        expect(t.arguments0?.isDynamicOrObject, isFalse);
+
+        expect(t.arguments1?.isDynamic, isTrue);
+        expect(t.arguments1?.isDynamicOrObject, isTrue);
+
+        var map1 = <String, int>{'a': 1, 'b': 2};
+        var map2 = <String, String>{'a': '1', 'b': '2'};
+        var mapObj = <Object, Object>{'a': 1, 'b': 2};
+
+        expect(t.isCastedMap(map1), isTrue);
+        expect(t.isCastedMap(map2), isTrue);
+
+        expect(t.isCastedMap(mapObj), isFalse);
+      }
+    });
+
+    test('isCastedMap<V>', () async {
+      {
+        var t = TypeInfo<Map<dynamic, int>>.fromType(Map, [dynamic, int]);
+
+        expect(t.genericType, equals(Map<dynamic, int>));
+        expect(t.arguments0?.genericType, equals(dynamic));
+        expect(t.arguments1?.genericType, equals(int));
+
+        expect(t.arguments0?.isValidGenericType, isTrue);
+        expect(t.arguments1?.isValidGenericType, isTrue);
+
+        expect(t.arguments0?.isDynamic, isTrue);
+        expect(t.arguments0?.isDynamicOrObject, isTrue);
+
+        expect(t.arguments1?.isDynamic, isFalse);
+        expect(t.arguments1?.isDynamicOrObject, isFalse);
+
+        var map1 = <String, int>{'a': 1, 'b': 2};
+        var map2 = <int, int>{1: 1, 2: 2};
+        var mapObj = <Object, Object>{'a': 1, 'b': 2};
+
+        expect(t.isCastedMap(map1), isTrue);
+        expect(t.isCastedMap(map2), isTrue);
+
+        expect(t.isCastedMap(mapObj), isFalse);
+      }
+    });
+
     test('TypeInfo.parse', () async {
       {
         var t = TypeInfo(bool);

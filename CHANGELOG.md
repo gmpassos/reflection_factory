@@ -1,3 +1,9 @@
+## 2.1.1
+
+- `TypeInfo`:
+  - Added getters `arguments0` and `arguments1`.
+  - Added `isCastedList`, `isCastedSet`, `isCastedIterable` and `isCastedMap`.
+
 ## 2.1.0
 
 - `EnumReflection` (**Breaking Change**):
