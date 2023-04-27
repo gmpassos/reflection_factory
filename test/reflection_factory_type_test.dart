@@ -675,6 +675,27 @@ void main() {
 
         expect(t.argumentType(0)?.callCasted(castCall),
             equals(<Type>[TestUserSimple]));
+
+        expect(t.callCastedArgumentA(<A>() => A), equals(TestUserSimple));
+      }
+
+      {
+        var t = TypeInfo<Map<String, TestUserSimple>>.fromType(
+            Map, [String, TypeInfo<TestUserSimple>.fromType(TestUserSimple)]);
+
+        expect(t.type, equals(Map));
+        expect(t.genericType, equals(Map<String, TestUserSimple>));
+
+        var tArg0 = t.argumentType(0)!;
+        expect(tArg0.type, equals(String));
+
+        var tArg1 = t.argumentType(1)!;
+        expect(tArg1.type, equals(TestUserSimple));
+
+        expect(t.callCastedArgumentA(<A>() => A), equals(String));
+
+        expect(t.callCastedArgumentsAB(<A, B>() => [A, B]),
+            equals([String, TestUserSimple]));
       }
     });
 

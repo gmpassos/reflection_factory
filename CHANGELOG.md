@@ -2,6 +2,8 @@
 
 - `TypeParser`:
   - Small fixes `parseList`, `parseMap` and `parseMapEntry`.
+- `TypeInfo`:
+  - Added `callCastedArgumentA` and `callCastedArgumentsAB`.
 
 ## 2.1.1
 

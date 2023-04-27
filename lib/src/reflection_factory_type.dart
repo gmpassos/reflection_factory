@@ -1106,8 +1106,24 @@ class TypeInfo<T> {
         type == _TypeWrapper.tBool;
   }
 
+  /// Calls [f] casting [T].
   R callCasted<R>(R Function<T>() f) {
     return f<T>();
+  }
+
+  /// Calls [f] casting [A] as [arguments0] `T`.
+  R callCastedArgumentA<R, A>(R Function<A>() f) {
+    var arg0 = arguments[0];
+    return arg0.callCasted(f);
+  }
+
+  /// Calls [f] casting [A] as [arguments0] `T` and [B] as [arguments1] `T`.
+  R callCastedArgumentsAB<R, A, B>(R Function<A, B>() f) {
+    var arg0 = arguments[0];
+    var arg1 = arguments[1];
+    return arg0.callCasted(<A>() {
+      return arg1.callCasted(<B>() => f<A, B>());
+    });
   }
 
   /// Returns `this` as a [TypeInfo] for `List<T>`.
