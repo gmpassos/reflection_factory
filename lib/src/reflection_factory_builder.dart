@@ -2796,7 +2796,7 @@ class _Parameter extends _Element {
       this.nullable, this.required)
       : super(parameterElement);
 
-  bool get isNullable => nullable || type.isDynamic;
+  bool get isNullable => nullable || type is DynamicType;
 
   String? get defaultValue => parameterElement.defaultValueCode;
 
@@ -3239,7 +3239,7 @@ extension _DartTypeExtension on DartType {
   }
 
   String get typeNameAsNullableCode =>
-      isNullable && !isDynamic && isResolvableType
+      isNullable && this is! DynamicType && isResolvableType
           ? '$typeNameAsCode?'
           : typeNameAsCode;
 
