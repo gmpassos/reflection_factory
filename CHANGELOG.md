@@ -1,3 +1,18 @@
+## 2.1.3
+
+- `TypeInfo`:
+  - Fix `castCollection`: redirecting `Map`s to `castMap`.
+- sdk: '>=2.19.0 <4.0.0'
+- build: ^2.4.0
+- analyzer: ^5.13.0
+- dart_style: ^2.3.1
+- meta: ^1.9.1
+- pub_semver: ^2.1.4
+- collection: ^1.17.1
+- yaml: ^3.1.2
+- source_span: ^1.10.0
+- test: ^1.24.3
+
 ## 2.1.2
 
 - `TypeParser`:

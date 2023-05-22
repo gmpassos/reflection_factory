@@ -1502,6 +1502,10 @@ class TypeInfo<T> {
   /// Casts [o] to this collection type if a [ClassReflection] or [EnumReflection]
   /// for it is registered at [ReflectionFactory].
   Object castCollection(Object o, {bool nullable = false}) {
+    if (isMap && o is Map) {
+      return castMap(o, nullable: nullable);
+    }
+
     var mainType = isCollection ? (argumentType(0) ?? TypeInfo.tDynamic) : this;
 
     var reflectionFactory = ReflectionFactory();

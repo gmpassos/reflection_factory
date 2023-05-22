@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.1.2
+// BUILDER: reflection_factory/2.1.3
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -17,7 +17,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.1.2');
+  static final Version _version = Version.parse('2.1.3');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -146,7 +146,7 @@ class TestAddressWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.18.0');
+  Version get languageVersion => Version.parse('2.19.0');
 
   @override
   TestAddressWithReflection$reflection withObject(
@@ -542,7 +542,7 @@ class TestCompanyWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.18.0');
+  Version get languageVersion => Version.parse('2.19.0');
 
   @override
   TestCompanyWithReflection$reflection withObject(
@@ -968,7 +968,7 @@ class TestDataWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.18.0');
+  Version get languageVersion => Version.parse('2.19.0');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -1266,7 +1266,7 @@ class TestDomainWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.18.0');
+  Version get languageVersion => Version.parse('2.19.0');
 
   @override
   TestDomainWithReflection$reflection withObject(
@@ -1715,7 +1715,7 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
   }
 
   @override
-  Version get languageVersion => Version.parse('2.18.0');
+  Version get languageVersion => Version.parse('2.19.0');
 
   @override
   TestEmpty$reflection withObject([TestEmpty? obj]) =>
@@ -1857,7 +1857,7 @@ class TestEnumWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.18.0');
+  Version get languageVersion => Version.parse('2.19.0');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -1944,7 +1944,7 @@ class TestFranchiseWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.18.0');
+  Version get languageVersion => Version.parse('2.19.0');
 
   @override
   TestFranchiseWithReflection$reflection withObject(
@@ -2290,7 +2290,7 @@ class TestName$reflection extends ClassReflection<TestName>
   }
 
   @override
-  Version get languageVersion => Version.parse('2.18.0');
+  Version get languageVersion => Version.parse('2.19.0');
 
   @override
   TestName$reflection withObject([TestName? obj]) =>
@@ -2592,7 +2592,7 @@ class TestOpAWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.18.0');
+  Version get languageVersion => Version.parse('2.19.0');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -2956,7 +2956,7 @@ class TestOpBWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.18.0');
+  Version get languageVersion => Version.parse('2.19.0');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -3338,7 +3338,7 @@ class TestOpWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.18.0');
+  Version get languageVersion => Version.parse('2.19.0');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -3739,7 +3739,7 @@ class TestTransactionWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.18.0');
+  Version get languageVersion => Version.parse('2.19.0');
 
   @override
   TestTransactionWithReflection$reflection withObject(
@@ -4011,7 +4011,7 @@ class TestUserWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('2.18.0');
+  Version get languageVersion => Version.parse('2.19.0');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
