@@ -797,33 +797,11 @@ class _TypeWrapper {
   V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
     if (value == null) return def;
 
-    if (isDateTime) {
-      return TypeParser.parseDateTime(value, def as DateTime?) as V?;
-    } else if (isUInt8List) {
-      return TypeParser.parseUInt8List(value, def as Uint8List?) as V?;
-    } else if (isBigInt) {
-      return TypeParser.parseBigInt(value, def as BigInt?) as V?;
-    } else if (isList) {
-      return TypeParser.parseList(value,
-          elementParser: typeInfo?.argumentParser(0)) as V?;
-    } else if (isSet) {
-      return TypeParser.parseSet(value,
-          elementParser: typeInfo?.argumentParser(0)) as V?;
-    } else if (isMap) {
-      return TypeParser.parseMap(value,
-          keyParser: typeInfo?.argumentParser(0),
-          valueParser: typeInfo?.argumentParser(1)) as V?;
-    } else if (isMapEntry) {
-      return TypeParser.parseMapEntry(value,
-          keyParser: typeInfo?.argumentParser(0),
-          valueParser: typeInfo?.argumentParser(1)) as V?;
-    } else {
-      if (value.runtimeType == type) {
-        return value as V;
-      }
-
-      return null;
+    if (value.runtimeType == type) {
+      return value as V;
     }
+
+    return null;
   }
 
   @override
@@ -874,7 +852,7 @@ class _TypeWrapperDynamic extends _TypeWrapper {
   bool get isAnyType => true;
 }
 
-class _TypeWrapperPrimitive extends _TypeWrapper {
+abstract class _TypeWrapperPrimitive extends _TypeWrapper {
   const _TypeWrapperPrimitive._const(super.type, super.basicDartType)
       : super._const();
 
@@ -909,7 +887,7 @@ class _TypeWrapperBool extends _TypeWrapperPrimitive {
       TypeParser.parseBool(value, def as bool?) as V?;
 }
 
-class _TypeWrapperNumber extends _TypeWrapperPrimitive {
+abstract class _TypeWrapperNumber extends _TypeWrapperPrimitive {
   const _TypeWrapperNumber._const(super.type, super.basicDartType)
       : super._const();
 
@@ -953,7 +931,7 @@ class _TypeWrapperNum extends _TypeWrapperNumber {
       TypeParser.parseNum(value, def as num?) as V?;
 }
 
-class _TypeWrapperCollection extends _TypeWrapper {
+abstract class _TypeWrapperCollection extends _TypeWrapper {
   const _TypeWrapperCollection._const(super.type, super.basicDartType)
       : super._const();
 
@@ -970,6 +948,11 @@ class _TypeWrapperList extends _TypeWrapperCollection {
 
   @override
   bool get isList => true;
+
+  @override
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
+      TypeParser.parseList(value, elementParser: typeInfo?.argumentParser(0))
+          as V?;
 }
 
 class _TypeWrapperIterable extends _TypeWrapperCollection {
@@ -986,6 +969,12 @@ class _TypeWrapperMap extends _TypeWrapperCollection {
 
   @override
   bool get isMap => true;
+
+  @override
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
+      TypeParser.parseMap(value,
+          keyParser: typeInfo?.argumentParser(0),
+          valueParser: typeInfo?.argumentParser(1)) as V?;
 }
 
 class _TypeWrapperSet extends _TypeWrapperCollection {
@@ -994,9 +983,14 @@ class _TypeWrapperSet extends _TypeWrapperCollection {
 
   @override
   bool get isSet => true;
+
+  @override
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
+      TypeParser.parseSet(value, elementParser: typeInfo?.argumentParser(0))
+          as V?;
 }
 
-class _TypeWrapperAsync extends _TypeWrapper {
+abstract class _TypeWrapperAsync extends _TypeWrapper {
   const _TypeWrapperAsync._const(super.type, super.basicDartType)
       : super._const();
 }
@@ -1023,6 +1017,10 @@ class _TypeWrapperBigInt extends _TypeWrapper {
 
   @override
   bool get isBigInt => true;
+
+  @override
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
+      TypeParser.parseBigInt(value, def as BigInt?) as V?;
 }
 
 class _TypeWrapperMapEntry extends _TypeWrapper {
@@ -1031,6 +1029,12 @@ class _TypeWrapperMapEntry extends _TypeWrapper {
 
   @override
   bool get isMapEntry => true;
+
+  @override
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
+      TypeParser.parseMapEntry(value,
+          keyParser: typeInfo?.argumentParser(0),
+          valueParser: typeInfo?.argumentParser(1)) as V?;
 }
 
 class _TypeWrapperDateTime extends _TypeWrapper {
@@ -1039,6 +1043,10 @@ class _TypeWrapperDateTime extends _TypeWrapper {
 
   @override
   bool get isDateTime => true;
+
+  @override
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
+      TypeParser.parseDateTime(value, def as DateTime?) as V?;
 }
 
 class _TypeWrapperUInt8List extends _TypeWrapper {
@@ -1047,6 +1055,10 @@ class _TypeWrapperUInt8List extends _TypeWrapper {
 
   @override
   bool get isUInt8List => true;
+
+  @override
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
+      TypeParser.parseUInt8List(value, def as Uint8List?) as V?;
 }
 
 class _TypeWrapperVoid extends _TypeWrapper {

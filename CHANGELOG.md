@@ -3,6 +3,7 @@
 - Added `TypeParser.parserForTypeInfo`.
 - Optimize `TypeParser.parserFor`.
 - Optimize `_TypeWrapper` with specialized implementations for each handled type in `BasicDartType`.
+- Optimize `TypeInfo.parse` delegating to specialized `TypeWrapper.parse` implementations.
 
 ## 2.1.3
 
