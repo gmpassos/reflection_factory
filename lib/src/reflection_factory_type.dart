@@ -14,40 +14,24 @@ typedef TypeElementParser<T> = T? Function(Object? o);
 class TypeParser {
   /// Returns the parser for the desired type, defined by [T], [obj] or [type].
   static TypeElementParser<T>? parserFor<T>(
-      {Object? obj, Type? type, TypeInfo? typeInfo}) {
-    return _parserForImpl<T>(obj, type, typeInfo) as TypeElementParser<T>?;
-  }
+          {Object? obj, Type? type, TypeInfo? typeInfo}) =>
+      _parserForImpl<T>(obj, type, typeInfo) as TypeElementParser<T>?;
 
   static TypeElementParser? _parserForImpl<T>(
       Object? obj, Type? type, TypeInfo? typeInfo) {
     if (obj != null) {
-      if (obj is String) {
-        return parseString;
-      } else if (obj is Map) {
-        return parseMap;
-      } else if (obj is Set) {
-        return parseSet;
-      } else if (obj is Uint8List) {
-        return parseUInt8List;
-      } else if (obj is List || obj is Iterable) {
-        return parseList;
-      } else if (obj is int) {
-        return parseInt;
-      } else if (obj is double) {
-        return parseDouble;
-      } else if (obj is num) {
-        return parseNum;
-      } else if (obj is bool) {
-        return parseBool;
-      } else if (obj is BigInt) {
-        return parseBigInt;
-      } else if (obj is DateTime) {
-        return parseDateTime;
-      }
+      var f = _parserForObj(obj);
+      if (f != null) return f;
     }
 
     typeInfo ??= TypeInfo.from(type ?? T);
+    return _parserForTypeInfo(typeInfo);
+  }
 
+  static TypeElementParser<T>? parserForTypeInfo<T>(TypeInfo typeInfo) =>
+      _parserForTypeInfo(typeInfo) as TypeElementParser<T>?;
+
+  static TypeElementParser? _parserForTypeInfo(TypeInfo typeInfo) {
     if (typeInfo.isString) {
       return parseString;
     } else if (typeInfo.isMap) {
@@ -70,9 +54,37 @@ class TypeParser {
       return parseDateTime;
     } else if (typeInfo.isOf(Uint8List)) {
       return parseUInt8List;
+    } else {
+      return null;
     }
+  }
 
-    return null;
+  static TypeElementParser? _parserForObj(Object obj) {
+    if (obj is String) {
+      return parseString;
+    } else if (obj is Map) {
+      return parseMap;
+    } else if (obj is Set) {
+      return parseSet;
+    } else if (obj is Uint8List) {
+      return parseUInt8List;
+    } else if (obj is List || obj is Iterable) {
+      return parseList;
+    } else if (obj is int) {
+      return parseInt;
+    } else if (obj is double) {
+      return parseDouble;
+    } else if (obj is num) {
+      return parseNum;
+    } else if (obj is bool) {
+      return parseBool;
+    } else if (obj is BigInt) {
+      return parseBigInt;
+    } else if (obj is DateTime) {
+      return parseDateTime;
+    } else {
+      return null;
+    }
   }
 
   /// Parses [value] using a [parserFor] [type].
@@ -583,50 +595,84 @@ class _TypeWrapper {
     return BasicDartType.none;
   }
 
-  _TypeWrapper(Type type,
-      {BasicDartType? basicType, Object? object, bool? hasArguments})
-      : type = detectType(type, object),
-        basicDartType =
-            basicType ?? detectBasicType(type, object, hasArguments);
+  _TypeWrapper._(this.type, this.basicDartType);
+
+  factory _TypeWrapper(Type type,
+      {BasicDartType? basicType, Object? object, bool? hasArguments}) {
+    basicType ??= detectBasicType(type, object, hasArguments);
+
+    switch (basicType) {
+      case BasicDartType.string:
+        return _TypeWrapper.twString;
+      case BasicDartType.int:
+        return _TypeWrapper.twInt;
+      case BasicDartType.double:
+        return _TypeWrapper.twDouble;
+      case BasicDartType.num:
+        return _TypeWrapper.twNum;
+      case BasicDartType.bool:
+        return _TypeWrapper.twBool;
+
+      case BasicDartType.object:
+        return _TypeWrapper.twObject;
+      case BasicDartType.dynamic:
+        return _TypeWrapper.twDynamic;
+
+      case BasicDartType.list:
+        return _TypeWrapper.twList;
+      case BasicDartType.map:
+        return _TypeWrapper.twMap;
+      case BasicDartType.iterable:
+        return _TypeWrapper.twIterable;
+      case BasicDartType.set:
+        return _TypeWrapper.twSet;
+
+      case BasicDartType.bigInt:
+        return _TypeWrapper.twBigInt;
+      case BasicDartType.dateTime:
+        return _TypeWrapper.twDateTime;
+      case BasicDartType.uInt8List:
+        return _TypeWrapper.twUint8List;
+
+      case BasicDartType.mapEntry:
+        return _TypeWrapper.twMapEntry;
+
+      case BasicDartType.future:
+        return _TypeWrapper.twFuture;
+      case BasicDartType.futureOr:
+        return _TypeWrapper.twFutureOr;
+
+      case BasicDartType.voidType:
+        return _TypeWrapper.twVoid;
+
+      case BasicDartType.none:
+        {
+          type = detectType(type, object);
+          return _TypeWrapper._(type, basicType);
+        }
+    }
+  }
 
   const _TypeWrapper._const(this.type, this.basicDartType);
 
-  static const _TypeWrapper twString =
-      _TypeWrapper._const(_TypeWrapper.tString, BasicDartType.string);
-  static const _TypeWrapper twInt =
-      _TypeWrapper._const(_TypeWrapper.tInt, BasicDartType.int);
-  static const _TypeWrapper twDouble =
-      _TypeWrapper._const(_TypeWrapper.tDouble, BasicDartType.double);
-  static const _TypeWrapper twNum =
-      _TypeWrapper._const(_TypeWrapper.tNum, BasicDartType.num);
-  static const _TypeWrapper twBool =
-      _TypeWrapper._const(_TypeWrapper.tBool, BasicDartType.bool);
-  static const _TypeWrapper twBigInt =
-      _TypeWrapper._const(_TypeWrapper.tBigInt, BasicDartType.bigInt);
-  static const _TypeWrapper twDateTime =
-      _TypeWrapper._const(_TypeWrapper.tDateTime, BasicDartType.dateTime);
-  static const _TypeWrapper twUint8List =
-      _TypeWrapper._const(_TypeWrapper.tUint8List, BasicDartType.uInt8List);
-  static const _TypeWrapper twList =
-      _TypeWrapper._const(_TypeWrapper.tList, BasicDartType.list);
-  static const _TypeWrapper twSet =
-      _TypeWrapper._const(_TypeWrapper.tSet, BasicDartType.set);
-  static const _TypeWrapper twMap =
-      _TypeWrapper._const(_TypeWrapper.tMap, BasicDartType.map);
-  static const _TypeWrapper twMapEntry =
-      _TypeWrapper._const(_TypeWrapper.tMapEntry, BasicDartType.mapEntry);
-  static const _TypeWrapper twIterable =
-      _TypeWrapper._const(_TypeWrapper.tIterable, BasicDartType.iterable);
-  static const _TypeWrapper twFuture =
-      _TypeWrapper._const(_TypeWrapper.tFuture, BasicDartType.future);
-  static const _TypeWrapper twFutureOr =
-      _TypeWrapper._const(_TypeWrapper.tFutureOr, BasicDartType.futureOr);
-  static const _TypeWrapper twObject =
-      _TypeWrapper._const(_TypeWrapper.tObject, BasicDartType.object);
-  static const _TypeWrapper twDynamic =
-      _TypeWrapper._const(_TypeWrapper.tDynamic, BasicDartType.dynamic);
-  static final _TypeWrapper twVoid =
-      _TypeWrapper._const(_TypeWrapper.tVoid, BasicDartType.voidType);
+  static const _TypeWrapper twString = _TypeWrapperString._const();
+  static const _TypeWrapper twInt = _TypeWrapperInt._const();
+  static const _TypeWrapper twDouble = _TypeWrapperDouble._const();
+  static const _TypeWrapper twNum = _TypeWrapperNum._const();
+  static const _TypeWrapper twBool = _TypeWrapperBool._const();
+  static const _TypeWrapper twBigInt = _TypeWrapperBigInt._const();
+  static const _TypeWrapper twDateTime = _TypeWrapperDateTime._const();
+  static const _TypeWrapper twUint8List = _TypeWrapperUInt8List._const();
+  static const _TypeWrapper twList = _TypeWrapperList._const();
+  static const _TypeWrapper twSet = _TypeWrapperSet._const();
+  static const _TypeWrapper twMap = _TypeWrapperMap._const();
+  static const _TypeWrapper twMapEntry = _TypeWrapperMapEntry._const();
+  static const _TypeWrapper twIterable = _TypeWrapperIterable._const();
+  static const _TypeWrapper twFuture = _TypeWrapperFuture._const();
+  static const _TypeWrapper twFutureOr = _TypeWrapperFutureOr._const();
+  static const _TypeWrapper twObject = _TypeWrapperObject._const();
+  static const _TypeWrapper twDynamic = _TypeWrapperDynamic._const();
+  static final _TypeWrapper twVoid = _TypeWrapperVoid._const();
 
   static const Type tString = String;
   static const Type tInt = int;
@@ -674,76 +720,111 @@ class _TypeWrapper {
   }
 
   /// Returns `true` if [type] is primitive ([bool], [int], [double], [num] or [String]).
-  bool get isPrimitiveType => isString || isInt || isDouble || isNum || isBool;
+  /// - A primitive type uses [_TypeWrapperPrimitive].
+  bool get isPrimitiveType => false;
 
   /// Returns `true` if [type] is a collection ([List], [Iterable], [Map] or [Set]).
-  bool get isCollection => isList || isIterable || isMap || isSet;
+  /// - A primitive type uses [_TypeWrapperCollection].
+  bool get isCollection => false;
 
   /// Returns `true` if [type] [isPrimitiveType] or [isCollection].
-  bool get isBasicType => isPrimitiveType || isCollection;
+  bool get isBasicType => false;
 
   /// Returns `true` if [type] is `Object` or `dynamic`.
-  bool get isAnyType => isObject || isDynamic;
+  bool get isAnyType => false;
 
   /// Returns `true` if [type] is `Object`.
-  bool get isObject => basicDartType == BasicDartType.object;
+  bool get isObject => false;
 
   /// Returns `true` if [type] is `dynamic`.
-  bool get isDynamic => basicDartType == BasicDartType.dynamic;
+  bool get isDynamic => false;
 
   /// Returns `true` if [type] is `dynamic` or `Object`.
-  bool get isDynamicOrObject => isDynamic || isObject;
+  bool get isDynamicOrObject => false;
 
   /// Returns `true` if [type] is `void`.
-  bool get isVoid => basicDartType == BasicDartType.voidType;
+  bool get isVoid => false;
 
   /// Returns `true` if [type] is `bool`.
-  bool get isBool => basicDartType == BasicDartType.bool;
+  bool get isBool => false;
 
   /// Returns `true` if [type] is `int`.
-  bool get isInt => basicDartType == BasicDartType.int;
+  bool get isInt => false;
 
   /// Returns `true` if [type] is `double`.
-  bool get isDouble => basicDartType == BasicDartType.double;
+  bool get isDouble => false;
 
   /// Returns `true` if [type] is `num`.
-  bool get isNum => basicDartType == BasicDartType.num;
+  bool get isNum => false;
 
   /// Returns `true` if [type] is `int`, `double` or `num`.
-  bool get isNumber => isInt || isDouble || isNum;
+  bool get isNumber => false;
 
   /// Returns `true` if [type] is [BigInt].
-  bool get isBigInt => basicDartType == BasicDartType.bigInt;
+  bool get isBigInt => false;
 
   /// Returns `true` if [type] is [DateTime].
-  bool get isDateTime => basicDartType == BasicDartType.dateTime;
+  bool get isDateTime => false;
 
   /// Returns `true` if [type] is [DateTime].
-  bool get isUInt8List => basicDartType == BasicDartType.uInt8List;
+  bool get isUInt8List => false;
 
   /// Returns `true` if [type] is `String`.
-  bool get isString => basicDartType == BasicDartType.string;
+  bool get isString => false;
 
   /// Returns `true` if [type] is a [List].
-  bool get isList => basicDartType == BasicDartType.list;
+  bool get isList => false;
 
   /// Returns `true` if [type] is a [Iterable].
-  bool get isIterable => basicDartType == BasicDartType.iterable;
+  bool get isIterable => false;
 
   /// Returns `true` if [type] is a [Map].
-  bool get isMap => basicDartType == BasicDartType.map;
+  bool get isMap => false;
 
   /// Returns `true` if [type] is a [MapEntry].
-  bool get isMapEntry => basicDartType == BasicDartType.mapEntry;
+  bool get isMapEntry => false;
 
   /// Returns `true` if [type] is a [Set].
-  bool get isSet => basicDartType == BasicDartType.set;
+  bool get isSet => false;
 
   /// Returns `true` if [type] is a [Future].
-  bool get isFuture => basicDartType == BasicDartType.future;
+  bool get isFuture => false;
 
   /// Returns `true` if [type] is a [FutureOr].
-  bool get isFutureOr => basicDartType == BasicDartType.futureOr;
+  bool get isFutureOr => false;
+
+  /// Parses [value].
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
+    if (value == null) return def;
+
+    if (isDateTime) {
+      return TypeParser.parseDateTime(value, def as DateTime?) as V?;
+    } else if (isUInt8List) {
+      return TypeParser.parseUInt8List(value, def as Uint8List?) as V?;
+    } else if (isBigInt) {
+      return TypeParser.parseBigInt(value, def as BigInt?) as V?;
+    } else if (isList) {
+      return TypeParser.parseList(value,
+          elementParser: typeInfo?.argumentParser(0)) as V?;
+    } else if (isSet) {
+      return TypeParser.parseSet(value,
+          elementParser: typeInfo?.argumentParser(0)) as V?;
+    } else if (isMap) {
+      return TypeParser.parseMap(value,
+          keyParser: typeInfo?.argumentParser(0),
+          valueParser: typeInfo?.argumentParser(1)) as V?;
+    } else if (isMapEntry) {
+      return TypeParser.parseMapEntry(value,
+          keyParser: typeInfo?.argumentParser(0),
+          valueParser: typeInfo?.argumentParser(1)) as V?;
+    } else {
+      if (value.runtimeType == type) {
+        return value as V;
+      }
+
+      return null;
+    }
+  }
 
   @override
   bool operator ==(Object other) =>
@@ -763,6 +844,217 @@ class _TypeWrapper {
   String toString() {
     return '_TypeWrapper{type: $type, basicDartType: $basicDartType}';
   }
+}
+
+class _TypeWrapperObject extends _TypeWrapper {
+  const _TypeWrapperObject._const()
+      : super._const(_TypeWrapper.tObject, BasicDartType.object);
+
+  @override
+  bool get isObject => true;
+
+  @override
+  bool get isDynamicOrObject => true;
+
+  @override
+  bool get isAnyType => true;
+}
+
+class _TypeWrapperDynamic extends _TypeWrapper {
+  const _TypeWrapperDynamic._const()
+      : super._const(_TypeWrapper.tDynamic, BasicDartType.dynamic);
+
+  @override
+  bool get isDynamic => true;
+
+  @override
+  bool get isDynamicOrObject => true;
+
+  @override
+  bool get isAnyType => true;
+}
+
+class _TypeWrapperPrimitive extends _TypeWrapper {
+  const _TypeWrapperPrimitive._const(super.type, super.basicDartType)
+      : super._const();
+
+  @override
+  bool get isPrimitiveType => true;
+
+  @override
+  bool get isBasicType => true;
+}
+
+class _TypeWrapperString extends _TypeWrapperPrimitive {
+  const _TypeWrapperString._const()
+      : super._const(_TypeWrapper.tString, BasicDartType.string);
+
+  @override
+  bool get isString => true;
+
+  @override
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
+      TypeParser.parseString(value, def as String?) as V?;
+}
+
+class _TypeWrapperBool extends _TypeWrapperPrimitive {
+  const _TypeWrapperBool._const()
+      : super._const(_TypeWrapper.tBool, BasicDartType.bool);
+
+  @override
+  bool get isBool => true;
+
+  @override
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
+      TypeParser.parseBool(value, def as bool?) as V?;
+}
+
+class _TypeWrapperNumber extends _TypeWrapperPrimitive {
+  const _TypeWrapperNumber._const(super.type, super.basicDartType)
+      : super._const();
+
+  @override
+  bool get isNumber => true;
+}
+
+class _TypeWrapperInt extends _TypeWrapperNumber {
+  const _TypeWrapperInt._const()
+      : super._const(_TypeWrapper.tInt, BasicDartType.int);
+
+  @override
+  bool get isInt => true;
+
+  @override
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
+      TypeParser.parseInt(value, def as int?) as V?;
+}
+
+class _TypeWrapperDouble extends _TypeWrapperNumber {
+  const _TypeWrapperDouble._const()
+      : super._const(_TypeWrapper.tDouble, BasicDartType.double);
+
+  @override
+  bool get isDouble => true;
+
+  @override
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
+      TypeParser.parseDouble(value, def as double?) as V?;
+}
+
+class _TypeWrapperNum extends _TypeWrapperNumber {
+  const _TypeWrapperNum._const()
+      : super._const(_TypeWrapper.tNum, BasicDartType.num);
+
+  @override
+  bool get isNum => true;
+
+  @override
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
+      TypeParser.parseNum(value, def as num?) as V?;
+}
+
+class _TypeWrapperCollection extends _TypeWrapper {
+  const _TypeWrapperCollection._const(super.type, super.basicDartType)
+      : super._const();
+
+  @override
+  bool get isCollection => true;
+
+  @override
+  bool get isBasicType => true;
+}
+
+class _TypeWrapperList extends _TypeWrapperCollection {
+  const _TypeWrapperList._const()
+      : super._const(_TypeWrapper.tList, BasicDartType.list);
+
+  @override
+  bool get isList => true;
+}
+
+class _TypeWrapperIterable extends _TypeWrapperCollection {
+  const _TypeWrapperIterable._const()
+      : super._const(_TypeWrapper.tIterable, BasicDartType.iterable);
+
+  @override
+  bool get isIterable => true;
+}
+
+class _TypeWrapperMap extends _TypeWrapperCollection {
+  const _TypeWrapperMap._const()
+      : super._const(_TypeWrapper.tMap, BasicDartType.map);
+
+  @override
+  bool get isMap => true;
+}
+
+class _TypeWrapperSet extends _TypeWrapperCollection {
+  const _TypeWrapperSet._const()
+      : super._const(_TypeWrapper.tSet, BasicDartType.set);
+
+  @override
+  bool get isSet => true;
+}
+
+class _TypeWrapperAsync extends _TypeWrapper {
+  const _TypeWrapperAsync._const(super.type, super.basicDartType)
+      : super._const();
+}
+
+class _TypeWrapperFuture extends _TypeWrapperAsync {
+  const _TypeWrapperFuture._const()
+      : super._const(_TypeWrapper.tFuture, BasicDartType.future);
+
+  @override
+  bool get isFuture => true;
+}
+
+class _TypeWrapperFutureOr extends _TypeWrapperAsync {
+  const _TypeWrapperFutureOr._const()
+      : super._const(_TypeWrapper.tFutureOr, BasicDartType.futureOr);
+
+  @override
+  bool get isFutureOr => true;
+}
+
+class _TypeWrapperBigInt extends _TypeWrapper {
+  const _TypeWrapperBigInt._const()
+      : super._const(_TypeWrapper.tBigInt, BasicDartType.bigInt);
+
+  @override
+  bool get isBigInt => true;
+}
+
+class _TypeWrapperMapEntry extends _TypeWrapper {
+  const _TypeWrapperMapEntry._const()
+      : super._const(_TypeWrapper.tMapEntry, BasicDartType.mapEntry);
+
+  @override
+  bool get isMapEntry => true;
+}
+
+class _TypeWrapperDateTime extends _TypeWrapper {
+  const _TypeWrapperDateTime._const()
+      : super._const(_TypeWrapper.tDateTime, BasicDartType.dateTime);
+
+  @override
+  bool get isDateTime => true;
+}
+
+class _TypeWrapperUInt8List extends _TypeWrapper {
+  const _TypeWrapperUInt8List._const()
+      : super._const(_TypeWrapper.tUint8List, BasicDartType.uInt8List);
+
+  @override
+  bool get isUInt8List => true;
+}
+
+class _TypeWrapperVoid extends _TypeWrapper {
+  _TypeWrapperVoid._const()
+      : super._const(_TypeWrapper.tVoid, BasicDartType.voidType);
+
+  @override
+  bool get isVoid => true;
 }
 
 class TypeInfoEquality implements Equality<TypeInfo> {
@@ -1197,8 +1489,8 @@ class TypeInfo<T> {
 
   /// Returns the [type] parser.
   ///
-  /// See [TypeParser.parserFor].
-  TypeElementParser<T>? get parser => TypeParser.parserFor<T>(typeInfo: this);
+  /// See [TypeParser.parserForTypeInfo].
+  TypeElementParser<T>? get parser => TypeParser.parserForTypeInfo<T>(this);
 
   /// Returns the parser of the argument at [index].
   TypeElementParser? argumentParser(int index) =>
@@ -1207,44 +1499,8 @@ class TypeInfo<T> {
   /// Parse [value] or return [def].
   ///
   /// See [TypeParser.parserFor].
-  V? parse<V>(Object? value, [V? def]) {
-    if (value == null) return def;
-
-    if (isString) {
-      return TypeParser.parseString(value, def as String?) as V?;
-    } else if (isInt) {
-      return TypeParser.parseInt(value, def as int?) as V?;
-    } else if (isBool) {
-      return TypeParser.parseBool(value, def as bool?) as V?;
-    } else if (isDouble) {
-      return TypeParser.parseDouble(value, def as double?) as V?;
-    } else if (isNum) {
-      return TypeParser.parseNum(value, def as num?) as V?;
-    } else if (isDateTime) {
-      return TypeParser.parseDateTime(value, def as DateTime?) as V?;
-    } else if (isUInt8List) {
-      return TypeParser.parseUInt8List(value, def as Uint8List?) as V?;
-    } else if (isBigInt) {
-      return TypeParser.parseBigInt(value, def as BigInt?) as V?;
-    } else if (isList) {
-      return TypeParser.parseList(value, elementParser: argumentParser(0))
-          as V?;
-    } else if (isSet) {
-      return TypeParser.parseSet(value, elementParser: argumentParser(0)) as V?;
-    } else if (isMap) {
-      return TypeParser.parseMap(value,
-          keyParser: argumentParser(0), valueParser: argumentParser(1)) as V?;
-    } else if (isMapEntry) {
-      return TypeParser.parseMapEntry(value,
-          keyParser: argumentParser(0), valueParser: argumentParser(1)) as V?;
-    } else {
-      if (value.runtimeType == type) {
-        return value as V;
-      }
-
-      return null;
-    }
-  }
+  V? parse<V>(Object? value, [V? def]) =>
+      _typeWrapper.parse(value, def: def, typeInfo: this);
 
   /// Same as [parse] but if `this` [isFuture] it will traverse
   /// to the [Future] argument.

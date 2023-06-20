@@ -917,6 +917,12 @@ void main() {
       }
 
       {
+        var t = TypeInfo(List);
+        expect(t.parse(true), equals([true]));
+        expect(t.parse(false), equals([false]));
+      }
+
+      {
         var t = TypeInfo(Set);
         var l = {'a', 'b', 'c'};
         expect(t.parse('a,b,c'), equals(l));

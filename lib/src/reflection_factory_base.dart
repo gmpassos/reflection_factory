@@ -20,7 +20,7 @@ import 'reflection_factory_type.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.1.3';
+  static const String VERSION = '2.1.4';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -2626,8 +2626,7 @@ class TypeReflection<T> {
   }
 
   /// Returns `true` if [type] is `String`, `int`, `double`, `num` or `bool`.
-  bool get isPrimitiveType =>
-      isStringType || isIntType || isDoubleType || isNumType || isBoolType;
+  bool get isPrimitiveType => typeInfo.isPrimitiveType;
 
   /// Returns `true` if [type] is a collection ([List], [Iterable], [Map] or [Set]).
   bool get isCollectionType => typeInfo.isCollection;
