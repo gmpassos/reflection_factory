@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.1.4
+// BUILDER: reflection_factory/2.1.5
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -17,7 +17,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.1.4');
+  static final Version _version = Version.parse('2.1.5');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -582,7 +582,10 @@ class TestCompanyWithReflection$reflection
   TestCompanyWithReflection? createInstanceWithNoRequiredArgsConstructor() =>
       null;
 
-  static const List<String> _constructorsNames = const <String>[''];
+  static const List<String> _constructorsNames = const <String>[
+    '',
+    'noBranches'
+  ];
 
   @override
   List<String> get constructorsNames => _constructorsNames;
@@ -637,6 +640,36 @@ class TestCompanyWithReflection$reflection
                   false,
                   false,
                   const <TestAddressWithReflection>[]),
+              'extraAddresses': __PR(
+                  __TR<List<TestAddressWithReflection>>(List, <__TR>[
+                    __TR<TestAddressWithReflection>(TestAddressWithReflection)
+                  ]),
+                  'extraAddresses',
+                  false,
+                  false,
+                  const <TestAddressWithReflection>[]),
+              'extraNames': __PR(__TR.tListString, 'extraNames', false, false,
+                  const <String>[])
+            },
+            null);
+      case 'nobranches':
+        return ConstructorReflection<TestCompanyWithReflection>(
+            this,
+            TestCompanyWithReflection,
+            'noBranches',
+            () => (String name, TestAddressWithReflection? mainAddress,
+                    {List<TestAddressWithReflection> extraAddresses =
+                        const <TestAddressWithReflection>[],
+                    List<String> extraNames = const <String>[]}) =>
+                TestCompanyWithReflection.noBranches(name, mainAddress,
+                    extraAddresses: extraAddresses, extraNames: extraNames),
+            const <__PR>[
+              __PR(__TR.tString, 'name', false, true),
+              __PR(__TR<TestAddressWithReflection>(TestAddressWithReflection),
+                  'mainAddress', true, true)
+            ],
+            null,
+            const <String, __PR>{
               'extraAddresses': __PR(
                   __TR<List<TestAddressWithReflection>>(List, <__TR>[
                     __TR<TestAddressWithReflection>(TestAddressWithReflection)

@@ -16,11 +16,12 @@ import 'package:pub_semver/pub_semver.dart';
 import 'reflection_factory_annotation.dart';
 import 'reflection_factory_json.dart';
 import 'reflection_factory_type.dart';
+import 'reflection_factory_utils.dart';
 
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.1.4';
+  static const String VERSION = '2.1.5';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -1635,7 +1636,7 @@ abstract class ClassReflection<O> extends Reflection<O>
       }
     }
 
-    // Non matching fields should return `null` (feild not present):
+    // Non matching fields should return `null` (field not present):
     return null;
   }
 
@@ -1657,7 +1658,7 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// Creates an instance with the constructor returned by [getBestConstructorForMap],
   /// using [map] entries as parameters.
   /// - Throws [UnresolvedParameterError] when it's its impossible to call any
-  ///   constructor due to unresovled parameters.
+  ///   constructor due to unresolved parameters.
   /// - Throws any error thrown by a constructor invocation.
   ///
   /// See [createInstanceWithConstructors].
@@ -1685,11 +1686,35 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// Creates an instance with one of the [constructors],
   /// using [map] entries as parameters.
   /// - Throws [UnresolvedParameterError] when it's its impossible to call any
-  ///   constructor due to unresovled parameters.
+  ///   constructor due to unresolved parameters.
   /// - Throws any error thrown by a constructor invocation.
   ///
   /// See [createInstanceWithBestConstructor].
   O? createInstanceWithConstructors(
+    List<ConstructorReflection<O>> constructors,
+    Map<String, Object?> map, {
+    FieldNameResolver? fieldNameResolver,
+    FieldValueResolver? fieldValueResolver,
+  }) {
+    if (constructors is ListSortedByUsage<ConstructorReflection<O>>) {
+      var sorted = constructors.sortedByUsage();
+      var ret = _createInstanceWithConstructorsImpl(sorted, map,
+          fieldNameResolver: fieldNameResolver,
+          fieldValueResolver: fieldValueResolver);
+      if (ret != null) {
+        constructors.notifyUsage(ret.key);
+        return ret.value;
+      }
+      return null;
+    } else {
+      var ret = _createInstanceWithConstructorsImpl(constructors, map,
+          fieldNameResolver: fieldNameResolver,
+          fieldValueResolver: fieldValueResolver);
+      return ret?.value;
+    }
+  }
+
+  MapEntry<ConstructorReflection<O>, O?>? _createInstanceWithConstructorsImpl(
     List<ConstructorReflection<O>> constructors,
     Map<String, Object?> map, {
     FieldNameResolver? fieldNameResolver,
@@ -1719,7 +1744,7 @@ abstract class ClassReflection<O> extends Reflection<O>
         continue;
       }
 
-      if (o != null) return o;
+      if (o != null) return MapEntry(c, o);
     }
 
     if (invocationErrors.isNotEmpty) {
@@ -1728,12 +1753,12 @@ abstract class ClassReflection<O> extends Reflection<O>
         _showInvokeError(i, args[0], args[1], args[2], args[3]);
       }
 
-      var mainInvicatuibError = invocationErrors
+      var mainInvocationError = invocationErrors
           .firstWhereOrNull((e) => e[3] is! UnresolvedParameterError);
 
-      mainInvicatuibError ??= invocationErrors.first;
+      mainInvocationError ??= invocationErrors.first;
 
-      var error = mainInvicatuibError[3];
+      var error = mainInvocationError[3];
       throw error;
     }
 
@@ -1873,7 +1898,9 @@ abstract class ClassReflection<O> extends Reflection<O>
             allowEmptyConstructors, allowOptionalOnlyConstructors, false);
       }
 
-      return UnmodifiableListView<ConstructorReflection<O>>(list);
+      return list.length > 1
+          ? ListSortedByUsage<ConstructorReflection<O>>(list)
+          : UnmodifiableListView(list);
     });
 
     return constructors;

@@ -185,6 +185,11 @@ class TestCompanyWithReflection {
       this.branchesAddresses = const <TestAddressWithReflection>[],
       this.extraNames = const <String>[]});
 
+  TestCompanyWithReflection.noBranches(this.name, this.mainAddress,
+      {this.extraAddresses = const <TestAddressWithReflection>[],
+      this.extraNames = const <String>[]})
+      : branchesAddresses = [];
+
   @JsonField.hidden()
   bool local = false;
 

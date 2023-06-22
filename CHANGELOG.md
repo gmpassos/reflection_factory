@@ -1,3 +1,7 @@
+## 2.1.5
+
+- Optimize `createInstanceWithBestConstructor` and `createInstanceWithConstructors`.
+
 ## 2.1.4
 
 - Added `TypeParser.parserForTypeInfo`.

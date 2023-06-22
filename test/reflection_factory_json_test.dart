@@ -1035,6 +1035,20 @@ void main() {
           }).decodeAsync('{"state":"State4","city":"City4"}',
               type: TestAddressWithReflection),
           equals(TestAddressWithReflection.withCity('STATE4', city: 'CITY4')));
+
+      expect(
+          JsonCodec(jsomMapDecoderAsyncProvider: (type, map, j) {
+            var classReflection =
+                ReflectionFactory().getRegisterClassReflection(type)!;
+            return (m, j) {
+              // Ensure that instance Map comes from here (force values uppercase):
+              m = m.map((key, value) => MapEntry(
+                  key, key != 'id' ? value.toString().toUpperCase() : value));
+              return classReflection.createInstanceFromMap(m);
+            };
+          }).decodeAsync('{"state":"State4","id":123}',
+              type: TestAddressWithReflection),
+          equals(TestAddressWithReflection.simple('STATE4', id: 123)));
     });
 
     test('encode/decode', () {
@@ -1261,6 +1275,34 @@ void main() {
             equals({
               'branchesAddresses': [],
               'extraAddresses': [],
+              'extraNames': [],
+              'mainAddress': null,
+              'name': 'c1'
+            }));
+
+        expect(
+            JsonCodec.defaultCodec
+                .fromJson(companyJson, type: TestCompanyWithReflection),
+            equals(company));
+      }
+
+      {
+        var address =
+            TestAddressWithReflection.withCity('NY', city: 'New York', id: 11);
+
+        var company =
+            TestCompanyWithReflection('c1', null, extraAddresses: [address]);
+
+        var companyJson = company.toJson() as Map;
+
+        companyJson.remove('branchesAddresses');
+
+        expect(
+            companyJson,
+            equals({
+              'extraAddresses': [
+                {'id': 11, 'state': 'NY', 'city': 'New York'}
+              ],
               'extraNames': [],
               'mainAddress': null,
               'name': 'c1'
