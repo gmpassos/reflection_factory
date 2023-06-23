@@ -1,3 +1,7 @@
+## 2.1.6
+
+- New `ClassProxyDelegateListener`.
+
 ## 2.1.5
 
 - Optimize `createInstanceWithBestConstructor` and `createInstanceWithConstructors`.

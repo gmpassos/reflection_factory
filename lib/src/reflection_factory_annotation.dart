@@ -151,6 +151,20 @@ abstract class ClassProxyListener<T> {
       TypeReflection? returnType);
 }
 
+/// A [ClassProxyListener] that delegates to [targetListener].
+class ClassProxyDelegateListener<T> extends ClassProxyListener<T> {
+  /// The target listener that will receive the calls.
+  final ClassProxyListener<T> targetListener;
+
+  ClassProxyDelegateListener(this.targetListener);
+
+  @override
+  Object? onCall(T instance, String methodName, Map<String, dynamic> parameters,
+      TypeReflection? returnType) {
+    return targetListener.onCall(instance, methodName, parameters, returnType);
+  }
+}
+
 abstract class JsonAnnotation {
   const JsonAnnotation();
 }

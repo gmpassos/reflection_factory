@@ -1813,6 +1813,23 @@ void main() {
           ]));
     });
 
+    test('Proxy delegate', () {
+      var proxy = TestUserSimpleProxy();
+
+      var delegate = ClassProxyDelegateListener(proxy);
+
+      var ret = delegate.onCall(proxy, 'checkThePassword',
+          {'password': 'pass123', 'ignoreCase': true}, TypeReflection.tBool);
+
+      expect(ret, isTrue);
+
+      expect(
+          proxy.calls,
+          equals([
+            'TestUserSimpleProxy{calls: 0} -> checkThePassword( {password: pass123, ignoreCase: true} ) -> bool',
+          ]));
+    });
+
     test('Proxy (async)', () async {
       var proxy = TestUserSimpleProxyAsync();
 
