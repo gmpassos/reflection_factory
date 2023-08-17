@@ -1,3 +1,14 @@
+## 2.2.0
+
+- `LibraryReader`: added `allAnnotatedElements`.
+- `ReflectionBuilder`
+  - Optimize detection of annotated elements. 
+  - Fix typos.
+
+- sdk: '>=3.0.0 <4.0.0'
+- analyzer: ^6.2.0
+- lints: ^2.1.1
+
 ## 2.1.6
 
 - New `ClassProxyDelegateListener`.
