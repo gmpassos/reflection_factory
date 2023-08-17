@@ -46,11 +46,10 @@ jobs:
       - name: Upgrade dependencies
         run: dart pub upgrade
       - name: Run tests (VM)
-        run: dart test --platform vm
+        run: dart test --platform vm --coverage=./coverage
       - name: Generate coverage report
         run: |
           dart pub global activate coverage
-          dart run test --coverage=./coverage
           dart pub global run coverage:format_coverage --packages=.dart_tool/package_config.json --report-on=lib --lcov -o ./coverage/lcov.info -i ./coverage
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
