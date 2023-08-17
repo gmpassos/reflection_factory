@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
@@ -44,6 +45,7 @@ class ReflectionBuilder implements Builder {
   @override
   String toString({String indent = ''}) {
     return '${indent}ReflectionBuilder[$version]:\n'
+        '$indent  -- Dart: ${Platform.version}\n'
         '$indent  -- verbose: $verbose\n'
         '$indent  -- sequential: $sequential\n'
         '$indent  -- buildStepTimeout: ${buildStepTimeout.toHumanReadable()}\n';
@@ -65,7 +67,7 @@ class ReflectionBuilder implements Builder {
 
   static const TypeChecker typeClassProxy = TypeChecker.fromRuntime(ClassProxy);
 
-  Future<void> _buildChaing = Future<void>.value();
+  Future<void> _buildChain = Future<void>.value();
 
   /// If [sequential] is `true` every [BuildStep] is processed sequentially (only one at a time):
   /// - The default timeout to process a [BuildStep] is 30 sec ([buildStepTimeout]).
@@ -82,10 +84,10 @@ class ReflectionBuilder implements Builder {
       return _buildImpl(buildStep);
     }
 
-    var buildChaing = _buildChaing;
+    var buildChain = _buildChain;
 
-    var buildTimeouted = Completer<void>();
-    void complete(_) => buildTimeouted.complete();
+    var buildTimeout = Completer<void>();
+    void complete(_) => buildTimeout.complete();
 
     Future<void> callBuildImpl(_) {
       var future = _buildImpl(buildStep);
@@ -98,11 +100,11 @@ class ReflectionBuilder implements Builder {
       return future;
     }
 
-    var build = buildChaing.then(callBuildImpl, onError: callBuildImpl);
+    var build = buildChain.then(callBuildImpl, onError: callBuildImpl);
 
-    // The chain wil have a schedulled timeout only
+    // The chain wil have a scheduled timeout only
     // for the last running [BuildStep].
-    _buildChaing = buildTimeouted.future;
+    _buildChain = buildTimeout.future;
 
     // Return the call without timeout for the `build_runner`.
     return build;
@@ -250,6 +252,8 @@ class ReflectionBuilder implements Builder {
 
     fullCode.write('// coverage:ignore-file\n');
     fullCode.write('// ignore_for_file: unused_element\n');
+    fullCode.write(
+        '// ignore_for_file: no_leading_underscores_for_local_identifiers\n');
     fullCode.write('// ignore_for_file: unnecessary_const\n');
     fullCode.write('// ignore_for_file: unnecessary_cast\n');
     fullCode.write('// ignore_for_file: unnecessary_type_check\n\n');
@@ -345,50 +349,53 @@ class ReflectionBuilder implements Builder {
 
   Future<bool> _hasCodeToGenerate(
       BuildStep buildStep, LibraryReader libraryReader) async {
-    var annotatedEnableReflection =
-        libraryReader.annotatedWith(typeEnableReflection).toList();
+    var allAnnotatedElementsItr =
+        libraryReader.allAnnotatedElements(classes: true, enums: true);
 
-    for (var annotated in annotatedEnableReflection) {
-      var kind = annotated.element.kind;
+    final allAnnotatedClasses = <Element>[];
 
-      if (kind == ElementKind.CLASS || kind == ElementKind.ENUM) {
+    for (var e in allAnnotatedElementsItr) {
+      if (e.isAnnotatedWith(typeEnableReflection)) {
         return true;
+      }
+
+      if (e.kind == ElementKind.CLASS) {
+        allAnnotatedClasses.add(e);
       }
     }
 
-    var annotatedReflectionBridge =
-        libraryReader.annotatedWith(typeReflectionBridge).toList();
+    var hasReflectionBridge =
+        allAnnotatedClasses.withAnnotation(typeReflectionBridge).isNotEmpty;
 
-    for (var annotated in annotatedReflectionBridge) {
-      if (annotated.element.kind == ElementKind.CLASS) {
-        return true;
-      }
-    }
+    if (hasReflectionBridge) return true;
 
-    var annotatedClassProxy =
-        libraryReader.annotatedWith(typeClassProxy).toList();
+    var hasClassProxy =
+        allAnnotatedClasses.withAnnotation(typeClassProxy).isNotEmpty;
 
-    for (var annotated in annotatedClassProxy) {
-      if (annotated.element.kind == ElementKind.CLASS) {
-        return true;
-      }
-    }
+    if (hasClassProxy) return true;
 
     return false;
   }
 
   Future<_CodeTable> _buildCodeTable(BuildStep buildStep,
       LibraryReader libraryReader, _TypeAliasTable typeAliasTable) async {
-    var codeTable = _CodeTable(typeAliasTable);
+    final allAnnotatedElements = libraryReader
+        .allAnnotatedElements(classes: true, enums: true)
+        .toList(growable: false);
 
-    var annotatedClassProxy =
-        libraryReader.annotatedWith(typeClassProxy).toList();
+    final allAnnotatedClasses = allAnnotatedElements
+        .where((e) => e.kind == ElementKind.CLASS)
+        .toList(growable: false);
+
+    final codeTable = _CodeTable(typeAliasTable);
+
+    var annotatedClassProxy = allAnnotatedClasses
+        .annotatedWith(typeClassProxy)
+        .toList(growable: false);
 
     for (var annotated in annotatedClassProxy) {
-      if (annotated.element.kind == ElementKind.CLASS) {
-        var codes = await _classProxy(buildStep, annotated, typeAliasTable);
-        codeTable.addProxies(codes);
-      }
+      var codes = await _classProxy(buildStep, annotated, typeAliasTable);
+      codeTable.addProxies(codes);
     }
 
     if (!codeTable.reflectionProxiesIsEmpty) {
@@ -396,19 +403,18 @@ class ReflectionBuilder implements Builder {
       codeTable.addFunctions(codes);
     }
 
-    var annotatedReflectionBridge =
-        libraryReader.annotatedWith(typeReflectionBridge).toList();
+    var annotatedReflectionBridge = allAnnotatedClasses
+        .annotatedWith(typeReflectionBridge)
+        .toList(growable: false);
 
     for (var annotated in annotatedReflectionBridge) {
-      if (annotated.element.kind == ElementKind.CLASS) {
-        var codes =
-            await _reflectionBridge(buildStep, annotated, typeAliasTable);
-        codeTable.addAllClasses(codes);
-      }
+      var codes = await _reflectionBridge(buildStep, annotated, typeAliasTable);
+      codeTable.addAllClasses(codes);
     }
 
-    var annotatedEnableReflection =
-        libraryReader.annotatedWith(typeEnableReflection).toList();
+    var annotatedEnableReflection = allAnnotatedElements
+        .annotatedWith(typeEnableReflection)
+        .toList(growable: false);
 
     for (var annotated in annotatedEnableReflection) {
       var annotation = annotated.annotation;
