@@ -1,3 +1,18 @@
+## 2.2.1
+
+- `ReflectionBuilder`:
+  - Generated files:
+    - `ignore_for_file: camel_case_types`
+    - `ignore_for_file: camel_case_extensions`
+
+- build: ^2.4.1
+- dart_style: ^2.3.2
+- collection: ^1.18.0
+- build_runner: ^2.4.6
+- build_test: ^2.2.0
+- data_serializer: ^1.0.10
+- test: ^1.24.6
+
 ## 2.2.0
 
 - `LibraryReader`: added `allAnnotatedElements`.
