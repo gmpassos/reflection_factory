@@ -715,6 +715,9 @@ void main() {
             
             void nothing() {}
             
+            @IgnoreClassProxyMethod()
+            void ignore1() {}
+            
             int compute() => 1;
             
             int computeSum(int a, int? b) => a + (b ?? 0) ;
@@ -799,6 +802,7 @@ void main() {
             ),
             allOf(
               contains('void nothing() {'),
+              isNot(contains('void ignore1() {')),
               contains('int compute() {'),
               contains('int computeSum(int a, int? b) {'),
               contains('Future<int?>? computeMultiply(int a, int b) {'),

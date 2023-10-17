@@ -1,3 +1,7 @@
+## 2.2.2
+
+- Added `@IgnoreClassProxyMethod`.
+
 ## 2.2.1
 
 - `ReflectionBuilder`:

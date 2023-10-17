@@ -2412,6 +2412,9 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     return str.toString();
   }
 
+  static const TypeChecker typeIgnoreClassProxyMethod =
+      TypeChecker.fromRuntime(IgnoreClassProxyMethod);
+
   void _buildClassProxyMethods(
       StringBuffer codeBuffer,
       bool alwaysReturnFuture,
@@ -2436,6 +2439,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     for (var method in methods) {
       var methodName = method.name;
       if (methodName == 'toString' || ignoreMethods.contains(methodName)) {
+        continue;
+      }
+
+      if (method.isAnnotatedWith(typeIgnoreClassProxyMethod)) {
         continue;
       }
 

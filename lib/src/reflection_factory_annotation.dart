@@ -135,6 +135,11 @@ class ClassProxy {
   }
 }
 
+@Target({TargetKind.method})
+class IgnoreClassProxyMethod {
+  const IgnoreClassProxyMethod();
+}
+
 /// A [ClassProxy] call error.
 class ClassProxyCallError extends StateError {
   ClassProxyCallError(super.message) : super();
