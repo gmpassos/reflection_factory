@@ -516,7 +516,10 @@ class ReflectionBuilder implements Builder {
     var traverseReturnTypes = annotation.peek('traverseReturnTypes')!.setValue;
     var ignoreParametersTypes =
         annotation.peek('ignoreParametersTypes')!.setValue;
-    var ignoreMethods = annotation.peek('ignoreMethods')!.setValue;
+
+    var ignoreMethods1 = annotation.peek('ignoreMethods')!.setValue;
+    var ignoreMethods2 = annotation.peek('ignoreMethods2')!.setValue;
+    var ignoreMethods = {...ignoreMethods1, ...ignoreMethods2};
 
     if (reflectionProxyName.isEmpty) {
       reflectionProxyName = annotatedClass.name;

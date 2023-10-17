@@ -1,3 +1,7 @@
+## 2.2.3
+
+- Added `ClassProxy.ignoreMethods2`.
+
 ## 2.2.2
 
 - Added `@IgnoreClassProxyMethod`.

@@ -69,14 +69,32 @@ class ReflectionBridge {
 /// - [reflectionProxyName] is the name of the generated proxy.
 @Target({TargetKind.classType})
 class ClassProxy {
+  /// The class name for the proxy.
   final String className;
+
+  /// The Dart library name with the [className].
   final String libraryName;
+
+  /// The library path for [libraryName].
   final String libraryPath;
+
+  /// The name of the generated reflection proxy.
   final String reflectionProxyName;
+
+  /// If `true` all methods will return a Future<R>.
   final bool alwaysReturnFuture;
+
+  /// The list return o types to traverse.
   final Set<Type> traverseReturnTypes;
+
+  /// The parameters types to ignore
   final Set<Type> ignoreParametersTypes;
+
+  /// Methods to ignore.
   final Set<String> ignoreMethods;
+
+  /// Extra methods to ignore.
+  final Set<String> ignoreMethods2;
 
   const ClassProxy(
     this.className, {
@@ -84,6 +102,7 @@ class ClassProxy {
     this.libraryPath = '',
     this.reflectionProxyName = '',
     this.ignoreMethods = const <String>{},
+    this.ignoreMethods2 = const <String>{},
     this.alwaysReturnFuture = false,
     this.traverseReturnTypes = const <Type>{},
     this.ignoreParametersTypes = const <Type>{},
