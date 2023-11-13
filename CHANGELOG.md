@@ -1,3 +1,12 @@
+## 2.2.4
+
+- Added support to Records types.
+- Added new tests for Records and generics in `test/reflection_factory_build_test.dart`.
+
+- test: ^1.24.9
+- coverage: ^1.6.4
+- data_serializer: ^1.0.12
+
 ## 2.2.3
 
 - Added `ClassProxy.ignoreMethods2`.

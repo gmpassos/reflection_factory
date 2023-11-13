@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:collection/collection.dart';
 import 'package:base_codecs/base_codecs.dart' as base_codecs;
+import 'package:collection/collection.dart';
 
 import 'reflection_factory_base.dart';
 import 'reflection_factory_json.dart';
@@ -1250,9 +1250,22 @@ class TypeInfo<T> {
     }
 
     var typeStr = type.toString();
-    var idx = typeStr.indexOf('<');
-    if (idx > 0) typeStr = typeStr.substring(0, idx);
+    typeStr = removeTypeGenerics(typeStr);
+
     return typeStr;
+  }
+
+  /// Removes generics from the type or record type string.
+  static String removeTypeGenerics(String type) {
+    while (true) {
+      var type2 = type.replaceAll(RegExp(r"<[^<>]+>"), '');
+
+      if (type2.length == type.length) {
+        return type;
+      } else {
+        type = type2;
+      }
+    }
   }
 
   /// The [type] arguments (generics).

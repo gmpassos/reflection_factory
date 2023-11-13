@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 
@@ -14,13 +13,10 @@ import 'package:build/build.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:path/path.dart' as pack_path;
-import 'package:pub_semver/pub_semver.dart';
+import 'package:reflection_factory/reflection_factory.dart';
 
 import 'analyzer/library.dart';
 import 'analyzer/type_checker.dart';
-import 'reflection_factory_annotation.dart';
-import 'reflection_factory_base.dart';
-import 'reflection_factory_extension.dart';
 
 /// The reflection builder.
 class ReflectionBuilder implements Builder {
@@ -3182,10 +3178,7 @@ extension _DartTypeExtension on DartType {
           (idx > 0 && name.substring(idx - 1, idx).trim().isEmpty)) {
         name = 'Function';
       } else {
-        idx = name.indexOf('<');
-        if (idx > 0) {
-          name = name.substring(0, idx);
-        }
+        name = TypeInfo.removeTypeGenerics(name);
       }
     }
 
