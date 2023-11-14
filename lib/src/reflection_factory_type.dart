@@ -1255,10 +1255,12 @@ class TypeInfo<T> {
     return typeStr;
   }
 
+  static final RegExp _regexpGenerics = RegExp(r"<[^<>]+>");
+
   /// Removes generics from the type or record type string.
   static String removeTypeGenerics(String type) {
     while (true) {
-      var type2 = type.replaceAll(RegExp(r"<[^<>]+>"), '');
+      var type2 = type.replaceAll(_regexpGenerics, '');
 
       if (type2.length == type.length) {
         return type;
