@@ -405,9 +405,9 @@ void main() {
             matches(RegExp(
                 r"'ignoreCase':\s*__PR\(\s*__TR.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*false\s*\)")),
             allOf(
+              matches(RegExp(r"typedef __RCD1 = \(bool, String\);")),
               matches(RegExp(r"MethodReflection<User,\s+\(bool, String\)>\(")),
-              matches(RegExp(
-                  r"'checkPassword',\s+__TR<\(bool, String\)>\(\(bool, String\)\),")),
+              matches(RegExp(r"'checkPassword',\s+__TR<__RCD1>\(__RCD1\),")),
             ),
           )),
         },
@@ -427,6 +427,8 @@ void main() {
         
           part 'foo.reflection.g.dart';
           
+          class BaseA {}
+          
           class Info<A,B> {
             final A a;
             final B b;
@@ -435,16 +437,23 @@ void main() {
           }
           
           @EnableReflection()
-          class User {
+          class User<T extends BaseA> {
             
             String? email ;
             String pass ;
             
             User(this.email, {required this.pass});
             
-            (bool,Info<A,B>) checkPassword<A,B>(String pass, A a, B b, {bool ignoreCase = false}) {
-              var ok = ignoreCase ? this.pass.toLowerCase() == pass.toLowerCase() : this.pass == pass ;
-              return (ok, Info(a,b) );
+            (T,Info<T,B>) base1(T a) {
+              return (a, Info(a,b) );
+            }
+            
+            T base2(T a) {
+              return a;
+            }
+            
+            (A,Info<A,B>) info<A extends BaseA,B>(A a, B b) {
+              return (a, Info(a,b) );
             }
             
           }
@@ -471,12 +480,15 @@ void main() {
               contains('User\$reflection'),
               contains('User\$reflectionExtension'),
             ),
-            matches(RegExp(
-                r"'ignoreCase':\s*__PR\(\s*__TR.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*false\s*\)")),
             allOf(
-              matches(RegExp(r"MethodReflection<User,\s+\(bool, Info\)>\(")),
+              matches(RegExp(r"typedef\s+__RCD1\s+=\s+\(dynamic,\s+Info\);")),
               matches(RegExp(
-                  r"'checkPassword',\s+__TR<\(bool, Info\)>\(\(bool, Info\)\),")),
+                  r"case\s+'base1':\s+return\s+MethodReflection<User,\s+\(dynamic,\s+Info\)>\(")),
+              matches(RegExp(
+                  r"case\s+'base2':\s+return\s+MethodReflection<User,\s+dynamic>\(")),
+              matches(RegExp(
+                  r"case\s+'info':\s+return\s+MethodReflection<User,\s+\(dynamic,\s+Info\)>\(")),
+              matches(RegExp(r"__TR<__RCD1>\(__RCD1\),")),
             ),
           )),
         },

@@ -1,6 +1,7 @@
 ## 2.2.4
 
 - Added support to Records types.
+  - Added logic to handle record types and generate typedefs for record declarations.
 - Added new tests for Records and generics in `test/reflection_factory_build_test.dart`.
 
 - test: ^1.24.9

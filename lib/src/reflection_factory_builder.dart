@@ -259,6 +259,8 @@ class ReflectionBuilder implements Builder {
     fullCode.write("part of '${genPart.partOf}';\n\n");
 
     fullCode.write(codeTable.typeAliasTable.code);
+    fullCode.write('\n');
+
     fullCode.write(codeTable.codeReflectionMixin);
 
     var codeKeys = codeTable.allKeys.toList();
@@ -974,7 +976,7 @@ class _TypeAliasTable {
   late final String fReturnValue;
   late final String fReturnFuture;
   late final String fReturnFutureOr;
-  late final String code;
+  late final StringBuffer code;
 
   int fReturnValueUseCount = 0;
 
@@ -988,22 +990,39 @@ class _TypeAliasTable {
     return _TypeAliasTable(privateNames);
   }
 
-  _TypeAliasTable(List<String> privateNames) {
+  final List<String> privateNames;
+
+  _TypeAliasTable(this.privateNames) {
     trName = _buildAliasName('__TR', privateNames);
     tiName = _buildAliasName('__TI', privateNames);
     prName = _buildAliasName('__PR', privateNames);
+
     reflectionMixinName = _buildAliasName('__ReflectionMixin', privateNames);
     fReturnValue = _buildAliasName('__retVal\$', privateNames);
     fReturnFuture = _buildAliasName('__retFut\$', privateNames);
     fReturnFutureOr = _buildAliasName('__retFutOr\$', privateNames);
 
-    var str = StringBuffer();
+    code = StringBuffer();
 
-    str.write('typedef $trName<T> = TypeReflection<T>;\n');
-    str.write('typedef $tiName<T> = TypeInfo<T>;\n');
-    str.write('typedef $prName = ParameterReflection;\n\n');
+    code.write('typedef $trName<T> = TypeReflection<T>;\n');
+    code.write('typedef $tiName<T> = TypeInfo<T>;\n');
+    code.write('typedef $prName = ParameterReflection;\n\n');
+  }
 
-    code = str.toString();
+  final Map<String, String> _recordsAliases = {};
+
+  String aliasForRecordType(String recordDeclaration) {
+    var alias = _recordsAliases[recordDeclaration];
+    if (alias != null) return alias;
+
+    var nextID = _recordsAliases.length + 1;
+    alias = _buildAliasName('__RCD$nextID', privateNames);
+
+    _recordsAliases[recordDeclaration] = alias;
+
+    code.write('typedef $alias = $recordDeclaration;\n');
+
+    return alias;
   }
 
   String _buildAliasName(String prefix, Iterable<String> usedNames) {
@@ -2181,7 +2200,9 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
       var declaringType = method.declaringType!.typeNameResolvable;
       var returnType = method.returnTypeNameAsCode;
+
       var returnTypeAsCode = method.returnTypeAsCode;
+
       var nullable = method.returnNullable ? 'true' : 'false';
 
       return "MethodReflection<$className,$returnType>("
@@ -3002,6 +3023,8 @@ class _Method extends _Element {
 
   bool get isStatic => methodElement.isStatic;
 
+  DartType get returnType => methodElement.returnType;
+
   String get returnTypeNameAsCode =>
       methodElement.returnType.typeNameAsNullableCode;
 
@@ -3138,6 +3161,10 @@ extension _DartTypeExtension on DartType {
   String get typeNameResolvable => resolveTypeName();
 
   String resolveTypeName({Iterable<String>? typeParameters}) {
+    if (isRecordType) {
+      return recordDeclaration(typeParameters: typeParameters)!;
+    }
+
     if (typeParameters != null &&
         isParameterType &&
         typeParameters.isNotEmpty) {
@@ -3166,7 +3193,39 @@ extension _DartTypeExtension on DartType {
     return withNullability && isNullable ? '$name<$args>?' : '$name<$args>';
   }
 
+  bool get isRecordType => this is RecordType;
+
+  String? recordDeclaration({Iterable<String>? typeParameters}) {
+    if (!isRecordType) return null;
+
+    var recordType = this as RecordType;
+
+    var recordTypesNamesPos = recordType.positionalFields
+        .map((t) => t.type.resolveTypeName(typeParameters: typeParameters));
+
+    var recordTypesNamesNamed = recordType.namedFields.map((t) =>
+        '${t.name} ${t.type.resolveTypeName(typeParameters: typeParameters)}');
+
+    var recordDeclaration = [
+      '(',
+      recordTypesNamesPos.join(', '),
+      if (recordTypesNamesNamed.isNotEmpty)
+        {
+          '{',
+          recordTypesNamesNamed.join(', '),
+          '}',
+        },
+      ')',
+    ].join();
+
+    return recordDeclaration;
+  }
+
   String get typeName {
+    if (isRecordType) {
+      return recordDeclaration()!;
+    }
+
     var name = elementDeclaration?.name;
 
     if (name == null) {
@@ -3344,7 +3403,10 @@ extension _DartTypeExtension on DartType {
       if (constName != null) {
         return '$tr.$constName';
       } else {
-        if (this is TypeParameterType) {
+        if (isRecordType) {
+          var typeAlias = typeAliasTable.aliasForRecordType(name);
+          return '$tr<$typeAlias>($typeAlias)';
+        } else if (this is TypeParameterType) {
           return '$tr.tDynamic';
         } else {
           return '$tr<$name>($name)';
