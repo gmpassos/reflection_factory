@@ -354,6 +354,150 @@ void main() {
       );
     });
 
+    test('EnableReflection: records', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'foo.reflection.g.dart';
+          
+          @EnableReflection()
+          class User {
+            
+            String? email ;
+            String pass ;
+            
+            User(this.email, {required this.pass});
+            
+            (bool,String?) checkPassword(String pass, {bool ignoreCase = false}) {
+              var ok = ignoreCase ? this.pass.toLowerCase() == pass.toLowerCase() : this.pass == pass ;
+              var error = ok ? null : 'Invalid password';
+              return (ok,  error);
+            }
+            
+          }
+        
+        '''
+      };
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        reader: await PackageAssetReader.currentIsolate(),
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of 'foo.dart'"),
+              contains(
+                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')"),
+            ),
+            allOf(
+              contains('User\$reflection'),
+              contains('User\$reflectionExtension'),
+            ),
+            matches(RegExp(
+                r"'ignoreCase':\s*__PR\(\s*__TR.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*false\s*\)")),
+            allOf(
+              matches(RegExp(r"typedef __RCD1 = \(bool, String\);")),
+              matches(RegExp(r"MethodReflection<User,\s+\(bool, String\)>\(")),
+              matches(RegExp(r"'checkPassword',\s+__TR<__RCD1>\(__RCD1\),")),
+            ),
+          )),
+        },
+        onLog: (msg) {
+          print(msg);
+        },
+      );
+    });
+
+    test('EnableReflection: records+generics', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'foo.reflection.g.dart';
+          
+          class BaseA {}
+          
+          class Info<A,B> {
+            final A a;
+            final B b;
+            
+            Info(this.a, this.b);
+          }
+          
+          @EnableReflection()
+          class User<T extends BaseA> {
+            
+            String? email ;
+            String pass ;
+            
+            User(this.email, {required this.pass});
+            
+            (T,Info<T,B>) base1(T a) {
+              return (a, Info(a,b) );
+            }
+            
+            T base2(T a) {
+              return a;
+            }
+            
+            (A,Info<A,B>) info<A extends BaseA,B>(A a, B b) {
+              return (a, Info(a,b) );
+            }
+            
+          }
+        
+        '''
+      };
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        reader: await PackageAssetReader.currentIsolate(),
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of 'foo.dart'"),
+              contains(
+                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')"),
+            ),
+            allOf(
+              contains('User\$reflection'),
+              contains('User\$reflectionExtension'),
+            ),
+            allOf(
+              matches(RegExp(r"typedef\s+__RCD1\s+=\s+\(dynamic,\s+Info\);")),
+              matches(RegExp(
+                  r"case\s+'base1':\s+return\s+MethodReflection<User,\s+\(dynamic,\s+Info\)>\(")),
+              matches(RegExp(
+                  r"case\s+'base2':\s+return\s+MethodReflection<User,\s+dynamic>\(")),
+              matches(RegExp(
+                  r"case\s+'info':\s+return\s+MethodReflection<User,\s+\(dynamic,\s+Info\)>\(")),
+              matches(RegExp(r"__TR<__RCD1>\(__RCD1\),")),
+            ),
+          )),
+        },
+        onLog: (msg) {
+          print(msg);
+        },
+      );
+    });
+
     test('EnableReflection(reflectionClassName, reflectionExtensionName)',
         () async {
       var builder = ReflectionBuilder(verbose: true);
