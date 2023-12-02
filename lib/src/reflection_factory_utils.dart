@@ -3,7 +3,7 @@ import 'package:collection/collection.dart';
 /// An [UnmodifiableListView] that counts usage of elements and can return
 /// a sorted list by usage.
 class ListSortedByUsage<E> extends UnmodifiableListView<E> {
-  ListSortedByUsage(Iterable<E> source) : super(source);
+  ListSortedByUsage(super.source);
 
   List<int>? _usageCounter;
 

@@ -1809,6 +1809,15 @@ class TypeInfo<T> {
   List castList(List list, {bool nullable = false}) {
     var mainType = isCollection ? (argumentType(0) ?? TypeInfo.tDynamic) : this;
 
+    if (mainType.isDynamic) {
+      return list;
+    } else if (mainType.isObject) {
+      if (!nullable && list is! List<Object>) {
+        return list.cast<Object>();
+      }
+      return list;
+    }
+
     var reflectionFactory = ReflectionFactory();
 
     var reflection =
@@ -1821,7 +1830,11 @@ class TypeInfo<T> {
     }
 
     if (mainType.isValidGenericType) {
-      return mainType.callCasted(<E>() => list.cast<E>());
+      if (nullable) {
+        return mainType.callCasted(<E>() => list.cast<E?>());
+      } else {
+        return mainType.callCasted(<E>() => list.cast<E>());
+      }
     } else {
       return list;
     }

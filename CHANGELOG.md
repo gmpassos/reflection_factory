@@ -1,3 +1,14 @@
+## 2.2.5
+
+- `TypeInfo`:
+  - Fix `castList` for nullable types.
+
+- lints: ^3.0.0
+  - Adjust code generation for `type_literal_in_constant_pattern` lint. 
+
+- dart_style: ^2.3.4
+- build_runner: ^2.4.7
+
 ## 2.2.4
 
 - Added basic support for Records types.

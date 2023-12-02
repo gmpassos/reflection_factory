@@ -723,7 +723,7 @@ class ReflectionBuilder implements Builder {
       var reflectionClassName =
           _buildReflectionClassName(className, bridgeReflectionClassName);
       str.write(
-          '      case $className: return $reflectionClassName(obj as $className?) as ClassReflection<T>;\n');
+          '      case const ($className): return $reflectionClassName(obj as $className?) as ClassReflection<T>;\n');
     }
 
     str.write(
