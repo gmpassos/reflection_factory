@@ -467,6 +467,7 @@ class TypeParser {
   }
 
   static final RegExp _regexpSpaces = RegExp(r'\s+');
+  static final RegExp _regexpTimeSeparators = RegExp(r'[:;,-.]+');
 
   /// Tries to parse a [Duration].
   /// - Returns [def] if [value] is invalid.
@@ -480,7 +481,7 @@ class TypeParser {
     } else {
       var s = '$value'.trim().replaceAll(_regexpSpaces, ':');
 
-      var parts = s.split(RegExp(r'[:;,-]+'));
+      var parts = s.split(_regexpTimeSeparators);
 
       var ns = parts.map((e) => int.tryParse(e) ?? 0).toList();
 
