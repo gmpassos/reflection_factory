@@ -381,6 +381,7 @@ abstract class JsonConverter<S, T> implements dart_convert.Converter<S, T> {
     return type != dynamic &&
         type != Object &&
         type != DateTime &&
+        type != Duration &&
         !isCollectionType(type) &&
         !isPrimitiveType(type);
   }
@@ -693,6 +694,23 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
     return o.toUtc().toString();
   }
 
+  Object _durationToJson(Duration o) {
+    var h = o.inHours;
+    var m = o.inMinutes - Duration(hours: h).inMinutes;
+    var s = o.inSeconds - Duration(hours: h, minutes: m).inSeconds;
+    var ms = o.inMilliseconds -
+        Duration(hours: h, minutes: m, seconds: s).inMilliseconds;
+    var mic = o.inMicroseconds -
+        Duration(hours: h, minutes: m, seconds: s, milliseconds: ms)
+            .inMicroseconds;
+
+    if (mic == 0) {
+      return o.inMilliseconds;
+    }
+
+    return '$h:$m:$s:$ms:$mic';
+  }
+
   Object _bigIntToJson(BigInt o) {
     if (o.bitLength > 32) {
       return o.toString();
@@ -764,6 +782,8 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
 
     if (o is DateTime) {
       return _dateTimeToJson(o);
+    } else if (o is Duration) {
+      return _durationToJson(o);
     } else if (o is Uint8List) {
       return _uint8ListToJson(o, fieldName);
     } else if (o is BigInt) {
@@ -1097,6 +1117,8 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       return o as O?;
     } else if (type == DateTime) {
       return _parseDateTime(o) as O?;
+    } else if (type == Duration) {
+      return _parseDuration(o) as O?;
     } else if (type == Uint8List) {
       return _parseBytes(o) as O?;
     } else if (type == BigInt) {
@@ -1144,6 +1166,8 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       return o as O?;
     } else if (type == DateTime) {
       return _parseDateTime(o) as O?;
+    } else if (type == Duration) {
+      return _parseDuration(o) as O?;
     } else if (type == Uint8List) {
       return _parseBytes(o) as O?;
     } else if (type == BigInt) {
@@ -1182,6 +1206,19 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     }
 
     return null;
+  }
+
+  Duration? _parseDuration(Object? o) {
+    if (o == null) return null;
+    if (o is Duration) return o;
+
+    if (o is int) {
+      return Duration(milliseconds: o);
+    }
+
+    var s = o.toString().trim();
+
+    return TypeParser.parseDuration(s);
   }
 
   BigInt? _parseBigInt(Object? o) {
@@ -1430,6 +1467,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
         map is Map<String, num?> ||
         map is Map<String, bool?> ||
         map is Map<String, DateTime?> ||
+        map is Map<String, Duration?> ||
         map is Map<String, BigInt?>) {
       return map as O;
     }
@@ -2006,6 +2044,8 @@ List castListType<T>(List list, Type type) {
     return list.cast<bool>();
   } else if (type == DateTime) {
     return list.cast<DateTime>();
+  } else if (type == Duration) {
+    return list.cast<Duration>();
   } else if (type == BigInt) {
     return list.cast<BigInt>();
   } else if (type == Uint8List) {
@@ -2034,6 +2074,8 @@ Map castMapType<K, V>(Map map, Type keyType, Type valueType) {
     return _castMapValueType<bool>(map, keyType, valueType);
   } else if (keyType == DateTime) {
     return _castMapValueType<DateTime>(map, keyType, valueType);
+  } else if (keyType == Duration) {
+    return _castMapValueType<Duration>(map, keyType, valueType);
   } else if (keyType == BigInt) {
     return _castMapValueType<BigInt>(map, keyType, valueType);
   } else if (keyType == Uint8List) {
@@ -2062,6 +2104,8 @@ Map _castMapValueType<K>(Map map, Type keyType, Type valueType) {
     return map.cast<K, bool>();
   } else if (valueType == DateTime) {
     return map.cast<K, DateTime>();
+  } else if (valueType == Duration) {
+    return map.cast<K, Duration>();
   } else if (valueType == BigInt) {
     return map.cast<K, BigInt>();
   } else if (valueType == Uint8List) {

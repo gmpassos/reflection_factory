@@ -21,7 +21,7 @@ import 'reflection_factory_utils.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.2.5';
+  static const String VERSION = '2.2.6';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -102,6 +102,10 @@ class ReflectionFactory {
 
     if (object is DateTime) {
       return object.toUtc().toString();
+    }
+
+    if (object is Duration) {
+      return object.inMilliseconds;
     }
 
     var classReflection =

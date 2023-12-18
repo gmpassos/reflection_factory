@@ -1,3 +1,11 @@
+## 2.2.6
+
+- `TypeParser`: added `parseDuration`.
+- Json: add support to `Duration`.
+
+- coverage: ^1.7.2
+- build_test: ^2.2.2
+
 ## 2.2.5
 
 - `TypeInfo`:

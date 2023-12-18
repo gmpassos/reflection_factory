@@ -323,6 +323,12 @@ void main() {
       expect(t9.hasArguments, isFalse);
       expect(t9.equivalentArgumentsTypes([]), isTrue);
       expect(t9.equivalentArgumentsTypes([int]), isFalse);
+
+      var t10 = TypeInfo.fromType(Duration);
+      expect(t10.isDuration, isTrue);
+      expect(t10.hasArguments, isFalse);
+      expect(t10.equivalentArgumentsTypes([]), isTrue);
+      expect(t10.equivalentArgumentsTypes([int]), isFalse);
     });
 
     test('from', () async {
@@ -412,6 +418,7 @@ void main() {
         expect(TypeInfo.from(String).isPrimitiveType, isTrue);
 
         expect(TypeInfo.from(DateTime).isPrimitiveType, isFalse);
+        expect(TypeInfo.from(Duration).isPrimitiveType, isFalse);
         expect(TypeInfo.from(Uint8List).isPrimitiveType, isFalse);
         expect(TypeInfo.from(List).isPrimitiveType, isFalse);
         expect(TypeInfo.from(Map).isPrimitiveType, isFalse);
@@ -442,6 +449,7 @@ void main() {
         expect(TypeInfo.from(num).isCollection, isFalse);
         expect(TypeInfo.from(String).isCollection, isFalse);
         expect(TypeInfo.from(DateTime).isCollection, isFalse);
+        expect(TypeInfo.from(Duration).isCollection, isFalse);
         expect(TypeInfo.from(Uint8List).isCollection, isFalse);
 
         expect(TypeInfo.from(TestUserSimple).isCollection, isFalse);
@@ -454,6 +462,7 @@ void main() {
         expect(TypeInfo.from(Map).isBasicType, isTrue);
 
         expect(TypeInfo.from(DateTime).isBasicType, isFalse);
+        expect(TypeInfo.from(Duration).isBasicType, isFalse);
         expect(TypeInfo.from(Uint8List).isBasicType, isFalse);
 
         expect(TypeInfo.from(TestUserSimple).isBasicType, isFalse);
@@ -496,6 +505,9 @@ void main() {
         expect(TypeInfo.accepts<DateTime>(DateTime), isTrue);
         expect(TypeInfo.accepts<DateTime>(int), isFalse);
 
+        expect(TypeInfo.accepts<Duration>(Duration), isTrue);
+        expect(TypeInfo.accepts<Duration>(int), isFalse);
+
         expect(TypeInfo.accepts<Uint8List>(Uint8List), isTrue);
         expect(TypeInfo.accepts<Uint8List>(int), isFalse);
 
@@ -514,10 +526,14 @@ void main() {
         expect(TypeInfo.from(DateTime), equals(TypeInfo.tDateTime));
         expect(TypeInfo.from(String), isNot(equals(TypeInfo.tDateTime)));
 
+        expect(TypeInfo.from(Duration), equals(TypeInfo.tDuration));
+        expect(TypeInfo.from(String), isNot(equals(TypeInfo.tDuration)));
+
         expect(TypeInfo.from(Uint8List), equals(TypeInfo.tUint8List));
         expect(TypeInfo.from(String), isNot(equals(TypeInfo.tUint8List)));
 
         expect(TypeInfo.from(DateTime.now()), equals(TypeInfo.tDateTime));
+        expect(TypeInfo.from(Duration.zero), equals(TypeInfo.tDuration));
 
         expect(TypeInfo.from(Uint8List.fromList([0])),
             equals(TypeInfo.tUint8List));
@@ -888,6 +904,21 @@ void main() {
         expect(t.parse(' 1577934245000 '), equals(dateTime));
         expect(t.parse(1577934245000), equals(dateTime));
         expect(t.parse('2020-01-02 03:04:05.000Z'), equals(dateTime.toUtc()));
+      }
+
+      {
+        var t = TypeInfo(Duration);
+        var duration = Duration(milliseconds: 1000 * 101);
+        expect(t.parse(101000), equals(duration));
+        expect(t.parse('0:01:41'), equals(duration));
+
+        var duration2 = Duration(hours: 101);
+        expect(t.parse('101'), equals(duration2));
+        expect(t.parse(' 101 '), equals(duration2));
+
+        var duration3 = Duration(hours: 22, minutes: 11);
+        expect(t.parse('22:11'), equals(duration3));
+        expect(t.parse(' 22;11 '), equals(duration3));
       }
 
       {
@@ -1531,6 +1562,7 @@ void main() {
       expect(TypeParser.parseInt(' "-123,456.78 " '), equals(-123456));
       expect(TypeParser.parseInt(DateTime.utc(2020, 1, 2, 3, 4, 5, 0, 0)),
           equals(1577934245000));
+      expect(TypeParser.parseInt(Duration(seconds: 11)), equals(11000));
       expect(TypeParser.parseInt(null, 404), equals(404));
       expect(TypeParser.parseInt('', 404), equals(404));
       expect(TypeParser.parseInt(' x ', 404), equals(404));
@@ -1559,6 +1591,7 @@ void main() {
       expect(TypeParser.parseDouble(' "-123,456.78 " '), equals(-123456.78));
       expect(TypeParser.parseDouble(DateTime.utc(2020, 1, 2, 3, 4, 5, 0, 0)),
           equals(1577934245000));
+      expect(TypeParser.parseDouble(Duration(seconds: 11)), equals(11000));
       expect(TypeParser.parseDouble(null, 404), equals(404));
       expect(TypeParser.parseDouble('', 404), equals(404));
       expect(TypeParser.parseDouble(' x ', 404), equals(404));
@@ -1585,6 +1618,7 @@ void main() {
       expect(TypeParser.parseNum(' "-123,456.78 " '), equals(-123456.78));
       expect(TypeParser.parseNum(DateTime.utc(2020, 1, 2, 3, 4, 5, 0, 0)),
           equals(1577934245000));
+      expect(TypeParser.parseNum(Duration(seconds: 11)), equals(11000));
       expect(TypeParser.parseNum(null, 404), equals(404));
       expect(TypeParser.parseNum('', 404), equals(404));
       expect(TypeParser.parseNum(' x ', 404), equals(404));
@@ -1700,10 +1734,14 @@ void main() {
 
       expect(
           TypeParser.parserFor(obj: BigInt.from(101))!('101'), isA<BigInt>());
+
       expect(
           TypeParser.parserFor(obj: DateTime(2020, 1, 2, 3, 4, 5, 0, 0))!(
               '2020-01-02 03:04:05.000Z'),
           isA<DateTime>());
+
+      expect(TypeParser.parserFor(obj: Duration(hours: -3))!('-3'),
+          isA<Duration>());
 
       expect(TypeParser.parserFor(obj: {'a': 1})!('a:1'), isA<Map>());
       expect(TypeParser.parserFor(obj: {1, 2})!('1,2'), isA<Set>());
@@ -1738,6 +1776,15 @@ void main() {
 
       expect(TypeParser.parseValueForType(DateTime, '2020-01-02 03:04:05.000Z'),
           equals(DateTime.parse('2020-01-02 03:04:05.000Z')));
+
+      expect(
+          TypeParser.parseValueForType(Duration, '11:10:09:303.101'),
+          equals(Duration(
+              hours: 11,
+              minutes: 10,
+              seconds: 9,
+              milliseconds: 303,
+              microseconds: 101)));
     });
 
     test('TypeParser.parseList', () async {
@@ -1809,6 +1856,20 @@ void main() {
 
       expect(TypeParser.parseDateTime(1577934245000),
           equals(DateTime.fromMillisecondsSinceEpoch(1577934245000)));
+    });
+
+    test('TypeParser.parseDuration', () async {
+      expect(TypeParser.parseDuration(Duration(hours: -3)),
+          equals(Duration(hours: -3)));
+
+      expect(TypeParser.parseDuration('4:10:20'),
+          equals(Duration(hours: 4, minutes: 10, seconds: 20)));
+
+      expect(TypeParser.parseDuration(1000 * 60 * 30),
+          equals(Duration(milliseconds: 1000 * 60 * 30)));
+
+      expect(TypeParser.parseDuration(-1000 * 60 * 30),
+          equals(Duration(milliseconds: -1000 * 60 * 30)));
     });
 
     test('TypeParser.parseUInt8List', () async {
