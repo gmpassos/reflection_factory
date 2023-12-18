@@ -150,6 +150,8 @@ void main() {
       expect(castListType(<dynamic>[true, false], bool), isA<List<bool>>());
       expect(castListType(<dynamic>[DateTime.now()], DateTime),
           isA<List<DateTime>>());
+      expect(castListType(<dynamic>[Duration(hours: -3)], Duration),
+          isA<List<Duration>>());
       expect(castListType(<dynamic>[BigInt.from(123)], BigInt),
           isA<List<BigInt>>());
       expect(castListType(<dynamic>[Uint8List(10)], Uint8List),
@@ -172,10 +174,17 @@ void main() {
           isA<Map<String, num>>());
       expect(castMapType(<dynamic, dynamic>{'a': true}, String, bool),
           isA<Map<String, bool>>());
+
       expect(
           castMapType(
               <dynamic, dynamic>{'a': DateTime.now()}, String, DateTime),
           isA<Map<String, DateTime>>());
+
+      expect(
+          castMapType(
+              <dynamic, dynamic>{'a': Duration(hours: 4)}, String, Duration),
+          isA<Map<String, Duration>>());
+
       expect(castMapType(<dynamic, dynamic>{'a': BigInt.zero}, String, BigInt),
           isA<Map<String, BigInt>>());
       expect(
@@ -194,10 +203,17 @@ void main() {
           isA<Map<num, String>>());
       expect(castMapType(<dynamic, dynamic>{true: 'b'}, bool, String),
           isA<Map<bool, String>>());
+
       expect(
           castMapType(
               <dynamic, dynamic>{DateTime.now(): 'b'}, DateTime, String),
           isA<Map<DateTime, String>>());
+
+      expect(
+          castMapType(
+              <dynamic, dynamic>{Duration(minutes: 1): 'b'}, Duration, String),
+          isA<Map<Duration, String>>());
+
       expect(castMapType(<dynamic, dynamic>{BigInt.zero: 'b'}, BigInt, String),
           isA<Map<BigInt, String>>());
       expect(
@@ -258,6 +274,26 @@ void main() {
       expect(JsonCodec().toJson(123), equals(123));
       expect(JsonCodec().toJson(DateTime.utc(2021, 1, 2, 3, 4, 5)),
           equals('2021-01-02 03:04:05.000Z'));
+
+      expect(
+          JsonCodec().toJson(
+              Duration(hours: 4, minutes: 10, seconds: 3, milliseconds: 101)),
+          equals((4 * 60 * 60 * 1000) + (10 * 60 * 1000) + (3 * 1000) + 101));
+
+      expect(JsonCodec().toJson(Duration(hours: -3)),
+          equals(-(3 * 60 * 60 * 1000)));
+
+      expect(
+          JsonCodec().toJson(Duration(
+              hours: 4,
+              minutes: 10,
+              seconds: 3,
+              milliseconds: 101,
+              microseconds: 13)),
+          equals('4:10:3:101:13'));
+
+      expect(JsonCodec().toJson(Duration(hours: -4, microseconds: -13)),
+          equals('-4:0:0:0:-13'));
 
       expect(
           JsonCodec(removeField: (k) => k == 'p')
@@ -645,6 +681,11 @@ void main() {
 
       expect(JsonCodec().fromJson('2020-01-02 10:11:12.000Z', type: DateTime),
           equals(DateTime.utc(2020, 1, 2, 10, 11, 12)));
+
+      expect(
+          JsonCodec().fromJson('4:20:10:303', type: Duration),
+          equals(
+              Duration(hours: 4, minutes: 20, seconds: 10, milliseconds: 303)));
 
       expect(
           () => JsonCodec().fromJson({
