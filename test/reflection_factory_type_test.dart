@@ -1811,6 +1811,20 @@ void main() {
           equals(DateTime.fromMillisecondsSinceEpoch(1577934245000)));
     });
 
+    test('TypeParser.parseDuration', () async {
+      expect(TypeParser.parseDuration(Duration(hours: -3)),
+          equals(Duration(hours: -3)));
+
+      expect(TypeParser.parseDuration('4:10:20'),
+          equals(Duration(hours: 4, minutes: 10, seconds: 20)));
+
+      expect(TypeParser.parseDuration(1000 * 60 * 30),
+          equals(Duration(milliseconds: 1000 * 60 * 30)));
+
+      expect(TypeParser.parseDuration(-1000 * 60 * 30),
+          equals(Duration(milliseconds: -1000 * 60 * 30)));
+    });
+
     test('TypeParser.parseUInt8List', () async {
       expect(TypeParser.parseUInt8List([1, 2, 3, 4, 5]),
           equals(Uint8List.fromList([1, 2, 3, 4, 5])));

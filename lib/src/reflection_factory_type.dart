@@ -52,6 +52,8 @@ class TypeParser {
       return parseBigInt;
     } else if (typeInfo.isOf(DateTime)) {
       return parseDateTime;
+    } else if (typeInfo.isOf(Duration)) {
+      return parseDuration;
     } else if (typeInfo.isOf(Uint8List)) {
       return parseUInt8List;
     } else {
@@ -82,6 +84,8 @@ class TypeParser {
       return parseBigInt;
     } else if (obj is DateTime) {
       return parseDateTime;
+    } else if (obj is Duration) {
+      return parseDuration;
     } else {
       return null;
     }
@@ -281,6 +285,8 @@ class TypeParser {
       return value.toInt();
     } else if (value is DateTime) {
       return value.millisecondsSinceEpoch;
+    } else if (value is Duration) {
+      return value.inMilliseconds;
     } else {
       var n = _parseNumString(value);
       return n?.toInt() ?? def;
@@ -323,6 +329,8 @@ class TypeParser {
       return value.toDouble();
     } else if (value is DateTime) {
       return value.millisecondsSinceEpoch.toDouble();
+    } else if (value is Duration) {
+      return value.inMilliseconds.toDouble();
     } else {
       var n = _parseNumString(value);
       return n?.toDouble() ?? def;
@@ -338,6 +346,8 @@ class TypeParser {
       return value;
     } else if (value is DateTime) {
       return value.millisecondsSinceEpoch;
+    } else if (value is Duration) {
+      return value.inMilliseconds;
     } else {
       var n = _parseNumString(value);
       return n ?? def;
@@ -355,6 +365,8 @@ class TypeParser {
       return BigInt.from(value);
     } else if (value is DateTime) {
       return BigInt.from(value.millisecondsSinceEpoch);
+    } else if (value is Duration) {
+      return BigInt.from(value.inMilliseconds);
     } else {
       var s = _valueAsString(value);
       if (s.isEmpty) {
@@ -454,7 +466,40 @@ class TypeParser {
     }
   }
 
-  /// Tries to parse a [DateTime].
+  static final RegExp _regexpSpaces = RegExp(r'\s+');
+
+  /// Tries to parse a [Duration].
+  /// - Returns [def] if [value] is invalid.
+  static Duration? parseDuration(Object? value, [Duration? def]) {
+    if (value == null) return def;
+
+    if (value is Duration) {
+      return value;
+    } else if (value is int) {
+      return Duration(milliseconds: value);
+    } else {
+      var s = '$value'.trim().replaceAll(_regexpSpaces, ':');
+
+      var parts = s.split(RegExp(r'[:;,-]+'));
+
+      var ns = parts.map((e) => int.tryParse(e) ?? 0).toList();
+
+      var hour = ns.isNotEmpty ? ns[0] : 0;
+      var min = ns.length > 1 ? ns[1] : 0;
+      var sec = ns.length > 2 ? ns[2] : 0;
+      var ms = ns.length > 3 ? ns[3] : 0;
+      var mc = ns.length > 4 ? ns[4] : 0;
+
+      return Duration(
+          hours: hour,
+          minutes: min,
+          seconds: sec,
+          milliseconds: ms,
+          microseconds: mc);
+    }
+  }
+
+  /// Tries to parse a [Uint8List].
   /// - Returns [def] if [value] is invalid.
   static Uint8List? parseUInt8List(Object? value, [Uint8List? def]) {
     if (value == null) return def;
@@ -545,6 +590,7 @@ enum BasicDartType {
   bool,
   bigInt,
   dateTime,
+  duration,
   uInt8List,
   mapEntry,
   future,
@@ -566,6 +612,7 @@ class _TypeWrapper {
     if (type == tBool || object is bool) return BasicDartType.bool;
     if (type == tBigInt || object is BigInt) return BasicDartType.bigInt;
     if (type == tDateTime || object is DateTime) return BasicDartType.dateTime;
+    if (type == tDuration || object is Duration) return BasicDartType.duration;
 
     if (type == tUint8List || object is Uint8List) {
       return BasicDartType.uInt8List;
@@ -631,6 +678,8 @@ class _TypeWrapper {
         return _TypeWrapper.twBigInt;
       case BasicDartType.dateTime:
         return _TypeWrapper.twDateTime;
+      case BasicDartType.duration:
+        return _TypeWrapper.twDuration;
       case BasicDartType.uInt8List:
         return _TypeWrapper.twUint8List;
 
@@ -662,6 +711,7 @@ class _TypeWrapper {
   static const _TypeWrapper twBool = _TypeWrapperBool._const();
   static const _TypeWrapper twBigInt = _TypeWrapperBigInt._const();
   static const _TypeWrapper twDateTime = _TypeWrapperDateTime._const();
+  static const _TypeWrapper twDuration = _TypeWrapperDuration._const();
   static const _TypeWrapper twUint8List = _TypeWrapperUInt8List._const();
   static const _TypeWrapper twList = _TypeWrapperList._const();
   static const _TypeWrapper twSet = _TypeWrapperSet._const();
@@ -681,6 +731,7 @@ class _TypeWrapper {
   static const Type tBool = bool;
   static const Type tBigInt = BigInt;
   static const Type tDateTime = DateTime;
+  static const Type tDuration = Duration;
   static const Type tUint8List = Uint8List;
   static const Type tList = List;
   static const Type tSet = Set;
@@ -701,6 +752,7 @@ class _TypeWrapper {
     if (type == tBool || object is bool) return tBool;
     if (type == tBigInt || object is BigInt) return tBigInt;
     if (type == tDateTime || object is DateTime) return tDateTime;
+    if (type == tDuration || object is Duration) return tDuration;
     if (type == tUint8List || object is Uint8List) return tUint8List;
 
     if (type == tObject) return tObject;
@@ -766,7 +818,10 @@ class _TypeWrapper {
   /// Returns `true` if [type] is [DateTime].
   bool get isDateTime => false;
 
-  /// Returns `true` if [type] is [DateTime].
+  /// Returns `true` if [type] is [Duration].
+  bool get isDuration => false;
+
+  /// Returns `true` if [type] is [UInt8List].
   bool get isUInt8List => false;
 
   /// Returns `true` if [type] is `String`.
@@ -1049,6 +1104,18 @@ class _TypeWrapperDateTime extends _TypeWrapper {
       TypeParser.parseDateTime(value, def as DateTime?) as V?;
 }
 
+class _TypeWrapperDuration extends _TypeWrapper {
+  const _TypeWrapperDuration._const()
+      : super._const(_TypeWrapper.tDuration, BasicDartType.duration);
+
+  @override
+  bool get isDuration => true;
+
+  @override
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
+      TypeParser.parseDuration(value, def as Duration?) as V?;
+}
+
 class _TypeWrapperUInt8List extends _TypeWrapper {
   const _TypeWrapperUInt8List._const()
       : super._const(_TypeWrapper.tUint8List, BasicDartType.uInt8List);
@@ -1190,6 +1257,8 @@ class TypeInfo<T> {
       TypeInfo._const(_TypeWrapper.twBigInt);
   static const TypeInfo<DateTime> tDateTime =
       TypeInfo._const(_TypeWrapper.twDateTime);
+  static const TypeInfo<DateTime> tDuration =
+      TypeInfo._const(_TypeWrapper.twDuration);
   static const TypeInfo<Uint8List> tUint8List =
       TypeInfo._const(_TypeWrapper.twUint8List);
 
@@ -1365,6 +1434,9 @@ class TypeInfo<T> {
     }
     if (type == _TypeWrapper.tDateTime || object is DateTime) {
       return tDateTime as TypeInfo<T>;
+    }
+    if (type == _TypeWrapper.tDuration || object is Duration) {
+      return tDuration as TypeInfo<T>;
     }
     if (type == _TypeWrapper.tUint8List || object is Uint8List) {
       return tUint8List as TypeInfo<T>;
@@ -1587,6 +1659,9 @@ class TypeInfo<T> {
 
   /// Returns `true` if [type] is [DateTime].
   bool get isDateTime => _typeWrapper.isDateTime;
+
+  /// Returns `true` if [type] is [Duration].
+  bool get isDuration => _typeWrapper.isDuration;
 
   /// Returns `true` if [type] is [Uint8List].
   bool get isUInt8List => _typeWrapper.isUInt8List;
