@@ -1,3 +1,7 @@
+## 2.2.7
+
+- Small fix for `Duration` support.
+
 ## 2.2.6
 
 - `TypeParser`: added `parseDuration`.

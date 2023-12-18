@@ -1258,7 +1258,7 @@ class TypeInfo<T> {
       TypeInfo._const(_TypeWrapper.twBigInt);
   static const TypeInfo<DateTime> tDateTime =
       TypeInfo._const(_TypeWrapper.twDateTime);
-  static const TypeInfo<DateTime> tDuration =
+  static const TypeInfo<Duration> tDuration =
       TypeInfo._const(_TypeWrapper.twDuration);
   static const TypeInfo<Uint8List> tUint8List =
       TypeInfo._const(_TypeWrapper.twUint8List);
