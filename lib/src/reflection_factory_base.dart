@@ -21,7 +21,7 @@ import 'reflection_factory_utils.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.2.7';
+  static const String VERSION = '2.2.8';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -3105,14 +3105,31 @@ class _ParameterResolver {
       Map<String, dynamic>.fromEntries(
           parameters.values.mapIndexed(_resolveNamed));
 
-  _ParameterValueEntry _resolveNormal(int i, ParameterReflection p) =>
-      _ParameterValueEntry(p.name, parameterProvider(p, i));
+  _ParameterValueEntry _resolveNormal(int i, ParameterReflection p) {
+    try {
+      return _ParameterValueEntry(p.name, parameterProvider(p, i));
+    } on TypeError {
+      return _ParameterValueEntry(p.name, unresolvedParameterValue);
+    }
+  }
 
-  _ParameterValueEntry _resolveOptional(int i, ParameterReflection p) =>
-      _ParameterValueEntry(p.name, parameterProvider(p, offsetOptional + i));
+  _ParameterValueEntry _resolveOptional(int i, ParameterReflection p) {
+    try {
+      return _ParameterValueEntry(
+          p.name, parameterProvider(p, offsetOptional + i));
+    } on TypeError {
+      return _ParameterValueEntry(p.name, unresolvedParameterValue);
+    }
+  }
 
-  _ParameterValueEntry _resolveNamed(int i, ParameterReflection p) =>
-      _ParameterValueEntry(p.name, parameterProvider(p, offsetNamed + i));
+  _ParameterValueEntry _resolveNamed(int i, ParameterReflection p) {
+    try {
+      return _ParameterValueEntry(
+          p.name, parameterProvider(p, offsetNamed + i));
+    } on TypeError {
+      return _ParameterValueEntry(p.name, unresolvedParameterValue);
+    }
+  }
 }
 
 /// Base class fro methods and constructors.

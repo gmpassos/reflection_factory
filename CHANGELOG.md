@@ -1,3 +1,12 @@
+## 2.2.8
+
+- Fix issue with parameter resolution when calling a constructor/method.
+
+- analyzer: ^6.4.1
+- mime: ^1.0.5
+- build_runner: ^2.4.8
+- test: ^1.25.2
+
 ## 2.2.7
 
 - Small fix for `Duration` support.
