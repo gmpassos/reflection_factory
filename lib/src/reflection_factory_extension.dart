@@ -32,7 +32,7 @@ extension IterableParameterReflectionExtension<O, T>
 
 /// [FieldReflection] extension.
 extension IterableFieldReflectionExtension<O, T>
-    on Iterable<FieldReflection<O, T>> {
+    on Iterable<BasicFieldReflection<O, T>> {
   /// Maps to [TypeReflection].
   Iterable<TypeReflection> toTypeReflections() => map((e) => e.type);
 
@@ -43,18 +43,24 @@ extension IterableFieldReflectionExtension<O, T>
   Iterable<String> toNames() => map((e) => e.name);
 
   /// Filter by [FieldReflection.isFinal].
-  Iterable<FieldReflection<O, T>> whereFinal() => where((e) => e.isFinal);
+  Iterable<BasicFieldReflection<O, T>> whereFinal() => where((e) => e.isFinal);
 
   /// Filter by [FieldReflection.isStatic].
-  Iterable<FieldReflection<O, T>> whereStatic() => where((e) => e.isStatic);
+  Iterable<StaticFieldReflection<O, T>> whereStatic() =>
+      whereType<StaticFieldReflection<O, T>>();
+
+  /// Filter by [FieldReflection.isStatic].
+  Iterable<FieldReflection<O, T>> whereNotStatic() =>
+      whereType<FieldReflection<O, T>>();
 
   /// Filter by [FieldReflection.nullable].
-  Iterable<FieldReflection<O, T>> whereNullable() => where((e) => e.nullable);
+  Iterable<BasicFieldReflection<O, T>> whereNullable() =>
+      where((e) => e.nullable);
 }
 
 /// [MethodReflection] extension.
 extension IterableMethodReflectionExtension<O, R>
-    on Iterable<MethodReflection<O, R>> {
+    on Iterable<FunctionReflection<O, R>> {
   /// Maps to returned [TypeReflection].
   Iterable<TypeReflection?> toReturnTypeReflections() =>
       map((e) => e.returnType);
@@ -66,15 +72,20 @@ extension IterableMethodReflectionExtension<O, R>
   Iterable<String> toNames() => map((e) => e.name);
 
   /// Filter by [MethodReflection.isStatic].
-  Iterable<MethodReflection<O, R>> whereStatic() => where((e) => e.isStatic);
+  Iterable<StaticMethodReflection<O, R>> whereStatic() =>
+      whereType<StaticMethodReflection<O, R>>();
+
+  /// Filter by [MethodReflection.isStatic].
+  Iterable<MethodReflection<O, R>> whereNotStatic() =>
+      whereType<MethodReflection<O, R>>();
 
   /// Returns the [MethodReflection] without parameters.
-  Iterable<MethodReflection<O, R>> whereNoParameters() =>
+  Iterable<FunctionReflection<O, R>> whereNoParameters() =>
       where((m) => m.hasNoParameters);
 
   /// Returns the [MethodReflection] that matches the parameters:
   /// [normalParameters], [optionalParameters] and [namedParameters].
-  Iterable<MethodReflection<O, R>> whereParametersTypes({
+  Iterable<FunctionReflection<O, R>> whereParametersTypes({
     List<Type>? normalParameters,
     List<Type>? optionalParameters,
     Map<String, Type>? namedParameters,
@@ -106,12 +117,12 @@ extension IterableMethodReflectionExtension<O, R>
   }
 
   /// Returns the [MethodReflection] without annotations.
-  Iterable<MethodReflection<O, R>> whereNotAnnotated() =>
+  Iterable<FunctionReflection<O, R>> whereNotAnnotated() =>
       where((m) => m.annotations.isEmpty);
 
   /// Returns the [MethodReflection] that matches annotations [test].
   /// If [test] is `null`, will match methods with any annotation.
-  Iterable<MethodReflection<O, R>> whereAnnotated(
+  Iterable<FunctionReflection<O, R>> whereAnnotated(
       [bool Function(List<Object> annotations)? test]) {
     if (test != null) {
       return where((m) {
@@ -122,7 +133,7 @@ extension IterableMethodReflectionExtension<O, R>
   }
 
   /// Returns the [MethodReflection] that matches [annotations].
-  Iterable<MethodReflection<O, R>> whereAnnotatedWith(
+  Iterable<FunctionReflection<O, R>> whereAnnotatedWith(
       List<Object> annotations) {
     if (annotations.isEmpty) {
       return whereNotAnnotated();
@@ -131,7 +142,7 @@ extension IterableMethodReflectionExtension<O, R>
   }
 
   /// Returns the [MethodReflection] that matches any [annotations].
-  Iterable<MethodReflection<O, R>> whereAnnotatedWithAnyOf(
+  Iterable<FunctionReflection<O, R>> whereAnnotatedWithAnyOf(
       List<Object> annotations) {
     if (annotations.isEmpty) {
       return <MethodReflection<O, R>>[];
@@ -140,7 +151,7 @@ extension IterableMethodReflectionExtension<O, R>
   }
 
   /// Returns the [MethodReflection] that has an annotation of type [T].
-  Iterable<MethodReflection<O, R>> whereAnnotatedWithType<T>() =>
+  Iterable<FunctionReflection<O, R>> whereAnnotatedWithType<T>() =>
       where((m) => m.annotations.any((o) => o is T));
 }
 

@@ -21,7 +21,7 @@ import 'reflection_factory_utils.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.2.8';
+  static const String VERSION = '2.3.0';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -1227,18 +1227,18 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// Returns a `const` [List] of static fields names.
   List<String> get staticFieldsNames;
 
-  List<FieldReflection<O, dynamic>>? _allStaticFields;
+  List<StaticFieldReflection<O, dynamic>>? _allStaticFields;
 
   /// Returns a [List] with all static fields [FieldReflection].
-  List<FieldReflection<O, dynamic>> allStaticFields() =>
-      _allStaticFields ??= List<FieldReflection<O, dynamic>>.unmodifiable(
+  List<StaticFieldReflection<O, dynamic>> allStaticFields() =>
+      _allStaticFields ??= List<StaticFieldReflection<O, dynamic>>.unmodifiable(
           staticFieldsNames.map((e) => staticField(e)!));
 
   /// Returns a [FieldReflection] for [fieldName], with the optional associated [obj].
   FieldReflection<O, T>? field<T>(String fieldName, [O? obj]);
 
   /// Returns a static [FieldReflection] for [fieldName].
-  FieldReflection<O, T>? staticField<T>(String fieldName);
+  StaticFieldReflection<O, T>? staticField<T>(String fieldName);
 
   List<FieldReflection<O, dynamic>>? _entityFieldsNoObject;
 
@@ -1308,8 +1308,8 @@ abstract class ClassReflection<O> extends Reflection<O>
   }
 
   /// Returns a [List] of static fields [FieldReflection] that matches [test].
-  Iterable<FieldReflection<O, dynamic>> staticFieldsWhere(
-      bool Function(FieldReflection<O, dynamic> f) test) {
+  Iterable<StaticFieldReflection<O, dynamic>> staticFieldsWhere(
+      bool Function(StaticFieldReflection<O, dynamic> f) test) {
     return allStaticFields().where(test);
   }
 
@@ -1318,9 +1318,10 @@ abstract class ClassReflection<O> extends Reflection<O>
       ElementResolver<FieldReflection<O, T>>(() => field<T>(fieldName));
 
   /// Returns a [ElementResolver] for a [FieldReflection] for a static field with [fieldName].
-  ElementResolver<FieldReflection<O, T>> staticFieldResolver<T>(
+  ElementResolver<StaticFieldReflection<O, T>> staticFieldResolver<T>(
           String fieldName) =>
-      ElementResolver<FieldReflection<O, T>>(() => staticField<T>(fieldName));
+      ElementResolver<StaticFieldReflection<O, T>>(
+          () => staticField<T>(fieldName));
 
   /// Returns a `const` [List] of methods names.
   List<String> get methodsNames;
@@ -1369,18 +1370,19 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// Returns a `const` [List] of static methods names.
   List<String> get staticMethodsNames;
 
-  List<MethodReflection<O, dynamic>>? _allStaticMethods;
+  List<StaticMethodReflection<O, dynamic>>? _allStaticMethods;
 
   /// Returns a [List] with all static methods [MethodReflection].
-  List<MethodReflection<O, dynamic>> allStaticMethods() =>
-      _allStaticMethods ??= List<MethodReflection<O, dynamic>>.unmodifiable(
-          staticMethodsNames.map((e) => staticMethod(e)!));
+  List<StaticMethodReflection<O, dynamic>> allStaticMethods() =>
+      _allStaticMethods ??=
+          List<StaticMethodReflection<O, dynamic>>.unmodifiable(
+              staticMethodsNames.map((e) => staticMethod(e)!));
 
   /// Returns a [MethodReflection] for [methodName], with the optional associated [obj].
   MethodReflection<O, R>? method<R>(String methodName, [O? obj]);
 
   /// Returns a static [MethodReflection] for [methodName].
-  MethodReflection<O, R>? staticMethod<R>(String methodName);
+  StaticMethodReflection<O, R>? staticMethod<R>(String methodName);
 
   /// Returns a [List] of methods [MethodReflection] that matches [test].
   Iterable<MethodReflection<O, dynamic>> methodsWhere(
@@ -1390,8 +1392,8 @@ abstract class ClassReflection<O> extends Reflection<O>
   }
 
   /// Returns a [List] of static methods [MethodReflection] that matches [test].
-  Iterable<MethodReflection<O, dynamic>> staticMethodsWhere(
-      bool Function(MethodReflection<O, dynamic> f) test) {
+  Iterable<StaticMethodReflection<O, dynamic>> staticMethodsWhere(
+      bool Function(StaticMethodReflection<O, dynamic> f) test) {
     return allStaticMethods().where(test);
   }
 
@@ -1401,9 +1403,9 @@ abstract class ClassReflection<O> extends Reflection<O>
       ElementResolver<MethodReflection<O, R>>(() => method<R>(methodName));
 
   /// Returns a [ElementResolver] for a [MethodReflection] for a static method with [methodName].
-  ElementResolver<MethodReflection<O, R>> staticMethodResolver<R>(
+  ElementResolver<StaticMethodReflection<O, R>> staticMethodResolver<R>(
           String methodName) =>
-      ElementResolver<MethodReflection<O, R>>(
+      ElementResolver<StaticMethodReflection<O, R>>(
           () => staticMethod<R>(methodName));
 
   /// Returns the field value for [fieldName].
@@ -1429,6 +1431,9 @@ abstract class ClassReflection<O> extends Reflection<O>
     var field = staticField<T>(fieldName);
     return field?.set(value);
   }
+
+  /// Returns a [Map] with [allFields] values.
+  Map<String, dynamic> getFieldsValues(O? obj, {bool withHashCode = false});
 
   /// Invokes the method for [methodName].
   R? invokeMethod<R>(String methodName, Iterable<Object?>? positionalArguments,
@@ -2193,9 +2198,9 @@ abstract class ElementReflection<O> {
   final Type declaringType;
 
   /// Returns `true` if this element is static.
-  final bool isStatic;
+  bool get isStatic;
 
-  ElementReflection(this.classReflection, this.declaringType, this.isStatic);
+  ElementReflection(this.classReflection, this.declaringType);
 
   /// Returns the class name of this element.
   String get className => classReflection.className;
@@ -2760,9 +2765,6 @@ class TypeReflection<T> {
 typedef FieldGetter<T> = T Function();
 typedef FieldSetter<T> = void Function(T v);
 
-typedef FieldReflectionGetterAccessor<O, T> = FieldGetter<T> Function(O? obj);
-typedef FieldReflectionSetterAccessor<O, T> = FieldSetter<T> Function(O? obj);
-
 typedef FieldNameResolver = String? Function(
     String field, Map<String, Object?> map);
 
@@ -2770,7 +2772,7 @@ typedef FieldValueResolver = Object? Function(
     String field, Object? value, TypeReflection type);
 
 /// A class field reflection.
-class FieldReflection<O, T> extends ElementReflection<O>
+abstract class BasicFieldReflection<O, T> extends ElementReflection<O>
     implements ParameterReflection {
   /// Returns [Type] of this field.
   @override
@@ -2800,16 +2802,6 @@ class FieldReflection<O, T> extends ElementReflection<O>
   @override
   bool get hasDefaultValue => false;
 
-  /// A [Function] that returns the field getter.
-  final FieldReflectionGetterAccessor<O, T> getterAccessor;
-
-  /// A [Function] that returns the field setter.
-  final FieldReflectionSetterAccessor<O, T>? setterAccessor;
-
-  /// Returns the associated object ([O]) of this field.
-  /// Returns `null` for static fields.
-  final O? object;
-
   /// Returns `true` if this field is final.
   final bool isFinal;
 
@@ -2836,56 +2828,11 @@ class FieldReflection<O, T> extends ElementReflection<O>
   List<JsonFieldAlias> get jsonFieldAliasAnnotations =>
       jsonAnnotations.whereType<JsonFieldAlias>().toList();
 
-  FieldReflection(
-      ClassReflection<O> classReflection,
-      Type declaringType,
-      this.type,
-      this.name,
-      this.nullable,
-      this.getterAccessor,
-      this.setterAccessor,
-      this.object,
-      bool isStatic,
-      this.isFinal,
-      [List<Object>? annotations])
+  BasicFieldReflection(super.classReflection, super.declaringType, this.type,
+      this.name, this.nullable, this.isFinal, List<Object>? annotations)
       : _annotations = annotations == null || annotations.isEmpty
             ? _annotationsEmpty
-            : UnmodifiableListView<Object>(annotations),
-        super(classReflection, declaringType, isStatic);
-
-  FieldReflection._(
-    ClassReflection<O> classReflection,
-    Type declaringType,
-    this.type,
-    this.name,
-    this.nullable,
-    this.getterAccessor,
-    this.setterAccessor,
-    this.object,
-    bool isStatic,
-    this.isFinal,
-    this._annotations,
-  ) : super(classReflection, declaringType, isStatic);
-
-  /// Returns a new instance that references [object].
-  FieldReflection<O, T> withObject(O object) {
-    return FieldReflection<O, T>._(
-        classReflection,
-        declaringType,
-        type,
-        name,
-        nullable,
-        getterAccessor,
-        setterAccessor,
-        object,
-        isStatic,
-        isFinal,
-        _annotations)
-      .._hasJsonFieldHidden = _hasJsonFieldHidden
-      .._hasJsonFieldVisible = _hasJsonFieldVisible
-      .._hasJsonNameAlias = _hasJsonNameAlias
-      .._jsonName = _jsonName;
-  }
+            : UnmodifiableListView<Object>(annotations);
 
   bool? _hasJsonFieldHidden;
 
@@ -2911,85 +2858,19 @@ class FieldReflection<O, T> extends ElementReflection<O>
   @override
   String resolveName(bool jsonName) => jsonName ? this.jsonName : name;
 
-  FieldGetter<T>? _getter;
-
   /// Returns this field value.
-  T get() {
-    final getter = _getter ??= getterAccessor(object);
-    return getter();
-  }
+  T get();
 
-  /// Returns this field value for the [object] instance.
-  T getFor(O object) {
-    final getter = getterAccessor(object);
-    return getter();
-  }
-
-  FieldSetter<T>? _setter;
-
-  bool get hasSetter => _setter != null || setterAccessor != null;
-
-  FieldReflectionSetterAccessor<O, T> _resolveSetterAccessor() {
-    final setterAccessor = this.setterAccessor;
-    if (setterAccessor == null) {
-      if (isFinal) {
-        throw StateError('Final field: $className.$name');
-      } else {
-        throw StateError('Field without setter: $className.$name');
-      }
-    }
-    return setterAccessor;
-  }
-
-  FieldSetter<T> _resolveSetter() =>
-      _setter ??= _resolveSetterAccessor()(object);
+  bool get hasSetter;
 
   /// Sets this field value.
   /// See [setNullable].
-  void set(T v) {
-    final setter = _resolveSetter();
-    setter(v);
-  }
-
-  /// Sets this field value for the [object] instance.
-  /// See [setNullable].
-  void setFor(O object, T v) {
-    final setterAccessor = _resolveSetterAccessor();
-    final setter = setterAccessor(object);
-    setter(v);
-  }
+  void set(T v);
 
   /// Sets this field value, allowing a nullable value.
   /// Throws an [ArgumentError] if [v] can't be `null`.
   /// See [set].
-  void setNullable(T? v) {
-    final setter = _resolveSetter();
-    _callSetterNullable(setter, v);
-  }
-
-  /// Sets this field value, allowing a nullable value.
-  /// Throws an [ArgumentError] if [v] can't be `null`.
-  /// See [set].
-  void setNullableFor(O object, T? v) {
-    final setterAccessor = _resolveSetterAccessor();
-    final setter = setterAccessor(object);
-    _callSetterNullable(setter, v);
-  }
-
-  void _callSetterNullable(FieldSetter<T> setter, T? v) {
-    if (v == null) {
-      T vNull;
-      try {
-        vNull = null as T;
-      } catch (e) {
-        throw ArgumentError(
-            "Field can't be set to `null`: $className.$name ($T)");
-      }
-      setter(vNull);
-    } else {
-      setter(v);
-    }
-  }
+  void setNullable(T? v);
 
   /// Returns `true` if this [Field] can be an entity field.
   /// Usually an entity field can be used in a `JSON`, `toJson` and `fromJson`.
@@ -3024,8 +2905,229 @@ class FieldReflection<O, T> extends ElementReflection<O>
   }
 
   @override
+  String toString();
+}
+
+typedef FieldReflectionGetterAccessor<O, T> = FieldGetter<T> Function(O? obj);
+typedef FieldReflectionSetterAccessor<O, T> = FieldSetter<T> Function(O? obj);
+
+/// A class field reflection.
+class FieldReflection<O, T> extends BasicFieldReflection<O, T> {
+  /// A [Function] that returns the field getter.
+  final FieldReflectionGetterAccessor<O, T> getterAccessor;
+
+  /// A [Function] that returns the field setter.
+  final FieldReflectionSetterAccessor<O, T>? setterAccessor;
+
+  /// Returns the associated object ([O]) of this field.
+  /// Returns `null` for static fields.
+  final O? object;
+
+  @override
+  bool get isStatic => false;
+
+  FieldReflection(
+      super.classReflection,
+      super.declaringType,
+      super.type,
+      super.name,
+      super.nullable,
+      this.getterAccessor,
+      this.setterAccessor,
+      this.object,
+      super.isFinal,
+      [super.annotations]);
+
+  FieldReflection._(
+    super.classReflection,
+    super.declaringType,
+    super.type,
+    super.name,
+    super.nullable,
+    this.getterAccessor,
+    this.setterAccessor,
+    this.object,
+    super.isFinal,
+    super._annotations,
+  );
+
+  /// Returns a new instance that references [object].
+  FieldReflection<O, T> withObject(O object) {
+    return FieldReflection<O, T>._(classReflection, declaringType, type, name,
+        nullable, getterAccessor, setterAccessor, object, isFinal, _annotations)
+      .._hasJsonFieldHidden = _hasJsonFieldHidden
+      .._hasJsonFieldVisible = _hasJsonFieldVisible
+      .._hasJsonNameAlias = _hasJsonNameAlias
+      .._jsonName = _jsonName;
+  }
+
+  FieldGetter<T>? _getter;
+
+  @override
+  T get() {
+    final getter = _getter ??= getterAccessor(object);
+    return getter();
+  }
+
+  /// Returns this field value for the [object] instance.
+  T getFor(O object) {
+    final getter = getterAccessor(object);
+    return getter();
+  }
+
+  FieldSetter<T>? _setter;
+
+  @override
+  bool get hasSetter => _setter != null || setterAccessor != null;
+
+  FieldReflectionSetterAccessor<O, T> _resolveSetterAccessor() {
+    final setterAccessor = this.setterAccessor;
+    if (setterAccessor == null) {
+      if (isFinal) {
+        throw StateError('Final field: $className.$name');
+      } else {
+        throw StateError('Field without setter: $className.$name');
+      }
+    }
+    return setterAccessor;
+  }
+
+  FieldSetter<T> _resolveSetter() =>
+      _setter ??= _resolveSetterAccessor()(object);
+
+  @override
+  void set(T v) {
+    final setter = _resolveSetter();
+    setter(v);
+  }
+
+  /// Sets this field value for the [object] instance.
+  /// See [setNullable].
+  void setFor(O object, T v) {
+    final setterAccessor = _resolveSetterAccessor();
+    final setter = setterAccessor(object);
+    setter(v);
+  }
+
+  @override
+  void setNullable(T? v) {
+    final setter = _resolveSetter();
+    _callSetterNullable(setter, v);
+  }
+
+  /// Sets this field value, allowing a nullable value.
+  /// Throws an [ArgumentError] if [v] can't be `null`.
+  /// See [set].
+  void setNullableFor(O object, T? v) {
+    final setterAccessor = _resolveSetterAccessor();
+    final setter = setterAccessor(object);
+    _callSetterNullable(setter, v);
+  }
+
+  void _callSetterNullable(FieldSetter<T> setter, T? v) {
+    if (v == null) {
+      T vNull;
+      try {
+        vNull = null as T;
+      } catch (e) {
+        throw ArgumentError(
+            "Field can't be set to `null`: $className.$name ($T)");
+      }
+      setter(vNull);
+    } else {
+      setter(v);
+    }
+  }
+
+  @override
   String toString() {
     return 'FieldReflection{ class: $className, name: $name, type: ${nullable ? '$type?' : '$type'}, static: $isStatic, final: $isFinal }${object != null ? '<$object>' : ''}';
+  }
+}
+
+typedef StaticFieldReflectionGetterAccessor<T> = FieldGetter<T> Function();
+typedef StaticFieldReflectionSetterAccessor<T> = FieldSetter<T> Function();
+
+/// A class static-field reflection.
+/// Extends [FieldReflection].
+class StaticFieldReflection<O, T> extends BasicFieldReflection<O, T> {
+  /// A [Function] that returns the field getter.
+  final StaticFieldReflectionGetterAccessor<T> getterAccessor;
+
+  /// A [Function] that returns the field setter.
+  final StaticFieldReflectionSetterAccessor<T>? setterAccessor;
+
+  @override
+  bool get isStatic => true;
+
+  StaticFieldReflection(
+      super.classReflection,
+      super.declaringType,
+      super.type,
+      super.name,
+      super.nullable,
+      this.getterAccessor,
+      this.setterAccessor,
+      super.isFinal,
+      [super.annotations]);
+
+  FieldGetter<T>? _getter;
+
+  @override
+  T get() {
+    final getter = _getter ??= getterAccessor();
+    return getter();
+  }
+
+  FieldSetter<T>? _setter;
+
+  @override
+  bool get hasSetter => _setter != null || setterAccessor != null;
+
+  StaticFieldReflectionSetterAccessor<T> _resolveSetterAccessor() {
+    final setterAccessor = this.setterAccessor;
+    if (setterAccessor == null) {
+      if (isFinal) {
+        throw StateError('Final field: $className.$name');
+      } else {
+        throw StateError('Field without setter: $className.$name');
+      }
+    }
+    return setterAccessor;
+  }
+
+  FieldSetter<T> _resolveSetter() => _setter ??= _resolveSetterAccessor()();
+
+  @override
+  void set(T v) {
+    final setter = _resolveSetter();
+    setter(v);
+  }
+
+  @override
+  void setNullable(T? v) {
+    final setter = _resolveSetter();
+    _callSetterNullable(setter, v);
+  }
+
+  void _callSetterNullable(FieldSetter<T> setter, T? v) {
+    if (v == null) {
+      T vNull;
+      try {
+        vNull = null as T;
+      } catch (e) {
+        throw ArgumentError(
+            "Field can't be set to `null`: $className.$name ($T)");
+      }
+      setter(vNull);
+    } else {
+      setter(v);
+    }
+  }
+
+  @override
+  String toString() {
+    return 'StaticFieldReflection{ class: $className, name: $name, type: ${nullable ? '$type?' : '$type'}, static: $isStatic, final: $isFinal }';
   }
 }
 
@@ -3132,7 +3234,7 @@ class _ParameterResolver {
   }
 }
 
-/// Base class fro methods and constructors.
+/// Base class for methods.
 abstract class FunctionReflection<O, R> extends ElementReflection<O>
     implements Comparable<FunctionReflection> {
   /// The name of this method.
@@ -3200,12 +3302,11 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
   Function get _function;
 
   FunctionReflection(
-    ClassReflection<O> classReflection,
-    Type declaringType,
+    super.classReflection,
+    super.declaringType,
     this.name,
     this.returnType,
     this.returnNullable,
-    bool isStatic,
     List<ParameterReflection>? normalParameters,
     List<ParameterReflection>? optionalParameters,
     Map<String, ParameterReflection>? namedParameters,
@@ -3222,21 +3323,19 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
             : Map<String, ParameterReflection>.unmodifiable(namedParameters),
         annotations = annotations == null || annotations.isEmpty
             ? _annotationsEmpty
-            : UnmodifiableListView<Object>(annotations),
-        super(classReflection, declaringType, isStatic);
+            : UnmodifiableListView<Object>(annotations);
 
   FunctionReflection._(
-    ClassReflection<O> classReflection,
-    Type declaringType,
+    super.classReflection,
+    super.declaringType,
     this.name,
     this.returnType,
     this.returnNullable,
-    bool isStatic,
     this.normalParameters,
     this.optionalParameters,
     this.namedParameters,
     this.annotations,
-  ) : super(classReflection, declaringType, isStatic);
+  );
 
   /// Returns the amount of parameters.
   int get parametersLength =>
@@ -3702,6 +3801,23 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
   }
 }
 
+/// Base class for static methods and constructors.
+abstract class StaticFunctionReflection<O, R> extends FunctionReflection<O, R> {
+  StaticFunctionReflection(
+      super.classReflection,
+      super.declaringType,
+      super.name,
+      super.returnType,
+      super.returnNullable,
+      super.normalParameters,
+      super.optionalParameters,
+      super.namedParameters,
+      super.annotations);
+
+  @override
+  bool get isStatic => true;
+}
+
 extension _ObjectExtension on Object? {
   bool get isAbsentParameterValue =>
       this == absentParameterValue || this == absentParameterValueRequired;
@@ -3745,7 +3861,7 @@ extension _ListStringExtension on List<String> {
 
 typedef ConstructorReflectionAccessor = Function Function();
 
-class ConstructorReflection<O> extends FunctionReflection<O, O> {
+class ConstructorReflection<O> extends StaticFunctionReflection<O, O> {
   final ConstructorReflectionAccessor constructorAccessor;
 
   ConstructorReflection(
@@ -3764,7 +3880,6 @@ class ConstructorReflection<O> extends FunctionReflection<O, O> {
             name,
             TypeReflection(type ?? O),
             false,
-            true,
             normalParameters,
             optionalParameters,
             namedParameters,
@@ -3825,6 +3940,9 @@ class MethodReflection<O, R> extends FunctionReflection<O, R> {
   /// `null` for static methods.
   final O? object;
 
+  @override
+  bool get isStatic => false;
+
   MethodReflection(
     ClassReflection<O> classReflection,
     Type declaringType,
@@ -3833,22 +3951,12 @@ class MethodReflection<O, R> extends FunctionReflection<O, R> {
     bool returnNullable,
     this.methodAccessor,
     this.object,
-    bool isStatic,
     List<ParameterReflection>? normalParameters,
     List<ParameterReflection>? optionalParameters,
     Map<String, ParameterReflection>? namedParameters,
     List<Object>? annotations,
-  ) : super(
-            classReflection,
-            declaringType,
-            name,
-            returnType,
-            returnNullable,
-            isStatic,
-            normalParameters,
-            optionalParameters,
-            namedParameters,
-            annotations);
+  ) : super(classReflection, declaringType, name, returnType, returnNullable,
+            normalParameters, optionalParameters, namedParameters, annotations);
 
   MethodReflection._(
     ClassReflection<O> classReflection,
@@ -3858,22 +3966,12 @@ class MethodReflection<O, R> extends FunctionReflection<O, R> {
     bool returnNullable,
     this.methodAccessor,
     this.object,
-    bool isStatic,
     List<ParameterReflection> normalParameters,
     List<ParameterReflection> optionalParameters,
     Map<String, ParameterReflection> namedParameters,
     List<Object> annotations,
-  ) : super._(
-            classReflection,
-            declaringType,
-            name,
-            returnType,
-            returnNullable,
-            isStatic,
-            normalParameters,
-            optionalParameters,
-            namedParameters,
-            annotations);
+  ) : super._(classReflection, declaringType, name, returnType, returnNullable,
+            normalParameters, optionalParameters, namedParameters, annotations);
 
   /// Returns a new instance that references [object].
   MethodReflection<O, R> withObject(O object) => MethodReflection<O, R>._(
@@ -3884,7 +3982,6 @@ class MethodReflection<O, R> extends FunctionReflection<O, R> {
       returnNullable,
       methodAccessor,
       object,
-      isStatic,
       normalParameters,
       optionalParameters,
       namedParameters,
@@ -3912,6 +4009,38 @@ class MethodReflection<O, R> extends FunctionReflection<O, R> {
   @override
   String toString() =>
       'MethodReflection{ class: $className, name: $name, returnType: ${returnNullable ? '$returnType?' : '$returnType'}, static: $isStatic, normalParameters: $normalParameters, optionalParameters: $optionalParameters, namedParameters: $namedParameters }${object != null ? '<$object>' : ''}';
+}
+
+typedef StaticMethodReflectionAccessor = Function Function();
+
+/// A class static-method reflection.
+class StaticMethodReflection<O, R> extends StaticFunctionReflection<O, R> {
+  final StaticMethodReflectionAccessor methodAccessor;
+
+  StaticMethodReflection(
+    ClassReflection<O> classReflection,
+    Type declaringType,
+    String name,
+    TypeReflection? returnType,
+    bool returnNullable,
+    this.methodAccessor,
+    List<ParameterReflection>? normalParameters,
+    List<ParameterReflection>? optionalParameters,
+    Map<String, ParameterReflection>? namedParameters,
+    List<Object>? annotations,
+  ) : super(classReflection, declaringType, name, returnType, returnNullable,
+            normalParameters, optionalParameters, namedParameters, annotations);
+
+  Function? _method;
+
+  Function get method => _method ??= methodAccessor();
+
+  @override
+  Function get _function => method;
+
+  @override
+  String toString() =>
+      'StaticMethodReflection{ class: $className, name: $name, returnType: ${returnNullable ? '$returnType?' : '$returnType'}, static: $isStatic, normalParameters: $normalParameters, optionalParameters: $optionalParameters, namedParameters: $namedParameters }';
 }
 
 /// Represents a method invocation parameters.

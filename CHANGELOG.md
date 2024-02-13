@@ -1,3 +1,18 @@
+## 2.3.0
+
+- New `StaticFunctionReflection`.
+  - New `StaticMethodReflection`.
+  - `ConstructorReflection` extends `StaticFunctionReflection`.
+- New `BasicFieldReflection`:
+  - New `StaticFieldReflection`.
+
+- `ClassReflection`:
+  - Added `getFieldsValues`.
+
+- meta: ^1.12.0
+- path: ^1.9.0
+- dependency_validator: ^3.2.3
+
 ## 2.2.8
 
 - Fix issue with parameter resolution when calling a constructor/method.
