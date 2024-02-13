@@ -1241,11 +1241,7 @@ void main() {
           equals('smith@mail.com'));
       expect(fieldResolver.isResolved, isTrue);
 
-      expect(
-          userReflection
-              .staticFieldResolver('version')
-              .get()!
-              .get(),
+      expect(userReflection.staticFieldResolver('version').get()!.get(),
           equals(1.1));
 
       expect(
@@ -1257,10 +1253,7 @@ void main() {
           isTrue);
 
       expect(
-          userReflection
-              .staticMethodResolver('isVersion')
-              .get()!
-              .invoke([1.1]),
+          userReflection.staticMethodResolver('isVersion').get()!.invoke([1.1]),
           isTrue);
 
       var domainReflection = TestDomainWithReflection$reflection.staticInstance;

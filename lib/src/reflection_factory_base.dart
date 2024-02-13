@@ -1374,8 +1374,9 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   /// Returns a [List] with all static methods [MethodReflection].
   List<StaticMethodReflection<O, dynamic>> allStaticMethods() =>
-      _allStaticMethods ??= List<StaticMethodReflection<O, dynamic>>.unmodifiable(
-          staticMethodsNames.map((e) => staticMethod(e)!));
+      _allStaticMethods ??=
+          List<StaticMethodReflection<O, dynamic>>.unmodifiable(
+              staticMethodsNames.map((e) => staticMethod(e)!));
 
   /// Returns a [MethodReflection] for [methodName], with the optional associated [obj].
   MethodReflection<O, R>? method<R>(String methodName, [O? obj]);

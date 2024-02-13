@@ -46,13 +46,16 @@ extension IterableFieldReflectionExtension<O, T>
   Iterable<BasicFieldReflection<O, T>> whereFinal() => where((e) => e.isFinal);
 
   /// Filter by [FieldReflection.isStatic].
-  Iterable<StaticFieldReflection<O, T>> whereStatic() => whereType<StaticFieldReflection<O,T>>();
+  Iterable<StaticFieldReflection<O, T>> whereStatic() =>
+      whereType<StaticFieldReflection<O, T>>();
 
   /// Filter by [FieldReflection.isStatic].
-  Iterable<FieldReflection<O, T>> whereNotStatic() => whereType<FieldReflection<O,T>>();
+  Iterable<FieldReflection<O, T>> whereNotStatic() =>
+      whereType<FieldReflection<O, T>>();
 
   /// Filter by [FieldReflection.nullable].
-  Iterable<BasicFieldReflection<O, T>> whereNullable() => where((e) => e.nullable);
+  Iterable<BasicFieldReflection<O, T>> whereNullable() =>
+      where((e) => e.nullable);
 }
 
 /// [MethodReflection] extension.
@@ -69,10 +72,12 @@ extension IterableMethodReflectionExtension<O, R>
   Iterable<String> toNames() => map((e) => e.name);
 
   /// Filter by [MethodReflection.isStatic].
-  Iterable<StaticMethodReflection<O, R>> whereStatic() => whereType<StaticMethodReflection<O,R>>();
+  Iterable<StaticMethodReflection<O, R>> whereStatic() =>
+      whereType<StaticMethodReflection<O, R>>();
 
   /// Filter by [MethodReflection.isStatic].
-  Iterable<MethodReflection<O, R>> whereNotStatic() => whereType<MethodReflection<O,R>>();
+  Iterable<MethodReflection<O, R>> whereNotStatic() =>
+      whereType<MethodReflection<O, R>>();
 
   /// Returns the [MethodReflection] without parameters.
   Iterable<FunctionReflection<O, R>> whereNoParameters() =>
