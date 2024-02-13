@@ -6,6 +6,9 @@
 - New `BasicFieldReflection`:
   - New `StaticFieldReflection`.
 
+- `ClassReflection`:
+  - Added `getFieldsValues`.
+
 - meta: ^1.12.0
 - path: ^1.9.0
 - dependency_validator: ^3.2.3
