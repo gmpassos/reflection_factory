@@ -1,4 +1,10 @@
-## 2.2.9
+## 2.3.0
+
+- New `StaticFunctionReflection`.
+  - New `StaticMethodReflection`.
+  - `ConstructorReflection` extends `StaticFunctionReflection`.
+- New `BasicFieldReflection`:
+  - New `StaticFieldReflection`.
 
 - meta: ^1.12.0
 - path: ^1.9.0

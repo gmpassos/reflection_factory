@@ -1796,8 +1796,8 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     _buildCallMethodToJson(str);
 
-    _buildField(str);
-    _buildStaticField(str);
+    _buildFields(str);
+    _buildStaticFields(str);
 
     _buildMethod(str);
     _buildStaticMethod(str);
@@ -1821,7 +1821,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         '  List<String> get constructorsNames => _constructorsNames;\n\n');
 
     str.write(
-        '  static final Map<String,ConstructorReflection<$className>> _constructors = <String,ConstructorReflection<$className>>{};\n\n');
+        '  static final Map<String,ConstructorReflection<$className>> _constructors = {};\n\n');
 
     str.write('  @override\n');
     str.write(
@@ -1929,7 +1929,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('\n');
   }
 
-  void _buildField(StringBuffer str) {
+  void _buildFields(StringBuffer str) {
     var entries = _toFieldEntries(fields);
     var names = _buildStringListCode(entries.keys, sorted: true);
 
@@ -1938,18 +1938,26 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  @override\n');
     str.write('  List<String> get fieldsNames => _fieldsNames;\n\n');
 
+    // No fields in class:
     if (entries.isEmpty) {
       str.write('  @override\n');
       str.write(
-          '  FieldReflection<$className,T>? field<T>(String fieldName, [$className? obj]) => null;\n');
+          '  FieldReflection<$className,T>? field<T>(String fieldName, [$className? obj]) => null;\n\n');
+
+      str.write('  @override\n');
+      str.write(
+          '  Map<String,dynamic> getFieldsValues($className? obj, {bool withHashCode = false}) => {\n'
+          "  if (withHashCode) 'hashCode': obj?.hashCode,"
+          '};\n\n');
+
       return;
     }
 
     str.write(
-        '  static final Map<String,FieldReflection<$className,dynamic>> _fieldsNoObject = <String,FieldReflection<$className,dynamic>>{};\n\n');
+        '  static final Map<String,FieldReflection<$className,dynamic>> _fieldsNoObject = {};\n\n');
 
     str.write(
-        '  final Map<String,FieldReflection<$className,dynamic>> _fieldsObject = <String,FieldReflection<$className,dynamic>>{};\n\n');
+        '  final Map<String,FieldReflection<$className,dynamic>> _fieldsObject = {};\n\n');
 
     str.write('  @override\n');
     str.write(
@@ -2025,15 +2033,29 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       return "FieldReflection<$className,$fullType>(this, $declaringType, "
           "$typeCode, '$name', $nullable, "
           "$getter , $setter , "
-          "obj, false, $isFinal, "
+          "obj, $isFinal, "
           "${annotations != 'null' ? '$annotations, ' : ''} "
           ")";
     });
 
     str.write('  }\n\n');
+
+    str.write('  @override\n');
+    str.write(
+        '  Map<String,dynamic> getFieldsValues($className? obj, {bool withHashCode = false}) {');
+
+    str.write('    return <String,dynamic>{\n');
+    for (var fieldName in entries.keys) {
+      if (fieldName == 'hashCode') continue;
+      str.write("      '$fieldName': obj?.$fieldName,");
+    }
+    str.write("      if (withHashCode) 'hashCode': obj?.hashCode,");
+    str.write('    };\n');
+
+    str.write('  }\n\n');
   }
 
-  void _buildStaticField(StringBuffer str) {
+  void _buildStaticFields(StringBuffer str) {
     var entries = _toFieldEntries(staticFields);
     var names = _buildStringListCode(entries.keys, sorted: true);
 
@@ -2046,29 +2068,29 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     if (entries.isEmpty) {
       str.write('  @override\n');
       str.write(
-          '  FieldReflection<$className,T>? staticField<T>(String fieldName) => null;\n\n');
+          '  StaticFieldReflection<$className,T>? staticField<T>(String fieldName) => null;\n\n');
       return;
     }
 
     str.write(
-        '  static final Map<String,FieldReflection<$className,dynamic>> _staticFields = <String,FieldReflection<$className,dynamic>>{};\n\n');
+        '  static final Map<String,StaticFieldReflection<$className,dynamic>> _staticFields = {};\n\n');
 
     str.write('  @override\n');
     str.write(
-        '  FieldReflection<$className,T>? staticField<T>(String fieldName) {\n');
+        '  StaticFieldReflection<$className,T>? staticField<T>(String fieldName) {\n');
 
     str.write('    var f = _staticFields[fieldName];\n');
     str.write(
-        '    if (f != null) {return f as FieldReflection<$className,T>;}\n');
+        '    if (f != null) {return f as StaticFieldReflection<$className,T>;}\n');
     str.write('    f = _staticFieldImpl(fieldName);\n');
     str.write('    if (f == null) return null;\n');
     str.write('    _staticFields[fieldName] = f;\n');
-    str.write('    return f as FieldReflection<$className,T>;\n');
+    str.write('    return f as StaticFieldReflection<$className,T>;\n');
 
     str.write('  }\n\n');
 
     str.write(
-        '  FieldReflection<$className,dynamic>? _staticFieldImpl(String fieldName) {\n');
+        '  StaticFieldReflection<$className,dynamic>? _staticFieldImpl(String fieldName) {\n');
 
     _buildSwitches(str, 'fieldName', entries.keys, (name) {
       var field = entries[name]!;
@@ -2081,14 +2103,13 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       var fullType = field.typeNameAsNullableCode;
       var nullable = field.nullable ? 'true' : 'false';
       var isFinal = field.isFinal ? 'true' : 'false';
-      var getter = '(o) => () => $className.$name';
+      var getter = '() => () => $className.$name';
       var setter =
-          !field.allowSetter ? 'null' : '(o) => (v) => $className.$name = v';
+          !field.allowSetter ? 'null' : '() => (v) => $className.$name = v';
 
-      return "FieldReflection<$className,$fullType>(this, $declaringType, "
+      return "StaticFieldReflection<$className,$fullType>(this, $declaringType, "
           "$typeCode, '$name', $nullable, "
-          "$getter , $setter , "
-          "null, true, $isFinal, "
+          "$getter , $setter , $isFinal, "
           "${field.annotationsAsListCode}, "
           ")";
     });
@@ -2140,10 +2161,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     }
 
     str.write(
-        '  static final Map<String,MethodReflection<$className,dynamic>> _methodsNoObject = <String,MethodReflection<$className,dynamic>>{};\n\n');
+        '  static final Map<String,MethodReflection<$className,dynamic>> _methodsNoObject = {};\n\n');
 
     str.write(
-        '  final Map<String,MethodReflection<$className,dynamic>> _methodsObject = <String,MethodReflection<$className,dynamic>>{};\n\n');
+        '  final Map<String,MethodReflection<$className,dynamic>> _methodsObject = {};\n\n');
 
     str.write('  @override\n');
     str.write(
@@ -2206,7 +2227,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       var nullable = method.returnNullable ? 'true' : 'false';
 
       return "MethodReflection<$className,$returnType>("
-          "this, $declaringType, '$name', $returnTypeAsCode, $nullable, (o) => o!.$name , obj , false, "
+          "this, $declaringType, '$name', $returnTypeAsCode, $nullable, (o) => o!.$name , obj , "
           "${method.normalParametersAsCode} , "
           "${method.optionalParametersAsCode}, "
           "${method.namedParametersAsCode}, "
@@ -2230,29 +2251,29 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     if (entries.isEmpty) {
       str.write('  @override\n');
       str.write(
-          '  MethodReflection<$className,R>? staticMethod<R>(String methodName) => null;\n\n');
+          '  StaticMethodReflection<$className,R>? staticMethod<R>(String methodName) => null;\n\n');
       return;
     }
 
     str.write(
-        '  static final Map<String,MethodReflection<$className,dynamic>> _staticMethods = <String,MethodReflection<$className,dynamic>>{};\n\n');
+        '  static final Map<String,StaticMethodReflection<$className,dynamic>> _staticMethods = {};\n\n');
 
     str.write('  @override\n');
     str.write(
-        '  MethodReflection<$className,R>? staticMethod<R>(String methodName) {\n');
+        '  StaticMethodReflection<$className,R>? staticMethod<R>(String methodName) {\n');
 
     str.write('    var m = _staticMethods[methodName];\n');
     str.write(
-        '    if (m != null) {return m as MethodReflection<$className,R>;}\n');
+        '    if (m != null) {return m as StaticMethodReflection<$className,R>;}\n');
     str.write('    m = _staticMethodImpl(methodName);\n');
     str.write('    if (m == null) return null;\n');
     str.write('    _staticMethods[methodName] = m;\n');
-    str.write('    return m as MethodReflection<$className,R>;\n');
+    str.write('    return m as StaticMethodReflection<$className,R>;\n');
 
     str.write('  }\n\n');
 
     str.write(
-        '  MethodReflection<$className,dynamic>? _staticMethodImpl(String methodName) {\n');
+        '  StaticMethodReflection<$className,dynamic>? _staticMethodImpl(String methodName) {\n');
 
     _buildSwitches(str, 'methodName', entries.keys, (name) {
       var method = entries[name]!;
@@ -2265,8 +2286,8 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       var returnTypeAsCode = method.returnTypeAsCode;
       var nullable = method.returnNullable ? 'true' : 'false';
 
-      return "MethodReflection<$className,$returnType>("
-          "this, $declaringType, '$name', $returnTypeAsCode, $nullable, (o) => $className.$name , null , true, "
+      return "StaticMethodReflection<$className,$returnType>("
+          "this, $declaringType, '$name', $returnTypeAsCode, $nullable, () => $className.$name , "
           "${method.normalParametersAsCode} , "
           "${method.optionalParametersAsCode}, "
           "${method.namedParametersAsCode}, "

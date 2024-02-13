@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.2.9
+// BUILDER: reflection_factory/2.3.0
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -20,7 +20,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.2.9');
+  static final Version _version = Version.parse('2.3.0');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -97,8 +97,7 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
   @override
   List<String> get constructorsNames => _constructorsNames;
 
-  static final Map<String, ConstructorReflection<User>> _constructors =
-      <String, ConstructorReflection<User>>{};
+  static final Map<String, ConstructorReflection<User>> _constructors = {};
 
   @override
   ConstructorReflection<User>? constructor(String constructorName) {
@@ -160,11 +159,9 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
   @override
   List<String> get fieldsNames => _fieldsNames;
 
-  static final Map<String, FieldReflection<User, dynamic>> _fieldsNoObject =
-      <String, FieldReflection<User, dynamic>>{};
+  static final Map<String, FieldReflection<User, dynamic>> _fieldsNoObject = {};
 
-  final Map<String, FieldReflection<User, dynamic>> _fieldsObject =
-      <String, FieldReflection<User, dynamic>>{};
+  final Map<String, FieldReflection<User, dynamic>> _fieldsObject = {};
 
   @override
   FieldReflection<User, T>? field<T>(String fieldName, [User? obj]) {
@@ -220,7 +217,6 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
           (o) => (v) => o!.email = v,
           obj,
           false,
-          false,
         );
       case 'pass':
         return FieldReflection<User, String>(
@@ -232,7 +228,6 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
           (o) => () => o!.pass,
           (o) => (v) => o!.pass = v,
           obj,
-          false,
           false,
         );
       case 'hasemail':
@@ -246,11 +241,20 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
           null,
           obj,
           false,
-          false,
         );
       default:
         return null;
     }
+  }
+
+  @override
+  Map<String, dynamic> getFieldsValues(User? obj, {bool withHashCode = false}) {
+    return <String, dynamic>{
+      'email': obj?.email,
+      'pass': obj?.pass,
+      'hasEmail': obj?.hasEmail,
+      if (withHashCode) 'hashCode': obj?.hashCode,
+    };
   }
 
   static const List<String> _staticFieldsNames = const <String>[];
@@ -259,7 +263,7 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
   List<String> get staticFieldsNames => _staticFieldsNames;
 
   @override
-  FieldReflection<User, T>? staticField<T>(String fieldName) => null;
+  StaticFieldReflection<User, T>? staticField<T>(String fieldName) => null;
 
   static const List<String> _methodsNames = const <String>['checkPassword'];
 
@@ -267,10 +271,9 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
   List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<User, dynamic>> _methodsNoObject =
-      <String, MethodReflection<User, dynamic>>{};
+      {};
 
-  final Map<String, MethodReflection<User, dynamic>> _methodsObject =
-      <String, MethodReflection<User, dynamic>>{};
+  final Map<String, MethodReflection<User, dynamic>> _methodsObject = {};
 
   @override
   MethodReflection<User, R>? method<R>(String methodName, [User? obj]) {
@@ -324,7 +327,6 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
             false,
             (o) => o!.checkPassword,
             obj,
-            false,
             const <__PR>[__PR(__TR.tString, 'pass', false, true)],
             null,
             null,
@@ -340,7 +342,7 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
   List<String> get staticMethodsNames => _staticMethodsNames;
 
   @override
-  MethodReflection<User, R>? staticMethod<R>(String methodName) => null;
+  StaticMethodReflection<User, R>? staticMethod<R>(String methodName) => null;
 }
 
 extension User$reflectionExtension on User {

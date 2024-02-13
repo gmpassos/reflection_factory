@@ -1097,7 +1097,7 @@ void main() {
       expect(
           staticField.toString(),
           startsWith(
-              'FieldReflection{ class: TestUserWithReflection, name: version, type: double, static: true,'));
+              'StaticFieldReflection{ class: TestUserWithReflection, name: version, type: double, static: true,'));
 
       expect(staticField.get(), equals(1.1));
 
@@ -1228,7 +1228,7 @@ void main() {
       expect(
           staticMethod.toString(),
           startsWith(
-              'MethodReflection{ class: TestUserWithReflection, name: isVersion, returnType: bool, static: true,'));
+              'StaticMethodReflection{ class: TestUserWithReflection, name: isVersion, returnType: bool, static: true,'));
 
       var fieldResolver = userReflection.fieldResolver('email');
       expect(fieldResolver.isResolved, isFalse);
@@ -1245,7 +1245,6 @@ void main() {
           userReflection
               .staticFieldResolver('version')
               .get()!
-              .withObject(user2)
               .get(),
           equals(1.1));
 
@@ -1261,7 +1260,6 @@ void main() {
           userReflection
               .staticMethodResolver('isVersion')
               .get()!
-              .withObject(user2)
               .invoke([1.1]),
           isTrue);
 
