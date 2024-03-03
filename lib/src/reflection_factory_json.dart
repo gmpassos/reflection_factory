@@ -446,6 +446,9 @@ abstract class JsonEncoder extends JsonConverter<Object?, String> {
   /// Resets the entities cache used to resolve duplicated entities in the same tree.
   void resetEntityCache();
 
+  /// The [JsonEntityCache] of this encoder.
+  JsonEntityCache? get entityCache;
+
   /// Converts [o] to a JSON collection/data.
   /// - [maskField] when preset indicates if a field value should be masked with [maskText].
   T? toJson<T>(Object? o,
@@ -565,6 +568,7 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
 
   final ToEncodableJson? toEncodable;
 
+  @override
   final JsonEntityCache entityCache;
 
   final bool forceDuplicatedEntitiesAsID;

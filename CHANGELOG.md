@@ -1,3 +1,11 @@
+## 2.3.1
+
+- `JsonEncoder`:
+  - Expose `entityCache`.
+
+- data_serializer: ^1.1.0
+- dart_style: ^2.3.6
+
 ## 2.3.0
 
 - New `StaticFunctionReflection`.
