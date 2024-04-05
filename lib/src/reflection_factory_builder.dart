@@ -2043,7 +2043,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  @override\n');
     str.write(
         '  Map<String,dynamic> getFieldsValues($className? obj, {bool withHashCode = false}) {');
-
+    str.write('    obj ??= object;\n');
     str.write('    return <String,dynamic>{\n');
     for (var fieldName in entries.keys) {
       if (fieldName == 'hashCode') continue;
@@ -2051,8 +2051,44 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     }
     str.write("      if (withHashCode) 'hashCode': obj?.hashCode,");
     str.write('    };\n');
-
     str.write('  }\n\n');
+
+    var entriesWithJsonFieldHidden = entries.entries
+        .where((e) =>
+            e.key != 'hashCode' &&
+            e.value.annotations.any((a) {
+              var o = a.computeConstantValue();
+              if (o == null) return false;
+
+              var isJsonField =
+                  o.type?.getDisplayString(withNullability: false) ==
+                      'JsonField';
+              if (!isJsonField) return false;
+
+              var hidden = o.getField('_hidden')?.toBoolValue() ?? false;
+              return hidden;
+            }))
+        .toList();
+
+    if (entriesWithJsonFieldHidden.isNotEmpty) {
+      var hiddenKeys = entriesWithJsonFieldHidden.map((e) => e.key).toSet();
+      var visibleKeys =
+          entries.keys.where((k) => !hiddenKeys.contains(k)).toList();
+
+      str.write('  @override\n');
+      str.write(
+          '  Map<String,dynamic> getJsonFieldsVisibleValues($className? obj, {bool withHashCode = false}) {');
+      str.write('    obj ??= object;\n');
+      str.write('    return <String,dynamic>{\n');
+      for (var fieldName in visibleKeys) {
+        if (fieldName == 'hashCode') continue;
+        str.write("      '$fieldName': obj?.$fieldName,");
+      }
+      str.write("      if (withHashCode) 'hashCode': obj?.hashCode,");
+      str.write('    };\n');
+
+      str.write('  }\n\n');
+    }
   }
 
   void _buildStaticFields(StringBuffer str) {

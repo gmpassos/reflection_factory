@@ -15,6 +15,51 @@ void main() {
   group('ReflectionBuilder', () {
     setUp(() {});
 
+    test('EnableReflection: TestEmpty', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'foo.reflection.g.dart';
+          
+          @EnableReflection()
+          class TestEmpty {}
+        
+        '''
+      };
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        reader: await PackageAssetReader.currentIsolate(),
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of 'foo.dart'"),
+              contains(
+                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')"),
+            ),
+            allOf(
+              contains('TestEmpty\$reflection'),
+              contains('TestEmpty\$reflectionExtension'),
+              isNot(contains(
+                  "Map<String, dynamic> getJsonFieldsVisibleValues(TestEmpty? obj,")),
+            ),
+          )),
+        },
+        onLog: (msg) {
+          print(msg);
+        },
+      );
+    });
+
     test('EnableReflection: User', () async {
       var builder = ReflectionBuilder(verbose: true);
 
@@ -43,7 +88,9 @@ void main() {
             
             @TestAnnotation(['field', 'email'])
             String? email ;
+            @JsonField.hidden()
             String pass ;
+            @JsonField.visible()
             bool enabled ;
             
             User(this.email, {required this.pass, this.enabled = true});
@@ -129,6 +176,10 @@ void main() {
                   r'Map<String, dynamic>\?\s+toJsonMap\(\{bool duplicatedEntitiesAsID = false\}\)\s+=>\s+reflection.toJsonMap\(duplicatedEntitiesAsID: duplicatedEntitiesAsID\)')),
             ),
             allOf(
+              contains("JsonField.hidden()"),
+              contains("JsonField.visible()"),
+              contains(
+                  "Map<String, dynamic> getJsonFieldsVisibleValues(User? obj,"),
               contains("case 'tojson':"),
               contains("case 'getfield':"),
               contains("case 'setfield':"),

@@ -28,9 +28,11 @@ class TestUserWithReflection {
 
   final String name;
 
+  @JsonField.visible()
   String? email;
 
-  String password;
+  @JsonField.hidden()
+  String? password;
 
   bool enabled;
 
@@ -40,12 +42,12 @@ class TestUserWithReflection {
   int? level;
 
   TestUserWithReflection.fields(
-      this.name, this.email, @JsonFieldAlias('password') String passphrase,
+      this.name, this.email, @JsonFieldAlias('password') String? passphrase,
       {this.enabled = true,
       this.axis = TestEnumWithReflection.x,
       this.level,
       this.id})
-      : password = passphrase.trim();
+      : password = passphrase?.trim();
 
   TestUserWithReflection()
       : this.fields(

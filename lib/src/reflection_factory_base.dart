@@ -21,7 +21,7 @@ import 'reflection_factory_utils.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.3.1';
+  static const String VERSION = '2.3.2';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -1434,6 +1434,12 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   /// Returns a [Map] with [allFields] values.
   Map<String, dynamic> getFieldsValues(O? obj, {bool withHashCode = false});
+
+  /// Returns a [Map] with [allFields] values without [JsonField.hidden].
+  /// - Note that [JsonField.visible] is an alias to `JsonField(hidden: false)`.
+  Map<String, dynamic> getJsonFieldsVisibleValues(O? obj,
+          {bool withHashCode = false}) =>
+      getFieldsValues(obj, withHashCode: withHashCode);
 
   /// Invokes the method for [methodName].
   R? invokeMethod<R>(String methodName, Iterable<Object?>? positionalArguments,
