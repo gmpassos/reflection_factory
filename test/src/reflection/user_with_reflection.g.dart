@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.3.1
+// BUILDER: reflection_factory/2.3.2
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -20,7 +20,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.3.1');
+  static final Version _version = Version.parse('2.3.2');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -397,6 +397,7 @@ class TestAddressWithReflection$reflection
   @override
   Map<String, dynamic> getFieldsValues(TestAddressWithReflection? obj,
       {bool withHashCode = false}) {
+    obj ??= object;
     return <String, dynamic>{
       'id': obj?.id,
       'state': obj?.state,
@@ -872,6 +873,7 @@ class TestCompanyWithReflection$reflection
   @override
   Map<String, dynamic> getFieldsValues(TestCompanyWithReflection? obj,
       {bool withHashCode = false}) {
+    obj ??= object;
     return <String, dynamic>{
       'name': obj?.name,
       'mainAddress': obj?.mainAddress,
@@ -887,8 +889,13 @@ class TestCompanyWithReflection$reflection
   Map<String, dynamic> getJsonFieldsVisibleValues(
       TestCompanyWithReflection? obj,
       {bool withHashCode = false}) {
+    obj ??= object;
     return <String, dynamic>{
-      'local': obj?.local,
+      'name': obj?.name,
+      'mainAddress': obj?.mainAddress,
+      'extraNames': obj?.extraNames,
+      'branchesAddresses': obj?.branchesAddresses,
+      'extraAddresses': obj?.extraAddresses,
       if (withHashCode) 'hashCode': obj?.hashCode,
     };
   }
@@ -1253,6 +1260,7 @@ class TestDataWithReflection$reflection
   @override
   Map<String, dynamic> getFieldsValues(TestDataWithReflection? obj,
       {bool withHashCode = false}) {
+    obj ??= object;
     return <String, dynamic>{
       'name': obj?.name,
       'id': obj?.id,
@@ -1599,6 +1607,7 @@ class TestDomainWithReflection$reflection
   @override
   Map<String, dynamic> getFieldsValues(TestDomainWithReflection? obj,
       {bool withHashCode = false}) {
+    obj ??= object;
     return <String, dynamic>{
       'name': obj?.name,
       'suffix': obj?.suffix,
@@ -2229,6 +2238,7 @@ class TestFranchiseWithReflection$reflection
   @override
   Map<String, dynamic> getFieldsValues(TestFranchiseWithReflection? obj,
       {bool withHashCode = false}) {
+    obj ??= object;
     return <String, dynamic>{
       'name': obj?.name,
       'addresses': obj?.addresses,
@@ -2525,6 +2535,7 @@ class TestName$reflection extends ClassReflection<TestName>
   @override
   Map<String, dynamic> getFieldsValues(TestName? obj,
       {bool withHashCode = false}) {
+    obj ??= object;
     return <String, dynamic>{
       'name': obj?.name,
       'isEmpty': obj?.isEmpty,
@@ -2849,6 +2860,7 @@ class TestOpAWithReflection$reflection
   @override
   Map<String, dynamic> getFieldsValues(TestOpAWithReflection? obj,
       {bool withHashCode = false}) {
+    obj ??= object;
     return <String, dynamic>{
       'value': obj?.value,
       'type': obj?.type,
@@ -3228,6 +3240,7 @@ class TestOpBWithReflection$reflection
   @override
   Map<String, dynamic> getFieldsValues(TestOpBWithReflection? obj,
       {bool withHashCode = false}) {
+    obj ??= object;
     return <String, dynamic>{
       'amount': obj?.amount,
       'type': obj?.type,
@@ -3608,6 +3621,7 @@ class TestOpWithReflection$reflection
   @override
   Map<String, dynamic> getFieldsValues(TestOpWithReflection? obj,
       {bool withHashCode = false}) {
+    obj ??= object;
     return <String, dynamic>{
       'type': obj?.type,
       'value': obj?.value,
@@ -4023,6 +4037,7 @@ class TestTransactionWithReflection$reflection
   @override
   Map<String, dynamic> getFieldsValues(TestTransactionWithReflection? obj,
       {bool withHashCode = false}) {
+    obj ??= object;
     return <String, dynamic>{
       'fromUser': obj?.fromUser,
       'toUser': obj?.toUser,
@@ -4154,7 +4169,7 @@ class TestUserWithReflection$reflection
             this,
             TestUserWithReflection,
             'fields',
-            () => (String name, String? email, String passphrase,
+            () => (String name, String? email, String? passphrase,
                     {bool enabled = true,
                     TestEnumWithReflection axis = TestEnumWithReflection.x,
                     int? level,
@@ -4164,7 +4179,7 @@ class TestUserWithReflection$reflection
             const <__PR>[
               __PR(__TR.tString, 'name', false, true),
               __PR(__TR.tString, 'email', true, true),
-              __PR(__TR.tString, 'passphrase', false, true, null,
+              __PR(__TR.tString, 'passphrase', true, true, null,
                   const [JsonFieldAlias('password')])
             ],
             null,
@@ -4314,12 +4329,12 @@ class TestUserWithReflection$reflection
           const [JsonField.visible()],
         );
       case 'password':
-        return FieldReflection<TestUserWithReflection, String>(
+        return FieldReflection<TestUserWithReflection, String?>(
           this,
           TestUserWithReflection,
           __TR.tString,
           'password',
-          false,
+          true,
           (o) => () => o!.password,
           (o) => (v) => o!.password = v,
           obj,
@@ -4410,6 +4425,7 @@ class TestUserWithReflection$reflection
   @override
   Map<String, dynamic> getFieldsValues(TestUserWithReflection? obj,
       {bool withHashCode = false}) {
+    obj ??= object;
     return <String, dynamic>{
       'id': obj?.id,
       'name': obj?.name,
@@ -4427,8 +4443,16 @@ class TestUserWithReflection$reflection
   @override
   Map<String, dynamic> getJsonFieldsVisibleValues(TestUserWithReflection? obj,
       {bool withHashCode = false}) {
+    obj ??= object;
     return <String, dynamic>{
-      'password': obj?.password,
+      'id': obj?.id,
+      'name': obj?.name,
+      'email': obj?.email,
+      'enabled': obj?.enabled,
+      'axis': obj?.axis,
+      'level': obj?.level,
+      'isEnabled': obj?.isEnabled,
+      'isNotEnabled': obj?.isNotEnabled,
       if (withHashCode) 'hashCode': obj?.hashCode,
     };
   }
