@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.3.2
+// BUILDER: reflection_factory/2.3.3
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -20,7 +20,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.3.2');
+  static final Version _version = Version.parse('2.3.3');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -4445,7 +4445,6 @@ class TestUserWithReflection$reflection
       'axis': obj?.axis,
       'level': obj?.level,
       'isEnabled': obj?.isEnabled,
-      'isNotEnabled': obj?.isNotEnabled,
       if (withHashCode) 'hashCode': obj?.hashCode,
     };
   }

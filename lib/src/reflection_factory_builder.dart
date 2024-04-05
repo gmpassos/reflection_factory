@@ -2836,9 +2836,12 @@ class _Element {
     return null;
   }
 
-  List<ElementAnnotation> get annotations => _element.metadata;
+  List<ElementAnnotation>? _annotations;
 
-  List<String> get annotationsAsCode {
+  List<ElementAnnotation> get annotations =>
+      _annotations ??= _annotationsImpl();
+
+  List<ElementAnnotation> _annotationsImpl() {
     var element = _element;
     var metadata = List<ElementAnnotation>.from(element.metadata);
 
@@ -2854,7 +2857,11 @@ class _Element {
       }
     }
 
-    return metadata
+    return UnmodifiableListView(metadata);
+  }
+
+  List<String> get annotationsAsCode {
+    return annotations
         .map((e) => e.toSource())
         .where((src) =>
             !src.startsWith('@EnableReflection(') &&

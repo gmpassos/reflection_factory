@@ -1,3 +1,8 @@
+## 2.3.3
+
+- `ClassReflection`:
+  - Fix generation of `getJsonFieldsVisibleValues` for getters and setters with `JsonField.hidden` annotations.
+
 ## 2.3.2
 
 - `ClassReflection`:
