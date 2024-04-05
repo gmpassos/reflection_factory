@@ -1435,6 +1435,12 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// Returns a [Map] with [allFields] values.
   Map<String, dynamic> getFieldsValues(O? obj, {bool withHashCode = false});
 
+  /// Returns a [Map] with [allFields] values without [JsonField.hidden].
+  /// - Note that [JsonField.visible] is an alias to `JsonField(hidden: false)`.
+  Map<String, dynamic> getJsonFieldsVisibleValues(O? obj,
+          {bool withHashCode = false}) =>
+      getFieldsValues(obj, withHashCode: withHashCode);
+
   /// Invokes the method for [methodName].
   R? invokeMethod<R>(String methodName, Iterable<Object?>? positionalArguments,
       [Map<Symbol, Object?>? namedArguments]) {

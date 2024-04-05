@@ -43,7 +43,9 @@ void main() {
             
             @TestAnnotation(['field', 'email'])
             String? email ;
+            @JsonField.hidden()
             String pass ;
+            @JsonField.visible()
             bool enabled ;
             
             User(this.email, {required this.pass, this.enabled = true});
@@ -129,6 +131,9 @@ void main() {
                   r'Map<String, dynamic>\?\s+toJsonMap\(\{bool duplicatedEntitiesAsID = false\}\)\s+=>\s+reflection.toJsonMap\(duplicatedEntitiesAsID: duplicatedEntitiesAsID\)')),
             ),
             allOf(
+              contains("JsonField.hidden()"),
+              contains("JsonField.visible()"),
+              matches(RegExp(r"<String, dynamic>\{\s+'pass': obj\?.pass,")),
               contains("case 'tojson':"),
               contains("case 'getfield':"),
               contains("case 'setfield':"),

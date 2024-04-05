@@ -883,6 +883,16 @@ class TestCompanyWithReflection$reflection
     };
   }
 
+  @override
+  Map<String, dynamic> getJsonFieldsVisibleValues(
+      TestCompanyWithReflection? obj,
+      {bool withHashCode = false}) {
+    return <String, dynamic>{
+      'local': obj?.local,
+      if (withHashCode) 'hashCode': obj?.hashCode,
+    };
+  }
+
   static const List<String> _staticFieldsNames = const <String>[];
 
   @override
@@ -1849,6 +1859,13 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
 
   @override
   Map<String, dynamic> getFieldsValues(TestEmpty? obj,
+          {bool withHashCode = false}) =>
+      {
+        if (withHashCode) 'hashCode': obj?.hashCode,
+      };
+
+  @override
+  Map<String, dynamic> getJsonFieldsVisibleValues(TestEmpty? obj,
           {bool withHashCode = false}) =>
       {
         if (withHashCode) 'hashCode': obj?.hashCode,
@@ -4294,6 +4311,7 @@ class TestUserWithReflection$reflection
           (o) => (v) => o!.email = v,
           obj,
           false,
+          const [JsonField.visible()],
         );
       case 'password':
         return FieldReflection<TestUserWithReflection, String>(
@@ -4306,6 +4324,7 @@ class TestUserWithReflection$reflection
           (o) => (v) => o!.password = v,
           obj,
           false,
+          const [JsonField.hidden()],
         );
       case 'enabled':
         return FieldReflection<TestUserWithReflection, bool>(
@@ -4401,6 +4420,15 @@ class TestUserWithReflection$reflection
       'level': obj?.level,
       'isEnabled': obj?.isEnabled,
       'isNotEnabled': obj?.isNotEnabled,
+      if (withHashCode) 'hashCode': obj?.hashCode,
+    };
+  }
+
+  @override
+  Map<String, dynamic> getJsonFieldsVisibleValues(TestUserWithReflection? obj,
+      {bool withHashCode = false}) {
+    return <String, dynamic>{
+      'password': obj?.password,
       if (withHashCode) 'hashCode': obj?.hashCode,
     };
   }

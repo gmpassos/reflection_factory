@@ -28,8 +28,10 @@ class TestUserWithReflection {
 
   final String name;
 
+  @JsonField.visible()
   String? email;
 
+  @JsonField.hidden()
   String password;
 
   bool enabled;

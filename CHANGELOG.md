@@ -1,3 +1,11 @@
+## 2.3.2
+
+- `ClassReflection`:
+  - Added `getJsonFieldsVisibleValues`
+
+- meta: ^1.14.0
+- build_runner: ^2.4.9
+
 ## 2.3.1
 
 - `JsonEncoder`:

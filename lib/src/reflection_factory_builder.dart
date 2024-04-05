@@ -1950,6 +1950,12 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
           "  if (withHashCode) 'hashCode': obj?.hashCode,"
           '};\n\n');
 
+      str.write('  @override\n');
+      str.write(
+          '  Map<String,dynamic> getJsonFieldsVisibleValues($className? obj, {bool withHashCode = false}) => {\n'
+          "  if (withHashCode) 'hashCode': obj?.hashCode,"
+          '};\n\n');
+
       return;
     }
 
@@ -2040,6 +2046,21 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
     str.write('  }\n\n');
 
+    var entriesWithJsonFieldHidden = entries.entries
+        .where((e) => e.value.annotations.any((a) {
+              var o = a.computeConstantValue();
+              if (o == null) return false;
+
+              var isJsonField =
+                  o.type?.getDisplayString(withNullability: false) ==
+                      'JsonField';
+              if (!isJsonField) return false;
+
+              var hidden = o.getField('_hidden')?.toBoolValue() ?? false;
+              return hidden;
+            }))
+        .toList();
+
     str.write('  @override\n');
     str.write(
         '  Map<String,dynamic> getFieldsValues($className? obj, {bool withHashCode = false}) {');
@@ -2051,8 +2072,23 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     }
     str.write("      if (withHashCode) 'hashCode': obj?.hashCode,");
     str.write('    };\n');
-
     str.write('  }\n\n');
+
+    if (entriesWithJsonFieldHidden.isNotEmpty) {
+      str.write('  @override\n');
+      str.write(
+          '  Map<String,dynamic> getJsonFieldsVisibleValues($className? obj, {bool withHashCode = false}) {');
+
+      str.write('    return <String,dynamic>{\n');
+      for (var fieldName in entriesWithJsonFieldHidden.map((e) => e.key)) {
+        if (fieldName == 'hashCode') continue;
+        str.write("      '$fieldName': obj?.$fieldName,");
+      }
+      str.write("      if (withHashCode) 'hashCode': obj?.hashCode,");
+      str.write('    };\n');
+
+      str.write('  }\n\n');
+    }
   }
 
   void _buildStaticFields(StringBuffer str) {
