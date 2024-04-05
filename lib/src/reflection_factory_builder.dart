@@ -2064,7 +2064,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  @override\n');
     str.write(
         '  Map<String,dynamic> getFieldsValues($className? obj, {bool withHashCode = false}) {');
-
+    str.write('    obj ??= object;\n');
     str.write('    return <String,dynamic>{\n');
     for (var fieldName in entries.keys) {
       if (fieldName == 'hashCode') continue;
@@ -2075,12 +2075,16 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  }\n\n');
 
     if (entriesWithJsonFieldHidden.isNotEmpty) {
+      var hiddenKeys = entriesWithJsonFieldHidden.map((e) => e.key).toSet();
+      var visibleKeys =
+          entries.keys.where((k) => !hiddenKeys.contains(k)).toList();
+
       str.write('  @override\n');
       str.write(
           '  Map<String,dynamic> getJsonFieldsVisibleValues($className? obj, {bool withHashCode = false}) {');
-
+      str.write('    obj ??= object;\n');
       str.write('    return <String,dynamic>{\n');
-      for (var fieldName in entriesWithJsonFieldHidden.map((e) => e.key)) {
+      for (var fieldName in visibleKeys) {
         if (fieldName == 'hashCode') continue;
         str.write("      '$fieldName': obj?.$fieldName,");
       }
