@@ -1873,13 +1873,6 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
         if (withHashCode) 'hashCode': obj?.hashCode,
       };
 
-  @override
-  Map<String, dynamic> getJsonFieldsVisibleValues(TestEmpty? obj,
-          {bool withHashCode = false}) =>
-      {
-        if (withHashCode) 'hashCode': obj?.hashCode,
-      };
-
   static const List<String> _staticFieldsNames = const <String>[];
 
   @override
