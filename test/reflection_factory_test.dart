@@ -240,10 +240,41 @@ void main() {
       }
 
       {
+        expect(
+            userReflection.getFieldsValues(null),
+            equals({
+              'id': 1001,
+              'name': 'Joe',
+              'email': 'joe@mail.com',
+              'password': '123',
+              'enabled': true,
+              'axis': TestEnumWithReflection.x,
+              'level': null,
+              'isEnabled': true,
+              'isNotEnabled': false
+            }));
+
+        expect(
+            userReflection.getJsonFieldsVisibleValues(null),
+            equals({
+              'id': 1001,
+              'name': 'Joe',
+              'email': 'joe@mail.com',
+              //'password': '123',
+              'enabled': true,
+              'axis': TestEnumWithReflection.x,
+              'level': null,
+              'isEnabled': true,
+              'isNotEnabled': false
+            }));
+      }
+
+      {
         var entityFields = userReflection.entityFields();
         expect(entityFields.every((f) => identical(f.object, user)), isTrue);
+
         expect(
-            entityFields.map((f) => f.name),
+            entityFields.map((f) => f.name).toList(),
             equals([
               'axis',
               'email',
@@ -252,7 +283,7 @@ void main() {
               'isEnabled',
               'level',
               'name',
-              'password'
+              //'password'
             ]));
 
         var user2 = TestUserWithReflection.fields(
@@ -342,7 +373,7 @@ void main() {
             'isEnabled': true,
             'theLevel': null,
             'name': 'Foo',
-            'password': '123'
+            //'password': '123'
           }));
 
       expect(
@@ -356,7 +387,7 @@ void main() {
             'isEnabled': true,
             'theLevel': null,
             'name': 'Foo',
-            'password': '123'
+            //'password': '123'
           }));
 
       expect(
@@ -369,7 +400,7 @@ void main() {
             'isEnabled': true,
             'theLevel': null,
             'name': 'Foo',
-            'password': '123'
+            //'password': '123'
           }));
 
       expect(
@@ -383,7 +414,7 @@ void main() {
             'isEnabled': true,
             'theLevel': null,
             'name': 'Foo',
-            'password': '123'
+            //'password': '123'
           }));
 
       expect(
@@ -406,7 +437,7 @@ void main() {
             'isEnabled': true,
             'theLevel': null,
             'name': 'Foo',
-            'password': '123'
+            //'password': '123'
           }));
 
       expect(
@@ -431,7 +462,7 @@ void main() {
             'isEnabled': true,
             'theLevel': null,
             'name': 'Foo',
-            'password': '123'
+            //'password': '123'
           }));
 
       expect(TestUserWithReflection$reflection.staticInstance.hasFinalField,
@@ -986,7 +1017,7 @@ void main() {
           equals(['axis', 'email', 'enabled', 'id', 'level', 'password']));
 
       expect(userReflection.fieldsWhere((f) => f.nullable).map((f) => f.name),
-          equals(['email', 'id', 'level']));
+          equals(['email', 'id', 'level', 'password']));
 
       expect(
           userReflection
@@ -1059,7 +1090,7 @@ void main() {
       expect(userReflection.getField('email'), equals('joe@mail.com'));
 
       expect(userReflection.getField('password'), equals('123'));
-      userReflection.setField('password', 'abc');
+      userReflection.setField<String?>('password', 'abc');
       expect(userReflection.getField('password'), equals('abc'));
 
       var field = userReflection.field('email')!;
@@ -1173,7 +1204,7 @@ void main() {
           ]));
       expect(allFields.whereFinal().toNames(), equals(['name']));
       expect(allFields.whereNullable().toNames(),
-          equals(['email', 'id', 'level']));
+          equals(['email', 'id', 'level', 'password']));
       expect(
           allFields.toTypes(),
           equals([
@@ -1370,12 +1401,12 @@ void main() {
             'isEnabled': true,
             'theLevel': null,
             'name': 'Joe',
-            'password': 'abc'
+            //'password': 'abc'
           }));
       expect(
           userReflection.toJsonEncoded(),
           equals(
-              '{"axis":"x","email":"joe@mail.net","enabled":true,"id":1001,"isEnabled":true,"theLevel":null,"name":"Joe","password":"abc"}'));
+              '{"axis":"x","email":"joe@mail.net","enabled":true,"id":1001,"isEnabled":true,"theLevel":null,"name":"Joe"}'));
 
       expect(
           ReflectionFactory.toJsonEncodable(user),
@@ -1387,7 +1418,7 @@ void main() {
             'isEnabled': true,
             'theLevel': null,
             'name': 'Joe',
-            'password': 'abc'
+            //'password': 'abc'
           }));
 
       var userDecoded = TestUserWithReflection$fromJsonEncoded(
@@ -1403,7 +1434,7 @@ void main() {
             'isEnabled': false,
             'theLevel': 123,
             'name': 'Joe',
-            'password': 'abc'
+            //'password': 'abc'
           }));
 
       expect(ReflectionFactory.toJsonEncodable(TestAddress('NY', 'New York')),
@@ -1423,6 +1454,34 @@ void main() {
 
       expect(userStaticReflection.getStaticField('version'), equals(1.1));
       expect(userStaticReflection.getStaticField('withReflection'), isTrue);
+
+      {
+        final fieldName = userReflection.field('name')!;
+
+        expect(user.name, equals('Joe'));
+        expect(fieldName.get(), equals('Joe'));
+
+        expect(
+            () => fieldName.setNullable(null),
+            throwsA(isA<StateError>()
+                .having((e) => e.message, 'message', contains("Final field"))));
+
+        expect(user.name, equals('Joe'));
+      }
+
+      {
+        final fieldEnabled = userReflection.field('enabled')!;
+
+        expect(user.enabled, isTrue);
+        expect(fieldEnabled.get(), isTrue);
+
+        expect(
+            () => fieldEnabled.setNullable(null),
+            throwsA(isA<ArgumentError>().having((e) => e.message, 'message',
+                contains("Field can't be set to `null`"))));
+
+        expect(user.enabled, isTrue);
+      }
 
       {
         final fieldEmail = userReflection.field('email')!;
@@ -1472,15 +1531,13 @@ void main() {
         fieldPassword.setNullable('p09877');
         expect(user.password, equals('p09877'));
 
-        expect(
-            () => fieldPassword.setNullable(null),
-            throwsA(isA<ArgumentError>().having((e) => e.message, 'message',
-                contains("can't be set to `null`"))));
-
         expect(user.password, equals('p09877'));
 
         fieldPassword.set('abc');
         expect(user.password, equals('abc'));
+
+        fieldPassword.setNullable(null);
+        expect(user.password, isNull);
       }
 
       var address =

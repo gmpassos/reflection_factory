@@ -335,7 +335,7 @@ void main() {
             'enabled': true,
             'isEnabled': true,
             'name': 'Joe',
-            'password': '123'
+            //'password': '123'
           }));
 
       expect(
@@ -347,7 +347,7 @@ void main() {
             'enabled': true,
             'isEnabled': true,
             'name': 'Smith',
-            'password': '456'
+            //'password': '456'
           }));
 
       expect(
@@ -1173,20 +1173,24 @@ void main() {
         expect(
             encodedJson,
             equals(
-                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"}'));
+                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe"}'));
 
-        var decodedUser1 =
-            jsonCodec.decode(encodedJson, type: TestUserWithReflection);
+        var decodedUser1 = jsonCodec.decode<TestUserWithReflection>(
+            '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"}',
+            type: TestUserWithReflection);
+
         expect(jsonCodec.encode(decodedUser1), equals(encodedJson));
 
         var encodedUser1b =
             '{"axis":"x","email":"joe2@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe","passphrase":"123456"}';
         var decodedUser1b = jsonCodec.decode(encodedUser1b,
             type: TestUserWithReflection) as TestUserWithReflection;
+
         expect(decodedUser1b.email, equals('joe2@mail.com'));
         expect(decodedUser1b.password, equals('123456'));
+
         expect(jsonCodec.encode(decodedUser1b),
-            equals(encodedUser1b.replaceFirst('passphrase', 'password')));
+            equals(encodedUser1b.replaceFirst(',"passphrase":"123456"', '')));
       }
 
       {
@@ -1195,9 +1199,10 @@ void main() {
         expect(
             encodedJson,
             equals(
-                '{"axis":"z","email":"joe@mail.com","enabled":false,"id":null,"isEnabled":false,"theLevel":999,"name":"joe","password":"123"}'));
+                '{"axis":"z","email":"joe@mail.com","enabled":false,"id":null,"isEnabled":false,"theLevel":999,"name":"joe"}'));
 
-        var decodedUser2 = jsonCodec.decode(encodedJson,
+        var decodedUser2 = jsonCodec.decode(
+            encodedJson.replaceFirst('"}', '","password":"123"}'),
             type: TestUserWithReflection) as TestUserWithReflection;
         expect(jsonCodec.encode(decodedUser2), equals(encodedJson));
       }
@@ -1210,12 +1215,13 @@ void main() {
         expect(
             encodedJson,
             equals('['
-                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"},'
-                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"}'
+                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe"},'
+                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe"}'
                 ']'));
 
         {
-          var decoded = jsonCodec.decode(encodedJson,
+          var decoded = jsonCodec.decode(
+              encodedJson.replaceAll('"}', '","password":"123"}'),
               type: TestUserWithReflection) as List;
 
           print(decoded);
@@ -1229,8 +1235,9 @@ void main() {
         }
 
         {
-          var decoded = JsonCodec(forceDuplicatedEntitiesAsID: true)
-              .decode(encodedJson, type: TestUserWithReflection) as List;
+          var decoded = JsonCodec(forceDuplicatedEntitiesAsID: true).decode(
+              encodedJson.replaceAll('"}', '","password":"123"}'),
+              type: TestUserWithReflection) as List;
 
           print(decoded);
 
@@ -1252,12 +1259,14 @@ void main() {
         expect(
             encodedJson,
             equals('['
-                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"},'
+                '{"axis":"x","email":"joe@mail.com","enabled":true,"id":101,"isEnabled":true,"theLevel":null,"name":"joe"},'
                 '101'
                 ']'));
 
-        var decoded = jsonCodec.decode(encodedJson,
-            type: TestUserWithReflection, duplicatedEntitiesAsID: true) as List;
+        var decoded = jsonCodec.decode(
+            encodedJson.replaceAll('"}', '","password":"123"}'),
+            type: TestUserWithReflection,
+            duplicatedEntitiesAsID: true) as List;
 
         print(decoded);
 
@@ -1459,13 +1468,14 @@ void main() {
         expect(
             encodedJson,
             equals('{"amount":10,'
-                '"fromUser":{"axis":"x","email":"joe@mail.com","enabled":true,"id":1001,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"},'
-                '"toUser":{"axis":"x","email":"smith@mail.com","enabled":true,"id":1002,"isEnabled":true,"theLevel":null,"name":"smith","password":"456"}}'));
+                '"fromUser":{"axis":"x","email":"joe@mail.com","enabled":true,"id":1001,"isEnabled":true,"theLevel":null,"name":"joe"},'
+                '"toUser":{"axis":"x","email":"smith@mail.com","enabled":true,"id":1002,"isEnabled":true,"theLevel":null,"name":"smith"}}'));
 
         {
-          var decoded =
-              jsonCodec.decode(encodedJson, type: TestTransactionWithReflection)
-                  as TestTransactionWithReflection;
+          var decoded = jsonCodec.decode(
+                  encodedJson.replaceAll('"}', '","password":"123"}'),
+                  type: TestTransactionWithReflection)
+              as TestTransactionWithReflection;
 
           print(decoded);
 
@@ -1490,11 +1500,12 @@ void main() {
         expect(
             encodedJson,
             equals('{"amount":20,'
-                '"fromUser":{"axis":"x","email":"joe@mail.com","enabled":true,"id":1001,"isEnabled":true,"theLevel":null,"name":"joe","password":"123"},'
+                '"fromUser":{"axis":"x","email":"joe@mail.com","enabled":true,"id":1001,"isEnabled":true,"theLevel":null,"name":"joe"},'
                 '"toUser":1001}'));
 
         {
-          var decoded = jsonCodec.decode(encodedJson,
+          var decoded = jsonCodec.decode(
+              encodedJson.replaceAll('"}', '","password":"123"}'),
               type: TestTransactionWithReflection,
               duplicatedEntitiesAsID: true) as TestTransactionWithReflection;
 

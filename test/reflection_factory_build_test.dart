@@ -133,7 +133,8 @@ void main() {
             allOf(
               contains("JsonField.hidden()"),
               contains("JsonField.visible()"),
-              matches(RegExp(r"<String, dynamic>\{\s+'pass': obj\?.pass,")),
+              contains(
+                  "Map<String, dynamic> getJsonFieldsVisibleValues(User? obj,"),
               contains("case 'tojson':"),
               contains("case 'getfield':"),
               contains("case 'setfield':"),

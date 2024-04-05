@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
 import 'package:reflection_factory/reflection_factory.dart';
 import 'package:test/test.dart';
 
@@ -1011,8 +1012,9 @@ void main() {
               id: 102)
         ];
 
-        var usersJson = JsonEncoder.defaultEncoder
-            .toJson(users, duplicatedEntitiesAsID: true);
+        var usersJson = (JsonEncoder.defaultEncoder
+                .toJson(users, duplicatedEntitiesAsID: true) as List)
+            .cast<Map>();
 
         expect(
             usersJson,
@@ -1025,7 +1027,7 @@ void main() {
                 'isEnabled': true,
                 'theLevel': null,
                 'name': 'joe',
-                'password': 'j123456'
+                //'password': 'j123456'
               },
               {
                 'axis': 'x',
@@ -1035,11 +1037,19 @@ void main() {
                 'isEnabled': true,
                 'theLevel': null,
                 'name': 'smith',
-                'password': 's123456'
+                //'password': 's123456'
               }
             ]));
 
-        var usersDecoded = typeListOfUser.fromJson(usersJson);
+        var usersJson2 = usersJson
+            .mapIndexed((i, e) => {
+                  ...e,
+                  'password': i == 0 ? 'j123456' : 's123456',
+                })
+            .toList();
+
+        var usersDecoded =
+            typeListOfUser.fromJson(usersJson2) as List<TestUserWithReflection>;
 
         expect(
             JsonEncoder.defaultEncoder
@@ -1053,7 +1063,7 @@ void main() {
                 'isEnabled': true,
                 'theLevel': null,
                 'name': 'joe',
-                'password': 'j123456'
+                //'password': 'j123456'
               },
               {
                 'axis': 'x',
@@ -1063,12 +1073,71 @@ void main() {
                 'isEnabled': true,
                 'theLevel': null,
                 'name': 'smith',
-                'password': 's123456'
+                //'password': 's123456'
+              }
+            ]));
+
+        expect(
+            JsonEncoder.defaultEncoder.toJson(
+                usersDecoded.map((e) => e.reflection.getFieldsValues(null)),
+                duplicatedEntitiesAsID: true),
+            equals([
+              {
+                'id': 101,
+                'name': 'joe',
+                'email': 'joe@mail.com',
+                'password': 'j123456',
+                'enabled': true,
+                'axis': 'x',
+                'level': null,
+                'isEnabled': true,
+                'isNotEnabled': false
+              },
+              {
+                'id': 102,
+                'name': 'smith',
+                'email': 'smith@mail.com',
+                'password': 's123456',
+                'enabled': true,
+                'axis': 'x',
+                'level': null,
+                'isEnabled': true,
+                'isNotEnabled': false
+              }
+            ]));
+
+        expect(
+            JsonEncoder.defaultEncoder.toJson(
+                usersDecoded
+                    .map((e) => e.reflection.getJsonFieldsVisibleValues(null)),
+                duplicatedEntitiesAsID: true),
+            equals([
+              {
+                'id': 101,
+                'name': 'joe',
+                'email': 'joe@mail.com',
+                //'password': 'j123456',
+                'enabled': true,
+                'axis': 'x',
+                'level': null,
+                'isEnabled': true,
+                'isNotEnabled': false
+              },
+              {
+                'id': 102,
+                'name': 'smith',
+                'email': 'smith@mail.com',
+                //'password': 's123456',
+                'enabled': true,
+                'axis': 'x',
+                'level': null,
+                'isEnabled': true,
+                'isNotEnabled': false
               }
             ]));
 
         // ignore: avoid_dynamic_calls
-        var json2WithRef = [usersJson[0], usersJson[0]['id']];
+        var json2WithRef = [usersJson2[0], usersJson2[0]['id']];
         var usersDecoded2 = typeListOfUser.fromJson(json2WithRef) as List;
 
         expect(identical(usersDecoded2[0], usersDecoded2[1]), isTrue);
@@ -1084,8 +1153,7 @@ void main() {
                 'id': 101,
                 'isEnabled': true,
                 'theLevel': null,
-                'name': 'joe',
-                'password': 'j123456'
+                'name': 'joe'
               },
               101
             ]));
@@ -1110,7 +1178,7 @@ void main() {
         var users = [user1, user2, user1];
 
         var usersJson = JsonEncoder.defaultEncoder
-            .toJson(users, duplicatedEntitiesAsID: true);
+            .toJson(users, duplicatedEntitiesAsID: true) as List;
 
         expect(
             usersJson,
@@ -1123,7 +1191,7 @@ void main() {
                 'isEnabled': true,
                 'theLevel': null,
                 'name': 'joe',
-                'password': 'j123456'
+                //'password': 'j123456'
               },
               {
                 'axis': 'x',
@@ -1133,12 +1201,21 @@ void main() {
                 'isEnabled': true,
                 'theLevel': null,
                 'name': 'smith',
-                'password': 's123456'
+                //'password': 's123456'
               },
               101
             ]));
 
-        var usersDecoded = typeListOfUser.fromJson(usersJson) as List;
+        var usersJson2 = usersJson.mapIndexed((i, e) {
+          return e is Map
+              ? {
+                  ...e,
+                  'password': i == 0 ? 'j123456' : 's123456',
+                }
+              : e;
+        });
+
+        var usersDecoded = typeListOfUser.fromJson(usersJson2) as List;
 
         expect(usersDecoded, equals([user1, user2, user1]));
         expect(usersDecoded, isA<List<TestUserWithReflection>>());
@@ -1153,7 +1230,7 @@ void main() {
                   typeListOfUser);
 
           var listUsersDecoded =
-              typeListOfListOfUser.fromJson([usersJson]) as List;
+              typeListOfListOfUser.fromJson([usersJson2]) as List;
 
           expect(
               listUsersDecoded,
@@ -1176,7 +1253,7 @@ void main() {
                 'isEnabled': true,
                 'theLevel': null,
                 'name': 'joe',
-                'password': 'j123456'
+                //'password': 'j123456'
               },
               {
                 'axis': 'x',
@@ -1186,7 +1263,7 @@ void main() {
                 'isEnabled': true,
                 'theLevel': null,
                 'name': 'smith',
-                'password': 's123456'
+                //'password': 's123456'
               },
               101
             ]));
@@ -1202,7 +1279,7 @@ void main() {
         };
 
         var usersJson = JsonEncoder.defaultEncoder
-            .toJson(users, duplicatedEntitiesAsID: true);
+            .toJson(users, duplicatedEntitiesAsID: true) as Map;
 
         expect(
             usersJson,
@@ -1215,7 +1292,7 @@ void main() {
                 'isEnabled': true,
                 'theLevel': null,
                 'name': 'joe',
-                'password': '123'
+                //'password': '123'
               },
               'b': {
                 'axis': 'x',
@@ -1225,11 +1302,16 @@ void main() {
                 'isEnabled': true,
                 'theLevel': null,
                 'name': 'smith',
-                'password': 'abc'
+                //'password': 'abc'
               }
             }));
 
-        var users2 = typeMapOfUser.fromJson(usersJson);
+        var usersJson2 = usersJson.map((k, v) => MapEntry(k, {
+              ...(v as Map),
+              'password': k == 'a' ? '123' : 'abc',
+            }));
+
+        var users2 = typeMapOfUser.fromJson(usersJson2);
 
         expect(users2, equals(users));
       }
