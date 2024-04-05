@@ -1121,7 +1121,7 @@ void main() {
                 'axis': 'x',
                 'level': null,
                 'isEnabled': true,
-                'isNotEnabled': false
+                //'isNotEnabled': false
               },
               {
                 'id': 102,
@@ -1132,7 +1132,7 @@ void main() {
                 'axis': 'x',
                 'level': null,
                 'isEnabled': true,
-                'isNotEnabled': false
+                //'isNotEnabled': false
               }
             ]));
 
