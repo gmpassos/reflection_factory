@@ -3243,16 +3243,26 @@ extension _DartTypeExtension on DartType {
 
   String fullTypeNameResolvable(
       {bool withNullability = true, Iterable<String>? typeParameters}) {
+    if (this is InvalidType) {
+      return 'dynamic';
+    }
+
     var name = resolveTypeName(typeParameters: typeParameters);
 
     if (!hasTypeArguments) {
       return withNullability && isNullable ? '$name?' : name;
     }
 
-    var args = resolvedTypeArguments
-        .map((e) => e.fullTypeNameResolvable(
-            withNullability: withNullability, typeParameters: typeParameters))
-        .join(',');
+    var argsList = resolvedTypeArguments.map((e) {
+      return e.fullTypeNameResolvable(
+          withNullability: withNullability, typeParameters: typeParameters);
+    }).toList();
+
+    if (argsList.isEmpty || argsList.every((a) => a == 'dynamic')) {
+      return name;
+    }
+
+    var args = argsList.join(',');
 
     return withNullability && isNullable ? '$name<$args>?' : '$name<$args>';
   }
@@ -3264,23 +3274,26 @@ extension _DartTypeExtension on DartType {
 
     var recordType = this as RecordType;
 
-    var recordTypesNamesPos = recordType.positionalFields
-        .map((t) => t.type.resolveTypeName(typeParameters: typeParameters));
+    var recordTypesNamesPos = recordType.positionalFields.map((t) {
+      return t.type.fullTypeNameResolvable(typeParameters: typeParameters);
+    }).toList();
 
-    var recordTypesNamesNamed = recordType.namedFields.map((t) =>
-        '${t.name} ${t.type.resolveTypeName(typeParameters: typeParameters)}');
+    var recordTypesNamesNamed = recordType.namedFields.map((t) {
+      return '${t.type.fullTypeNameResolvable(typeParameters: typeParameters)} ${t.name}';
+    }).toList();
 
-    var recordDeclaration = [
+    var list = [
       '(',
-      recordTypesNamesPos.join(', '),
-      if (recordTypesNamesNamed.isNotEmpty)
-        {
-          '{',
-          recordTypesNamesNamed.join(', '),
-          '}',
-        },
+      if (recordTypesNamesPos.isNotEmpty) recordTypesNamesPos.join(', '),
+      if (recordTypesNamesNamed.isNotEmpty) ...[
+        '{',
+        recordTypesNamesNamed.join(', '),
+        '}',
+      ],
       ')',
-    ].join();
+    ];
+
+    var recordDeclaration = list.join();
 
     return recordDeclaration;
   }
@@ -3468,6 +3481,8 @@ extension _DartTypeExtension on DartType {
         return '$tr.$constName';
       } else {
         if (isRecordType) {
+          typeNameResolvable;
+
           var typeAlias = typeAliasTable.aliasForRecordType(name);
           return '$tr<$typeAlias>($typeAlias)';
         } else if (this is TypeParameterType) {

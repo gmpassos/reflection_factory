@@ -395,7 +395,7 @@ void main() {
               matches(RegExp(
                   r"__TR<List<Set<int\?>>>\(\s*List, <__TR>\[__TR.tSetInt\]\)")),
               matches(RegExp(
-                  r"__TR<Set<List<dynamic>>>\(\s*Set, <__TR>\[__TR.tListDynamic\]\)")),
+                  r"__TR<Set<List>>\(\s*Set, <__TR>\[__TR.tListDynamic\]\)")),
             ),
           )),
         },
@@ -456,8 +456,9 @@ void main() {
             matches(RegExp(
                 r"'ignoreCase':\s*__PR\(\s*__TR.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*false\s*\)")),
             allOf(
-              matches(RegExp(r"typedef __RCD1 = \(bool, String\);")),
-              matches(RegExp(r"MethodReflection<User,\s+\(bool, String\)>\(")),
+              matches(RegExp(r"typedef __RCD1 = \(bool, String\?\);")),
+              matches(
+                  RegExp(r"MethodReflection<User,\s+\(bool, String\?\)>\(")),
               matches(RegExp(r"'checkPassword',\s+__TR<__RCD1>\(__RCD1\),")),
             ),
           )),
@@ -540,6 +541,54 @@ void main() {
               matches(RegExp(
                   r"case\s+'info':\s+return\s+MethodReflection<User,\s+\(dynamic,\s+Info\)>\(")),
               matches(RegExp(r"__TR<__RCD1>\(__RCD1\),")),
+            ),
+          )),
+        },
+        onLog: (msg) {
+          print(msg);
+        },
+      );
+    });
+
+    test('EnableReflection: records (named)', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'foo.reflection.g.dart';
+          
+          @EnableReflection()
+          class Validator {
+          
+            ({bool ok, String? error}) validate() => (ok: true, error: null);
+          
+          }
+        
+        '''
+      };
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        reader: await PackageAssetReader.currentIsolate(),
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of 'foo.dart'"),
+              contains(
+                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')"),
+            ),
+            allOf(
+              contains('Validator\$reflection'),
+              contains('Validator\$reflectionExtension'),
+              contains("typedef __RCD1 = ({String? error, bool ok});"),
             ),
           )),
         },
