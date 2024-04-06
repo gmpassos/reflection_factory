@@ -395,7 +395,7 @@ void main() {
               matches(RegExp(
                   r"__TR<List<Set<int\?>>>\(\s*List, <__TR>\[__TR.tSetInt\]\)")),
               matches(RegExp(
-                  r"__TR<Set<List<dynamic>>>\(\s*Set, <__TR>\[__TR.tListDynamic\]\)")),
+                  r"__TR<Set<List>>\(\s*Set, <__TR>\[__TR.tListDynamic\]\)")),
             ),
           )),
         },
