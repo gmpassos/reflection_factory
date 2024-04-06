@@ -456,8 +456,9 @@ void main() {
             matches(RegExp(
                 r"'ignoreCase':\s*__PR\(\s*__TR.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*false\s*\)")),
             allOf(
-              matches(RegExp(r"typedef __RCD1 = \(bool, String\);")),
-              matches(RegExp(r"MethodReflection<User,\s+\(bool, String\)>\(")),
+              matches(RegExp(r"typedef __RCD1 = \(bool, String\?\);")),
+              matches(
+                  RegExp(r"MethodReflection<User,\s+\(bool, String\?\)>\(")),
               matches(RegExp(r"'checkPassword',\s+__TR<__RCD1>\(__RCD1\),")),
             ),
           )),
@@ -549,7 +550,7 @@ void main() {
       );
     });
 
-    test('EnableReflection: records 2', () async {
+    test('EnableReflection: records (named)', () async {
       var builder = ReflectionBuilder(verbose: true);
 
       var sourceAssets = {

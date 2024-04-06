@@ -3243,16 +3243,26 @@ extension _DartTypeExtension on DartType {
 
   String fullTypeNameResolvable(
       {bool withNullability = true, Iterable<String>? typeParameters}) {
+    if (this is InvalidType) {
+      return 'dynamic';
+    }
+
     var name = resolveTypeName(typeParameters: typeParameters);
 
     if (!hasTypeArguments) {
       return withNullability && isNullable ? '$name?' : name;
     }
 
-    var args = resolvedTypeArguments
-        .map((e) => e.fullTypeNameResolvable(
-            withNullability: withNullability, typeParameters: typeParameters))
-        .join(',');
+    var argsList = resolvedTypeArguments.map((e) {
+      return e.fullTypeNameResolvable(
+          withNullability: withNullability, typeParameters: typeParameters);
+    }).toList();
+
+    if (argsList.isEmpty || argsList.every((a) => a == 'dynamic')) {
+      return name;
+    }
+
+    var args = argsList.join(',');
 
     return withNullability && isNullable ? '$name<$args>?' : '$name<$args>';
   }
@@ -3264,10 +3274,9 @@ extension _DartTypeExtension on DartType {
 
     var recordType = this as RecordType;
 
-    var recordTypesNamesPos = recordType.positionalFields
-        .map((t) =>
-            t.type.fullTypeNameResolvable(typeParameters: typeParameters))
-        .toList();
+    var recordTypesNamesPos = recordType.positionalFields.map((t) {
+      return t.type.fullTypeNameResolvable(typeParameters: typeParameters);
+    }).toList();
 
     var recordTypesNamesNamed = recordType.namedFields.map((t) {
       return '${t.type.fullTypeNameResolvable(typeParameters: typeParameters)} ${t.name}';
