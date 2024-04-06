@@ -549,6 +549,54 @@ void main() {
       );
     });
 
+    test('EnableReflection: records 2', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'foo.reflection.g.dart';
+          
+          @EnableReflection()
+          class Validator {
+          
+            ({bool ok, String? error}) validate() => (ok: true, error: null);
+          
+          }
+        
+        '''
+      };
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        reader: await PackageAssetReader.currentIsolate(),
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of 'foo.dart'"),
+              contains(
+                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')"),
+            ),
+            allOf(
+              contains('Validator\$reflection'),
+              contains('Validator\$reflectionExtension'),
+              contains("typedef __RCD1 = ({String? error, bool ok});"),
+            ),
+          )),
+        },
+        onLog: (msg) {
+          print(msg);
+        },
+      );
+    });
+
     test('EnableReflection(reflectionClassName, reflectionExtensionName)',
         () async {
       var builder = ReflectionBuilder(verbose: true);

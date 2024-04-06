@@ -1,3 +1,7 @@
+## 2.3.4
+
+- Fix handling og record types with named parameters.
+
 ## 2.3.3
 
 - `ClassReflection`:
