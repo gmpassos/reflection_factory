@@ -1,5 +1,6 @@
 @TestOn('vm')
 @Tags(['version'])
+library;
 
 import 'package:pubspec/pubspec.dart';
 import 'package:test/test.dart';
