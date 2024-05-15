@@ -1,5 +1,7 @@
 @TestOn('vm')
 @Tags(['build', 'slow'])
+library;
+
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:reflection_factory/builder.dart';

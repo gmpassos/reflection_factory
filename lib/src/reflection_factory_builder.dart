@@ -2061,8 +2061,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
               if (o == null) return false;
 
               var isJsonField =
-                  o.type?.getDisplayString(withNullability: false) ==
-                      'JsonField';
+                  o.type?.getDisplayStringNoNullability() == 'JsonField';
               if (!isJsonField) return false;
 
               var hidden = o.getField('_hidden')?.toBoolValue() ?? false;
@@ -2683,8 +2682,7 @@ class _ProxyMethod {
 
   bool get isReturningFutureOr => returnType.isDartAsyncFutureOr;
 
-  String get returnTypeAsString =>
-      returnType.getDisplayString(withNullability: true);
+  String get returnTypeAsString => returnType.getDisplayString();
 
   String returnTypeNameResolvable({bool withNullability = true}) =>
       returnType.fullTypeNameResolvable(
@@ -2712,7 +2710,7 @@ class _ProxyMethod {
     var parametersStr = StringBuffer();
 
     for (var p in typeParameters) {
-      var pStr = p.getDisplayString(withNullability: true);
+      var pStr = p.getDisplayString();
       if (pStr.startsWith('{') || pStr.startsWith('[')) {
         pStr = pStr.substring(1, pStr.length - 1).trim();
       }
@@ -2770,7 +2768,7 @@ class _ProxyMethod {
       if (ignoreParametersTypes.containsType(e.type)) continue;
 
       if (i > 0) parametersStr.write(', ');
-      var pStr = e.getDisplayString(withNullability: true);
+      var pStr = e.getDisplayString();
       if (pStr.startsWith('{') || pStr.startsWith('[')) {
         pStr = pStr.substring(1, pStr.length - 1).trim();
       }
@@ -3224,6 +3222,16 @@ extension _DartTypeExtension on DartType {
 
   String get typeNameResolvable => resolveTypeName();
 
+  static final _regexpNullableSuffix = RegExp(r'\?$');
+
+  String getDisplayStringNoNullability() {
+    var type = getDisplayString();
+    if (type.contains('?')) {
+      type = type.trim().replaceFirst(_regexpNullableSuffix, '');
+    }
+    return type;
+  }
+
   String resolveTypeName({Iterable<String>? typeParameters}) {
     if (isRecordType) {
       return recordDeclaration(typeParameters: typeParameters)!;
@@ -3306,7 +3314,7 @@ extension _DartTypeExtension on DartType {
     var name = elementDeclaration?.name;
 
     if (name == null) {
-      name = getDisplayString(withNullability: false);
+      name = getDisplayStringNoNullability();
 
       var idx = name.indexOf('Function(');
 
@@ -3370,7 +3378,7 @@ extension _DartTypeExtension on DartType {
         var name = alias.element.name;
         return name;
       } else {
-        var functionType = self.getDisplayString(withNullability: false);
+        var functionType = self.getDisplayStringNoNullability();
         return functionType;
       }
     }

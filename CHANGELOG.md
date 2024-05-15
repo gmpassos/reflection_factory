@@ -1,3 +1,13 @@
+## 2.4.0
+
+- sdk: '>=3.3.0 <4.0.0'
+
+- analyzer: ^6.5.0
+- meta: ^1.15.0
+- lints: ^4.0.0
+- test: ^1.25.5
+- coverage: ^1.8.0
+
 ## 2.3.4
 
 - Fix handling og record types with named parameters.

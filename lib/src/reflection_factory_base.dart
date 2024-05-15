@@ -21,7 +21,7 @@ import 'reflection_factory_utils.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.3.4';
+  static const String VERSION = '2.4.0';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -2248,7 +2248,7 @@ class ParameterReflection {
 
   /// The parameter annotations.
   List<Object>? get annotations => _annotations != null
-      ? UnmodifiableListView<Object>(_annotations!)
+      ? UnmodifiableListView<Object>(_annotations)
       : _annotationsEmpty;
 
   const ParameterReflection(this.type, this.name, this.nullable, this.required,
