@@ -6,7 +6,6 @@ import 'package:collection/collection.dart'
     show
         DeepCollectionEquality,
         IterableExtension,
-        IterableNullableExtension,
         ListEquality,
         MapEquality,
         binarySearch,

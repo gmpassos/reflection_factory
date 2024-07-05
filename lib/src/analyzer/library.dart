@@ -3,7 +3,6 @@
 // Original source: https://github.com/dart-lang/source_gen
 
 import 'package:analyzer/dart/element/element.dart';
-import 'package:collection/collection.dart';
 
 import 'reader.dart';
 import 'type_checker.dart';
@@ -78,7 +77,7 @@ class LibraryReader {
             ...cu.typeAliases.map((e) => e.name),
             ...cu.topLevelVariables.map((e) => e.name),
           ])
-      .whereNotNull();
+      .nonNulls;
 
   /// All of the elements representing classes in this library.
   Iterable<ClassElement> get classes =>
