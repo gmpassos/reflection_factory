@@ -1861,6 +1861,25 @@ void main() {
         isNull,
       );
 
+      expect(
+        jsonEntityCache2.isCachedEntity(
+          TestAddressWithReflection$fromJsonEncoded(
+              '{"id":11,"state":"NY","city":"New York"}'),
+          identicalEquality: false,
+        ),
+        isTrue,
+      );
+
+      expect(
+        jsonEntityCache2.isCachedEntity(
+          TestAddressWithReflection$fromJsonEncoded(
+              '{"id":11,"state":"NY","city":"New York"}'),
+          identicalEquality: false,
+          idGetter: (o) => o.id,
+        ),
+        isTrue,
+      );
+
       expect(jsonEntityCache2.cachedEntitiesLength, equals(1));
       expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(1));
       expect(jsonEntityCache2.totalCachedEntities, equals(2));
