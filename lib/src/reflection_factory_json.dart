@@ -2359,6 +2359,10 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     } else {
       return typeEntities.values.any((e) => e == entity);
     }
+
+    return false;
+  }
+
   Object? _instantiateEntity<O>(Type type, Object id,
       [dynamic Function(O o)? idGetter]) {
     var typeEntitiesInstantiators = _entitiesInstantiators[type];
@@ -2438,8 +2442,8 @@ class JsonEntityCacheSimple implements JsonEntityCache {
   int get totalCachedEntites => totalCachedEntities;
 
   /// Returns the total number of cached entities.
-  int get totalCachedEntities => _entities.values.map((e) => e.length).sum;
-          +
+  int get totalCachedEntities =>
+      _entities.values.map((e) => e.length).sum +
       _entitiesInstantiators.values.map((e) => e.length).sum;
 
   @override
