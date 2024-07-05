@@ -1936,13 +1936,11 @@ void main() {
       expect(jsonEntityCache2.totalCachedEntities, equals(3));
 
       jsonEntityCache2.cacheEntityInstantiator(9, () {
-        instantiated = true;
         return TestAddressWithReflection$fromJsonEncoded(
             '{"id":9,"state":"NY","city":"New York"}');
       });
 
       jsonEntityCache2.cacheEntityInstantiator(8, () {
-        instantiated = true;
         return TestAddressWithReflection$fromJsonEncoded(
             '{"id":8,"state":"NY","city":"New York"}');
       });
@@ -1995,7 +1993,6 @@ void main() {
       );
 
       jsonEntityCache2.cacheEntityInstantiator(7, () {
-        instantiated = true;
         return TestAddressWithReflection$fromJsonEncoded(
             '{"id":7,"state":"NY","city":"New York"}');
       });
@@ -2011,7 +2008,6 @@ void main() {
       );
 
       jsonEntityCache2.cacheEntityInstantiator(6, () {
-        instantiated = true;
         return TestAddressWithReflection$fromJsonEncoded(
             '{"id":6,"state":"NY","city":"New York"}');
       });
