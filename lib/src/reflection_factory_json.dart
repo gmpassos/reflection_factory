@@ -1961,6 +1961,11 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     typeInfo = _resolveTypeInfo<T>(typeInfo, type);
 
     var json = dart_convert.json.decode(encodedJson);
+
+    if (typeInfo.isAnyType) {
+      return json as T;
+    }
+
     return fromJson<T>(json,
         typeInfo: typeInfo,
         duplicatedEntitiesAsID: duplicatedEntitiesAsID,
@@ -1977,6 +1982,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     typeInfo = _resolveTypeInfo<T>(typeInfo, type);
 
     var encodedJson = dart_convert.utf8.decode(encodedJsonBytes);
+
     return decode<T>(encodedJson,
         typeInfo: typeInfo,
         duplicatedEntitiesAsID: duplicatedEntitiesAsID,
@@ -2000,6 +2006,11 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     }
 
     var json = dart_convert.json.decode(encodedJson);
+
+    if (typeInfo.isAnyType) {
+      return json as T;
+    }
+
     return fromJsonAsync<T>(json,
         typeInfo: typeInfo,
         duplicatedEntitiesAsID: duplicatedEntitiesAsID,
@@ -2023,6 +2034,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     }
 
     var encodedJson = dart_convert.utf8.decode(encodedJsonBytes);
+
     return decodeAsync<T>(encodedJson,
         typeInfo: typeInfo,
         duplicatedEntitiesAsID: duplicatedEntitiesAsID,

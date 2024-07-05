@@ -1,3 +1,8 @@
+## 2.4.2
+
+- `JsonDecoder`:
+  - `decode`: optimize resolution for `T`/`type` `dynamic`/`Object` (any type).
+
 ## 2.4.1
 
 - `JsonEntityCache`:
