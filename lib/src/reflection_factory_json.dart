@@ -364,6 +364,9 @@ class JsonCodec {
 
 /// JSON decoder integrated with [ReflectionFactory].
 abstract class JsonConverter<S, T> implements dart_convert.Converter<S, T> {
+  /// Returns `true` if this instance's configuration is equivalent to the default configuration.
+  bool get isStandard;
+
   static bool isPrimitiveType(Type type) {
     return type == String ||
         type == int ||
@@ -587,6 +590,19 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
     this.forceDuplicatedEntitiesAsID,
     this.autoResetEntityCache,
   ) : entityCache = entityCache ?? JsonEntityCacheSimple();
+
+  @override
+  bool get isStandard =>
+      identical(this, _JsonEncoder._defaultEncoder) ||
+      (maskField == null &&
+          removeField == null &&
+          !removeNullFields &&
+          toEncodableProvider == null &&
+          toEncodable == null &&
+          !forceDuplicatedEntitiesAsID &&
+          autoResetEntityCache &&
+          maskText == '***' &&
+          entityCache is JsonEntityCacheSimple);
 
   @override
   void resetEntityCache() {
@@ -915,7 +931,8 @@ abstract class JsonDecoder extends JsonConverter<String, Object?> {
       JsonEntityCache? entityCache,
       bool forceDuplicatedEntitiesAsID = false,
       bool autoResetEntityCache = true}) {
-    if (jsomMapDecoderProvider == null &&
+    if (jsonValueDecoderProvider == null &&
+        jsomMapDecoderProvider == null &&
         jsomMapDecoder == null &&
         jsomMapDecoderAsyncProvider == null &&
         jsomMapDecoderAsync == null &&
@@ -1094,6 +1111,20 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     this.forceDuplicatedEntitiesAsID,
     this.autoResetEntityCache,
   ) : entityCache = entityCache ?? JsonEntityCacheSimple();
+
+  @override
+  bool get isStandard =>
+      identical(this, _JsonDecoder._defaultDecoder) ||
+      (jsonValueDecoderProvider == null &&
+          jsomMapDecoderProvider == null &&
+          jsomMapDecoder == null &&
+          jsomMapDecoderAsyncProvider == null &&
+          jsomMapDecoderAsync == null &&
+          iterableCaster == null &&
+          mapCaster == null &&
+          !forceDuplicatedEntitiesAsID &&
+          autoResetEntityCache &&
+          entityCache is JsonEntityCacheSimple);
 
   @override
   void resetEntityCache() {
@@ -1962,7 +1993,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     var json = dart_convert.json.decode(encodedJson);
 
-    if (typeInfo.isAnyType) {
+    if (typeInfo.isAnyType && isStandard) {
       return json as T;
     }
 
@@ -2007,7 +2038,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     var json = dart_convert.json.decode(encodedJson);
 
-    if (typeInfo.isAnyType) {
+    if (typeInfo.isAnyType && isStandard) {
       return json as T;
     }
 
