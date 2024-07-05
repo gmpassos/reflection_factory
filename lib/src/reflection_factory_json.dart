@@ -2221,13 +2221,13 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     return null;
   }
 
-  final Map<Type, Map<Object, Object>> _entities = {};
-  final Map<Type, Map<Object, Object Function()>> _entitiesInstantiators = {};
+  Map<Type, Map<Object, Object>>? _entities;
+  Map<Type, Map<Object, Object Function()>>? _entitiesInstantiators;
 
   @override
   void clearCachedEntities() {
-    _entities.clear();
-    _entitiesInstantiators.clear();
+    _entities?.clear();
+    _entitiesInstantiators?.clear();
   }
 
   /// Returns all cached entities of this cache.
@@ -2243,14 +2243,14 @@ class JsonEntityCacheSimple implements JsonEntityCache {
       {Type? type, bool instantiate = true}) {
     type ??= O;
 
-    var typeEntitiesInstantiators = _entitiesInstantiators[type];
+    var typeEntitiesInstantiators = _entitiesInstantiators?[type];
     if (typeEntitiesInstantiators != null && instantiate) {
       for (var id in typeEntitiesInstantiators.keys) {
         _instantiateEntity(type, id);
       }
     }
 
-    var typeEntities = _entities[type];
+    var typeEntities = _entities?[type];
 
     if (typeEntities != null && typeEntities.isNotEmpty) {
       if (typeEntitiesInstantiators != null &&
@@ -2275,7 +2275,7 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     Map<dynamic, Object>? cachedEntitiesByIDs;
     Map<dynamic, Object>? cachedEntitiesInstantiatorsByIDs;
 
-    var cachedEntities = _entities[type];
+    var cachedEntities = _entities?[type];
     if (cachedEntities != null) {
       cachedEntitiesByIDs = Map.fromEntries(ids.map((id) {
         var entity = cachedEntities[id];
@@ -2283,7 +2283,7 @@ class JsonEntityCacheSimple implements JsonEntityCache {
       }).nonNulls);
     }
 
-    var cachedEntitiesInstantiators = _entitiesInstantiators[type];
+    var cachedEntitiesInstantiators = _entitiesInstantiators?[type];
     if (cachedEntitiesInstantiators != null) {
       cachedEntitiesInstantiatorsByIDs = Map.fromEntries(ids.map((id) {
         var entityInstantiator = cachedEntitiesInstantiators[id];
@@ -2333,12 +2333,12 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     if (id == null) return false;
     type ??= O;
 
-    var typeEntities = _entities[type];
+    var typeEntities = _entities?[type];
     if (typeEntities != null && typeEntities.containsKey(id)) {
       return true;
     }
 
-    var typeEntitiesInstantiators = _entitiesInstantiators[type];
+    var typeEntitiesInstantiators = _entitiesInstantiators?[type];
     if (typeEntitiesInstantiators != null &&
         typeEntitiesInstantiators.containsKey(id)) {
       return true;
@@ -2352,7 +2352,7 @@ class JsonEntityCacheSimple implements JsonEntityCache {
   O? getCachedEntityByID<O>(dynamic id, {Type? type}) {
     if (id == null) return null;
     type ??= O;
-    var typeEntities = _entities[type];
+    var typeEntities = _entities?[type];
     var entity = typeEntities?[id] as O?;
 
     entity ??= _instantiateEntity(type, id) as O?;
@@ -2395,12 +2395,12 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
   bool _isCachedEntityImpl<O>(
       Type type, Object entity, bool Function(Object? o1, Object o2) eq) {
-    var typeEntities = _entities[type];
+    var typeEntities = _entities?[type];
     if (typeEntities != null) {
       if (typeEntities.values.any((e) => eq(e, entity))) return true;
     }
 
-    var typeEntitiesInstantiators = _entitiesInstantiators[type];
+    var typeEntitiesInstantiators = _entitiesInstantiators?[type];
     if (typeEntitiesInstantiators != null) {
       for (var id in typeEntitiesInstantiators.keys) {
         var prev = _instantiateEntity(type, id);
@@ -2418,7 +2418,7 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
     Object? id;
 
-    var typeEntities = _entities[type];
+    var typeEntities = _entities?[type];
     if (typeEntities != null) {
       id = idGetter(entity);
 
@@ -2430,7 +2430,7 @@ class JsonEntityCacheSimple implements JsonEntityCache {
       }
     }
 
-    var typeEntitiesInstantiators = _entitiesInstantiators[type];
+    var typeEntitiesInstantiators = _entitiesInstantiators?[type];
     if (typeEntitiesInstantiators != null) {
       id ??= idGetter(entity);
 
@@ -2448,7 +2448,7 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
   Object? _instantiateEntity<O>(Type type, Object id,
       [dynamic Function(O o)? idGetter]) {
-    var typeEntitiesInstantiators = _entitiesInstantiators[type];
+    var typeEntitiesInstantiators = _entitiesInstantiators?[type];
 
     var instantiator = typeEntitiesInstantiators?.remove(id);
     if (instantiator == null) return null;
@@ -2463,10 +2463,10 @@ class JsonEntityCacheSimple implements JsonEntityCache {
   O? removeCachedEntity<O>(dynamic id, {Type? type, bool instantiate = true}) {
     if (id == null) return null;
     type ??= O;
-    var typeEntities = _entities[type];
+    var typeEntities = _entities?[type];
     var entity = typeEntities?.remove(id) as O?;
 
-    var typeEntitiesInstantiators = _entitiesInstantiators[type];
+    var typeEntitiesInstantiators = _entitiesInstantiators?[type];
     var entityInstantiator = typeEntitiesInstantiators?.remove(id);
 
     if (entityInstantiator != null && instantiate) {
