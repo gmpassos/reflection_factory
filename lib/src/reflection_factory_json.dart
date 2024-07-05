@@ -2391,8 +2391,11 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     if (id == null) return;
 
     var type = entity.runtimeType;
-    var typeEntities = _entities.putIfAbsent(type, () => <Object, Object>{});
+    var typeEntities = _entities[type] ??= <Object, Object>{};
     typeEntities[id] = entity!;
+
+    var typeEntitiesInstantiators = _entitiesInstantiators[type];
+    typeEntitiesInstantiators?.remove(id);
   }
 
   @override
