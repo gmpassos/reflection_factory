@@ -2211,12 +2211,13 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     return null;
   }
 
-  final Map<Type, Map<Object, Object>> _entities =
-      <Type, Map<Object, Object>>{};
+  final Map<Type, Map<Object, Object>> _entities = {};
+  final Map<Type, Map<Object, Object Function()>> _entitiesInstantiators = {};
 
   @override
   void clearCachedEntities() {
     _entities.clear();
+    _entitiesInstantiators.clear();
   }
 
   /// Returns all cached entities of this cache.
@@ -2320,6 +2321,7 @@ class JsonEntityCacheSimple implements JsonEntityCache {
   void cacheEntities<O>(List<O> entities, [dynamic Function(O o)? idGetter]) {
     Type? entityTYpe;
     Map<dynamic, Object>? typeEntities;
+    Map<Object, Object Function()>? typeEntitiesInstantiators;
 
     for (var e in entities) {
       var id = getEntityID<O>(e, idGetter: idGetter);
@@ -2327,13 +2329,37 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
       if (entityTYpe != e.runtimeType) {
         entityTYpe = e.runtimeType;
-        typeEntities =
-            _entities.putIfAbsent(entityTYpe, () => <Object, Object>{});
+        typeEntities = _entities[entityTYpe] ??= <Object, Object>{};
+        typeEntitiesInstantiators = _entitiesInstantiators[entityTYpe];
       }
 
       typeEntities![id] = e!;
+      typeEntitiesInstantiators?.remove(id);
     }
   }
+
+  @override
+  bool cacheEntityInstantiator<O>(Object id, O Function() entityInstantiator,
+      {Type? type, bool overwrite = true}) {
+    type ??= O;
+
+    var entities = _entities[type];
+    var entity = entities?[id];
+    if (entity != null) {
+      if (!overwrite) return false;
+      entities!.remove(id);
+    }
+
+    var typeEntitiesInstantiators =
+        _entitiesInstantiators[type] ??= <Object, Object Function()>{};
+
+    var prev = typeEntitiesInstantiators[id];
+    if (prev != null && !overwrite) return false;
+
+    typeEntitiesInstantiators[id] = entityInstantiator as Object Function();
+    return true;
+  }
+
   @Deprecated("Typo: use `totalCachedEntities`")
   int get totalCachedEntites => totalCachedEntities;
 
