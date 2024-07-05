@@ -2176,6 +2176,29 @@ abstract class JsonEntityCache {
 
   /// Clears all cached entities of this cache.
   void clearCachedEntities();
+
+  /// Returns the already instantiated cached entities of this cache.
+  /// See [allCachedEntities].
+  List<Object> get cachedEntities;
+
+  /// Returns all the cached entities of this cache.
+  /// Calls [instantiateAllCachedEntities] before returning the cached entities.
+  List<Object> get allCachedEntities;
+
+  /// Instantiate all the entities, calling their entity instantiators.
+  /// See [cacheEntityInstantiator]
+  int instantiateAllCachedEntities();
+
+  /// Returns the total cached entities of this cache.
+  /// See [cacheEntity] and [totalCachedEntities].
+  int get cachedEntitiesLength;
+
+  /// Returns the total cached entities instantiators of this cache.
+  /// See [cacheEntityInstantiator] and [totalCachedEntities].
+  int get cachedEntitiesInstantiatorsLength;
+
+  /// Returns the total number of cached entities and cache entities instantiators.
+  int get totalCachedEntities;
 }
 
 /// Simple implementation of [JsonEntityCache].
@@ -2230,13 +2253,40 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     _entitiesInstantiators?.clear();
   }
 
-  /// Returns all cached entities of this cache.
+  @override
   List<Object> get cachedEntities =>
-      _entities.entries.expand((e) => e.value.values).toList();
+      _entities?.entries.expand((e) => e.value.values).toList() ?? [];
 
-  /// Returns the total cached entities of this cache.
+  @override
+  List<Object> get allCachedEntities {
+    instantiateAllCachedEntities();
+    return cachedEntities;
+  }
+
+  @override
+  int instantiateAllCachedEntities() {
+    var entitiesInstantiators = _entitiesInstantiators;
+    if (entitiesInstantiators == null) return 0;
+
+    var total = 0;
+    for (var e in entitiesInstantiators.entries) {
+      var type = e.key;
+      var ids = e.value.keys.toList();
+      for (var id in ids) {
+        _instantiateEntity(type, id);
+        ++total;
+      }
+    }
+    return total;
+  }
+
+  @override
   int get cachedEntitiesLength =>
-      _entities.entries.map((e) => e.value.values.length).sum;
+      _entities?.values.map((e) => e.length).sum ?? 0;
+
+  @override
+  int get cachedEntitiesInstantiatorsLength =>
+      _entitiesInstantiators?.values.map((e) => e.length).sum ?? 0;
 
   /// Returns the cached entities of [type].
   Map<dynamic, Object>? getCachedEntities<O>(
@@ -2245,7 +2295,8 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
     var typeEntitiesInstantiators = _entitiesInstantiators?[type];
     if (typeEntitiesInstantiators != null && instantiate) {
-      for (var id in typeEntitiesInstantiators.keys) {
+      var ids = typeEntitiesInstantiators.keys.toList();
+      for (var id in ids) {
         _instantiateEntity(type, id);
       }
     }
@@ -2402,7 +2453,8 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
     var typeEntitiesInstantiators = _entitiesInstantiators?[type];
     if (typeEntitiesInstantiators != null) {
-      for (var id in typeEntitiesInstantiators.keys) {
+      var ids = typeEntitiesInstantiators.keys.toList();
+      for (var id in ids) {
         var prev = _instantiateEntity(type, id);
         if (eq(prev, entity)) return true;
       }
@@ -2482,10 +2534,13 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     if (id == null) return;
 
     var type = entity.runtimeType;
-    var typeEntities = _entities[type] ??= <Object, Object>{};
+
+    var entities = _entities ??= {};
+
+    var typeEntities = entities[type] ??= <Object, Object>{};
     typeEntities[id] = entity!;
 
-    var typeEntitiesInstantiators = _entitiesInstantiators[type];
+    var typeEntitiesInstantiators = _entitiesInstantiators?[type];
     typeEntitiesInstantiators?.remove(id);
   }
 
@@ -2501,8 +2556,11 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
       if (entityTYpe != e.runtimeType) {
         entityTYpe = e.runtimeType;
-        typeEntities = _entities[entityTYpe] ??= <Object, Object>{};
-        typeEntitiesInstantiators = _entitiesInstantiators[entityTYpe];
+
+        var entities = _entities ??= {};
+
+        typeEntities = entities[entityTYpe] ??= <Object, Object>{};
+        typeEntitiesInstantiators = _entitiesInstantiators?[entityTYpe];
       }
 
       typeEntities![id] = e!;
@@ -2515,15 +2573,17 @@ class JsonEntityCacheSimple implements JsonEntityCache {
       {Type? type, bool overwrite = true}) {
     type ??= O;
 
-    var entities = _entities[type];
+    var entities = _entities?[type];
     var entity = entities?[id];
     if (entity != null) {
       if (!overwrite) return false;
       entities!.remove(id);
     }
 
+    var entitiesInstantiators = _entitiesInstantiators ??= {};
+
     var typeEntitiesInstantiators =
-        _entitiesInstantiators[type] ??= <Object, Object Function()>{};
+        entitiesInstantiators[type] ??= <Object, Object Function()>{};
 
     var prev = typeEntitiesInstantiators[id];
     if (prev != null && !overwrite) return false;
@@ -2535,19 +2595,24 @@ class JsonEntityCacheSimple implements JsonEntityCache {
   @Deprecated("Typo: use `totalCachedEntities`")
   int get totalCachedEntites => totalCachedEntities;
 
-  /// Returns the total number of cached entities.
+  @override
   int get totalCachedEntities =>
-      _entities.values.map((e) => e.length).sum +
-      _entitiesInstantiators.values.map((e) => e.length).sum;
+      cachedEntitiesLength + cachedEntitiesInstantiatorsLength;
 
   @override
   String toString() {
     var total = totalCachedEntities;
     var s = 'JsonEntityCacheSimple#$id[$total]';
 
+    final entities = _entities;
+    final entitiesInstantiators = _entitiesInstantiators;
+
     return total == 0
         ? s
-        : '$s${_entities.map((key, value) => MapEntry(key, value.length))}';
+        : '$s${CombinedMapView([
+                if (entities != null) entities,
+                if (entitiesInstantiators != null) entitiesInstantiators,
+              ]).map((key, value) => MapEntry(key, value.length))}';
   }
 }
 
