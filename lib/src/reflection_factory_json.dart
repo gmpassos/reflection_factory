@@ -2400,27 +2400,30 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
   /// Returns a cached entity of [type] with [id].
   @override
-  O? getCachedEntityByID<O>(dynamic id, {Type? type}) {
+  O? getCachedEntityByID<O>(dynamic id, {Type? type, instantiate = true}) {
     if (id == null) return null;
     type ??= O;
+
     var typeEntities = _entities?[type];
     var entity = typeEntities?[id] as O?;
 
-    entity ??= _instantiateEntity(type, id) as O?;
+    if (entity == null && instantiate) {
+      entity = _instantiateEntity(type, id) as O?;
+    }
 
     return entity;
   }
 
   @override
-  O? getCachedEntityByMapID<O>(Map<Object?, Object?> map, {Type? type}) {
+  O? getCachedEntityByMapID<O>(Map<Object?, Object?> map,
+      {Type? type, instantiate = true}) {
     var id = getEntityIDFromMap(map, type: type);
-    if (id != null) {
-      var cachedEntity = getCachedEntityByID(id, type: type);
-      if (cachedEntity != null) {
-        return cachedEntity as O;
-      }
-    }
-    return null;
+    if (id == null) return null;
+
+    var cachedEntity =
+        getCachedEntityByID(id, type: type, instantiate: instantiate);
+
+    return cachedEntity != null ? cachedEntity as O : null;
   }
 
   @override
