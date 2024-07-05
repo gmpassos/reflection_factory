@@ -2345,19 +2345,76 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
   @override
   bool isCachedEntity<O>(O entity,
-      {Type? type, bool identicalEquality = true}) {
+      {Type? type,
+      bool identicalEquality = true,
+      dynamic Function(O o)? idGetter}) {
+    if (entity == null) return false;
+
     type ??= O;
     if (type == Object || type == dynamic) {
       type = entity.runtimeType;
     }
 
-    var typeEntities = _entities[type];
-    if (typeEntities == null) return false;
+    final eq = identicalEquality ? identical : (a, b) => a == b;
 
-    if (identicalEquality) {
-      return typeEntities.values.any((e) => identical(e, entity));
+    if (idGetter != null) {
+      return _isCachedEntityImplWithIdGetter(type, entity, eq, idGetter);
     } else {
-      return typeEntities.values.any((e) => e == entity);
+      return _isCachedEntityImpl(type, entity, eq);
+    }
+  }
+
+  bool _isCachedEntityImpl<O>(
+      Type type, Object entity, bool Function(Object? o1, Object o2) eq) {
+    var typeEntities = _entities[type];
+    if (typeEntities != null) {
+      if (typeEntities.values.any((e) => eq(e, entity))) return true;
+    }
+
+    var typeEntitiesInstantiators = _entitiesInstantiators[type];
+    if (typeEntitiesInstantiators != null) {
+      for (var id in typeEntitiesInstantiators.keys) {
+        var prev = _instantiateEntity(type, id);
+        if (eq(prev, entity)) return true;
+      }
+      return false;
+    }
+
+    return false;
+  }
+
+  bool _isCachedEntityImplWithIdGetter<O>(
+      Type type,
+      O entity,
+      bool Function(Object? o1, Object o2) eq,
+      dynamic Function(O o) idGetter) {
+    if (entity == null) return false;
+
+    Object? id;
+
+    var typeEntities = _entities[type];
+    if (typeEntities != null) {
+      id = idGetter(entity);
+
+      if (id != null) {
+        var prev = typeEntities[id];
+        if (prev != null) {
+          if (eq(prev, entity)) return true;
+        }
+      }
+    }
+
+    var typeEntitiesInstantiators = _entitiesInstantiators[type];
+    if (typeEntitiesInstantiators != null) {
+      id ??= idGetter(entity);
+
+      if (id != null) {
+        var prevHasInstantiator = typeEntitiesInstantiators.containsKey(id);
+        if (prevHasInstantiator) {
+          var prev = _instantiateEntity(type, id, idGetter);
+          if (eq(prev, entity)) return true;
+        }
+      }
     }
 
     return false;
