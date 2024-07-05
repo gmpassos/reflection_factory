@@ -1752,5 +1752,76 @@ void main() {
 
       expect(mainAddress4, isNull);
     });
+
+    test('cacheEntityInstantiator', () {
+      var mainAddress =
+          TestAddressWithReflection.withCity('NY', city: 'New York', id: 11);
+      var company = TestCompanyWithReflection('c1', mainAddress);
+
+      var jsonEntityCache1 = JsonEntityCacheSimple();
+
+      var encode1 = JsonCodec(entityCache: jsonEntityCache1).encode(
+          [company, mainAddress],
+          duplicatedEntitiesAsID: false, autoResetEntityCache: false);
+
+      expect(
+          encode1,
+          equals('['
+              '{"branchesAddresses":[],"extraAddresses":[],"extraNames":[],"mainAddress":{"id":11,"state":"NY","city":"New York"},"name":"c1"},'
+              '{"id":11,"state":"NY","city":"New York"}'
+              ']'));
+
+      var encode2 = JsonCodec(entityCache: jsonEntityCache1).encode(
+          [company, mainAddress],
+          duplicatedEntitiesAsID: true, autoResetEntityCache: false);
+
+      expect(
+          encode2,
+          equals('['
+              '{"branchesAddresses":[],"extraAddresses":[],"extraNames":[],"mainAddress":{"id":11,"state":"NY","city":"New York"},"name":"c1"},'
+              '11'
+              ']'));
+
+      var jsonEntityCache2 = JsonEntityCacheSimple();
+
+      expect(jsonEntityCache2.totalCachedEntities, equals(0));
+
+      var instantiated = false;
+
+      jsonEntityCache2.cacheEntityInstantiator(11, () {
+        instantiated = true;
+        return TestAddressWithReflection$fromJsonEncoded(
+            '{"id":11,"state":"NY","city":"New York"}');
+      });
+
+      expect(jsonEntityCache2.totalCachedEntities, equals(1));
+      expect(instantiated, isFalse);
+
+      expect(
+          jsonEntityCache2.isCachedEntityByID(10,
+              type: TestAddressWithReflection),
+          isFalse);
+
+      expect(
+          jsonEntityCache2.isCachedEntityByID(11,
+              type: TestAddressWithReflection),
+          isTrue);
+
+      expect(instantiated, isFalse);
+
+      expect(
+          jsonEntityCache2.getCachedEntityByID(10,
+              type: TestAddressWithReflection),
+          isNull);
+
+      expect(instantiated, isFalse);
+
+      expect(
+          jsonEntityCache2.getCachedEntityByID(11,
+              type: TestAddressWithReflection),
+          isNotNull);
+
+      expect(instantiated, isTrue);
+    });
   });
 }

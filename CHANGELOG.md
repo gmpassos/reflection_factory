@@ -1,3 +1,9 @@
+## 2.4.1
+
+- `JsonEntityCache`:
+  - Added `isCachedEntityByID` and `cacheEntityInstantiator`.
+  - `JsonEntityCacheSimple`: implement new methods.
+
 ## 2.4.0
 
 - sdk: '>=3.3.0 <4.0.0'
