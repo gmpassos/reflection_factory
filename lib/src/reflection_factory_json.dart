@@ -2287,6 +2287,25 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     }
 
     return cachedEntitiesByIDs;
+  /// Returns a cached entity of [type] with [id].
+  @override
+  bool isCachedEntityByID<O>(dynamic id, {Type? type}) {
+    if (id == null) return false;
+    type ??= O;
+
+    var typeEntities = _entities[type];
+
+    if (typeEntities != null && typeEntities.containsKey(id)) {
+      return true;
+    }
+
+    var typeEntitiesInstantiators = _entitiesInstantiators[type];
+    if (typeEntitiesInstantiators != null &&
+        typeEntitiesInstantiators.containsKey(id)) {
+      return true;
+    }
+
+    return false;
   }
 
   /// Returns a cached entity of [type] with [id].
