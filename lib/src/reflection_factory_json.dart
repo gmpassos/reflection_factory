@@ -2377,11 +2377,19 @@ class JsonEntityCacheSimple implements JsonEntityCache {
   }
 
   /// Removes an entity of [type] with [id] of this cache.
-  O? removeCachedEntity<O>(dynamic id, {Type? type}) {
+  O? removeCachedEntity<O>(dynamic id, {Type? type, bool instantiate = true}) {
     if (id == null) return null;
     type ??= O;
     var typeEntities = _entities[type];
     var entity = typeEntities?.remove(id) as O?;
+
+    var typeEntitiesInstantiators = _entitiesInstantiators[type];
+    var entityInstantiator = typeEntitiesInstantiators?.remove(id);
+
+    if (entityInstantiator != null && instantiate) {
+      entity ??= entityInstantiator() as O?;
+    }
+
     return entity;
   }
 
