@@ -2334,13 +2334,17 @@ class JsonEntityCacheSimple implements JsonEntityCache {
       typeEntities![id] = e!;
     }
   }
+  @Deprecated("Typo: use `totalCachedEntities`")
+  int get totalCachedEntites => totalCachedEntities;
 
   /// Returns the total number of cached entities.
-  int get totalCachedEntites => _entities.values.map((e) => e.length).sum;
+  int get totalCachedEntities => _entities.values.map((e) => e.length).sum;
+          +
+      _entitiesInstantiators.values.map((e) => e.length).sum;
 
   @override
   String toString() {
-    var total = totalCachedEntites;
+    var total = totalCachedEntities;
     var s = 'JsonEntityCacheSimple#$id[$total]';
 
     return total == 0
