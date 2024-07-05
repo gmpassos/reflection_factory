@@ -2164,6 +2164,11 @@ abstract class JsonEntityCache {
   /// See [cacheEntity].
   void cacheEntities<O>(List<O> entities, [dynamic Function(O o)? idGetter]);
 
+  /// Caches an [entityInstantiator]. This is called by the entity decoder/loader.
+  /// See [cacheEntity].
+  void cacheEntityInstantiator<O>(Object id, O Function() entityInstantiator,
+      {Type? type, bool overwrite = true});
+
   /// Clears all cached entities of this cache.
   void clearCachedEntities();
 }
