@@ -3,6 +3,9 @@
 - `JsonEntityCache`:
   - Added `isCachedEntityByID` and `cacheEntityInstantiator`.
   - `JsonEntityCacheSimple`: implement new methods.
+  - Added to interface (from `JsonEntityCacheSimple`):
+    `cachedEntities`, `allCachedEntities`, `instantiateAllCachedEntities`, `cachedEntitiesLength`,
+    `cachedEntitiesInstantiatorsLength`, `totalCachedEntities`.
 
 ## 2.4.0
 

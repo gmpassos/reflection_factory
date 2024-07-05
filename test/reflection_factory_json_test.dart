@@ -1784,6 +1784,8 @@ void main() {
 
       var jsonEntityCache2 = JsonEntityCacheSimple();
 
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(0));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(0));
       expect(jsonEntityCache2.totalCachedEntities, equals(0));
 
       var instantiated = false;
@@ -1794,8 +1796,12 @@ void main() {
             '{"id":11,"state":"NY","city":"New York"}');
       });
 
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(0));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(1));
       expect(jsonEntityCache2.totalCachedEntities, equals(1));
       expect(instantiated, isFalse);
+
+      expect(jsonEntityCache2.cachedEntities.length, equals(0));
 
       expect(
           jsonEntityCache2.isCachedEntityByID(10,
@@ -1816,12 +1822,42 @@ void main() {
 
       expect(instantiated, isFalse);
 
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(0));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(1));
+      expect(jsonEntityCache2.totalCachedEntities, equals(1));
+
+      expect(jsonEntityCache2.cachedEntities.length, equals(0));
+
       expect(
           jsonEntityCache2.getCachedEntityByID(11,
               type: TestAddressWithReflection),
           isNotNull);
 
       expect(instantiated, isTrue);
+
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(1));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(0));
+      expect(jsonEntityCache2.totalCachedEntities, equals(1));
+
+      expect(jsonEntityCache2.cachedEntities.length, equals(1));
+      expect(jsonEntityCache2.allCachedEntities.length, equals(1));
+
+      jsonEntityCache2.cacheEntityInstantiator(12, () {
+        instantiated = true;
+        return TestAddressWithReflection$fromJsonEncoded(
+            '{"id":12,"state":"NY","city":"New York"}');
+      });
+
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(1));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(1));
+      expect(jsonEntityCache2.totalCachedEntities, equals(2));
+
+      expect(jsonEntityCache2.cachedEntities.length, equals(1));
+      expect(jsonEntityCache2.allCachedEntities.length, equals(2));
+
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(2));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(0));
+      expect(jsonEntityCache2.totalCachedEntities, equals(2));
     });
   });
 }
