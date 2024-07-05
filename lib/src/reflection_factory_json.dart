@@ -2239,10 +2239,32 @@ class JsonEntityCacheSimple implements JsonEntityCache {
       _entities.entries.map((e) => e.value.values.length).sum;
 
   /// Returns the cached entities of [type].
-  Map<dynamic, Object>? getCachedEntities<O>({Type? type}) {
+  Map<dynamic, Object>? getCachedEntities<O>(
+      {Type? type, bool instantiate = true}) {
     type ??= O;
+
+    var typeEntitiesInstantiators = _entitiesInstantiators[type];
+    if (typeEntitiesInstantiators != null && instantiate) {
+      for (var id in typeEntitiesInstantiators.keys) {
+        _instantiateEntity(type, id);
+      }
+    }
+
     var typeEntities = _entities[type];
-    return typeEntities != null ? UnmodifiableMapView(typeEntities) : null;
+
+    if (typeEntities != null && typeEntities.isNotEmpty) {
+      if (typeEntitiesInstantiators != null &&
+          typeEntitiesInstantiators.isNotEmpty) {
+        return UnmodifiableMapView(
+            CombinedMapView([typeEntities, typeEntitiesInstantiators]));
+      } else {
+        return UnmodifiableMapView(typeEntities);
+      }
+    } else {
+      return typeEntitiesInstantiators != null
+          ? UnmodifiableMapView(typeEntitiesInstantiators)
+          : null;
+    }
   }
 
   @override
