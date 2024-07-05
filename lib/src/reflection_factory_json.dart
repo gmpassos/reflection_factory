@@ -2138,6 +2138,11 @@ abstract class JsonEntityCache {
   Object? getEntityID<O>(O object,
       {Type? type, dynamic Function(O o)? idGetter});
 
+  /// Returns `true` if an entity of [type] with [id] is cached.
+  /// This includes entities cached through [cacheEntity], [cacheEntities] and
+  /// [cacheEntityInstantiator].
+  bool isCachedEntityByID<O>(dynamic id, {Type? type});
+
   /// Returns a cached entity of [type] with [id].
   O? getCachedEntityByID<O>(dynamic id, {Type? type});
 
