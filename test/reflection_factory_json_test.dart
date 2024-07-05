@@ -1945,6 +1945,16 @@ void main() {
       expect(jsonEntityCache2.totalCachedEntities, equals(5));
 
       expect(
+        jsonEntityCache2
+            .getCachedEntities<TestAddressWithReflection>(instantiate: false)
+            ?.map(
+                (k, v) => MapEntry(k, v is Function ? -1 : (v as dynamic).id)),
+        equals(
+          {8: -1, 9: 9, 10: 10, 11: 11, 12: 12},
+        ),
+      );
+
+      expect(
         jsonEntityCache2.getCachedEntitiesByIDs<TestAddressWithReflection>(
             [11, 8, 9])?.map((k, v) => MapEntry(k, (v as dynamic).id)),
         equals(
@@ -1955,6 +1965,15 @@ void main() {
       expect(jsonEntityCache2.cachedEntitiesLength, equals(5));
       expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(0));
       expect(jsonEntityCache2.totalCachedEntities, equals(5));
+
+      expect(
+        jsonEntityCache2
+            .getCachedEntities<TestAddressWithReflection>()
+            ?.map((k, v) => MapEntry(k, (v as dynamic).id)),
+        equals(
+          {8: 8, 9: 9, 10: 10, 11: 11, 12: 12},
+        ),
+      );
     });
   });
 }
