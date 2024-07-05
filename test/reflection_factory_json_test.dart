@@ -1993,6 +1993,37 @@ void main() {
           {8: 8, 9: 9, 10: 10, 11: 11, 12: 12},
         ),
       );
+
+      jsonEntityCache2.cacheEntityInstantiator(7, () {
+        instantiated = true;
+        return TestAddressWithReflection$fromJsonEncoded(
+            '{"id":7,"state":"NY","city":"New York"}');
+      });
+
+      expect(
+        jsonEntityCache2.isCachedEntity(
+          TestAddressWithReflection$fromJsonEncoded(
+              '{"id":7,"state":"NY","city":"New York"}'),
+          identicalEquality: false,
+          idGetter: (o) => o.id,
+        ),
+        isTrue,
+      );
+
+      jsonEntityCache2.cacheEntityInstantiator(6, () {
+        instantiated = true;
+        return TestAddressWithReflection$fromJsonEncoded(
+            '{"id":6,"state":"NY","city":"New York"}');
+      });
+
+      expect(
+        jsonEntityCache2.isCachedEntity(
+          TestAddressWithReflection$fromJsonEncoded(
+              '{"id":6,"state":"NY","city":"New York"}'),
+          identicalEquality: false,
+        ),
+        isTrue,
+      );
     });
   });
 }
