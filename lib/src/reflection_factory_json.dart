@@ -2269,21 +2269,50 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
   @override
   Map<dynamic, Object>? getCachedEntitiesByIDs<O>(List<dynamic> ids,
-      {Type? type, bool removeCachedIDs = false}) {
+      {Type? type, bool instantiate = true, bool removeCachedIDs = false}) {
     type ??= O;
 
+    Map<dynamic, Object>? cachedEntitiesByIDs;
+    Map<dynamic, Object>? cachedEntitiesInstantiatorsByIDs;
+
     var cachedEntities = _entities[type];
-    if (cachedEntities == null) return null;
+    if (cachedEntities != null) {
+      cachedEntitiesByIDs = Map.fromEntries(ids.map((id) {
+        var entity = cachedEntities[id];
+        return entity != null ? MapEntry(id, entity) : null;
+      }).nonNulls);
+    }
 
-    var cachedEntitiesByIDs = Map<dynamic, Object>.fromEntries(ids.map((id) {
-      var entity = cachedEntities[id];
-      return entity != null ? MapEntry(id, entity) : null;
-    }).whereNotNull());
+    var cachedEntitiesInstantiators = _entitiesInstantiators[type];
+    if (cachedEntitiesInstantiators != null) {
+      cachedEntitiesInstantiatorsByIDs = Map.fromEntries(ids.map((id) {
+        var entityInstantiator = cachedEntitiesInstantiators[id];
+        if (entityInstantiator != null) {
+          if (instantiate) {
+            var entity = _instantiateEntity(type!, id);
+            return entity != null ? MapEntry(id, entity) : null;
+          } else {
+            return MapEntry(id, entityInstantiator);
+          }
+        } else {
+          return null;
+        }
+      }).nonNulls);
+    }
 
-    if (cachedEntitiesByIDs.isEmpty) return null;
+    if ((cachedEntitiesByIDs == null || cachedEntitiesByIDs.isEmpty) &&
+        (cachedEntitiesInstantiatorsByIDs == null ||
+            cachedEntitiesInstantiatorsByIDs.isEmpty)) {
+      return null;
+    }
 
     if (removeCachedIDs) {
-      ids.removeWhere((id) => cachedEntitiesByIDs.containsKey(id));
+      ids.removeWhere((id) {
+        return (cachedEntitiesByIDs != null &&
+                cachedEntitiesByIDs.containsKey(id)) ||
+            (cachedEntitiesInstantiatorsByIDs != null &&
+                cachedEntitiesInstantiatorsByIDs.containsKey(id));
+      });
     }
 
     if (cachedEntitiesByIDs != null && cachedEntitiesByIDs.isNotEmpty) {
@@ -2383,11 +2412,8 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     return false;
   }
 
-  bool _isCachedEntityImplWithIdGetter<O>(
-      Type type,
-      O entity,
-      bool Function(Object? o1, Object o2) eq,
-      dynamic Function(O o) idGetter) {
+  bool _isCachedEntityImplWithIdGetter<O>(Type type, O entity,
+      bool Function(Object? o1, Object o2) eq, dynamic Function(O o) idGetter) {
     if (entity == null) return false;
 
     Object? id;
