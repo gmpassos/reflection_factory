@@ -1752,5 +1752,274 @@ void main() {
 
       expect(mainAddress4, isNull);
     });
+
+    test('cacheEntityInstantiator', () {
+      var mainAddress =
+          TestAddressWithReflection.withCity('NY', city: 'New York', id: 11);
+      var company = TestCompanyWithReflection('c1', mainAddress);
+
+      var jsonEntityCache1 = JsonEntityCacheSimple();
+
+      var encode1 = JsonCodec(entityCache: jsonEntityCache1).encode(
+          [company, mainAddress],
+          duplicatedEntitiesAsID: false, autoResetEntityCache: false);
+
+      expect(
+          encode1,
+          equals('['
+              '{"branchesAddresses":[],"extraAddresses":[],"extraNames":[],"mainAddress":{"id":11,"state":"NY","city":"New York"},"name":"c1"},'
+              '{"id":11,"state":"NY","city":"New York"}'
+              ']'));
+
+      var encode2 = JsonCodec(entityCache: jsonEntityCache1).encode(
+          [company, mainAddress],
+          duplicatedEntitiesAsID: true, autoResetEntityCache: false);
+
+      expect(
+          encode2,
+          equals('['
+              '{"branchesAddresses":[],"extraAddresses":[],"extraNames":[],"mainAddress":{"id":11,"state":"NY","city":"New York"},"name":"c1"},'
+              '11'
+              ']'));
+
+      var jsonEntityCache2 = JsonEntityCacheSimple();
+
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(0));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(0));
+      expect(jsonEntityCache2.totalCachedEntities, equals(0));
+
+      var instantiated = false;
+
+      jsonEntityCache2.cacheEntityInstantiator(11, () {
+        instantiated = true;
+        return TestAddressWithReflection$fromJsonEncoded(
+            '{"id":11,"state":"NY","city":"New York"}');
+      });
+
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(0));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(1));
+      expect(jsonEntityCache2.totalCachedEntities, equals(1));
+      expect(instantiated, isFalse);
+
+      expect(jsonEntityCache2.cachedEntities.length, equals(0));
+
+      expect(
+          jsonEntityCache2.isCachedEntityByID(10,
+              type: TestAddressWithReflection),
+          isFalse);
+
+      expect(
+          jsonEntityCache2.isCachedEntityByID(11,
+              type: TestAddressWithReflection),
+          isTrue);
+
+      expect(instantiated, isFalse);
+
+      expect(
+          jsonEntityCache2.getCachedEntityByID(10,
+              type: TestAddressWithReflection),
+          isNull);
+
+      expect(instantiated, isFalse);
+
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(0));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(1));
+      expect(jsonEntityCache2.totalCachedEntities, equals(1));
+
+      expect(jsonEntityCache2.cachedEntities.length, equals(0));
+
+      expect(
+          jsonEntityCache2.getCachedEntityByID(11,
+              type: TestAddressWithReflection),
+          isNotNull);
+
+      expect(instantiated, isTrue);
+
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(1));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(0));
+      expect(jsonEntityCache2.totalCachedEntities, equals(1));
+
+      expect(jsonEntityCache2.cachedEntities.length, equals(1));
+      expect(jsonEntityCache2.allCachedEntities.length, equals(1));
+
+      jsonEntityCache2.cacheEntityInstantiator(12, () {
+        instantiated = true;
+        return TestAddressWithReflection$fromJsonEncoded(
+            '{"id":12,"state":"NY","city":"New York"}');
+      });
+
+      expect(
+        jsonEntityCache2.getCachedEntityByID<TestAddressWithReflection>(11)?.id,
+        equals(11),
+      );
+
+      expect(
+        jsonEntityCache2
+            .getCachedEntityByID<TestAddressWithReflection>(12,
+                instantiate: false)
+            ?.id,
+        isNull,
+      );
+
+      expect(
+        jsonEntityCache2.isCachedEntity(
+          TestAddressWithReflection$fromJsonEncoded(
+              '{"id":11,"state":"NY","city":"New York"}'),
+          identicalEquality: false,
+        ),
+        isTrue,
+      );
+
+      expect(
+        jsonEntityCache2.isCachedEntity(
+          TestAddressWithReflection$fromJsonEncoded(
+              '{"id":11,"state":"NY","city":"New York"}'),
+          identicalEquality: false,
+          idGetter: (o) => o.id,
+        ),
+        isTrue,
+      );
+
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(1));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(1));
+      expect(jsonEntityCache2.totalCachedEntities, equals(2));
+
+      expect(jsonEntityCache2.cachedEntities.length, equals(1));
+      expect(jsonEntityCache2.allCachedEntities.length, equals(2));
+
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(2));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(0));
+      expect(jsonEntityCache2.totalCachedEntities, equals(2));
+
+      expect(
+        jsonEntityCache2
+            .getCachedEntityByID<TestAddressWithReflection>(1000)
+            ?.id,
+        isNull,
+      );
+
+      expect(
+        jsonEntityCache2.getCachedEntityByID<TestAddressWithReflection>(11)?.id,
+        equals(11),
+      );
+
+      expect(
+        jsonEntityCache2.getCachedEntityByID<TestAddressWithReflection>(12)?.id,
+        equals(12),
+      );
+
+      expect(
+        jsonEntityCache2.getCachedEntitiesByIDs<TestAddressWithReflection>(
+            [11, 12])?.map((k, v) => MapEntry(k, (v as dynamic).id)),
+        equals(
+          {11: 11, 12: 12},
+        ),
+      );
+
+      jsonEntityCache2.cacheEntityInstantiator(10, () {
+        instantiated = true;
+        return TestAddressWithReflection$fromJsonEncoded(
+            '{"id":10,"state":"NY","city":"New York"}');
+      });
+
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(2));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(1));
+      expect(jsonEntityCache2.totalCachedEntities, equals(3));
+
+      expect(
+        jsonEntityCache2.getCachedEntityByID<TestAddressWithReflection>(10)?.id,
+        equals(10),
+      );
+
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(3));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(0));
+      expect(jsonEntityCache2.totalCachedEntities, equals(3));
+
+      jsonEntityCache2.cacheEntityInstantiator(9, () {
+        return TestAddressWithReflection$fromJsonEncoded(
+            '{"id":9,"state":"NY","city":"New York"}');
+      });
+
+      jsonEntityCache2.cacheEntityInstantiator(8, () {
+        return TestAddressWithReflection$fromJsonEncoded(
+            '{"id":8,"state":"NY","city":"New York"}');
+      });
+
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(3));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(2));
+      expect(jsonEntityCache2.totalCachedEntities, equals(5));
+
+      expect(
+        jsonEntityCache2.getCachedEntitiesByIDs<TestAddressWithReflection>(
+            [11, 12, 9])?.map((k, v) => MapEntry(k, (v as dynamic).id)),
+        equals(
+          {11: 11, 12: 12, 9: 9},
+        ),
+      );
+
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(4));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(1));
+      expect(jsonEntityCache2.totalCachedEntities, equals(5));
+
+      expect(
+        jsonEntityCache2
+            .getCachedEntities<TestAddressWithReflection>(instantiate: false)
+            ?.map(
+                (k, v) => MapEntry(k, v is Function ? -1 : (v as dynamic).id)),
+        equals(
+          {8: -1, 9: 9, 10: 10, 11: 11, 12: 12},
+        ),
+      );
+
+      expect(
+        jsonEntityCache2.getCachedEntitiesByIDs<TestAddressWithReflection>(
+            [11, 8, 9])?.map((k, v) => MapEntry(k, (v as dynamic).id)),
+        equals(
+          {11: 11, 8: 8, 9: 9},
+        ),
+      );
+
+      expect(jsonEntityCache2.cachedEntitiesLength, equals(5));
+      expect(jsonEntityCache2.cachedEntitiesInstantiatorsLength, equals(0));
+      expect(jsonEntityCache2.totalCachedEntities, equals(5));
+
+      expect(
+        jsonEntityCache2
+            .getCachedEntities<TestAddressWithReflection>()
+            ?.map((k, v) => MapEntry(k, (v as dynamic).id)),
+        equals(
+          {8: 8, 9: 9, 10: 10, 11: 11, 12: 12},
+        ),
+      );
+
+      jsonEntityCache2.cacheEntityInstantiator(7, () {
+        return TestAddressWithReflection$fromJsonEncoded(
+            '{"id":7,"state":"NY","city":"New York"}');
+      });
+
+      expect(
+        jsonEntityCache2.isCachedEntity(
+          TestAddressWithReflection$fromJsonEncoded(
+              '{"id":7,"state":"NY","city":"New York"}'),
+          identicalEquality: false,
+          idGetter: (o) => o.id,
+        ),
+        isTrue,
+      );
+
+      jsonEntityCache2.cacheEntityInstantiator(6, () {
+        return TestAddressWithReflection$fromJsonEncoded(
+            '{"id":6,"state":"NY","city":"New York"}');
+      });
+
+      expect(
+        jsonEntityCache2.isCachedEntity(
+          TestAddressWithReflection$fromJsonEncoded(
+              '{"id":6,"state":"NY","city":"New York"}'),
+          identicalEquality: false,
+        ),
+        isTrue,
+      );
+    });
   });
 }

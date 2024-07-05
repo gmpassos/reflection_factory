@@ -203,7 +203,7 @@ class TypeParser {
       return Map.fromEntries(value
           .map((e) => parseMapEntry<K, V>(e,
               keyParser: keyParser, valueParser: valueParser))
-          .whereNotNull());
+          .nonNulls);
     } else if (value is num) {
       var e = parseMapEntry<K, V>(value,
           keyParser: keyParser, valueParser: valueParser);
@@ -216,7 +216,7 @@ class TypeParser {
       return Map.fromEntries(pairs
           .map((e) => parseMapEntry<K, V>(e,
               keyParser: keyParser, valueParser: valueParser))
-          .whereNotNull());
+          .nonNulls);
     }
   }
 

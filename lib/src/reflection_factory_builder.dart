@@ -917,7 +917,7 @@ extension _LibraryElementExtension on LibraryElement {
   List<LibraryElement> get allExports =>
       _allExports[this] ??= UnmodifiableListView(libraryExports
           .map((e) => e.exportedLibrary)
-          .whereNotNull()
+          .nonNulls
           .toList(growable: false));
 
   static final Expando<Set<ClassElement>> _allExportedClasses =
@@ -2506,7 +2506,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     var str = StringBuffer();
 
     var traverseReturnInterfaceTypes =
-        traverseReturnTypes.map((e) => e.interfaceType).whereNotNull().toSet();
+        traverseReturnTypes.map((e) => e.interfaceType).nonNulls.toSet();
 
     var entriesCount = 0;
 

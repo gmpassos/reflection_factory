@@ -2138,6 +2138,11 @@ abstract class JsonEntityCache {
   Object? getEntityID<O>(O object,
       {Type? type, dynamic Function(O o)? idGetter});
 
+  /// Returns `true` if an entity of [type] with [id] is cached.
+  /// This includes entities cached through [cacheEntity], [cacheEntities] and
+  /// [cacheEntityInstantiator].
+  bool isCachedEntityByID<O>(dynamic id, {Type? type});
+
   /// Returns a cached entity of [type] with [id].
   O? getCachedEntityByID<O>(dynamic id, {Type? type});
 
@@ -2164,8 +2169,36 @@ abstract class JsonEntityCache {
   /// See [cacheEntity].
   void cacheEntities<O>(List<O> entities, [dynamic Function(O o)? idGetter]);
 
+  /// Caches an [entityInstantiator]. This is called by the entity decoder/loader.
+  /// See [cacheEntity].
+  void cacheEntityInstantiator<O>(Object id, O Function() entityInstantiator,
+      {Type? type, bool overwrite = true});
+
   /// Clears all cached entities of this cache.
   void clearCachedEntities();
+
+  /// Returns the already instantiated cached entities of this cache.
+  /// See [allCachedEntities].
+  List<Object> get cachedEntities;
+
+  /// Returns all the cached entities of this cache.
+  /// Calls [instantiateAllCachedEntities] before returning the cached entities.
+  List<Object> get allCachedEntities;
+
+  /// Instantiate all the entities, calling their entity instantiators.
+  /// See [cacheEntityInstantiator]
+  int instantiateAllCachedEntities();
+
+  /// Returns the total cached entities of this cache.
+  /// See [cacheEntity] and [totalCachedEntities].
+  int get cachedEntitiesLength;
+
+  /// Returns the total cached entities instantiators of this cache.
+  /// See [cacheEntityInstantiator] and [totalCachedEntities].
+  int get cachedEntitiesInstantiatorsLength;
+
+  /// Returns the total number of cached entities and cache entities instantiators.
+  int get totalCachedEntities;
 }
 
 /// Simple implementation of [JsonEntityCache].
@@ -2211,98 +2244,290 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     return null;
   }
 
-  final Map<Type, Map<Object, Object>> _entities =
-      <Type, Map<Object, Object>>{};
+  Map<Type, Map<Object, Object>>? _entities;
+  Map<Type, Map<Object, Object Function()>>? _entitiesInstantiators;
 
   @override
   void clearCachedEntities() {
-    _entities.clear();
+    _entities?.clear();
+    _entitiesInstantiators?.clear();
   }
 
-  /// Returns all cached entities of this cache.
+  @override
   List<Object> get cachedEntities =>
-      _entities.entries.expand((e) => e.value.values).toList();
+      _entities?.entries.expand((e) => e.value.values).toList() ?? [];
 
-  /// Returns the total cached entities of this cache.
+  @override
+  List<Object> get allCachedEntities {
+    instantiateAllCachedEntities();
+    return cachedEntities;
+  }
+
+  @override
+  int instantiateAllCachedEntities() {
+    var entitiesInstantiators = _entitiesInstantiators;
+    if (entitiesInstantiators == null) return 0;
+
+    var total = 0;
+    for (var e in entitiesInstantiators.entries) {
+      var type = e.key;
+      var ids = e.value.keys.toList();
+      for (var id in ids) {
+        _instantiateEntity(type, id);
+        ++total;
+      }
+    }
+    return total;
+  }
+
+  @override
   int get cachedEntitiesLength =>
-      _entities.entries.map((e) => e.value.values.length).sum;
+      _entities?.values.map((e) => e.length).sum ?? 0;
+
+  @override
+  int get cachedEntitiesInstantiatorsLength =>
+      _entitiesInstantiators?.values.map((e) => e.length).sum ?? 0;
 
   /// Returns the cached entities of [type].
-  Map<dynamic, Object>? getCachedEntities<O>({Type? type}) {
+  Map<dynamic, Object>? getCachedEntities<O>(
+      {Type? type, bool instantiate = true}) {
     type ??= O;
-    var typeEntities = _entities[type];
-    return typeEntities != null ? UnmodifiableMapView(typeEntities) : null;
+
+    var typeEntitiesInstantiators = _entitiesInstantiators?[type];
+    if (typeEntitiesInstantiators != null && instantiate) {
+      var ids = typeEntitiesInstantiators.keys.toList();
+      for (var id in ids) {
+        _instantiateEntity(type, id);
+      }
+    }
+
+    var typeEntities = _entities?[type];
+
+    if (typeEntities != null && typeEntities.isNotEmpty) {
+      if (typeEntitiesInstantiators != null &&
+          typeEntitiesInstantiators.isNotEmpty) {
+        return UnmodifiableMapView(
+            CombinedMapView([typeEntities, typeEntitiesInstantiators]));
+      } else {
+        return UnmodifiableMapView(typeEntities);
+      }
+    } else {
+      return typeEntitiesInstantiators != null
+          ? UnmodifiableMapView(typeEntitiesInstantiators)
+          : null;
+    }
   }
 
   @override
   Map<dynamic, Object>? getCachedEntitiesByIDs<O>(List<dynamic> ids,
-      {Type? type, bool removeCachedIDs = false}) {
+      {Type? type, bool instantiate = true, bool removeCachedIDs = false}) {
     type ??= O;
 
-    var cachedEntities = _entities[type];
-    if (cachedEntities == null) return null;
+    Map<dynamic, Object>? cachedEntitiesByIDs;
+    Map<dynamic, Object>? cachedEntitiesInstantiatorsByIDs;
 
-    var cachedEntitiesByIDs = Map<dynamic, Object>.fromEntries(ids.map((id) {
-      var entity = cachedEntities[id];
-      return entity != null ? MapEntry(id, entity) : null;
-    }).whereNotNull());
-
-    if (cachedEntitiesByIDs.isEmpty) return null;
-
-    if (removeCachedIDs) {
-      ids.removeWhere((id) => cachedEntitiesByIDs.containsKey(id));
+    var cachedEntities = _entities?[type];
+    if (cachedEntities != null) {
+      cachedEntitiesByIDs = Map.fromEntries(ids.map((id) {
+        var entity = cachedEntities[id];
+        return entity != null ? MapEntry(id, entity) : null;
+      }).nonNulls);
     }
 
-    return cachedEntitiesByIDs;
+    var cachedEntitiesInstantiators = _entitiesInstantiators?[type];
+    if (cachedEntitiesInstantiators != null) {
+      cachedEntitiesInstantiatorsByIDs = Map.fromEntries(ids.map((id) {
+        var entityInstantiator = cachedEntitiesInstantiators[id];
+        if (entityInstantiator != null) {
+          if (instantiate) {
+            var entity = _instantiateEntity(type!, id);
+            return entity != null ? MapEntry(id, entity) : null;
+          } else {
+            return MapEntry(id, entityInstantiator);
+          }
+        } else {
+          return null;
+        }
+      }).nonNulls);
+    }
+
+    if ((cachedEntitiesByIDs == null || cachedEntitiesByIDs.isEmpty) &&
+        (cachedEntitiesInstantiatorsByIDs == null ||
+            cachedEntitiesInstantiatorsByIDs.isEmpty)) {
+      return null;
+    }
+
+    if (removeCachedIDs) {
+      ids.removeWhere((id) {
+        return (cachedEntitiesByIDs != null &&
+                cachedEntitiesByIDs.containsKey(id)) ||
+            (cachedEntitiesInstantiatorsByIDs != null &&
+                cachedEntitiesInstantiatorsByIDs.containsKey(id));
+      });
+    }
+
+    if (cachedEntitiesByIDs != null && cachedEntitiesByIDs.isNotEmpty) {
+      if (cachedEntitiesInstantiatorsByIDs != null &&
+          cachedEntitiesInstantiatorsByIDs.isNotEmpty) {
+        return {...cachedEntitiesByIDs, ...cachedEntitiesInstantiatorsByIDs};
+      } else {
+        return cachedEntitiesByIDs;
+      }
+    } else {
+      return cachedEntitiesInstantiatorsByIDs;
+    }
   }
 
   /// Returns a cached entity of [type] with [id].
   @override
-  O? getCachedEntityByID<O>(dynamic id, {Type? type}) {
+  bool isCachedEntityByID<O>(dynamic id, {Type? type}) {
+    if (id == null) return false;
+    type ??= O;
+
+    var typeEntities = _entities?[type];
+    if (typeEntities != null && typeEntities.containsKey(id)) {
+      return true;
+    }
+
+    var typeEntitiesInstantiators = _entitiesInstantiators?[type];
+    if (typeEntitiesInstantiators != null &&
+        typeEntitiesInstantiators.containsKey(id)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /// Returns a cached entity of [type] with [id].
+  @override
+  O? getCachedEntityByID<O>(dynamic id, {Type? type, instantiate = true}) {
     if (id == null) return null;
     type ??= O;
-    var typeEntities = _entities[type];
+
+    var typeEntities = _entities?[type];
     var entity = typeEntities?[id] as O?;
+
+    if (entity == null && instantiate) {
+      entity = _instantiateEntity(type, id) as O?;
+    }
 
     return entity;
   }
 
   @override
-  O? getCachedEntityByMapID<O>(Map<Object?, Object?> map, {Type? type}) {
+  O? getCachedEntityByMapID<O>(Map<Object?, Object?> map,
+      {Type? type, instantiate = true}) {
     var id = getEntityIDFromMap(map, type: type);
-    if (id != null) {
-      var cachedEntity = getCachedEntityByID(id, type: type);
-      if (cachedEntity != null) {
-        return cachedEntity as O;
-      }
-    }
-    return null;
+    if (id == null) return null;
+
+    var cachedEntity =
+        getCachedEntityByID(id, type: type, instantiate: instantiate);
+
+    return cachedEntity != null ? cachedEntity as O : null;
   }
 
   @override
   bool isCachedEntity<O>(O entity,
-      {Type? type, bool identicalEquality = true}) {
+      {Type? type,
+      bool identicalEquality = true,
+      dynamic Function(O o)? idGetter}) {
+    if (entity == null) return false;
+
     type ??= O;
     if (type == Object || type == dynamic) {
       type = entity.runtimeType;
     }
 
-    var typeEntities = _entities[type];
-    if (typeEntities == null) return false;
+    final eq = identicalEquality ? identical : (a, b) => a == b;
 
-    if (identicalEquality) {
-      return typeEntities.values.any((e) => identical(e, entity));
+    if (idGetter != null) {
+      return _isCachedEntityImplWithIdGetter(type, entity, eq, idGetter);
     } else {
-      return typeEntities.values.any((e) => e == entity);
+      return _isCachedEntityImpl(type, entity, eq);
     }
   }
 
+  bool _isCachedEntityImpl<O>(
+      Type type, Object entity, bool Function(Object? o1, Object o2) eq) {
+    var typeEntities = _entities?[type];
+    if (typeEntities != null) {
+      if (typeEntities.values.any((e) => eq(e, entity))) return true;
+    }
+
+    var typeEntitiesInstantiators = _entitiesInstantiators?[type];
+    if (typeEntitiesInstantiators != null) {
+      var ids = typeEntitiesInstantiators.keys.toList();
+      for (var id in ids) {
+        var prev = _instantiateEntity(type, id);
+        if (eq(prev, entity)) return true;
+      }
+      return false;
+    }
+
+    return false;
+  }
+
+  bool _isCachedEntityImplWithIdGetter<O>(Type type, O entity,
+      bool Function(Object? o1, Object o2) eq, dynamic Function(O o) idGetter) {
+    if (entity == null) return false;
+
+    Object? id;
+
+    var typeEntities = _entities?[type];
+    if (typeEntities != null) {
+      id = idGetter(entity);
+
+      if (id != null) {
+        var prev = typeEntities[id];
+        if (prev != null) {
+          if (eq(prev, entity)) return true;
+        }
+      }
+    }
+
+    var typeEntitiesInstantiators = _entitiesInstantiators?[type];
+    if (typeEntitiesInstantiators != null) {
+      id ??= idGetter(entity);
+
+      if (id != null) {
+        var prevHasInstantiator = typeEntitiesInstantiators.containsKey(id);
+        if (prevHasInstantiator) {
+          var prev = _instantiateEntity(type, id, idGetter);
+          if (eq(prev, entity)) return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  Object? _instantiateEntity<O>(Type type, Object id,
+      [dynamic Function(O o)? idGetter]) {
+    var typeEntitiesInstantiators = _entitiesInstantiators?[type];
+
+    var instantiator = typeEntitiesInstantiators?.remove(id);
+    if (instantiator == null) return null;
+
+    var entity = instantiator() as O;
+    cacheEntity<O>(entity, idGetter);
+
+    return entity;
+  }
+
   /// Removes an entity of [type] with [id] of this cache.
-  O? removeCachedEntity<O>(dynamic id, {Type? type}) {
+  O? removeCachedEntity<O>(dynamic id, {Type? type, bool instantiate = true}) {
     if (id == null) return null;
     type ??= O;
-    var typeEntities = _entities[type];
+    var typeEntities = _entities?[type];
     var entity = typeEntities?.remove(id) as O?;
+
+    var typeEntitiesInstantiators = _entitiesInstantiators?[type];
+    var entityInstantiator = typeEntitiesInstantiators?.remove(id);
+
+    if (entityInstantiator != null && instantiate) {
+      entity ??= entityInstantiator() as O?;
+    }
+
     return entity;
   }
 
@@ -2312,14 +2537,21 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     if (id == null) return;
 
     var type = entity.runtimeType;
-    var typeEntities = _entities.putIfAbsent(type, () => <Object, Object>{});
+
+    var entities = _entities ??= {};
+
+    var typeEntities = entities[type] ??= <Object, Object>{};
     typeEntities[id] = entity!;
+
+    var typeEntitiesInstantiators = _entitiesInstantiators?[type];
+    typeEntitiesInstantiators?.remove(id);
   }
 
   @override
   void cacheEntities<O>(List<O> entities, [dynamic Function(O o)? idGetter]) {
     Type? entityTYpe;
     Map<dynamic, Object>? typeEntities;
+    Map<Object, Object Function()>? typeEntitiesInstantiators;
 
     for (var e in entities) {
       var id = getEntityID<O>(e, idGetter: idGetter);
@@ -2327,25 +2559,63 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
       if (entityTYpe != e.runtimeType) {
         entityTYpe = e.runtimeType;
-        typeEntities =
-            _entities.putIfAbsent(entityTYpe, () => <Object, Object>{});
+
+        var entities = _entities ??= {};
+
+        typeEntities = entities[entityTYpe] ??= <Object, Object>{};
+        typeEntitiesInstantiators = _entitiesInstantiators?[entityTYpe];
       }
 
       typeEntities![id] = e!;
+      typeEntitiesInstantiators?.remove(id);
     }
   }
 
-  /// Returns the total number of cached entities.
-  int get totalCachedEntites => _entities.values.map((e) => e.length).sum;
+  @override
+  bool cacheEntityInstantiator<O>(Object id, O Function() entityInstantiator,
+      {Type? type, bool overwrite = true}) {
+    type ??= O;
+
+    var entities = _entities?[type];
+    var entity = entities?[id];
+    if (entity != null) {
+      if (!overwrite) return false;
+      entities!.remove(id);
+    }
+
+    var entitiesInstantiators = _entitiesInstantiators ??= {};
+
+    var typeEntitiesInstantiators =
+        entitiesInstantiators[type] ??= <Object, Object Function()>{};
+
+    var prev = typeEntitiesInstantiators[id];
+    if (prev != null && !overwrite) return false;
+
+    typeEntitiesInstantiators[id] = entityInstantiator as Object Function();
+    return true;
+  }
+
+  @Deprecated("Typo: use `totalCachedEntities`")
+  int get totalCachedEntites => totalCachedEntities;
+
+  @override
+  int get totalCachedEntities =>
+      cachedEntitiesLength + cachedEntitiesInstantiatorsLength;
 
   @override
   String toString() {
-    var total = totalCachedEntites;
+    var total = totalCachedEntities;
     var s = 'JsonEntityCacheSimple#$id[$total]';
+
+    final entities = _entities;
+    final entitiesInstantiators = _entitiesInstantiators;
 
     return total == 0
         ? s
-        : '$s${_entities.map((key, value) => MapEntry(key, value.length))}';
+        : '$s${CombinedMapView([
+                if (entities != null) entities,
+                if (entitiesInstantiators != null) entitiesInstantiators,
+              ]).map((key, value) => MapEntry(key, value.length))}';
   }
 }
 

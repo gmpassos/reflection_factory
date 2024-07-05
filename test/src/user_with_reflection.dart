@@ -153,7 +153,8 @@ class TestAddressWithReflection {
       other is TestAddressWithReflection &&
           runtimeType == other.runtimeType &&
           state == other.state &&
-          city == other.city;
+          city == other.city &&
+          id == other.id;
 
   @override
   int get hashCode => state.hashCode ^ city.hashCode;

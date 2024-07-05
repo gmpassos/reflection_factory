@@ -1,3 +1,12 @@
+## 2.4.1
+
+- `JsonEntityCache`:
+  - Added `isCachedEntityByID` and `cacheEntityInstantiator`.
+  - `JsonEntityCacheSimple`: implement new methods.
+  - Added to interface (from `JsonEntityCacheSimple`):
+    `cachedEntities`, `allCachedEntities`, `instantiateAllCachedEntities`, `cachedEntitiesLength`,
+    `cachedEntitiesInstantiatorsLength`, `totalCachedEntities`.
+
 ## 2.4.0
 
 - sdk: '>=3.3.0 <4.0.0'

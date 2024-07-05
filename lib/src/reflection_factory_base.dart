@@ -6,7 +6,6 @@ import 'package:collection/collection.dart'
     show
         DeepCollectionEquality,
         IterableExtension,
-        IterableNullableExtension,
         ListEquality,
         MapEquality,
         binarySearch,
@@ -21,7 +20,7 @@ import 'reflection_factory_utils.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.4.0';
+  static const String VERSION = '2.4.1';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -2076,7 +2075,7 @@ abstract class ClassReflection<O> extends Reflection<O>
     var entries = fieldsNames.map((f) {
       var f2 = fieldNameResolver(f, map);
       return f2 != null ? MapEntry(f, f2) : null;
-    }).whereNotNull();
+    }).nonNulls;
     return Map<String, String>.fromEntries(entries);
   }
 
