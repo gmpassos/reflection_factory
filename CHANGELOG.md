@@ -1,3 +1,7 @@
+## 2.4.3
+
+- `ClassReflection`: optimize `createInstanceWithConstructors`.
+
 ## 2.4.2
 
 - `JsonDecoder`:

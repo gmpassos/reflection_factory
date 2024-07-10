@@ -20,7 +20,7 @@ import 'reflection_factory_utils.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.4.2';
+  static const String VERSION = '2.4.3';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -1710,25 +1710,70 @@ abstract class ClassReflection<O> extends Reflection<O>
     FieldNameResolver? fieldNameResolver,
     FieldValueResolver? fieldValueResolver,
   }) {
-    if (constructors is ListSortedByUsage<ConstructorReflection<O>>) {
+    final length = constructors.length;
+
+    if (length == 0) {
+      return null;
+    } else if (length == 1) {
+      return _createInstanceWithConstructorImpl(constructors.first, map,
+          fieldNameResolver: fieldNameResolver,
+          fieldValueResolver: fieldValueResolver);
+    } else if (constructors is ListSortedByUsage<ConstructorReflection<O>>) {
       var sorted = constructors.sortedByUsage();
       var ret = _createInstanceWithConstructorsImpl(sorted, map,
           fieldNameResolver: fieldNameResolver,
           fieldValueResolver: fieldValueResolver);
       if (ret != null) {
-        constructors.notifyUsage(ret.key);
-        return ret.value;
+        constructors.notifyUsage(ret.$1);
+        return ret.$2;
       }
       return null;
     } else {
       var ret = _createInstanceWithConstructorsImpl(constructors, map,
           fieldNameResolver: fieldNameResolver,
           fieldValueResolver: fieldValueResolver);
-      return ret?.value;
+      return ret?.$2;
     }
   }
 
-  MapEntry<ConstructorReflection<O>, O?>? _createInstanceWithConstructorsImpl(
+  O? _createInstanceWithConstructorImpl(
+    ConstructorReflection<O> constructor,
+    Map<String, Object?> map, {
+    FieldNameResolver? fieldNameResolver,
+    FieldValueResolver? fieldValueResolver,
+  }) {
+    var invocationErrors = <List>[];
+
+    void catchInvokeError(
+        ConstructorReflection constructor,
+        MethodInvocation methodInvocation,
+        Map<String, dynamic> map,
+        Object? error) {
+      invocationErrors.add([constructor, methodInvocation, map, error]);
+    }
+
+    try {
+      var o = createInstanceWithConstructor(constructor, map,
+          fieldNameResolver: fieldNameResolver,
+          fieldValueResolver: fieldValueResolver,
+          onInvocationError: catchInvokeError);
+
+      if (o != null) {
+        return o;
+      }
+    } on UnresolvedParameterError catch (e) {
+      _showInvokeError(0, constructor, null, map, e);
+      rethrow;
+    }
+
+    if (invocationErrors.isNotEmpty) {
+      _throwInvocationError(invocationErrors);
+    }
+
+    return null;
+  }
+
+  (ConstructorReflection<O>, O?)? _createInstanceWithConstructorsImpl(
     List<ConstructorReflection<O>> constructors,
     Map<String, Object?> map, {
     FieldNameResolver? fieldNameResolver,
@@ -1747,36 +1792,40 @@ abstract class ClassReflection<O> extends Reflection<O>
     }
 
     for (var c in constructors) {
-      O? o;
       try {
-        o = createInstanceWithConstructor(c, map,
+        var o = createInstanceWithConstructor(c, map,
             fieldNameResolver: fieldNameResolver,
             fieldValueResolver: fieldValueResolver,
             onInvocationError: catchInvokeError);
+
+        if (o != null) {
+          return (c, o);
+        }
       } on UnresolvedParameterError catch (e) {
         invocationErrors.add([c, null, map, e]);
-        continue;
       }
-
-      if (o != null) return MapEntry(c, o);
     }
 
     if (invocationErrors.isNotEmpty) {
-      for (var i = 0; i < invocationErrors.length; ++i) {
-        var args = invocationErrors[i];
-        _showInvokeError(i, args[0], args[1], args[2], args[3]);
-      }
-
-      var mainInvocationError = invocationErrors
-          .firstWhereOrNull((e) => e[3] is! UnresolvedParameterError);
-
-      mainInvocationError ??= invocationErrors.first;
-
-      var error = mainInvocationError[3];
-      throw error;
+      _throwInvocationError(invocationErrors);
     }
 
     return null;
+  }
+
+  Never _throwInvocationError(List<List<dynamic>> invocationErrors) {
+    for (var i = 0; i < invocationErrors.length; ++i) {
+      var args = invocationErrors[i];
+      _showInvokeError(i, args[0], args[1], args[2], args[3]);
+    }
+
+    var mainInvocationError = invocationErrors
+        .firstWhereOrNull((e) => e[3] is! UnresolvedParameterError);
+
+    mainInvocationError ??= invocationErrors.first;
+
+    var error = mainInvocationError[3];
+    throw error;
   }
 
   void _showInvokeError(
