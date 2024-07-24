@@ -42,7 +42,7 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
     return _objectReflections[object] ??= User$reflection._(object);
   }
 
-  User$reflection._([User? object]) : super(User, 'User', object);
+  User$reflection._([User? object]) : super(User, r'User', object);
 
   static bool _registered = false;
   @override

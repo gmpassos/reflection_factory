@@ -136,7 +136,7 @@ class TestAddressWithReflection$reflection
       : this._(object);
 
   TestAddressWithReflection$reflection._([TestAddressWithReflection? object])
-      : super(TestAddressWithReflection, 'TestAddressWithReflection', object);
+      : super(TestAddressWithReflection, r'TestAddressWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -533,7 +533,7 @@ class TestCompanyWithReflection$reflection
   }
 
   TestCompanyWithReflection$reflection._([TestCompanyWithReflection? object])
-      : super(TestCompanyWithReflection, 'TestCompanyWithReflection', object);
+      : super(TestCompanyWithReflection, r'TestCompanyWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1009,7 +1009,7 @@ class TestDataWithReflection$reflection
   }
 
   TestDataWithReflection$reflection._([TestDataWithReflection? object])
-      : super(TestDataWithReflection, 'TestDataWithReflection', object);
+      : super(TestDataWithReflection, r'TestDataWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1313,7 +1313,7 @@ class TestDomainWithReflection$reflection
   }
 
   TestDomainWithReflection$reflection._([TestDomainWithReflection? object])
-      : super(TestDomainWithReflection, 'TestDomainWithReflection', object);
+      : super(TestDomainWithReflection, r'TestDomainWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1762,7 +1762,7 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
   }
 
   TestEmpty$reflection._([TestEmpty? object])
-      : super(TestEmpty, 'TestEmpty', object);
+      : super(TestEmpty, r'TestEmpty', object);
 
   static bool _registered = false;
   @override
@@ -1912,7 +1912,7 @@ class TestEnumWithReflection$reflection
   }
 
   TestEnumWithReflection$reflection._([TestEnumWithReflection? object])
-      : super(TestEnumWithReflection, 'TestEnumWithReflection', object);
+      : super(TestEnumWithReflection, r'TestEnumWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1998,8 +1998,8 @@ class TestFranchiseWithReflection$reflection
 
   TestFranchiseWithReflection$reflection._(
       [TestFranchiseWithReflection? object])
-      : super(
-            TestFranchiseWithReflection, 'TestFranchiseWithReflection', object);
+      : super(TestFranchiseWithReflection, r'TestFranchiseWithReflection',
+            object);
 
   static bool _registered = false;
   @override
@@ -2347,7 +2347,7 @@ class TestName$reflection extends ClassReflection<TestName>
   }
 
   TestName$reflection._([TestName? object])
-      : super(TestName, 'TestName', object);
+      : super(TestName, r'TestName', object);
 
   static bool _registered = false;
   @override
@@ -2654,7 +2654,7 @@ class TestOpAWithReflection$reflection
   }
 
   TestOpAWithReflection$reflection._([TestOpAWithReflection? object])
-      : super(TestOpAWithReflection, 'TestOpAWithReflection', object);
+      : super(TestOpAWithReflection, r'TestOpAWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -3019,7 +3019,7 @@ class TestOpBWithReflection$reflection
   }
 
   TestOpBWithReflection$reflection._([TestOpBWithReflection? object])
-      : super(TestOpBWithReflection, 'TestOpBWithReflection', object);
+      : super(TestOpBWithReflection, r'TestOpBWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -3403,7 +3403,7 @@ class TestOpWithReflection$reflection
   }
 
   TestOpWithReflection$reflection._([TestOpWithReflection? object])
-      : super(TestOpWithReflection, 'TestOpWithReflection', object);
+      : super(TestOpWithReflection, r'TestOpWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -3803,7 +3803,7 @@ class TestTransactionWithReflection$reflection
 
   TestTransactionWithReflection$reflection._(
       [TestTransactionWithReflection? object])
-      : super(TestTransactionWithReflection, 'TestTransactionWithReflection',
+      : super(TestTransactionWithReflection, r'TestTransactionWithReflection',
             object);
 
   static bool _registered = false;
@@ -4082,7 +4082,7 @@ class TestUserWithReflection$reflection
   }
 
   TestUserWithReflection$reflection._([TestUserWithReflection? object])
-      : super(TestUserWithReflection, 'TestUserWithReflection', object);
+      : super(TestUserWithReflection, r'TestUserWithReflection', object);
 
   static bool _registered = false;
   @override
