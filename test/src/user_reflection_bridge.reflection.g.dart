@@ -54,7 +54,7 @@ class TestAddress$reflection extends ClassReflection<TestAddress>
   }
 
   TestAddress$reflection._([TestAddress? object])
-      : super(TestAddress, 'TestAddress', object);
+      : super(TestAddress, r'TestAddress', object);
 
   static bool _registered = false;
   @override
@@ -378,7 +378,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple>
   }
 
   TestUserSimple$reflection._([TestUserSimple? object])
-      : super(TestUserSimple, 'TestUserSimple', object);
+      : super(TestUserSimple, r'TestUserSimple', object);
 
   static bool _registered = false;
   @override
