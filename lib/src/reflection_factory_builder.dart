@@ -252,6 +252,9 @@ class ReflectionBuilder implements Builder {
         '// ignore_for_file: no_leading_underscores_for_local_identifiers\n');
     fullCode.write('// ignore_for_file: camel_case_types\n');
     fullCode.write('// ignore_for_file: camel_case_extensions\n');
+    fullCode.write('// ignore_for_file: deprecated_member_use\n');
+    fullCode
+        .write('// ignore_for_file: deprecated_member_use_from_same_package\n');
     fullCode.write('// ignore_for_file: unnecessary_const\n');
     fullCode.write('// ignore_for_file: unnecessary_cast\n');
     fullCode.write('// ignore_for_file: unnecessary_type_check\n\n');

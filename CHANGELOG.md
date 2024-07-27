@@ -1,3 +1,13 @@
+## 2.4.4
+
+- 🐛 fix(builder):
+  - Use raw strings on class names.
+  - `ignore_for_file`: added `deprecated_member_use` and `deprecated_member_use_from_same_package`.
+
+- Change package `pubspec` to `pubspec_parse`.
+
+- pubspec_parse: ^1.3.0
+
 ## 2.4.3
 
 - `ClassReflection`: optimize `createInstanceWithConstructors`.
