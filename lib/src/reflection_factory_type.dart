@@ -1037,8 +1037,12 @@ class _TypeWrapperIterable extends _TypeWrapperCollection {
           if (value is Iterable<A>) {
             return value as V?;
           } else if (value is Iterable) {
-            var elementParser = typeInfo.argumentParser<A>(0)!;
-            return value.map(elementParser) as V?;
+            var elementParser = typeInfo.argumentParser<A>(0);
+            if (elementParser != null) {
+              return value.map(elementParser).whereType<A>() as V?;
+            } else {
+              return value.whereType<A>() as V?;
+            }
           } else {
             return TypeParser.parseList<A>(value,
                 elementParser: typeInfo.argumentParser(0)) as V?;
