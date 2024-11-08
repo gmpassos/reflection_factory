@@ -1007,15 +1007,10 @@ class _TypeWrapperList extends _TypeWrapperCollection {
 
   @override
   V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
-    if (typeInfo != null) {
-      if (typeInfo.argumentsLength == 1) {
-        return typeInfo.callCastedArgumentA(<A>() => TypeParser.parseList<A>(
-            value,
-            elementParser: typeInfo.argumentParser(0)) as V?);
-      } else {
-        return TypeParser.parseList(value,
-            elementParser: typeInfo.argumentParser(0)) as V?;
-      }
+    if (typeInfo != null && typeInfo.argumentsLength >= 1) {
+      return typeInfo.callCastedArgumentA(<A>() => TypeParser.parseList<A>(
+          value,
+          elementParser: typeInfo.argumentParser(0)) as V?);
     } else {
       return TypeParser.parseList(value) as V?;
     }
@@ -1031,31 +1026,22 @@ class _TypeWrapperIterable extends _TypeWrapperCollection {
 
   @override
   V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
-    if (typeInfo != null) {
-      if (typeInfo.argumentsLength == 1) {
-        return typeInfo.callCastedArgumentA(<A>() {
-          if (value is Iterable<A>) {
-            return value as V?;
-          } else if (value is Iterable) {
-            var elementParser = typeInfo.argumentParser<A>(0);
-            if (elementParser != null) {
-              return value.map(elementParser).whereType<A>() as V?;
-            } else {
-              return value.whereType<A>() as V?;
-            }
-          } else {
-            return TypeParser.parseList<A>(value,
-                elementParser: typeInfo.argumentParser(0)) as V?;
-          }
-        });
-      } else {
-        if (value is Iterable) {
+    if (typeInfo != null && typeInfo.argumentsLength >= 1) {
+      return typeInfo.callCastedArgumentA(<A>() {
+        if (value is Iterable<A>) {
           return value as V?;
+        } else if (value is Iterable) {
+          var elementParser = typeInfo.argumentParser<A>(0);
+          if (elementParser != null) {
+            return value.map(elementParser).whereType<A>() as V?;
+          } else {
+            return value.whereType<A>() as V?;
+          }
         } else {
-          return TypeParser.parseList(value,
+          return TypeParser.parseList<A>(value,
               elementParser: typeInfo.argumentParser(0)) as V?;
         }
-      }
+      });
     } else {
       if (value is Iterable) {
         return value as V?;
@@ -1076,7 +1062,7 @@ class _TypeWrapperMap extends _TypeWrapperCollection {
   @override
   V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
     if (typeInfo != null) {
-      if (typeInfo.argumentsLength == 2) {
+      if (typeInfo.argumentsLength >= 2) {
         return typeInfo.callCastedArgumentsAB(<A, B>() =>
             TypeParser.parseMap<A, B>(value,
                 keyParser: typeInfo.argumentParser(0),
@@ -1101,15 +1087,9 @@ class _TypeWrapperSet extends _TypeWrapperCollection {
 
   @override
   V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
-    if (typeInfo != null) {
-      if (typeInfo.argumentsLength == 1) {
-        return typeInfo.callCastedArgumentA(<A>() => TypeParser.parseSet<A>(
-            value,
-            elementParser: typeInfo.argumentParser(0)) as V?);
-      } else {
-        return TypeParser.parseSet(value,
-            elementParser: typeInfo.argumentParser(0)) as V?;
-      }
+    if (typeInfo != null && typeInfo.argumentsLength >= 1) {
+      return typeInfo.callCastedArgumentA(<A>() => TypeParser.parseSet<A>(value,
+          elementParser: typeInfo.argumentParser(0)) as V?);
     } else {
       return TypeParser.parseSet(value) as V?;
     }
