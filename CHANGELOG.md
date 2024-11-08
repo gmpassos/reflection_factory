@@ -1,3 +1,17 @@
+## 2.4.5
+
+- `_TypeWrapperList`, `_TypeWrapperMap`, `_TypeWrapperSet`, `_TypeWrapperIterable`:
+  - Improve `parse`, handling generic types of constructed collections.
+
+- analyzer: ^6.8.0
+- dart_style: ^2.3.7
+- meta: ^1.16.0
+- mime: ^1.0.6
+- path: ^1.9.1
+
+- data_serializer: ^1.2.1
+- coverage: ^1.10.0
+
 ## 2.4.4
 
 - 🐛 fix(builder):

@@ -1006,9 +1006,20 @@ class _TypeWrapperList extends _TypeWrapperCollection {
   bool get isList => true;
 
   @override
-  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
-      TypeParser.parseList(value, elementParser: typeInfo?.argumentParser(0))
-          as V?;
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
+    if (typeInfo != null) {
+      if (typeInfo.argumentsLength == 1) {
+        return typeInfo.callCastedArgumentA(<A>() => TypeParser.parseList<A>(
+            value,
+            elementParser: typeInfo.argumentParser(0)) as V?);
+      } else {
+        return TypeParser.parseList(value,
+            elementParser: typeInfo.argumentParser(0)) as V?;
+      }
+    } else {
+      return TypeParser.parseList(value) as V?;
+    }
+  }
 }
 
 class _TypeWrapperIterable extends _TypeWrapperCollection {
@@ -1017,6 +1028,38 @@ class _TypeWrapperIterable extends _TypeWrapperCollection {
 
   @override
   bool get isIterable => true;
+
+  @override
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
+    if (typeInfo != null) {
+      if (typeInfo.argumentsLength == 1) {
+        return typeInfo.callCastedArgumentA(<A>() {
+          if (value is Iterable<A>) {
+            return value as V?;
+          } else if (value is Iterable) {
+            var elementParser = typeInfo.argumentParser<A>(0)!;
+            return value.map(elementParser) as V?;
+          } else {
+            return TypeParser.parseList<A>(value,
+                elementParser: typeInfo.argumentParser(0)) as V?;
+          }
+        });
+      } else {
+        if (value is Iterable) {
+          return value as V?;
+        } else {
+          return TypeParser.parseList(value,
+              elementParser: typeInfo.argumentParser(0)) as V?;
+        }
+      }
+    } else {
+      if (value is Iterable) {
+        return value as V?;
+      } else {
+        return TypeParser.parseList(value) as V?;
+      }
+    }
+  }
 }
 
 class _TypeWrapperMap extends _TypeWrapperCollection {
@@ -1027,10 +1070,22 @@ class _TypeWrapperMap extends _TypeWrapperCollection {
   bool get isMap => true;
 
   @override
-  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
-      TypeParser.parseMap(value,
-          keyParser: typeInfo?.argumentParser(0),
-          valueParser: typeInfo?.argumentParser(1)) as V?;
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
+    if (typeInfo != null) {
+      if (typeInfo.argumentsLength == 2) {
+        return typeInfo.callCastedArgumentsAB(<A, B>() =>
+            TypeParser.parseMap<A, B>(value,
+                keyParser: typeInfo.argumentParser(0),
+                valueParser: typeInfo.argumentParser(1)) as V?);
+      } else {
+        return TypeParser.parseMap(value,
+            keyParser: typeInfo.argumentParser(0),
+            valueParser: typeInfo.argumentParser(1)) as V?;
+      }
+    } else {
+      return TypeParser.parseMap(value) as V?;
+    }
+  }
 }
 
 class _TypeWrapperSet extends _TypeWrapperCollection {
@@ -1041,9 +1096,20 @@ class _TypeWrapperSet extends _TypeWrapperCollection {
   bool get isSet => true;
 
   @override
-  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
-      TypeParser.parseSet(value, elementParser: typeInfo?.argumentParser(0))
-          as V?;
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
+    if (typeInfo != null) {
+      if (typeInfo.argumentsLength == 1) {
+        return typeInfo.callCastedArgumentA(<A>() => TypeParser.parseSet<A>(
+            value,
+            elementParser: typeInfo.argumentParser(0)) as V?);
+      } else {
+        return TypeParser.parseSet(value,
+            elementParser: typeInfo.argumentParser(0)) as V?;
+      }
+    } else {
+      return TypeParser.parseSet(value) as V?;
+    }
+  }
 }
 
 abstract class _TypeWrapperAsync extends _TypeWrapper {
@@ -1087,10 +1153,22 @@ class _TypeWrapperMapEntry extends _TypeWrapper {
   bool get isMapEntry => true;
 
   @override
-  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) =>
-      TypeParser.parseMapEntry(value,
-          keyParser: typeInfo?.argumentParser(0),
-          valueParser: typeInfo?.argumentParser(1)) as V?;
+  V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
+    if (typeInfo != null) {
+      if (typeInfo.argumentsLength == 2) {
+        return typeInfo.callCastedArgumentsAB(<A, B>() =>
+            TypeParser.parseMapEntry<A, B>(value,
+                keyParser: typeInfo.argumentParser(0),
+                valueParser: typeInfo.argumentParser(1)) as V?);
+      } else {
+        return TypeParser.parseMapEntry(value,
+            keyParser: typeInfo.argumentParser(0),
+            valueParser: typeInfo.argumentParser(1)) as V?;
+      }
+    } else {
+      return TypeParser.parseMapEntry(value) as V?;
+    }
+  }
 }
 
 class _TypeWrapperDateTime extends _TypeWrapper {
@@ -1593,8 +1671,9 @@ class TypeInfo<T> {
   TypeElementParser<T>? get parser => TypeParser.parserForTypeInfo<T>(this);
 
   /// Returns the parser of the argument at [index].
-  TypeElementParser? argumentParser(int index) =>
-      index < argumentsLength ? _arguments[index].parser : null;
+  TypeElementParser<A>? argumentParser<A>(int index) => index < argumentsLength
+      ? _arguments[index].parser as TypeElementParser<A>?
+      : null;
 
   /// Parse [value] or return [def].
   ///

@@ -139,12 +139,103 @@ void main() {
       expect(t4.equalsTypeAndArguments(TypeInfo.from(123)), isFalse);
 
       {
+        var t = TypeInfo<List>.from(List);
+
+        expect(t.type, equals(List));
+        expect(t.genericType, equals(List));
+        expect(t.argumentsLength, equals(0));
+        expect(t.argumentType(0), isNull);
+
+        expect(
+            t.parse("1,2,3"),
+            allOf(
+              isA<List>(),
+              isNot(isA<List<int>>()),
+              equals(['1', '2', '3']),
+            ));
+      }
+
+      {
         var t = TypeInfo<List<int>>.fromListType(int);
 
         expect(t.type, equals(List));
         expect(t.genericType, equals(List<int>));
         expect(t.argumentsLength, equals(1));
         expect(t.argumentType(0), equals(TypeInfo.tInt));
+
+        expect(
+            t.parse("1,2,3"),
+            allOf(
+              isA<List<int>>(),
+              equals(<int>[1, 2, 3]),
+            ));
+      }
+
+      {
+        var t = TypeInfo<Iterable>.from(Iterable);
+
+        expect(t.type, equals(Iterable));
+        expect(t.genericType, equals(Iterable));
+        expect(t.argumentsLength, equals(0));
+        expect(t.argumentType(0), isNull);
+
+        expect(
+            t.parse("1,2,3"),
+            allOf(
+              isA<Iterable>(),
+              isNot(isA<Iterable<int>>()),
+              equals(['1', '2', '3']),
+            ));
+
+        expect(
+            t.parse([1, '2'].map((e) => e.toString()).nonNulls),
+            allOf(
+              isA<Iterable>(),
+              isNot(isA<List>()),
+              equals(['1', '2']),
+            ));
+      }
+
+      {
+        var t = TypeInfo<Iterable<int>>.fromIterableType(int);
+
+        expect(t.type, equals(Iterable));
+        expect(t.genericType, equals(Iterable<int>));
+        expect(t.argumentsLength, equals(1));
+        expect(t.argumentType(0), equals(TypeInfo.tInt));
+
+        expect(
+            t.parse("1,2,3"),
+            allOf(
+              isA<Iterable<int>>(),
+              equals(<int>[1, 2, 3]),
+            ));
+
+        expect(
+            t.parse(['1', '2'].map(TypeParser.parseInt).nonNulls),
+            allOf(
+              isA<Iterable<int>>(),
+              isNot(isA<List>()),
+              equals(<int>[1, 2]),
+            ));
+      }
+
+      {
+        var t = TypeInfo<Map>.from(Map);
+
+        expect(t.type, equals(Map));
+        expect(t.genericType, equals(Map));
+        expect(t.argumentsLength, equals(0));
+        expect(t.argumentType(0), isNull);
+        expect(t.argumentType(1), isNull);
+
+        expect(
+            t.parse("a=1;b=2;c=3"),
+            allOf(
+              isA<Map>(),
+              isNot(isA<Map<String, int>>()),
+              equals({'a': '1', 'b': '2', 'c': '3'}),
+            ));
       }
 
       {
@@ -155,6 +246,46 @@ void main() {
         expect(t.argumentsLength, equals(2));
         expect(t.argumentType(0), equals(TypeInfo.tString));
         expect(t.argumentType(1), equals(TypeInfo.tInt));
+
+        expect(
+            t.parse("a=1;b=2;c=3"),
+            allOf(
+              isA<Map<String, int>>(),
+              equals(<String, int>{'a': 1, 'b': 2, 'c': 3}),
+            ));
+      }
+
+      {
+        var t = TypeInfo<Set>.from(Set);
+
+        expect(t.type, equals(Set));
+        expect(t.genericType, equals(Set));
+        expect(t.argumentsLength, equals(0));
+        expect(t.argumentType(0), isNull);
+
+        expect(
+            t.parse("1,2,3"),
+            allOf(
+              isA<Set>(),
+              isNot(isA<Set<int>>()),
+              equals({'1', '2', '3'}),
+            ));
+      }
+
+      {
+        var t = TypeInfo<Set<int>>.fromSetType(int);
+
+        expect(t.type, equals(Set));
+        expect(t.genericType, equals(Set<int>));
+        expect(t.argumentsLength, equals(1));
+        expect(t.argumentType(0), equals(TypeInfo.tInt));
+
+        expect(
+            t.parse("1,2,3"),
+            allOf(
+              isA<Set<int>>(),
+              equals(<int>{1, 2, 3}),
+            ));
       }
 
       {
