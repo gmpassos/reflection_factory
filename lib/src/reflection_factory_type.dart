@@ -1139,7 +1139,7 @@ class _TypeWrapperMapEntry extends _TypeWrapper {
   @override
   V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
     if (typeInfo != null) {
-      if (typeInfo.argumentsLength == 2) {
+      if (typeInfo.argumentsLength >= 2) {
         return typeInfo.callCastedArgumentsAB(<A, B>() =>
             TypeParser.parseMapEntry<A, B>(value,
                 keyParser: typeInfo.argumentParser(0),
