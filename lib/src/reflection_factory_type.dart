@@ -1010,7 +1010,7 @@ class _TypeWrapperList extends _TypeWrapperCollection {
     if (typeInfo != null && typeInfo.argumentsLength >= 1) {
       return typeInfo.callCastedArgumentA(<A>() => TypeParser.parseList<A>(
           value,
-          elementParser: typeInfo.argumentParser(0)) as V?);
+          elementParser: typeInfo.argumentParser<A>(0)) as V?);
     } else {
       return TypeParser.parseList(value) as V?;
     }
@@ -1039,7 +1039,7 @@ class _TypeWrapperIterable extends _TypeWrapperCollection {
           }
         } else {
           return TypeParser.parseList<A>(value,
-              elementParser: typeInfo.argumentParser(0)) as V?;
+              elementParser: typeInfo.argumentParser<A>(0)) as V?;
         }
       });
     } else {
@@ -1065,8 +1065,8 @@ class _TypeWrapperMap extends _TypeWrapperCollection {
       if (typeInfo.argumentsLength >= 2) {
         return typeInfo.callCastedArgumentsAB(<A, B>() =>
             TypeParser.parseMap<A, B>(value,
-                keyParser: typeInfo.argumentParser(0),
-                valueParser: typeInfo.argumentParser(1)) as V?);
+                keyParser: typeInfo.argumentParser<A>(0),
+                valueParser: typeInfo.argumentParser<B>(1)) as V?);
       } else {
         return TypeParser.parseMap(value,
             keyParser: typeInfo.argumentParser(0),
@@ -1089,7 +1089,7 @@ class _TypeWrapperSet extends _TypeWrapperCollection {
   V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
     if (typeInfo != null && typeInfo.argumentsLength >= 1) {
       return typeInfo.callCastedArgumentA(<A>() => TypeParser.parseSet<A>(value,
-          elementParser: typeInfo.argumentParser(0)) as V?);
+          elementParser: typeInfo.argumentParser<A>(0)) as V?);
     } else {
       return TypeParser.parseSet(value) as V?;
     }
@@ -1142,8 +1142,8 @@ class _TypeWrapperMapEntry extends _TypeWrapper {
       if (typeInfo.argumentsLength >= 2) {
         return typeInfo.callCastedArgumentsAB(<A, B>() =>
             TypeParser.parseMapEntry<A, B>(value,
-                keyParser: typeInfo.argumentParser(0),
-                valueParser: typeInfo.argumentParser(1)) as V?);
+                keyParser: typeInfo.argumentParser<A>(0),
+                valueParser: typeInfo.argumentParser<B>(1)) as V?);
       } else {
         return TypeParser.parseMapEntry(value,
             keyParser: typeInfo.argumentParser(0),
