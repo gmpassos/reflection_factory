@@ -1006,6 +1006,33 @@ void main() {
         expect(t.arguments0?.genericType, equals(String));
         expect(t.arguments1?.genericType, equals(int));
 
+        expect(t.arguments0!.toMapEntryType(t.arguments1!).genericType,
+            equals(MapEntry<String, int>));
+
+        expect(
+            t.arguments0!
+                .toMapEntryKeyType<int>(valueType: t.arguments1!)
+                .genericType,
+            equals(MapEntry<String, int>));
+
+        expect(
+            t.arguments0!
+                .toMapEntryKeyType(valueType: t.arguments1!)
+                .genericType,
+            equals(MapEntry<String, dynamic>));
+
+        expect(
+            t.arguments1!
+                .toMapEntryValueType<String>(keyType: t.arguments0!)
+                .genericType,
+            equals(MapEntry<String, int>));
+
+        expect(
+            t.arguments1!
+                .toMapEntryValueType(keyType: t.arguments0!)
+                .genericType,
+            equals(MapEntry<dynamic, int>));
+
         var mapEntry = MapEntry<String, int>('a', 1);
         var mapEntryObjKV = MapEntry<Object, Object>('a', 1);
         var mapEntryObjV = MapEntry<String, Object>('a', 1);
@@ -2145,6 +2172,9 @@ void main() {
 
       expect(TypeParser.parseBigInt(DateTime.utc(2020, 10, 2, 3, 4, 5, 0, 0)),
           equals(BigInt.from(1601607845000)));
+
+      expect(TypeParser.parseBigInt(Duration(hours: 3)),
+          equals(BigInt.from(1000 * 60 * 60 * 3)));
     });
   });
 }
