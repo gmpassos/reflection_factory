@@ -1361,13 +1361,38 @@ class TypeInfo<T> {
       return true;
     }
 
-    if (this.isIterable && hasArguments) {
-      var arg = arguments[0];
-      var valid = arg.isValidGenericType;
-      if (valid) {
-        var genericType2 = arg.toListType().genericType;
-        if (genericType2 == genericType) {
-          return true;
+    if (hasArguments) {
+      if (this.isIterable) {
+        var arg = arguments[0];
+        var valid = arg.isValidGenericType;
+        if (valid) {
+          TypeInfo<Iterable> iterableTypeInfo;
+          if (this.isSet) {
+            iterableTypeInfo = arg.toSetType();
+          } else if (this.isList) {
+            iterableTypeInfo = arg.toListType();
+          } else {
+            iterableTypeInfo = arg.toIterableType();
+          }
+
+          var genericType2 = iterableTypeInfo.genericType;
+          if (genericType2 == genericType) {
+            return true;
+          }
+        }
+      } else if (this.isMap || this.isMapEntry) {
+        var arg0 = arguments[0];
+        var arg1 = arguments[1];
+
+        var valid = arg0.isValidGenericType && arg1.isValidGenericType;
+        if (valid) {
+          var typeInfo = this.isMapEntry
+              ? arg0.toMapEntryType(arg1)
+              : arg0.toMapType(arg1);
+          var genericType2 = typeInfo.genericType;
+          if (genericType2 == genericType) {
+            return true;
+          }
         }
       }
     }
@@ -1595,10 +1620,37 @@ class TypeInfo<T> {
     return TypeInfo.fromType(Map, [keyType, this]);
   }
 
-  /// Returns `this` as a [TypeInfo] for `Map<K,T>`.
+  /// Returns `this` as a [TypeInfo] for `Map<T,V>`.
   TypeInfo<Map<T, V>> toMapKeyType<V>({TypeInfo? valueType}) {
     valueType ??= TypeInfo.fromType(V);
     return TypeInfo.fromType(Map, [this, valueType]);
+  }
+
+  /// Returns `this` as a [TypeInfo] for `Map<T,V>` ensuring that `V` is the same as [valueType].
+  TypeInfo<Map<T, V>> toMapType<V>(TypeInfo valueType) {
+    return valueType.callCasted(<E>() {
+      return toMapKeyType<E>(valueType: valueType) as TypeInfo<Map<T, V>>;
+    });
+  }
+
+  /// Returns `this` as a [TypeInfo] for `MapEntry<K,T>`.
+  TypeInfo<MapEntry<K, T>> toMapEntryValueType<K>({TypeInfo? keyType}) {
+    keyType ??= TypeInfo.fromType(K);
+    return TypeInfo.fromType(MapEntry, [keyType, this]);
+  }
+
+  /// Returns `this` as a [TypeInfo] for `MapEntry<T,V>`.
+  TypeInfo<MapEntry<T, V>> toMapEntryKeyType<V>({TypeInfo? valueType}) {
+    valueType ??= TypeInfo.fromType(V);
+    return TypeInfo.fromType(MapEntry, [this, valueType]);
+  }
+
+  /// Returns `this` as a [TypeInfo] for `MapEntry<T,V>` ensuring that `V` is the same as [valueType].
+  TypeInfo<MapEntry<T, V>> toMapEntryType<V>(TypeInfo valueType) {
+    return valueType.callCasted(<E>() {
+      return toMapEntryKeyType<E>(valueType: valueType)
+          as TypeInfo<MapEntry<T, V>>;
+    });
   }
 
   /// Returns `true` if `this`.[type] equals to [other].[type].
@@ -2144,6 +2196,32 @@ class TypeInfo<T> {
       return arg0.callCasted(<K>() => o is Map<K, dynamic>);
     } else if (arg1Ok) {
       return arg1.callCasted(<V>() => o is Map<dynamic, V>);
+    } else {
+      return false;
+    }
+  }
+
+  /// Returns `true` if [o] is a `MapEntry<K,V>`
+  /// where `K` is [arguments0] `T` and `V` is [arguments1] `T`.
+  /// - `K` or `V` should be valid. See [isValidGenericType].
+  /// - This [TypeInfo] should be a [MapEntry]. See [isMapEntry].
+  bool isCastedMapEntry(Object? o) {
+    if (!isMapEntry || o is! MapEntry) return false;
+
+    var arg0 = arguments0;
+    var arg1 = arguments1;
+
+    var arg0Ok = arg0 != null && arg0.isValidGenericType;
+    var arg1Ok = arg1 != null && arg1.isValidGenericType;
+
+    if (arg0Ok && arg1Ok) {
+      return arg0.callCasted(<K>() {
+        return arg1.callCasted(<V>() => o is MapEntry<K, V>);
+      });
+    } else if (arg0Ok) {
+      return arg0.callCasted(<K>() => o is MapEntry<K, dynamic>);
+    } else if (arg1Ok) {
+      return arg1.callCasted(<V>() => o is MapEntry<dynamic, V>);
     } else {
       return false;
     }
