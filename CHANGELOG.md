@@ -1,3 +1,9 @@
+## 2.4.6
+
+- `TypeInfo`:
+  - `isValidGenericType`: fix for `Map`, `MapEntry`, `List` and `Set`.
+  - Added `toMapType`, `toMapEntryValueType`, `toMapEntryKeyType`, `toMapEntryType` and `isCastedMapEntry`.
+
 ## 2.4.5
 
 - `_TypeWrapperList`, `_TypeWrapperMap`, `_TypeWrapperSet`, `_TypeWrapperIterable`:
