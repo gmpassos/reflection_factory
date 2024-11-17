@@ -889,7 +889,9 @@ void main() {
       {
         var t = TypeInfo<Iterable<int>>.fromType(Iterable, [int]);
 
+        expect(t.isValidGenericType, isTrue);
         expect(t.genericType, equals(Iterable<int>));
+        expect(t.arguments0?.isValidGenericType, isTrue);
         expect(t.arguments0?.genericType, equals(int));
 
         var list = <int>[1, 2, 3];
@@ -916,6 +918,7 @@ void main() {
       {
         var t = TypeInfo<Map<String, int>>.fromType(Map, [String, int]);
 
+        expect(t.isValidGenericType, isTrue);
         expect(t.genericType, equals(Map<String, int>));
         expect(t.arguments0?.genericType, equals(String));
         expect(t.arguments1?.genericType, equals(int));
@@ -989,6 +992,34 @@ void main() {
         expect(t.isCastedMap(map2), isTrue);
 
         expect(t.isCastedMap(mapObj), isFalse);
+        expect(t.isCastedMapEntry(mapObj), isFalse);
+      }
+    });
+
+    test('isCastedMapEntry<K,V>', () async {
+      {
+        var t =
+            TypeInfo<MapEntry<String, int>>.fromType(MapEntry, [String, int]);
+
+        expect(t.isValidGenericType, isTrue);
+        expect(t.genericType, equals(MapEntry<String, int>));
+        expect(t.arguments0?.genericType, equals(String));
+        expect(t.arguments1?.genericType, equals(int));
+
+        var mapEntry = MapEntry<String, int>('a', 1);
+        var mapEntryObjKV = MapEntry<Object, Object>('a', 1);
+        var mapEntryObjV = MapEntry<String, Object>('a', 1);
+        var mapEntryObjK = MapEntry<Object, int>('a', 1);
+
+        expect(t.isCastedMapEntry(mapEntry), isTrue);
+        expect(t.isCastedMapEntry(mapEntryObjKV), isFalse);
+        expect(t.isCastedMapEntry(mapEntryObjV), isFalse);
+        expect(t.isCastedMapEntry(mapEntryObjK), isFalse);
+
+        expect(t.isCastedList(mapEntry), isFalse);
+        expect(t.isCastedSet(mapEntry), isFalse);
+        expect(t.isCastedIterable(mapEntry), isFalse);
+        expect(t.isCastedMap(mapEntry), isFalse);
       }
     });
 
