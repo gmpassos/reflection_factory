@@ -461,6 +461,22 @@ void main() {
       expect(t10.hasArguments, isFalse);
       expect(t10.equivalentArgumentsTypes([]), isTrue);
       expect(t10.equivalentArgumentsTypes([int]), isFalse);
+
+      var t11 = TypeInfo.fromType(BigInt);
+      expect(t11.isBigInt, isTrue);
+      expect(t11.isInt, isFalse);
+      expect(t11.isDateTime, isFalse);
+      expect(t11.hasArguments, isFalse);
+      expect(t11.equivalentArgumentsTypes([]), isTrue);
+      expect(t11.equivalentArgumentsTypes([int]), isFalse);
+
+      var t12 = TypeInfo.fromType(Uint8List);
+      expect(t12.isUInt8List, isTrue);
+      expect(t12.isList, isFalse);
+      expect(t11.isInt, isFalse);
+      expect(t12.hasArguments, isFalse);
+      expect(t12.equivalentArgumentsTypes([]), isTrue);
+      expect(t12.equivalentArgumentsTypes([int]), isFalse);
     });
 
     test('from', () async {
