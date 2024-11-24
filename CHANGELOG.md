@@ -1,3 +1,9 @@
+## 2.4.7
+
+- `JsonDecoder`:
+  - `_fromJsonImpl`: try to parse primitives to `typeInfo` definition (Allow `Map` `String` keys to be parsed as `int`).
+  - `_fromJsonMapImpl`: fix for when `typeInfo` is for a `Map<K,V>`.
+
 ## 2.4.6
 
 - `TypeInfo`:

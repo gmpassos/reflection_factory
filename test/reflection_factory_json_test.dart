@@ -946,6 +946,115 @@ void main() {
               id: BigInt.two)));
     });
 
+    test('fromJsonMap', () async {
+      var jMap1 = <String, dynamic>{"1": 1000, "2": 2000};
+      var typeInfo1 = TypeInfo.fromMapType(int, Duration);
+
+      var map1 = JsonCodec()
+          .fromJsonMap<Map<int, Duration>>(jMap1, typeInfo: typeInfo1);
+
+      expect(map1, equals({1: Duration(seconds: 1), 2: Duration(seconds: 2)}));
+
+      var map1Async = await JsonCodec()
+          .fromJsonMapAsync<Map<int, Duration>>(jMap1, typeInfo: typeInfo1);
+
+      expect(map1Async,
+          equals({1: Duration(seconds: 1), 2: Duration(seconds: 2)}));
+
+      ////
+
+      var typeInfo2 = TypeInfo.fromMapType(String, Duration);
+
+      var map2 = JsonCodec()
+          .fromJsonMap<Map<String, Duration>>(jMap1, typeInfo: typeInfo2);
+
+      expect(
+          map2, equals({'1': Duration(seconds: 1), '2': Duration(seconds: 2)}));
+
+      var map2Async = await JsonCodec()
+          .fromJsonMapAsync<Map<String, Duration>>(jMap1, typeInfo: typeInfo2);
+
+      expect(map2Async,
+          equals({'1': Duration(seconds: 1), '2': Duration(seconds: 2)}));
+
+      ////
+
+      var typeInfo3 = TypeInfo.fromMapType(int, dynamic);
+
+      var map3 = JsonCodec()
+          .fromJsonMap<Map<int, dynamic>>(jMap1, typeInfo: typeInfo3);
+
+      expect(map3, equals({1: 1000, 2: 2000}));
+
+      var map3Async = await JsonCodec()
+          .fromJsonMapAsync<Map<int, dynamic>>(jMap1, typeInfo: typeInfo3);
+
+      expect(map3Async, equals({1: 1000, 2: 2000}));
+
+      ////
+
+      var typeInfo4 = TypeInfo.fromMapType(String, dynamic);
+
+      var map4 = JsonCodec()
+          .fromJsonMap<Map<String, dynamic>>(jMap1, typeInfo: typeInfo4);
+
+      expect(map4, equals({'1': 1000, '2': 2000}));
+
+      var map4Async = await JsonCodec()
+          .fromJsonMapAsync<Map<String, dynamic>>(jMap1, typeInfo: typeInfo4);
+
+      expect(map4Async, equals({'1': 1000, '2': 2000}));
+
+      ////
+
+      var objMap = {
+        'a':
+            TestAddressWithReflection.withCity('NY', city: 'New York', id: 101),
+        'b': TestAddressWithReflection.withCity('CA',
+            city: 'Los Angeles', id: 201),
+      };
+
+      var enc = JsonCodec().encode(objMap);
+      var jMap2 = JsonCodec().decode(enc);
+
+      var typeInfo5 = TypeInfo.fromType(Map, [
+        TypeInfo.tString,
+        TypeInfo<TestAddressWithReflection>.fromType(TestAddressWithReflection)
+      ]);
+
+      var map5 = JsonCodec()
+          .fromJsonMap<Map<String, TestAddressWithReflection>>(jMap2,
+              typeInfo: typeInfo5);
+
+      expect(
+          map5,
+          equals({
+            'a': TestAddressWithReflection.withCity('NY',
+                city: 'New York', id: 101),
+            'b': TestAddressWithReflection.withCity('CA',
+                city: 'Los Angeles', id: 201),
+          }));
+
+      ////
+
+      var typeInfo6 = TypeInfo.fromType(Map, [
+        TypeInfo.tString,
+        TypeInfo<dynamic>.fromType(TestAddressWithReflection)
+      ]);
+
+      var map6 = JsonCodec()
+          .fromJsonMap<Map<String, dynamic>>(jMap2, typeInfo: typeInfo6);
+
+      expect(
+          map6,
+          equals({
+            'a': TestAddressWithReflection.withCity('NY',
+                city: 'New York', id: 101),
+            'b': TestAddressWithReflection.withCity('CA',
+                city: 'Los Angeles', id: 201),
+          }));
+    });
+
     test('encode', () async {
       expect(JsonCodec().encode({'a': 1, 'b': 2}), equals('{"a":1,"b":2}'));
 
@@ -1569,7 +1678,7 @@ void main() {
               () => jsonCodec.decode(encodedJson,
                   type: TestTransactionWithReflection,
                   duplicatedEntitiesAsID: true),
-              throwsA(isA<TypeError>()));
+              throwsA(isA<UnresolvedParameterError>()));
         }
 
         {
