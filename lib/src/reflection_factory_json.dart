@@ -1149,7 +1149,8 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     var type = typeInfo.type;
 
     if (JsonConverter.isPrimitiveType(type)) {
-      return o as O?;
+      var o2 = typeInfo.parse(o);
+      return o2 as O?;
     } else if (type == DateTime) {
       return _parseDateTime(o) as O?;
     } else if (type == Duration) {
@@ -1198,7 +1199,8 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       return o.then((value) => _fromJsonAsyncImpl<O>(
           value, typeInfo, duplicatedEntitiesAsID, autoResetEntityCache));
     } else if (JsonConverter.isPrimitiveType(type)) {
-      return o as O?;
+      var o2 = typeInfo.parse(o);
+      return o2 as O?;
     } else if (type == DateTime) {
       return _parseDateTime(o) as O?;
     } else if (type == Duration) {
