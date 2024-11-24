@@ -1500,13 +1500,65 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       }
     }
 
+    return _mapFromJsonMap(map, typeInfo, duplicatedEntitiesAsID) as O;
+  }
+
+  Map _mapFromJsonMap(Map<String, Object?> map, TypeInfo typeInfo,
+      bool duplicatedEntitiesAsID) {
+    if (typeInfo.isMap && typeInfo.argumentsLength == 2) {
+      final arg0 = typeInfo.arguments0!;
+      final arg1 = typeInfo.arguments1!;
+
+      if (arg0.isString) {
+        if (arg1.isString && map is Map<String, String>) {
+          return map;
+        } else if (arg1.isInt && map is Map<String, int>) {
+          return map;
+        } else if (arg1.isDouble && map is Map<String, double>) {
+          return map;
+        } else if (arg1.isNum && map is Map<String, num>) {
+          return map;
+        } else if (arg1.isBool && map is Map<String, bool>) {
+          return map;
+        } else if (arg1.isDateTime && map is Map<String, DateTime>) {
+          return map;
+        } else if (arg1.isDuration && map is Map<String, Duration>) {
+          return map;
+        } else if (arg1.isBigInt && map is Map<String, BigInt>) {
+          return map;
+        }
+
+        var map2 = typeInfo
+            .callCastedArgumentsAB<Map<String, dynamic>, String, dynamic>(
+                <K, V>() => map.map<String, V>(
+                      (k, v) {
+                        var v2 = _fromJsonImpl(v, arg1, duplicatedEntitiesAsID);
+                        return MapEntry<String, V>(k, v2);
+                      },
+                    ));
+
+        return map2;
+      }
+
+      var map2 = typeInfo.callCastedArgumentsAB<Map, dynamic, dynamic>(
+          <K, V>() => map.map<K, V>(
+                (k, v) {
+                  var k2 = _fromJsonImpl(k, arg0, duplicatedEntitiesAsID);
+                  var v2 = _fromJsonImpl(v, arg1, duplicatedEntitiesAsID);
+                  return MapEntry<K, V>(k2, v2);
+                },
+              ));
+
+      return map2;
+    }
+
     if (map is Map<String, String?> ||
         map is Map<String, num?> ||
         map is Map<String, bool?> ||
         map is Map<String, DateTime?> ||
         map is Map<String, Duration?> ||
         map is Map<String, BigInt?>) {
-      return map as O;
+      return map;
     }
 
     var map2 = map.map((k, v) {
@@ -1514,7 +1566,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       return MapEntry(k, v2);
     });
 
-    return map2 as O;
+    return map2;
   }
 
   O _entityFromJsonMap<O>(TypeInfo typeInfo, Map<String, Object?> map,
@@ -1781,18 +1833,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       }
     }
 
-    if (map is Map<String, String?> ||
-        map is Map<String, num?> ||
-        map is Map<String, bool?>) {
-      return map as O;
-    }
-
-    var map2 = map.map((k, v) {
-      var v2 = _fromJsonImpl(v, typeInfo, duplicatedEntitiesAsID);
-      return MapEntry(k, v2);
-    });
-
-    return map2 as O;
+    return _mapFromJsonMap(map, typeInfo, duplicatedEntitiesAsID) as O;
   }
 
   FutureOr<O> _entityFromJsonMapAsync<O>(TypeInfo typeInfo,
