@@ -1,5 +1,6 @@
 import 'package:benchmark/benchmark.dart';
 import 'package:reflection_factory/builder.dart';
+
 import '../test/src/user_with_reflection.dart';
 
 void main() {
@@ -80,6 +81,38 @@ void main() {
 
     benchmark('user.toJson', () {
       user.toJson();
+    }, iterations: 10, duration: Duration(seconds: 5));
+  });
+
+  group('reflection.fromJson', () {
+    late ClassReflection<TestFranchiseWithReflection> reflection;
+    late TestFranchiseWithReflection franchise;
+    late ClassReflection<TestFranchiseWithReflection> franchiseReflection;
+    late Object? franchiseJson;
+
+    setUpEach(() {
+      reflection = TestFranchiseWithReflection$reflection();
+
+      var c = reflection.constructor('');
+      franchise = c!.invoke([
+        'CorpX',
+        {
+          'a': TestAddressWithReflection.withCity('ST', city: 'city1', id: 101),
+          'b': TestAddressWithReflection.simple('ST', id: 102),
+          'c': TestAddressWithReflection.withCity('ST', city: 'city2', id: 103),
+        }
+      ]);
+
+      franchiseReflection = franchise.reflection;
+      franchiseJson = reflection.toJson(franchise);
+    });
+
+    benchmark('reflection.toJson', () {
+      reflection.fromJson(franchiseJson);
+    }, iterations: 10, duration: Duration(seconds: 5));
+
+    benchmark('userReflection.toJson', () {
+      franchiseReflection.fromJson(franchiseJson);
     }, iterations: 10, duration: Duration(seconds: 5));
   });
 }
