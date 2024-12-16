@@ -35,10 +35,27 @@ class TypeParser {
     if (typeInfo.isString) {
       return parseString;
     } else if (typeInfo.isMap) {
+      if (typeInfo.argumentsLength == 2) {
+        return typeInfo.callCastedArgumentsAB(<K, V>() {
+          return parseMap<K, V>;
+        });
+      }
       return parseMap;
     } else if (typeInfo.isSet) {
+      if (typeInfo.argumentsLength == 1) {
+        return typeInfo.callCastedArgumentA(<E>() {
+          return parseSet<E>;
+        });
+      }
       return parseSet;
+    } else if (typeInfo.isOf(Uint8List)) {
+      return parseUInt8List;
     } else if (typeInfo.isList || typeInfo.isIterable) {
+      if (typeInfo.argumentsLength == 1) {
+        return typeInfo.callCastedArgumentA(<E>() {
+          return parseList<E>;
+        });
+      }
       return parseList;
     } else if (typeInfo.isInt) {
       return parseInt;
@@ -54,8 +71,6 @@ class TypeParser {
       return parseDateTime;
     } else if (typeInfo.isOf(Duration)) {
       return parseDuration;
-    } else if (typeInfo.isOf(Uint8List)) {
-      return parseUInt8List;
     } else {
       return null;
     }
