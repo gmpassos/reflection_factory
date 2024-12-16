@@ -405,6 +405,145 @@ void main() {
         expect(
             t.equalsTypeAndArguments(TypeInfo.fromType(Set, [int])), isFalse);
         expect(t.equalsTypeAndArguments(TypeInfo.fromType(Set)), isFalse);
+
+        var parser = t.parser!;
+        expect(
+            parser('a,b,c'),
+            allOf(
+              isA<List>(),
+              equals({'a', 'b', 'c'}),
+            ));
+      }
+
+      {
+        var t = TypeInfo<List<String>>.fromType(List, [String]);
+        expect(t.equalsType(TypeInfo.fromType(List, [String])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(List, [int])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(List, [String])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(List)), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(Set)), isFalse);
+        expect(t.equalsType(TypeInfo.fromType(Set, [String])), isFalse);
+
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
+            isTrue);
+        expect(
+            t.equalsTypeAndArguments(TypeInfo.fromType(List, [int])), isFalse);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
+            isTrue);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List)), isFalse);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])),
+            isFalse);
+        expect(
+            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [int])), isFalse);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Set)), isFalse);
+
+        var parser = t.parser!;
+        expect(
+            parser('a,b,c'),
+            allOf(
+              isA<List<String>>(),
+              equals({'a', 'b', 'c'}),
+            ));
+      }
+
+      {
+        var t = TypeInfo.fromType(Set, [String]);
+        expect(t.equalsType(TypeInfo.fromType(Set, [String])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(Set, [int])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(Set, [String])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(Set)), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(List)), isFalse);
+        expect(t.equalsType(TypeInfo.fromType(List, [String])), isFalse);
+
+        expect(
+            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])), isTrue);
+        expect(
+            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [int])), isFalse);
+        expect(
+            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])), isTrue);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Set)), isFalse);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
+            isFalse);
+        expect(
+            t.equalsTypeAndArguments(TypeInfo.fromType(List, [int])), isFalse);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List)), isFalse);
+
+        var parser = t.parser!;
+        expect(
+            parser('a,b,c'),
+            allOf(
+              isA<Set>(),
+              equals({'a', 'b', 'c'}),
+            ));
+      }
+
+      {
+        var t = TypeInfo<Set<String>>.fromType(Set, [String]);
+        expect(t.equalsType(TypeInfo.fromType(Set, [String])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(Set, [int])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(Set, [String])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(Set)), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(List)), isFalse);
+        expect(t.equalsType(TypeInfo.fromType(List, [String])), isFalse);
+
+        expect(
+            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])), isTrue);
+        expect(
+            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [int])), isFalse);
+        expect(
+            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])), isTrue);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Set)), isFalse);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
+            isFalse);
+        expect(
+            t.equalsTypeAndArguments(TypeInfo.fromType(List, [int])), isFalse);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List)), isFalse);
+
+        var parser = t.parser!;
+        expect(
+            parser('a,b,c'),
+            allOf(
+              isA<Set<String>>(),
+              equals({'a', 'b', 'c'}),
+            ));
+      }
+
+      {
+        var t = TypeInfo.fromMapType(String, int);
+        expect(t.equalsType(TypeInfo.fromType(Map, [String, int])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(Map, [int, int])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(Map, [String, int])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(Map)), isTrue);
+
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map, [String, int])),
+            isTrue);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map, [int, int])),
+            isFalse);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map, [String, int])),
+            isTrue);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map)), isFalse);
+
+        var parser = t.parser!;
+        expect(parser('a:1;b:2;c:3'), equals({'a': 1, 'b': 2, 'c': 3}));
+      }
+
+      {
+        var t = TypeInfo<Map<String, int>>.fromMapType(String, int);
+        expect(t.equalsType(TypeInfo.fromType(Map, [String, int])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(Map, [int, int])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(Map, [String, int])), isTrue);
+        expect(t.equalsType(TypeInfo.fromType(Map)), isTrue);
+
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map, [String, int])),
+            isTrue);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map, [int, int])),
+            isFalse);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map, [String, int])),
+            isTrue);
+        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map)), isFalse);
+
+        var parser = t.parser!;
+        expect(parser('a:1;b:2;c:3'), equals({'a': 1, 'b': 2, 'c': 3}));
       }
 
       {
