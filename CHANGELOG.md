@@ -1,3 +1,17 @@
+## 2.4.8
+
+- `TypeParser`:
+  - `_parserForTypeInfo`: handle casting of collections.
+
+- sdk: '>=3.4.0 <4.0.0'
+
+- analyzer: ^6.11.0
+- pub_semver: ^2.1.5
+- source_span: ^1.10.1
+- build_runner: ^2.4.13
+- test: ^1.25.12
+- coverage: ^1.11.1
+
 ## 2.4.7
 
 - `JsonDecoder`:
