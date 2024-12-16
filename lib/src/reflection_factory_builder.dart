@@ -402,7 +402,7 @@ class ReflectionBuilder implements Builder {
     }
 
     if (!codeTable.reflectionProxiesIsEmpty) {
-      var codes = _classProxyFuntions(buildStep, typeAliasTable);
+      var codes = _classProxyFunctions(buildStep, typeAliasTable);
       codeTable.addFunctions(codes);
     }
 
@@ -478,7 +478,7 @@ class ReflectionBuilder implements Builder {
     return idx >= 0 ? s.substring(idx + 1) : s;
   }
 
-  Map<String, String> _classProxyFuntions(
+  Map<String, String> _classProxyFunctions(
       BuildStep buildStep, _TypeAliasTable typeAliasTable) {
     var fReturnValue = typeAliasTable.fReturnValue;
     var fReturnFuture = typeAliasTable.fReturnFuture;
