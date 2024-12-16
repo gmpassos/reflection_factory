@@ -21,7 +21,7 @@ class LibraryReader {
   LibraryReader(this.element);
 
   /// All the compilation unit of this element ([CompilationUnitElement]).
-  Iterable<PartElement> get allParts => element.parts;
+  Iterable<PartElement> get allParts => element.definingCompilationUnit.parts;
 
   /// All of the declarations in this library.
   Iterable<Element> get allElements => element.topLevelElements;

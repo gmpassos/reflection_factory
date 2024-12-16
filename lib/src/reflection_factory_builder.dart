@@ -917,8 +917,8 @@ extension _LibraryElementExtension on LibraryElement {
   static final Expando<List<LibraryElement>> _allExports =
       Expando<List<LibraryElement>>();
 
-  List<LibraryElement> get allExports =>
-      _allExports[this] ??= UnmodifiableListView(libraryExports
+  List<LibraryElement> get allExports => _allExports[this] ??=
+      UnmodifiableListView(definingCompilationUnit.libraryExports
           .map((e) => e.exportedLibrary)
           .nonNulls
           .toList(growable: false));
@@ -2828,7 +2828,7 @@ class _Element {
       return null;
     }
 
-    var enclosingElement = element.enclosingElement;
+    var enclosingElement = element.enclosingElement3;
 
     if (enclosingElement is InterfaceElement) {
       return enclosingElement.thisType;
