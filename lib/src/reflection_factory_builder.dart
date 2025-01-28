@@ -431,7 +431,7 @@ class ReflectionBuilder implements Builder {
       if (annotated.element.kind == ElementKind.CLASS) {
         var classElement = annotated.element as ClassElement;
 
-        var codes = await _enableReflectionClass(
+        var genReflection = await _enableReflectionClass(
             buildStep,
             classElement,
             reflectionClassName,
@@ -439,7 +439,13 @@ class ReflectionBuilder implements Builder {
             optimizeReflectionInstances,
             typeAliasTable);
 
-        codeTable.addAllClasses(codes);
+        codeTable.addAllClasses(genReflection.codes);
+
+        codeTable.fieldsTypesWithReflection
+            .addAll(genReflection.fieldsTypesWithReflection);
+
+        codeTable.staticFieldsTypesWithReflection
+            .addAll(genReflection.staticFieldsTypesWithReflection);
       } else if (annotated.element.kind == ElementKind.ENUM) {
         var enumElement = annotated.element;
 
@@ -775,13 +781,19 @@ class ReflectionBuilder implements Builder {
     };
   }
 
-  Future<Map<String, String>> _enableReflectionClass(
-      BuildStep buildStep,
-      ClassElement classElement,
-      String reflectionClassName,
-      String reflectionExtensionName,
-      bool optimizeReflectionInstances,
-      _TypeAliasTable typeAliasTable) async {
+  Future<
+          ({
+            Map<String, String> codes,
+            Set<DartType> fieldsTypesWithReflection,
+            Set<DartType> staticFieldsTypesWithReflection,
+          })>
+      _enableReflectionClass(
+          BuildStep buildStep,
+          ClassElement classElement,
+          String reflectionClassName,
+          String reflectionExtensionName,
+          bool optimizeReflectionInstances,
+          _TypeAliasTable typeAliasTable) async {
     var classLibrary = await _getElementLibrary(buildStep, classElement);
 
     var classTree = _ClassTree(
@@ -803,11 +815,16 @@ class ReflectionBuilder implements Builder {
     var reflectionClassCode = classTree.buildReflectionClass(typeAliasTable);
     var reflectionExtensionCode = classTree.buildReflectionExtension();
 
-    return {
-      classTree.classGlobalFunction('_'): classGlobalFunctions,
-      classTree.reflectionClass: reflectionClassCode,
-      classTree.reflectionExtension: reflectionExtensionCode,
-    };
+    return (
+      codes: {
+        classTree.classGlobalFunction('_'): classGlobalFunctions,
+        classTree.reflectionClass: reflectionClassCode,
+        classTree.reflectionExtension: reflectionExtensionCode,
+      },
+      fieldsTypesWithReflection: classTree.fieldsTypesWithEnableReflection,
+      staticFieldsTypesWithReflection:
+          classTree.staticFieldsTypesWithEnableReflection,
+    );
   }
 
   Future<LibraryElement> _getElementLibrary(
@@ -863,10 +880,40 @@ class ReflectionBuilder implements Builder {
     str.write('List<Reflection> _listSiblingsReflection() => ');
     str.write('<Reflection>[');
 
-    for (var c in codeTable.reflectionClassesKeys
-        .where((e) => e.endsWith(r'$reflection'))) {
+    var classesReflections = codeTable.reflectionClassesKeys
+        .where((e) => e.endsWith(r'$reflection'))
+        .toList();
+
+    classesReflections.sort();
+
+    for (var c in classesReflections) {
       str.write(c);
-      str.write('(), ');
+      str.write('(),\n');
+    }
+
+    if (codeTable.fieldsTypesWithReflection.isNotEmpty ||
+        codeTable.staticFieldsTypesWithReflection.isNotEmpty) {
+      var allFieldsTypesWithReflection = CombinedIterableView([
+        codeTable.fieldsTypesWithReflection,
+        codeTable.staticFieldsTypesWithReflection
+      ]);
+
+      var extraReflections = allFieldsTypesWithReflection
+          .map((t) => '${t.typeName}\$reflection')
+          .toSet()
+          .toList();
+
+      if (extraReflections.isNotEmpty) {
+        extraReflections.sort();
+
+        str.write("      // Dependency reflections:\n");
+
+        for (var c in extraReflections) {
+          if (classesReflections.contains(c)) continue;
+          str.write(c);
+          str.write('(),\n');
+        }
+      }
     }
 
     str.write('];\n\n');
@@ -1047,6 +1094,9 @@ class _CodeTable {
 
   _CodeTable(this.typeAliasTable);
 
+  final Set<DartType> fieldsTypesWithReflection = <DartType>{};
+  final Set<DartType> staticFieldsTypesWithReflection = <DartType>{};
+
   final Map<String, String> _reflectionClasses = <String, String>{};
   final Map<String, String> _reflectionProxies = <String, String>{};
   final Map<String, String> _functions = <String, String>{};
@@ -1203,14 +1253,6 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
     }
 
     if (element.isStatic) {
-      /*var getter = element.getter;
-
-      if (getter == null || getter.isSynthetic) {
-        fields.add(element);
-      }
-
-       */
-
       _addWithUniqueName(staticFields, element);
     } else {
       _addWithUniqueName(fields, element);
@@ -1677,6 +1719,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       hasField(name) ||
       hasStaticField(name);
 
+  final Set<DartType> fieldsTypesWithEnableReflection = <DartType>{};
+
+  final Set<DartType> staticFieldsTypesWithEnableReflection = <DartType>{};
+
   @override
   T? visitFieldElement(FieldElement element) {
     if (element.isPrivate) {
@@ -2023,6 +2069,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
             "Can't determine `declaringType` for field `$name`: $field");
       }
 
+      if (field.isTypeWithReflection) {
+        fieldsTypesWithEnableReflection.addAll(field.getTypesWithReflection());
+      }
+
       var declaringType = fieldDeclaringType.typeNameResolvable;
       var typeCode = field.typeAsCode(typeAliasTable);
       var fullType = field.typeNameAsNullableCode;
@@ -2136,7 +2186,19 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
         log.info('[FIELD] $field');
       }
 
-      var declaringType = field.declaringType!.typeNameResolvable;
+      var fieldDeclaringType = field.declaringType;
+
+      if (fieldDeclaringType == null) {
+        throw StateError(
+            "Can't determine `declaringType` for static field `$name`: $field");
+      }
+
+      if (field.isTypeWithReflection) {
+        staticFieldsTypesWithEnableReflection
+            .addAll(field.getTypesWithReflection());
+      }
+
+      var declaringType = fieldDeclaringType.typeNameResolvable;
       var typeCode = field.typeAsCode(typeAliasTable);
       var fullType = field.typeNameAsNullableCode;
       var nullable = field.nullable ? 'true' : 'false';
@@ -3141,6 +3203,10 @@ class _Field extends _Element {
 
   String get name => fieldElement.name;
 
+  bool get isDartCore => fieldElement.type.isDartCore;
+
+  bool get isFunctionType => fieldElement.type.isFunctionType;
+
   bool get nullable => fieldElement.type.isNullable;
 
   bool get isStatic => fieldElement.isStatic;
@@ -3154,6 +3220,11 @@ class _Field extends _Element {
   String get typeNameAsCode => fieldElement.type.typeNameAsCode;
 
   String get typeNameAsNullableCode => fieldElement.type.typeNameAsNullableCode;
+
+  bool get isTypeWithReflection => fieldElement.type.isTypeWithReflection;
+
+  Iterable<DartType> getTypesWithReflection() =>
+      fieldElement.type.getTypesWithReflection();
 
   String typeAsCode(_TypeAliasTable typeAliasTable) =>
       fieldElement.type.asTypeReflectionCode(typeAliasTable);
@@ -3223,7 +3294,96 @@ extension _DartTypeExtension on DartType {
 
   bool get isResolvableType => !isParameterType;
 
-  String get typeNameResolvable => resolveTypeName();
+  static final Map<DartType, String> _typeNameResolvableCache = {};
+
+  String get typeNameResolvable =>
+      _typeNameResolvableCache[this] ??= resolveTypeName();
+
+  static final Map<DartType, bool> _isDartCoreCache = {};
+
+  bool get isDartCore => _isDartCoreCache[this] ??= _isDartCoreImpl();
+
+  bool _isDartCoreImpl() {
+    final type = this;
+    return type.isDartCoreType ||
+        type.isDartCoreString ||
+        type.isDartCoreNum ||
+        type.isDartCoreDouble ||
+        type.isDartCoreInt ||
+        type.isDartCoreEnum ||
+        type.isDartCoreBool ||
+        type.isDartCoreList ||
+        type.isDartCoreMap ||
+        type.isDartCoreSet ||
+        type.isDartCoreIterable ||
+        type.isDartCoreFunction ||
+        type.isDartAsyncFuture ||
+        type.isDartAsyncFutureOr;
+  }
+
+  bool get isFunctionType => this is FunctionType;
+
+  static final Map<DartType, bool> _isTypeWithReflectionCache = {};
+
+  bool get isTypeWithReflection =>
+      _isTypeWithReflectionCache[this] ??= _isTypeWithReflectionImpl();
+
+  bool _isTypeWithReflectionImpl() {
+    if (isDartCore) return false;
+    if (isFunctionType) return false;
+
+    var enableReflection =
+        element?.isAnnotatedWith(ReflectionBuilder.typeEnableReflection) ??
+            false;
+
+    if (enableReflection) return true;
+
+    final self = this;
+    if (self is ParameterizedType) {
+      return self.typeArguments.any((t) => t.isTypeWithReflection);
+    } else {
+      return false;
+    }
+  }
+
+  static final Map<DartType, List<DartType>> _typesWithReflectionCache = {};
+
+  Iterable<DartType> getTypesWithReflection() =>
+      _typesWithReflectionCache[this] ??= _getTypesWithReflectionImpl();
+
+  static final List<DartType> _emptyListDartType =
+      List<DartType>.unmodifiable([]);
+
+  List<DartType> _getTypesWithReflectionImpl() {
+    if (isDartCore) return _emptyListDartType;
+    if (isFunctionType) return _emptyListDartType;
+
+    var enableReflection =
+        element?.isAnnotatedWith(ReflectionBuilder.typeEnableReflection) ??
+            false;
+
+    var parametersWithReflection = _getTypeParametersWithReflection();
+
+    if (enableReflection) {
+      return List.unmodifiable(
+        parametersWithReflection.isEmpty
+            ? [this]
+            : [this, ...parametersWithReflection],
+      );
+    } else {
+      return parametersWithReflection;
+    }
+  }
+
+  List<DartType> _getTypeParametersWithReflection() {
+    final self = this;
+    if (self is ParameterizedType) {
+      return List.unmodifiable(
+          self.typeArguments.expand((t) => t.getTypesWithReflection()));
+    } else {
+      return _emptyListDartType;
+    }
+  }
 
   static final _regexpNullableSuffix = RegExp(r'\?$');
 
@@ -3309,7 +3469,11 @@ extension _DartTypeExtension on DartType {
     return recordDeclaration;
   }
 
-  String get typeName {
+  static final Map<DartType, String> _typeNameCache = {};
+
+  String get typeName => _typeNameCache[this] ??= _typeNameImpl();
+
+  String _typeNameImpl() {
     if (isRecordType) {
       return recordDeclaration()!;
     }
@@ -3349,7 +3513,12 @@ extension _DartTypeExtension on DartType {
     }
   }
 
-  bool get hasSimpleTypeArguments {
+  static final Map<DartType, bool> _hasSimpleTypeArgumentsCache = {};
+
+  bool get hasSimpleTypeArguments =>
+      _hasSimpleTypeArgumentsCache[this] ??= _hasSimpleTypeArgumentsImpl();
+
+  bool _hasSimpleTypeArgumentsImpl() {
     var self = this;
 
     if (self is ParameterizedType && self.typeArguments.isNotEmpty) {
@@ -3369,7 +3538,12 @@ extension _DartTypeExtension on DartType {
     }
   }
 
-  String get typeNameAsCode {
+  static final Map<DartType, String> _typeNameAsCodeCache = {};
+
+  String get typeNameAsCode =>
+      _typeNameAsCodeCache[this] ??= _typeNameAsCodeImpl();
+
+  String _typeNameAsCodeImpl() {
     var self = this;
     if (self is VoidType) {
       return 'void';

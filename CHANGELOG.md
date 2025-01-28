@@ -1,3 +1,23 @@
+## 2.4.9
+
+- `ReflectionBuilder`:
+  - `_buildSiblingsClassReflection`:
+    - Also activate `XYZ$reflection()` for imported classes with `@EnableReflection`.
+
+- `_DartTypeExtension`:
+  - Added caches for:
+    - `isDartCore`, `isTypeWithReflection`, `getTypesWithReflection`.
+    - `typeNameResolvable`, `typeName`, `hasSimpleTypeArguments`, `typeNameAsCode`.
+
+- build: ^2.4.2
+- dart_style: ^2.3.8
+- yaml: ^3.1.3
+
+- build_runner: ^2.4.14
+- build_test: ^2.2.3
+- pubspec_parse: ^1.5.0
+- test: ^1.25.14
+
 ## 2.4.8
 
 - `TypeParser`:
