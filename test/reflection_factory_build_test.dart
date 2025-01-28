@@ -1130,6 +1130,110 @@ void main() {
       );
     });
 
+    test('EnableReflection + import + type recursion [2 source files]',
+        () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/status.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'status.reflection.g.dart';
+          
+          @EnableReflection()
+          enum Status {a,b}
+          
+          @EnableReflection()
+          class Wrapper1<T> {
+            final T o ;
+            final Wrapper2<T> w ;
+            
+            Wrapper1(this.o, this.w);
+          }
+          
+          @EnableReflection()
+          class Wrapper2<T> {
+            final T o ;
+            final Wrapper1<T> w ;
+            
+            Wrapper2(this.o,this.w);
+          }
+          
+        ''',
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+          
+          import './status.dart';
+        
+          part 'foo.reflection.g.dart';
+          
+          @EnableReflection()
+          class Foo {
+            int n;
+            Status s;
+            Wrapper1<T>? w ;
+            
+            Foo(this.n, {this.status = Status.a, this.w});
+          }
+        '''
+      };
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        reader: await PackageAssetReader.currentIsolate(),
+        generateFor: {'$_pkgName|lib/status.dart', '$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/status.reflection.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of 'status.dart'"),
+            ),
+            allOf([
+              contains('Status\$reflection extends'),
+              contains('Status\$reflectionExtension'),
+              isNot(contains('Foo\$reflection extends')),
+              isNot(contains('Foo\$reflectionExtension')),
+            ]),
+            allOf([
+              contains('final Expando<Status\$reflection> _objectReflections'),
+              contains('factory Status\$reflection([Status? object]) {'),
+            ]),
+          )),
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+              contains("part of 'foo.dart'"),
+            ),
+            allOf([
+              isNot(contains('Status\$reflection extends')),
+              isNot(contains('Status\$reflectionExtension')),
+              contains('Foo\$reflection extends'),
+              contains('Foo\$reflectionExtension'),
+            ]),
+            allOf([
+              contains('final Expando<Foo\$reflection> _objectReflections'),
+              contains('factory Foo\$reflection([Foo? object]) {'),
+            ]),
+            allOf([
+              contains('Foo\$reflection()'),
+              contains('// Dependency reflections:'),
+              contains('Status\$reflection()'),
+            ]),
+          )),
+        },
+        onLog: (msg) {
+          print(msg);
+        },
+      );
+    });
+
     test('ReflectionBridge', () async {
       var builder = ReflectionBuilder(verbose: true);
 
