@@ -888,7 +888,7 @@ class ReflectionBuilder implements Builder {
 
     for (var c in classesReflections) {
       str.write(c);
-      str.write('(), ');
+      str.write('(),\n');
     }
 
     if (codeTable.fieldsTypesWithReflection.isNotEmpty ||
@@ -906,12 +906,12 @@ class ReflectionBuilder implements Builder {
       if (extraReflections.isNotEmpty) {
         extraReflections.sort();
 
-        str.write("\n      // Dependency reflections:\n");
+        str.write("      // Dependency reflections:\n");
 
         for (var c in extraReflections) {
           if (classesReflections.contains(c)) continue;
           str.write(c);
-          str.write('(), ');
+          str.write('(),\n');
         }
       }
     }
@@ -3294,9 +3294,16 @@ extension _DartTypeExtension on DartType {
 
   bool get isResolvableType => !isParameterType;
 
-  String get typeNameResolvable => resolveTypeName();
+  static final Map<DartType, String> _typeNameResolvableCache = {};
 
-  bool get isDartCore {
+  String get typeNameResolvable =>
+      _typeNameResolvableCache[this] ??= resolveTypeName();
+
+  static final Map<DartType, bool> _isDartCoreCache = {};
+
+  bool get isDartCore => _isDartCoreCache[this] ??= _isDartCoreImpl();
+
+  bool _isDartCoreImpl() {
     final type = this;
     return type.isDartCoreType ||
         type.isDartCoreString ||
@@ -3316,7 +3323,12 @@ extension _DartTypeExtension on DartType {
 
   bool get isFunctionType => this is FunctionType;
 
-  bool get isTypeWithReflection {
+  static final Map<DartType, bool> _isTypeWithReflectionCache = {};
+
+  bool get isTypeWithReflection =>
+      _isTypeWithReflectionCache[this] ??= _isTypeWithReflectionImpl();
+
+  bool _isTypeWithReflectionImpl() {
     if (isDartCore) return false;
     if (isFunctionType) return false;
 
@@ -3334,21 +3346,42 @@ extension _DartTypeExtension on DartType {
     }
   }
 
-  Iterable<DartType> getTypesWithReflection() {
-    if (isDartCore) return [];
-    if (isFunctionType) return [];
+  static final Map<DartType, List<DartType>> _typesWithReflectionCache = {};
+
+  Iterable<DartType> getTypesWithReflection() =>
+      _typesWithReflectionCache[this] ??= _getTypesWithReflectionImpl();
+
+  static final List<DartType> _emptyListDartType =
+      List<DartType>.unmodifiable([]);
+
+  List<DartType> _getTypesWithReflectionImpl() {
+    if (isDartCore) return _emptyListDartType;
+    if (isFunctionType) return _emptyListDartType;
 
     var enableReflection =
         element?.isAnnotatedWith(ReflectionBuilder.typeEnableReflection) ??
             false;
 
-    if (enableReflection) return [this];
+    var parametersWithReflection = _getTypeParametersWithReflection();
 
+    if (enableReflection) {
+      return List.unmodifiable(
+        parametersWithReflection.isEmpty
+            ? [this]
+            : [this, ...parametersWithReflection],
+      );
+    } else {
+      return parametersWithReflection;
+    }
+  }
+
+  List<DartType> _getTypeParametersWithReflection() {
     final self = this;
     if (self is ParameterizedType) {
-      return self.typeArguments.expand((t) => t.getTypesWithReflection());
+      return List.unmodifiable(
+          self.typeArguments.expand((t) => t.getTypesWithReflection()));
     } else {
-      return [];
+      return _emptyListDartType;
     }
   }
 
@@ -3436,7 +3469,11 @@ extension _DartTypeExtension on DartType {
     return recordDeclaration;
   }
 
-  String get typeName {
+  static final Map<DartType, String> _typeNameCache = {};
+
+  String get typeName => _typeNameCache[this] ??= _typeNameImpl();
+
+  String _typeNameImpl() {
     if (isRecordType) {
       return recordDeclaration()!;
     }
@@ -3476,7 +3513,12 @@ extension _DartTypeExtension on DartType {
     }
   }
 
-  bool get hasSimpleTypeArguments {
+  static final Map<DartType, bool> _hasSimpleTypeArgumentsCache = {};
+
+  bool get hasSimpleTypeArguments =>
+      _hasSimpleTypeArgumentsCache[this] ??= _hasSimpleTypeArgumentsImpl();
+
+  bool _hasSimpleTypeArgumentsImpl() {
     var self = this;
 
     if (self is ParameterizedType && self.typeArguments.isNotEmpty) {
@@ -3496,7 +3538,12 @@ extension _DartTypeExtension on DartType {
     }
   }
 
-  String get typeNameAsCode {
+  static final Map<DartType, String> _typeNameAsCodeCache = {};
+
+  String get typeNameAsCode =>
+      _typeNameAsCodeCache[this] ??= _typeNameAsCodeImpl();
+
+  String _typeNameAsCodeImpl() {
     var self = this;
     if (self is VoidType) {
       return 'void';
