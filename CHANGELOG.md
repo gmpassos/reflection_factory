@@ -1,3 +1,12 @@
+## 2.4.10
+
+- New `InputAnalyzer` and `InputAnalyzerResolved`:
+  - Move library, compilation unit and parts resolver code.
+
+- `ReflectionBuilder`:
+  - Use `InputAnalyzerResolved`.
+  - `_classProxy`: Force class library dependency, and fix cache dependency issue.
+
 ## 2.4.9
 
 - `ReflectionBuilder`:
