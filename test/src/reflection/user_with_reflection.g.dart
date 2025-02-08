@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.4.9
+// BUILDER: reflection_factory/2.4.10
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -22,7 +22,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.4.9');
+  static final Version _version = Version.parse('2.4.10');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -4983,19 +4983,19 @@ extension TestUserWithReflection$reflectionExtension on TestUserWithReflection {
 }
 
 List<Reflection> _listSiblingsReflection() => <Reflection>[
-      TestUserWithReflection$reflection(),
       TestAddressWithReflection$reflection(),
       TestCompanyWithReflection$reflection(),
-      TestFranchiseWithReflection$reflection(),
       TestDataWithReflection$reflection(),
       TestDomainWithReflection$reflection(),
-      TestOpWithReflection$reflection(),
-      TestOpAWithReflection$reflection(),
-      TestOpBWithReflection$reflection(),
-      TestTransactionWithReflection$reflection(),
-      TestName$reflection(),
       TestEmpty$reflection(),
       TestEnumWithReflection$reflection(),
+      TestFranchiseWithReflection$reflection(),
+      TestName$reflection(),
+      TestOpAWithReflection$reflection(),
+      TestOpBWithReflection$reflection(),
+      TestOpWithReflection$reflection(),
+      TestTransactionWithReflection$reflection(),
+      TestUserWithReflection$reflection(),
     ];
 
 List<Reflection>? _siblingsReflectionList;
