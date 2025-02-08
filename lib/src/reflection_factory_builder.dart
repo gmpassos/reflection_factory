@@ -730,6 +730,7 @@ class ReflectionBuilder implements Builder {
       var extraReflections = allFieldsTypesWithReflection
           .map((t) => '${t.typeName}\$reflection')
           .toSet()
+          .where((c) => !classesReflections.contains(c))
           .toList();
 
       if (extraReflections.isNotEmpty) {
@@ -738,7 +739,6 @@ class ReflectionBuilder implements Builder {
         str.write("      // Dependency reflections:\n");
 
         for (var c in extraReflections) {
-          if (classesReflections.contains(c)) continue;
           str.write(c);
           str.write('(),\n');
         }
