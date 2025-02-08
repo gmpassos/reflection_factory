@@ -1,3 +1,17 @@
+## 2.4.10
+
+- New `InputAnalyzer` and `InputAnalyzerResolved`:
+  - Move library, compilation unit and parts resolver code.
+
+- `ReflectionBuilder`:
+  - Use `InputAnalyzerResolved`.
+  - `_classProxy`: Force class library dependency, and fix cache dependency issue.
+  - Check for reflection annotations (AST) before skipping generation if no `part`
+    directive is found.
+
+- `ClassReflection`, `EnumReflection`:
+  - `compareTo`: compare enumName and className in addition to `reflectionLevel`.
+
 ## 2.4.9
 
 - `ReflectionBuilder`:

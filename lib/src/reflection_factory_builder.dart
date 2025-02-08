@@ -1,8 +1,6 @@
 import 'dart:collection';
 import 'dart:io';
 
-import 'package:analyzer/dart/analysis/results.dart';
-import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
@@ -12,9 +10,9 @@ import 'package:analyzer/dart/element/visitor.dart';
 import 'package:build/build.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
-import 'package:path/path.dart' as pack_path;
 import 'package:reflection_factory/reflection_factory.dart';
 
+import 'analyzer/input_analyzer.dart';
 import 'analyzer/library.dart';
 import 'analyzer/type_checker.dart';
 
@@ -126,116 +124,70 @@ class ReflectionBuilder implements Builder {
 
     log.info(" analyzing...");
 
-    var resolver = buildStep.resolver;
+    try {
+      var inputAnalyzer = await InputAnalyzer(buildStep).resolved();
 
-    var inputId = buildStep.inputId;
+      final inputPartOf = inputAnalyzer.inputCompilationUnitPartOf();
+      final isPart = inputPartOf != null;
+      if (isPart) {
+        final elapsedTime = DateTime.now().difference(initTime);
+        log.info(
+            " skipping `part` compilation unit. (${elapsedTime.inMilliseconds} ms)");
+        return;
+      }
 
-    var isPart = await _isPartCompilationUnit(buildStep, inputId);
+      final inputParts = inputAnalyzer.inputCompilationUnitParts();
+      if (inputParts.isEmpty) {
+        var reflectionAnnotations =
+            await inputAnalyzer.inputReflectionAnnotations();
 
-    if (isPart) {
-      final elapsedTime = DateTime.now().difference(initTime);
-      log.info(
-          " skipping `part` compilation unit. (${elapsedTime.inMilliseconds} ms)");
-      return;
-    }
+        if (reflectionAnnotations.isEmpty) {
+          final elapsedTime = DateTime.now().difference(initTime);
+          log.info(
+              "No `part` directive or reflection annotations found, no reflection to generate. (${elapsedTime.inMilliseconds} ms)");
+          return;
+        }
+      }
 
-    final inputLib = await buildStep.inputLibrary;
+      final genPart = await buildStep.trackStage('Resolving `part` to generate',
+          () => inputAnalyzer.resolveGeneratedPart());
 
-    if (inputLib.name == 'reflection_factory' ||
-        inputLib.name.startsWith('reflection_factory.')) {
-      return;
-    }
+      if (genPart == null) {
+        final elapsedTime = DateTime.now().difference(initTime);
+        log.info(
+            " no reflection to generate. (${elapsedTime.inMilliseconds} ms)");
+        return;
+      }
 
-    var libraryReader = LibraryReader(inputLib);
+      final libraryReader = await inputAnalyzer.libraryReader;
 
-    var genPart = await buildStep.trackStage('Resolving `part` to generate',
-        () => _resolveGeneratedPart(buildStep, inputId, libraryReader));
+      final inputLib = libraryReader.element;
+      if (inputLib.name == 'reflection_factory' ||
+          inputLib.name.startsWith('reflection_factory.') ||
+          inputLib.name.startsWith('reflection_factory_')) {
+        return;
+      }
 
-    if (genPart == null) {
-      final elapsedTime = DateTime.now().difference(initTime);
-      log.info(
-          " no reflection to generate. (${elapsedTime.inMilliseconds} ms)");
-      return;
-    }
+      final typeAliasTable = _TypeAliasTable.fromLibraryReader(libraryReader);
 
-    var typeAliasTable = _TypeAliasTable.fromLibraryReader(libraryReader);
+      final codeTable = await buildStep.trackStage('Generating reflection code',
+          () => _buildCodeTable(inputAnalyzer, typeAliasTable));
 
-    var codeTable = await buildStep.trackStage('Generating reflection code',
-        () => _buildCodeTable(buildStep, libraryReader, typeAliasTable));
+      if (codeTable.isEmpty) {
+        throw StateError("Generated code expected for: ${buildStep.inputId}");
+      }
 
-    if (codeTable.isEmpty) {
-      throw StateError("Generated code expected for: $inputId");
-    }
-
-    await buildStep.trackStage('Writing generated code',
-        () => _writeFullCode(buildStep, genPart, codeTable, initTime));
-
-    if (resolver is ReleasableResolver) {
-      resolver.release();
+      await buildStep.trackStage('Writing generated code',
+          () => _writeFullCode(buildStep, genPart, codeTable, initTime));
+    } finally {
+      final resolver = buildStep.resolver;
+      if (resolver is ReleasableResolver) {
+        resolver.release();
+      }
     }
   }
 
-  Future<bool> _isPartCompilationUnit(
-      BuildStep buildStep, AssetId assetID) async {
-    var compUnit = await buildStep.resolver.compilationUnitFor(assetID);
-    var partOf = _getCompilationUnitPartOf(compUnit);
-    return partOf != null;
-  }
-
-  PartOfDirective? _getCompilationUnitPartOf(CompilationUnit compUnit) {
-    var partOf = compUnit.directives.whereType<PartOfDirective>().firstOrNull;
-    return partOf;
-  }
-
-  Future<_GeneratedPart?> _resolveGeneratedPart(
-      BuildStep buildStep, AssetId inputId, LibraryReader libraryReader) async {
-    var inputFile = inputId.pathSegments.last;
-
-    var allParts = _readReflectionPartDirectives(libraryReader, inputFile);
-    var siblingParts = allParts[0];
-    var subParts = allParts[1];
-
-    var isSiblingPart = siblingParts.isNotEmpty;
-    var isSubPart = subParts.isNotEmpty;
-
-    if (isSiblingPart && isSubPart) {
-      throw StateError(
-          "Can't generate multiple `reflection` files. Multiple reflection parts directives: $siblingParts AND $subParts");
-    }
-
-    var hasCodeToGenerate = await _hasCodeToGenerate(buildStep, libraryReader);
-    if (!hasCodeToGenerate) {
-      return null;
-    }
-
-    var genSiblingId = inputId.changeExtension('.reflection.g.dart');
-    var genSubId =
-        inputId.changeExtension('.g.dart').withParentDirectory('reflection');
-
-    var genId = isSiblingPart ? genSiblingId : genSubId;
-
-    // No `part` directive!
-    if (siblingParts.isEmpty && subParts.isEmpty) {
-      var gParts = _readAllGParts(libraryReader);
-
-      var outputsPaths =
-          _reflectionPartDirectivesPaths(libraryReader, inputFile);
-
-      throw StateError(
-          "Code generated but NO reflection part directive was found for input file: $inputId\n"
-          "  > Can't generate ONE of the output files:\n"
-          "    -- $genSiblingId\n"
-          "    -- $genSubId\n"
-          "  > Please ADD one of the directives below to the input file:\n"
-          "${outputsPaths.map((p) => '    part \'$p\';').join('\n')}\n"
-          "  > Found part directives: $gParts");
-    }
-
-    return _GeneratedPart(
-        genId.path, genId, isSiblingPart ? inputFile : '../$inputFile');
-  }
-
-  Future<void> _writeFullCode(BuildStep buildStep, _GeneratedPart genPart,
+  Future<void> _writeFullCode(BuildStep buildStep, GeneratedPart genPart,
       _CodeTable codeTable, DateTime initTime) async {
     var fullCode = StringBuffer();
 
@@ -280,6 +232,13 @@ class ReflectionBuilder implements Builder {
 
     var generatedCode = fullCode.toString();
 
+    await _writeGeneratedCode(
+        buildStep, genPart, generatedCode, initTime, codeKeys);
+  }
+
+  Future<void> _writeGeneratedCode(BuildStep buildStep, GeneratedPart genPart,
+      String generatedCode, DateTime initTime,
+      [List<String>? codeKeys]) async {
     var dartFormatter = DartFormatter();
 
     String formattedCode;
@@ -296,92 +255,26 @@ class ReflectionBuilder implements Builder {
 
     final elapsedTime = DateTime.now().difference(initTime);
 
-    log.info(' >> GENERATED:\n'
-        '  -- Elements: $codeKeys\n'
-        '  -- File: $genId\n'
-        '  -- Time: ${elapsedTime.inMilliseconds} ms\n\n');
+    if (codeKeys != null) {
+      log.info(' >> GENERATED:\n'
+          '  -- Elements: $codeKeys\n'
+          '  -- File: $genId\n'
+          '  -- Time: ${elapsedTime.inMilliseconds} ms\n\n');
+    } else {
+      log.info(' >> CACHED:\n'
+          '  -- File: $genId\n'
+          '  -- Time: ${elapsedTime.inMilliseconds} ms\n\n');
+    }
 
     if (verbose) {
       log.info('<<<<<<\n$formattedCode\n>>>>>>\n');
     }
   }
 
-  List<List<String>> _readReflectionPartDirectives(
-      LibraryReader libraryReader, String inputFile) {
-    var outputsPaths = _reflectionPartDirectivesPaths(libraryReader, inputFile);
-    var outputFileSibling = outputsPaths[0];
-    var outputFileSub = outputsPaths[1];
+  Future<_CodeTable> _buildCodeTable(InputAnalyzerResolved inputAnalyzer,
+      _TypeAliasTable typeAliasTable) async {
+    final libraryReader = await inputAnalyzer.libraryReader;
 
-    var allGParts = _readAllGParts(libraryReader);
-
-    var siblingParts = allGParts
-        .where(
-            (p) => p == outputFileSibling || p.endsWith('/$outputFileSibling'))
-        .toList();
-
-    var subParts = allGParts
-        .where((p) => p == outputFileSub || p.endsWith('/$outputFileSub'))
-        .toList();
-
-    return [siblingParts, subParts];
-  }
-
-  List<String> _readAllGParts(LibraryReader libraryReader) {
-    var allPartsPaths = libraryReader.allParts.map((e) {
-      var uri = e.uri;
-      return uri is DirectiveUriWithRelativeUriString
-          ? uri.relativeUriString
-          : e.toString();
-    }).toList();
-
-    return allPartsPaths.where((e) => e.endsWith('.g.dart')).toList();
-  }
-
-  List<String> _reflectionPartDirectivesPaths(
-      LibraryReader libraryReader, String inputFile) {
-    var inputParts = pack_path.split(inputFile);
-
-    var inputFileName = inputParts.last;
-    var inputFileNameNoExt = pack_path.withoutExtension(inputFileName);
-
-    var outputFileSibling = "$inputFileNameNoExt.reflection.g.dart";
-    var outputFileSub = "reflection/$inputFileNameNoExt.g.dart";
-
-    return <String>[outputFileSibling, outputFileSub];
-  }
-
-  Future<bool> _hasCodeToGenerate(
-      BuildStep buildStep, LibraryReader libraryReader) async {
-    var allAnnotatedElementsItr =
-        libraryReader.allAnnotatedElements(classes: true, enums: true);
-
-    final allAnnotatedClasses = <Element>[];
-
-    for (var e in allAnnotatedElementsItr) {
-      if (e.isAnnotatedWith(typeEnableReflection)) {
-        return true;
-      }
-
-      if (e.kind == ElementKind.CLASS) {
-        allAnnotatedClasses.add(e);
-      }
-    }
-
-    var hasReflectionBridge =
-        allAnnotatedClasses.withAnnotation(typeReflectionBridge).isNotEmpty;
-
-    if (hasReflectionBridge) return true;
-
-    var hasClassProxy =
-        allAnnotatedClasses.withAnnotation(typeClassProxy).isNotEmpty;
-
-    if (hasClassProxy) return true;
-
-    return false;
-  }
-
-  Future<_CodeTable> _buildCodeTable(BuildStep buildStep,
-      LibraryReader libraryReader, _TypeAliasTable typeAliasTable) async {
     final allAnnotatedElements = libraryReader
         .allAnnotatedElements(classes: true, enums: true)
         .toList(growable: false);
@@ -397,12 +290,12 @@ class ReflectionBuilder implements Builder {
         .toList(growable: false);
 
     for (var annotated in annotatedClassProxy) {
-      var codes = await _classProxy(buildStep, annotated, typeAliasTable);
+      var codes = await _classProxy(inputAnalyzer, annotated, typeAliasTable);
       codeTable.addProxies(codes);
     }
 
     if (!codeTable.reflectionProxiesIsEmpty) {
-      var codes = _classProxyFunctions(buildStep, typeAliasTable);
+      var codes = _classProxyFunctions(inputAnalyzer, typeAliasTable);
       codeTable.addFunctions(codes);
     }
 
@@ -411,7 +304,8 @@ class ReflectionBuilder implements Builder {
         .toList(growable: false);
 
     for (var annotated in annotatedReflectionBridge) {
-      var codes = await _reflectionBridge(buildStep, annotated, typeAliasTable);
+      var codes =
+          await _reflectionBridge(inputAnalyzer, annotated, typeAliasTable);
       codeTable.addAllClasses(codes);
     }
 
@@ -432,7 +326,7 @@ class ReflectionBuilder implements Builder {
         var classElement = annotated.element as ClassElement;
 
         var genReflection = await _enableReflectionClass(
-            buildStep,
+            inputAnalyzer,
             classElement,
             reflectionClassName,
             reflectionExtensionName,
@@ -450,7 +344,7 @@ class ReflectionBuilder implements Builder {
         var enumElement = annotated.element;
 
         var codes = await _enableReflectionEnum(
-            buildStep,
+            inputAnalyzer,
             enumElement,
             reflectionClassName,
             reflectionExtensionName,
@@ -485,7 +379,7 @@ class ReflectionBuilder implements Builder {
   }
 
   Map<String, String> _classProxyFunctions(
-      BuildStep buildStep, _TypeAliasTable typeAliasTable) {
+      InputAnalyzerResolved inputAnalyzer, _TypeAliasTable typeAliasTable) {
     var fReturnValue = typeAliasTable.fReturnValue;
     var fReturnFuture = typeAliasTable.fReturnFuture;
     var fReturnFutureOr = typeAliasTable.fReturnFutureOr;
@@ -509,7 +403,7 @@ class ReflectionBuilder implements Builder {
     };
   }
 
-  Future<Map<String, String>> _classProxy(BuildStep buildStep,
+  Future<Map<String, String>> _classProxy(InputAnalyzerResolved inputAnalyzer,
       AnnotatedElement annotated, _TypeAliasTable typeAliasTable) async {
     var annotation = annotated.annotation;
     var annotatedClass = annotated.element as ClassElement;
@@ -541,8 +435,8 @@ class ReflectionBuilder implements Builder {
 
     var codeTable = <String, String>{};
 
-    var candidateClasses =
-        await _findClassElement(buildStep, className, libraryName, libraryPath);
+    var candidateClasses = await inputAnalyzer.findCandidateClassElements(
+        className, libraryName, libraryPath);
 
     if (candidateClasses.isEmpty) {
       throw StateError(
@@ -554,6 +448,16 @@ class ReflectionBuilder implements Builder {
 
     var classElement = candidateClasses.first;
 
+    var (classLibrary, classLibraryAssetId) =
+        await inputAnalyzer.getElementLibrary(classElement);
+
+    var classAssetCanRead =
+        await inputAnalyzer.buildStep.canRead(classLibraryAssetId);
+    if (classAssetCanRead) {
+      // Force library dependency
+      await inputAnalyzer.buildStep.readAsBytes(classLibraryAssetId);
+    }
+
     var classTree = _ClassTree(
       typeAliasTable,
       classElement,
@@ -561,7 +465,7 @@ class ReflectionBuilder implements Builder {
       '?%',
       reflectionProxyName,
       false,
-      classElement.library.languageVersion.effective,
+      classLibrary.languageVersion.effective,
       verbose: verbose,
     );
 
@@ -582,58 +486,10 @@ class ReflectionBuilder implements Builder {
     return codeTable;
   }
 
-  Future<List<ClassElement>> _findClassElement(BuildStep buildStep,
-      String className, String libraryName, String libraryPath) async {
-    var inputLibrary = await buildStep.inputLibrary;
-    var mainLibraries = <LibraryElement>[inputLibrary];
-    var resolverLibraries = await buildStep.resolver.libraries.toList();
-
-    if (libraryPath.isNotEmpty) {
-      libraryPath =
-          libraryPath.replaceAll(RegExp(r'^(?:package:)?/*'), '').trim();
-      var result =
-          await inputLibrary.session.getLibraryByUri('package:$libraryPath');
-
-      if (result is LibraryElementResult) {
-        var libraryElement = result.element;
-        mainLibraries.add(libraryElement);
-      }
-    }
-
-    if (libraryName.isNotEmpty) {
-      var library = await buildStep.resolver.findLibraryByName(libraryName);
-      if (library != null) {
-        mainLibraries.add(library);
-      }
-    }
-
-    var mainLibrariesExported =
-        mainLibraries.expand((e) => e.exportedLibraries).toList();
-
-    var allLibraries = <LibraryElement>{
-      ...mainLibraries,
-      ...resolverLibraries,
-      ...mainLibrariesExported
-    }.toList();
-
-    var candidateClasses =
-        allLibraries.allUsedClasses.where((c) => c.name == className).toList();
-
-    if (candidateClasses.length > 1) {
-      if (libraryName.isNotEmpty) {
-        var targetClass = candidateClasses
-            .firstWhereOrNull((e) => e.library.name == libraryName);
-        if (targetClass != null) {
-          return <ClassElement>[targetClass];
-        }
-      }
-    }
-
-    return candidateClasses;
-  }
-
-  Future<Map<String, String>> _reflectionBridge(BuildStep buildStep,
-      AnnotatedElement annotated, _TypeAliasTable typeAliasTable) async {
+  Future<Map<String, String>> _reflectionBridge(
+      InputAnalyzerResolved inputAnalyzer,
+      AnnotatedElement annotated,
+      _TypeAliasTable typeAliasTable) async {
     var annotation = annotated.annotation;
     var annotatedClass = annotated.element as ClassElement;
 
@@ -671,7 +527,8 @@ class ReflectionBuilder implements Builder {
         continue;
       }
 
-      var classLibrary = await _getElementLibrary(buildStep, classElement);
+      var (classLibrary, classLibraryAssetId) =
+          await inputAnalyzer.getElementLibrary(classElement);
 
       var reflectionClassName = reflectionClassNames[classType] ?? '';
       var reflectionExtensionName = reflectionExtensionNames[classType] ?? '';
@@ -749,13 +606,14 @@ class ReflectionBuilder implements Builder {
   }
 
   Future<Map<String, String>> _enableReflectionEnum(
-      BuildStep buildStep,
+      InputAnalyzerResolved inputAnalyzer,
       Element enumElement,
       String reflectionClassName,
       String reflectionExtensionName,
       bool optimizeReflectionInstances,
       _TypeAliasTable typeAliasTable) async {
-    var enumLibrary = await _getElementLibrary(buildStep, enumElement);
+    var (enumLibrary, enumLibraryAssetId) =
+        await inputAnalyzer.getElementLibrary(enumElement);
 
     var enumTree = _EnumTree(
       enumElement,
@@ -788,13 +646,14 @@ class ReflectionBuilder implements Builder {
             Set<DartType> staticFieldsTypesWithReflection,
           })>
       _enableReflectionClass(
-          BuildStep buildStep,
+          InputAnalyzerResolved inputAnalyzer,
           ClassElement classElement,
           String reflectionClassName,
           String reflectionExtensionName,
           bool optimizeReflectionInstances,
           _TypeAliasTable typeAliasTable) async {
-    var classLibrary = await _getElementLibrary(buildStep, classElement);
+    var (classLibrary, classLibraryAssetId) =
+        await inputAnalyzer.getElementLibrary(classElement);
 
     var classTree = _ClassTree(
       typeAliasTable,
@@ -825,31 +684,6 @@ class ReflectionBuilder implements Builder {
       staticFieldsTypesWithReflection:
           classTree.staticFieldsTypesWithEnableReflection,
     );
-  }
-
-  Future<LibraryElement> _getElementLibrary(
-      BuildStep buildStep, Element element) async {
-    var resolver = buildStep.resolver;
-    var classAssetId = await resolver.assetIdForElement(element);
-
-    var classCompUnit = await resolver.compilationUnitFor(classAssetId);
-
-    var partOf = _getCompilationUnitPartOf(classCompUnit);
-
-    if (partOf != null) {
-      var uri = partOf.uri?.stringValue ?? '';
-      var dir = pack_path.dirname(classAssetId.path);
-      var fullPath = uri.startsWith('/') ? uri : '$dir/$uri';
-
-      var path2 = pack_path.normalize(fullPath);
-      var partOfAssetId = AssetId(classAssetId.package, path2);
-
-      var library = await resolver.libraryFor(partOfAssetId);
-      return library;
-    }
-
-    var library = await resolver.libraryFor(classAssetId);
-    return library;
   }
 
   void _buildReflectionMixin(_CodeTable codeTable) {
@@ -901,6 +735,7 @@ class ReflectionBuilder implements Builder {
       var extraReflections = allFieldsTypesWithReflection
           .map((t) => '${t.typeName}\$reflection')
           .toSet()
+          .where((c) => !classesReflections.contains(c))
           .toList();
 
       if (extraReflections.isNotEmpty) {
@@ -909,7 +744,6 @@ class ReflectionBuilder implements Builder {
         str.write("      // Dependency reflections:\n");
 
         for (var c in extraReflections) {
-          if (classesReflections.contains(c)) continue;
           str.write(c);
           str.write('(),\n');
         }
@@ -933,89 +767,6 @@ class ReflectionBuilder implements Builder {
 
     codeTable.codeSiblingsClassReflection = str.toString();
   }
-}
-
-class _GeneratedPart {
-  final String partPath;
-  final AssetId genId;
-  final String partOf;
-
-  _GeneratedPart(this.partPath, this.genId, this.partOf);
-}
-
-extension _AssetIdExtension on AssetId {
-  AssetId withParentDirectory(String parentDir) {
-    var ps = pack_path.split(path);
-    ps.insert(ps.length - 1, parentDir);
-    var p = pack_path.joinAll(ps);
-    var asset = AssetId(package, p);
-    return asset;
-  }
-}
-
-extension _LibraryElementExtension on LibraryElement {
-  static final Expando<List<ClassElement>> _exportedClasses =
-      Expando<List<ClassElement>>();
-
-  List<ClassElement> get exportedClasses =>
-      _exportedClasses[this] ??= UnmodifiableListView(
-          topLevelElements.whereType<ClassElement>().toList(growable: false));
-
-  static final Expando<List<LibraryElement>> _allExports =
-      Expando<List<LibraryElement>>();
-
-  List<LibraryElement> get allExports => _allExports[this] ??=
-      UnmodifiableListView(definingCompilationUnit.libraryExports
-          .map((e) => e.exportedLibrary)
-          .nonNulls
-          .toList(growable: false));
-
-  static final Expando<Set<ClassElement>> _allExportedClasses =
-      Expando<Set<ClassElement>>();
-
-  Set<ClassElement> get allExportedClasses => _allExportedClasses[this] ??=
-      UnmodifiableSetView(allExports.expand((e) => e.exportedClasses).toSet());
-
-  static final Expando<Set<ClassElement>> _allImportedClasses =
-      Expando<Set<ClassElement>>();
-
-  Set<ClassElement> get allImportedClasses =>
-      _allImportedClasses[this] ??= UnmodifiableSetView(units
-          .expand((e) =>
-              e.library.importedLibraries.expand((e) => e.exportedClasses))
-          .toSet());
-
-  static final Expando<Set<ClassElement>> _allUnitsClasses =
-      Expando<Set<ClassElement>>();
-
-  Set<ClassElement> get allUnitsClasses =>
-      _allUnitsClasses[this] ??= UnmodifiableSetView(
-          units.expand((e) => e.library.exportedClasses).toSet());
-
-  static final Expando<Set<ClassElement>> _allClassesFromExportedClassesUnits =
-      Expando<Set<ClassElement>>();
-
-  Set<ClassElement> get allClassesFromExportedClassesUnits =>
-      _allClassesFromExportedClassesUnits[this] ??= UnmodifiableSetView(
-          allExportedClasses.expand((e) => e.library.allUnitsClasses).toSet());
-
-  static final Expando<Set<ClassElement>>
-      _allImportedClassesFromExportedClasses = Expando<Set<ClassElement>>();
-
-  Set<ClassElement> get allImportedClassesFromExportedClasses =>
-      _allImportedClassesFromExportedClasses[this] ??= UnmodifiableSetView(
-          allExportedClasses
-              .expand((e) => e.library.allImportedClasses)
-              .toSet());
-}
-
-extension IterableLibraryElementExtension on Iterable<LibraryElement> {
-  Set<ClassElement> get allUsedClasses => <ClassElement>{
-        ...expand((l) => l.exportedClasses),
-        ...expand((l) => l.allExportedClasses),
-        ...expand((l) => l.allClassesFromExportedClassesUnits),
-        ...expand((l) => l.allImportedClassesFromExportedClasses),
-      };
 }
 
 class _TypeAliasTable {

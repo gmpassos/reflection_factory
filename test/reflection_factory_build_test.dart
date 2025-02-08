@@ -24,6 +24,7 @@ void main() {
         '$_pkgName|lib/foo.dart': '''
         
           import 'package:reflection_factory/reflection_factory.dart';
+          import 'package:mime/mime.dart';
         
           part 'foo.reflection.g.dart';
           
@@ -857,7 +858,7 @@ void main() {
               contains('factory Status\$reflection([Status? object]) {'),
               contains('final Expando<Foo\$reflection> _objectReflections'),
               contains('factory Foo\$reflection([Foo? object]) {'),
-              isNot(contains('// Dependency reflections:')),
+              contains('// Dependency reflections:'),
             ])),
           )),
         },
