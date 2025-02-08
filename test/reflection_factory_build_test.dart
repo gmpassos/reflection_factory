@@ -24,6 +24,7 @@ void main() {
         '$_pkgName|lib/foo.dart': '''
         
           import 'package:reflection_factory/reflection_factory.dart';
+          import 'package:mime/mime.dart';
         
           part 'foo.reflection.g.dart';
           
