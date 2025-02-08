@@ -731,18 +731,18 @@ void main() {
       expect(
           userReflection.siblingsClassReflection().map((e) => e.classType),
           equals([
-            TestUserWithReflection,
             TestAddressWithReflection,
             TestCompanyWithReflection,
-            TestFranchiseWithReflection,
             TestDataWithReflection,
             TestDomainWithReflection,
-            TestOpWithReflection,
+            TestEmpty,
+            TestFranchiseWithReflection,
+            TestName,
             TestOpAWithReflection,
             TestOpBWithReflection,
+            TestOpWithReflection,
             TestTransactionWithReflection,
-            TestName,
-            TestEmpty,
+            TestUserWithReflection,
           ]));
 
       expect(
@@ -753,11 +753,11 @@ void main() {
           equals([
             TestEmpty,
             TestTransactionWithReflection,
-            TestFranchiseWithReflection,
             TestDataWithReflection,
+            TestFranchiseWithReflection,
             TestName,
-            TestOpWithReflection,
             TestOpAWithReflection,
+            TestOpWithReflection,
             TestAddressWithReflection,
             TestCompanyWithReflection,
             TestOpBWithReflection,
