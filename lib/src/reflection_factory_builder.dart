@@ -138,10 +138,15 @@ class ReflectionBuilder implements Builder {
 
       final inputParts = inputAnalyzer.inputCompilationUnitParts();
       if (inputParts.isEmpty) {
-        final elapsedTime = DateTime.now().difference(initTime);
-        log.info(
-            "No `part` directive found, no reflection to generate. (${elapsedTime.inMilliseconds} ms)");
-        return;
+        var reflectionAnnotations =
+            await inputAnalyzer.inputReflectionAnnotations();
+
+        if (reflectionAnnotations.isEmpty) {
+          final elapsedTime = DateTime.now().difference(initTime);
+          log.info(
+              "No `part` directive or reflection annotations found, no reflection to generate. (${elapsedTime.inMilliseconds} ms)");
+          return;
+        }
       }
 
       final genPart = await buildStep.trackStage('Resolving `part` to generate',
