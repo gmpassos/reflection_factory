@@ -714,8 +714,13 @@ abstract class EnumReflection<O> extends Reflection<O>
   }
 
   @override
-  int compareTo(EnumReflection other) =>
-      reflectionLevel.compareTo(other.reflectionLevel);
+  int compareTo(EnumReflection other) {
+    var cmp = reflectionLevel.compareTo(other.reflectionLevel);
+    if (cmp == 0) {
+      cmp = enumName.compareTo(other.enumName);
+    }
+    return cmp;
+  }
 
   @override
   String toString() {
@@ -2129,8 +2134,13 @@ abstract class ClassReflection<O> extends Reflection<O>
   }
 
   @override
-  int compareTo(ClassReflection other) =>
-      reflectionLevel.compareTo(other.reflectionLevel);
+  int compareTo(ClassReflection other) {
+    var cmp = reflectionLevel.compareTo(other.reflectionLevel);
+    if (cmp == 0) {
+      cmp = className.compareTo(other.className);
+    }
+    return cmp;
+  }
 
   @override
   String toString() {
