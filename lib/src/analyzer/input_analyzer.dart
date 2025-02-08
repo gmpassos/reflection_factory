@@ -193,6 +193,10 @@ class InputAnalyzerResolved {
       _assetIdForElementCache[element] ??=
           await resolver.assetIdForElement(element);
 
+  Future<List<Annotation>> inputReflectionAnnotations(
+          {bool deep = true}) async =>
+      getReflectionAnnotations(compilationUnit, inputId, deep: deep);
+
   Future<List<Annotation>> getReflectionAnnotations(
       CompilationUnit compilationUnit, AssetId compilationUnitId,
       {bool deep = true}) async {
