@@ -1,8 +1,11 @@
+import 'dart:collection';
 import 'dart:io';
 
+import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
+import 'package:collection/collection.dart';
 import 'package:path/path.dart' as pack_path;
 
 import '../reflection_factory_annotation.dart';
@@ -55,15 +58,14 @@ class InputAnalyzerResolved {
 
   String get inputFileName => inputId.pathSegments.last;
 
-  LibraryReader? _libraryReader;
-
+  LibraryElement? _inputLibrary;
   Future<LibraryElement>? _inputLibraryFuture;
 
-  Future<LibraryReader> get libraryReader async {
-    if (_libraryReader != null) return _libraryReader!;
+  Future<LibraryElement> get inputLibrary async {
+    if (_inputLibrary != null) return _inputLibrary!;
 
     final initTime = DateTime.now();
-    log.info("Loading `buildStep.inputLibrary` ...");
+    log.info("Loading `inputLibrary` ...");
 
     var inputLibraryFuture = _inputLibraryFuture;
     if (inputLibraryFuture == null) {
@@ -80,11 +82,15 @@ class InputAnalyzerResolved {
 
     final elapsedTime = DateTime.now().difference(initTime);
 
-    log.info(
-        "Loaded `buildStep.inputLibrary` in: ${elapsedTime.inMilliseconds} ms");
+    log.info("Loaded `inputLibrary` in: ${elapsedTime.inMilliseconds} ms");
 
-    return _libraryReader ??= LibraryReader(inputLibrary);
+    return inputLibrary;
   }
+
+  LibraryReader? _libraryReader;
+
+  Future<LibraryReader> get libraryReader async =>
+      _libraryReader ??= LibraryReader(await inputLibrary);
 
   PartOfDirective? inputCompilationUnitPartOf() {
     var compilationUnit = this.compilationUnit;
@@ -202,6 +208,79 @@ class InputAnalyzerResolved {
     }).toList();
 
     return reflectionAnnotations;
+  }
+
+  Future<(LibraryElement, AssetId)> getElementLibrary(Element element) async {
+    var classAssetId = await resolver.assetIdForElement(element);
+    var classCompUnit = await resolver.compilationUnitFor(classAssetId);
+
+    var partOf = getCompilationUnitPartOf(classCompUnit);
+
+    if (partOf != null) {
+      var uri = partOf.uri?.stringValue ?? '';
+      var dir = pack_path.dirname(classAssetId.path);
+      var fullPath = uri.startsWith('/') ? uri : '$dir/$uri';
+
+      var path2 = pack_path.normalize(fullPath);
+      var partOfAssetId = AssetId(classAssetId.package, path2);
+
+      var library = await resolver.libraryFor(partOfAssetId);
+      return (library, partOfAssetId);
+    }
+
+    var library = await resolver.libraryFor(classAssetId);
+    return (library, classAssetId);
+  }
+
+  Future<List<ClassElement>> findCandidateClassElements(
+      String className, String libraryName, String libraryPath) async {
+    var inputLibrary = await this.inputLibrary;
+
+    var mainLibraries = <LibraryElement>[inputLibrary];
+    var resolverLibraries = await resolver.libraries.toList();
+
+    if (libraryPath.isNotEmpty) {
+      libraryPath =
+          libraryPath.replaceAll(RegExp(r'^(?:package:)?/*'), '').trim();
+      var result =
+          await inputLibrary.session.getLibraryByUri('package:$libraryPath');
+
+      if (result is LibraryElementResult) {
+        var libraryElement = result.element;
+        mainLibraries.add(libraryElement);
+      }
+    }
+
+    if (libraryName.isNotEmpty) {
+      var library = await resolver.findLibraryByName(libraryName);
+      if (library != null) {
+        mainLibraries.add(library);
+      }
+    }
+
+    var mainLibrariesExported =
+        mainLibraries.expand((e) => e.exportedLibraries).toList();
+
+    var allLibraries = <LibraryElement>{
+      ...mainLibraries,
+      ...resolverLibraries,
+      ...mainLibrariesExported
+    }.toList();
+
+    var candidateClasses =
+        allLibraries.allUsedClasses.where((c) => c.name == className).toList();
+
+    if (candidateClasses.length > 1) {
+      if (libraryName.isNotEmpty) {
+        var targetClass = candidateClasses
+            .firstWhereOrNull((e) => e.library.name == libraryName);
+        if (targetClass != null) {
+          return <ClassElement>[targetClass];
+        }
+      }
+    }
+
+    return candidateClasses;
   }
 
   Future<bool> hasCodeToGenerate() async {
@@ -349,4 +428,69 @@ extension AssetIdExtension on AssetId {
     var asset = AssetId(package, p);
     return asset;
   }
+}
+
+extension _LibraryElementExtension on LibraryElement {
+  static final Expando<List<ClassElement>> _exportedClasses =
+      Expando<List<ClassElement>>();
+
+  List<ClassElement> get exportedClasses =>
+      _exportedClasses[this] ??= UnmodifiableListView(
+          topLevelElements.whereType<ClassElement>().toList(growable: false));
+
+  static final Expando<List<LibraryElement>> _allExports =
+      Expando<List<LibraryElement>>();
+
+  List<LibraryElement> get allExports => _allExports[this] ??=
+      UnmodifiableListView(definingCompilationUnit.libraryExports
+          .map((e) => e.exportedLibrary)
+          .nonNulls
+          .toList(growable: false));
+
+  static final Expando<Set<ClassElement>> _allExportedClasses =
+      Expando<Set<ClassElement>>();
+
+  Set<ClassElement> get allExportedClasses => _allExportedClasses[this] ??=
+      UnmodifiableSetView(allExports.expand((e) => e.exportedClasses).toSet());
+
+  static final Expando<Set<ClassElement>> _allImportedClasses =
+      Expando<Set<ClassElement>>();
+
+  Set<ClassElement> get allImportedClasses =>
+      _allImportedClasses[this] ??= UnmodifiableSetView(units
+          .expand((e) =>
+              e.library.importedLibraries.expand((e) => e.exportedClasses))
+          .toSet());
+
+  static final Expando<Set<ClassElement>> _allUnitsClasses =
+      Expando<Set<ClassElement>>();
+
+  Set<ClassElement> get allUnitsClasses =>
+      _allUnitsClasses[this] ??= UnmodifiableSetView(
+          units.expand((e) => e.library.exportedClasses).toSet());
+
+  static final Expando<Set<ClassElement>> _allClassesFromExportedClassesUnits =
+      Expando<Set<ClassElement>>();
+
+  Set<ClassElement> get allClassesFromExportedClassesUnits =>
+      _allClassesFromExportedClassesUnits[this] ??= UnmodifiableSetView(
+          allExportedClasses.expand((e) => e.library.allUnitsClasses).toSet());
+
+  static final Expando<Set<ClassElement>>
+      _allImportedClassesFromExportedClasses = Expando<Set<ClassElement>>();
+
+  Set<ClassElement> get allImportedClassesFromExportedClasses =>
+      _allImportedClassesFromExportedClasses[this] ??= UnmodifiableSetView(
+          allExportedClasses
+              .expand((e) => e.library.allImportedClasses)
+              .toSet());
+}
+
+extension _IterableLibraryElementExtension on Iterable<LibraryElement> {
+  Set<ClassElement> get allUsedClasses => <ClassElement>{
+        ...expand((l) => l.exportedClasses),
+        ...expand((l) => l.allExportedClasses),
+        ...expand((l) => l.allClassesFromExportedClassesUnits),
+        ...expand((l) => l.allImportedClassesFromExportedClasses),
+      };
 }
