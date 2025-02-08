@@ -858,7 +858,7 @@ void main() {
               contains('factory Status\$reflection([Status? object]) {'),
               contains('final Expando<Foo\$reflection> _objectReflections'),
               contains('factory Foo\$reflection([Foo? object]) {'),
-              isNot(contains('// Dependency reflections:')),
+              contains('// Dependency reflections:'),
             ])),
           )),
         },
