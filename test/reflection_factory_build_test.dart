@@ -17,6 +17,32 @@ void main() {
   group('ReflectionBuilder', () {
     setUp(() {});
 
+    test('NO Reflection: TestEmpty', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+          import 'package:mime/mime.dart';
+                
+          class TestEmpty {}
+        
+        '''
+      };
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        reader: await PackageAssetReader.currentIsolate(),
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {},
+        onLog: (msg) {
+          print(msg);
+        },
+      );
+    });
+
     test('EnableReflection: TestEmpty', () async {
       var builder = ReflectionBuilder(verbose: true);
 
