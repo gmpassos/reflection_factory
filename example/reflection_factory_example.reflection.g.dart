@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.4.10
+// BUILDER: reflection_factory/2.5.0
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -22,7 +22,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.4.10');
+  static final Version _version = Version.parse('2.5.0');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -57,7 +57,7 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   User$reflection withObject([User? obj]) =>
@@ -120,7 +120,7 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
             this,
             User,
             '',
-            () => (String? email, String pass) => User(email, pass),
+            () => User.new,
             const <__PR>[
               __PR(__TR.tString, 'email', true, true),
               __PR(__TR.tString, 'pass', false, true)
@@ -129,8 +129,8 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
             null,
             null);
       case 'empty':
-        return ConstructorReflection<User>(this, User, 'empty',
-            () => () => User.empty(), null, null, null, null);
+        return ConstructorReflection<User>(
+            this, User, 'empty', () => User.empty, null, null, null, null);
       default:
         return null;
     }

@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.4.10
+// BUILDER: reflection_factory/2.5.0
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -22,7 +22,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.4.10');
+  static final Version _version = Version.parse('2.5.0');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -69,7 +69,7 @@ class TestAddress$reflection extends ClassReflection<TestAddress>
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   TestAddress$reflection withObject([TestAddress? obj]) =>
@@ -133,7 +133,7 @@ class TestAddress$reflection extends ClassReflection<TestAddress>
             this,
             TestAddress,
             '',
-            () => (String state, String city) => TestAddress(state, city),
+            () => TestAddress.new,
             const <__PR>[
               __PR(__TR.tString, 'state', false, true),
               __PR(__TR.tString, 'city', false, true)
@@ -393,7 +393,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple>
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   TestUserSimple$reflection withObject([TestUserSimple? obj]) =>
@@ -460,8 +460,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple>
             this,
             TestUserSimple,
             '',
-            () => (String name, String? email, String password) =>
-                TestUserSimple(name, email, password),
+            () => TestUserSimple.new,
             const <__PR>[
               __PR(__TR.tString, 'name', false, true),
               __PR(__TR.tString, 'email', true, true),
@@ -471,15 +470,8 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple>
             null,
             null);
       case 'empty':
-        return ConstructorReflection<TestUserSimple>(
-            this,
-            TestUserSimple,
-            'empty',
-            () => () => TestUserSimple.empty(),
-            null,
-            null,
-            null,
-            null);
+        return ConstructorReflection<TestUserSimple>(this, TestUserSimple,
+            'empty', () => TestUserSimple.empty, null, null, null, null);
       default:
         return null;
     }

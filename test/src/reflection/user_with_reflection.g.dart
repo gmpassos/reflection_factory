@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.4.10
+// BUILDER: reflection_factory/2.5.0
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -22,7 +22,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.4.10');
+  static final Version _version = Version.parse('2.5.0');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -151,7 +151,7 @@ class TestAddressWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   TestAddressWithReflection$reflection withObject(
@@ -225,8 +225,7 @@ class TestAddressWithReflection$reflection
             this,
             TestAddressWithReflection,
             'simple',
-            () => (String state, {int? id}) =>
-                TestAddressWithReflection.simple(state, id: id),
+            () => TestAddressWithReflection.simple,
             const <__PR>[__PR(__TR.tString, 'state', false, true)],
             null,
             const <String, __PR>{'id': __PR(__TR.tInt, 'id', true, false)},
@@ -236,8 +235,7 @@ class TestAddressWithReflection$reflection
             this,
             TestAddressWithReflection,
             'withCity',
-            () => (String state, {String city = '', int? id}) =>
-                TestAddressWithReflection.withCity(state, city: city, id: id),
+            () => TestAddressWithReflection.withCity,
             const <__PR>[__PR(__TR.tString, 'state', false, true)],
             null,
             const <String, __PR>{
@@ -250,7 +248,7 @@ class TestAddressWithReflection$reflection
             this,
             TestAddressWithReflection,
             'empty',
-            () => () => TestAddressWithReflection.empty(),
+            () => TestAddressWithReflection.empty,
             null,
             null,
             null,
@@ -548,7 +546,7 @@ class TestCompanyWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   TestCompanyWithReflection$reflection withObject(
@@ -620,16 +618,7 @@ class TestCompanyWithReflection$reflection
             this,
             TestCompanyWithReflection,
             '',
-            () => (String name, TestAddressWithReflection? mainAddress,
-                    {List<TestAddressWithReflection> extraAddresses =
-                        const <TestAddressWithReflection>[],
-                    List<TestAddressWithReflection> branchesAddresses =
-                        const <TestAddressWithReflection>[],
-                    List<String> extraNames = const <String>[]}) =>
-                TestCompanyWithReflection(name, mainAddress,
-                    extraAddresses: extraAddresses,
-                    branchesAddresses: branchesAddresses,
-                    extraNames: extraNames),
+            () => TestCompanyWithReflection.new,
             const <__PR>[
               __PR(__TR.tString, 'name', false, true),
               __PR(__TR<TestAddressWithReflection>(TestAddressWithReflection),
@@ -662,12 +651,7 @@ class TestCompanyWithReflection$reflection
             this,
             TestCompanyWithReflection,
             'noBranches',
-            () => (String name, TestAddressWithReflection? mainAddress,
-                    {List<TestAddressWithReflection> extraAddresses =
-                        const <TestAddressWithReflection>[],
-                    List<String> extraNames = const <String>[]}) =>
-                TestCompanyWithReflection.noBranches(name, mainAddress,
-                    extraAddresses: extraAddresses, extraNames: extraNames),
+            () => TestCompanyWithReflection.noBranches,
             const <__PR>[
               __PR(__TR.tString, 'name', false, true),
               __PR(__TR<TestAddressWithReflection>(TestAddressWithReflection),
@@ -1024,7 +1008,7 @@ class TestDataWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -1090,9 +1074,7 @@ class TestDataWithReflection$reflection
             this,
             TestDataWithReflection,
             '',
-            () => (String name, Uint8List bytes,
-                    {BigInt? id, TestDomainWithReflection? domain}) =>
-                TestDataWithReflection(name, bytes, id: id, domain: domain),
+            () => TestDataWithReflection.new,
             const <__PR>[
               __PR(__TR.tString, 'name', false, true),
               __PR(__TR<Uint8List>(Uint8List), 'bytes', false, true)
@@ -1328,7 +1310,7 @@ class TestDomainWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   TestDomainWithReflection$reflection withObject(
@@ -1400,11 +1382,7 @@ class TestDomainWithReflection$reflection
             this,
             TestDomainWithReflection,
             '',
-            () => (String name, String suffix,
-                    [DomainFunction? domainFunction,
-                    bool Function()? extraFunction]) =>
-                TestDomainWithReflection(
-                    name, suffix, domainFunction, extraFunction),
+            () => TestDomainWithReflection.new,
             const <__PR>[
               __PR(__TR.tString, 'name', false, true),
               __PR(__TR.tString, 'suffix', false, true)
@@ -1421,16 +1399,7 @@ class TestDomainWithReflection$reflection
             this,
             TestDomainWithReflection,
             'named',
-            () => (
-                    {required String name,
-                    String suffix = 'net',
-                    DomainFunction? domainFunction,
-                    bool Function()? extraFunction}) =>
-                TestDomainWithReflection.named(
-                    name: name,
-                    suffix: suffix,
-                    domainFunction: domainFunction,
-                    extraFunction: extraFunction),
+            () => TestDomainWithReflection.named,
             null,
             null,
             const <String, __PR>{
@@ -1447,7 +1416,7 @@ class TestDomainWithReflection$reflection
             this,
             TestDomainWithReflection,
             'parse',
-            () => (String s) => TestDomainWithReflection.parse(s),
+            () => TestDomainWithReflection.parse,
             const <__PR>[__PR(__TR.tString, 's', false, true)],
             null,
             null,
@@ -1777,7 +1746,7 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   TestEmpty$reflection withObject([TestEmpty? obj]) =>
@@ -1836,8 +1805,8 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
 
     switch (lc) {
       case '':
-        return ConstructorReflection<TestEmpty>(this, TestEmpty, '',
-            () => () => TestEmpty(), null, null, null, null);
+        return ConstructorReflection<TestEmpty>(
+            this, TestEmpty, '', () => TestEmpty.new, null, null, null, null);
       default:
         return null;
     }
@@ -1927,7 +1896,7 @@ class TestEnumWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -2014,7 +1983,7 @@ class TestFranchiseWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   TestFranchiseWithReflection$reflection withObject(
@@ -2083,9 +2052,7 @@ class TestFranchiseWithReflection$reflection
             this,
             TestFranchiseWithReflection,
             '',
-            () => (String name,
-                    Map<String, TestAddressWithReflection> addresses) =>
-                TestFranchiseWithReflection(name, addresses),
+            () => TestFranchiseWithReflection.new,
             const <__PR>[
               __PR(__TR.tString, 'name', false, true),
               __PR(
@@ -2362,7 +2329,7 @@ class TestName$reflection extends ClassReflection<TestName>
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   TestName$reflection withObject([TestName? obj]) =>
@@ -2422,7 +2389,7 @@ class TestName$reflection extends ClassReflection<TestName>
     switch (lc) {
       case '':
         return ConstructorReflection<TestName>(
-            this, TestName, '', () => () => TestName(), null, null, null, null);
+            this, TestName, '', () => TestName.new, null, null, null, null);
       default:
         return null;
     }
@@ -2669,7 +2636,7 @@ class TestOpAWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -2735,7 +2702,7 @@ class TestOpAWithReflection$reflection
             this,
             TestOpAWithReflection,
             '',
-            () => (int value) => TestOpAWithReflection(value),
+            () => TestOpAWithReflection.new,
             const <__PR>[__PR(__TR.tInt, 'value', false, true)],
             null,
             null,
@@ -3034,7 +3001,7 @@ class TestOpBWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -3100,7 +3067,7 @@ class TestOpBWithReflection$reflection
             this,
             TestOpBWithReflection,
             '',
-            () => (double amount) => TestOpBWithReflection(amount),
+            () => TestOpBWithReflection.new,
             const <__PR>[__PR(__TR.tDouble, 'amount', false, true)],
             null,
             null,
@@ -3418,7 +3385,7 @@ class TestOpWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -3486,8 +3453,7 @@ class TestOpWithReflection$reflection
             this,
             TestOpWithReflection,
             '',
-            () => (String type, dynamic value) =>
-                TestOpWithReflection(type, value),
+            () => TestOpWithReflection.new,
             const <__PR>[
               __PR(__TR.tString, 'type', false, true),
               __PR(__TR.tDynamic, 'value', true, true)
@@ -3500,7 +3466,7 @@ class TestOpWithReflection$reflection
             this,
             TestOpWithReflection,
             'empty',
-            () => () => TestOpWithReflection.empty(),
+            () => TestOpWithReflection.empty,
             null,
             null,
             null,
@@ -3819,7 +3785,7 @@ class TestTransactionWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   TestTransactionWithReflection$reflection withObject(
@@ -3889,9 +3855,7 @@ class TestTransactionWithReflection$reflection
             this,
             TestTransactionWithReflection,
             'fromTo',
-            () => (int amount, TestUserWithReflection fromUser,
-                    TestUserWithReflection toUser) =>
-                TestTransactionWithReflection.fromTo(amount, fromUser, toUser),
+            () => TestTransactionWithReflection.fromTo,
             const <__PR>[
               __PR(__TR.tInt, 'amount', false, true),
               __PR(__TR<TestUserWithReflection>(TestUserWithReflection),
@@ -4097,7 +4061,7 @@ class TestUserWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.4.0');
+  Version get languageVersion => Version.parse('3.6.0');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
@@ -4164,13 +4128,7 @@ class TestUserWithReflection$reflection
             this,
             TestUserWithReflection,
             'fields',
-            () => (String name, String? email, String? passphrase,
-                    {bool enabled = true,
-                    TestEnumWithReflection axis = TestEnumWithReflection.x,
-                    int? level,
-                    int? id}) =>
-                TestUserWithReflection.fields(name, email, passphrase,
-                    enabled: enabled, axis: axis, level: level, id: id),
+            () => TestUserWithReflection.fields,
             const <__PR>[
               __PR(__TR.tString, 'name', false, true),
               __PR(__TR.tString, 'email', true, true),
@@ -4191,7 +4149,7 @@ class TestUserWithReflection$reflection
             this,
             TestUserWithReflection,
             '',
-            () => () => TestUserWithReflection(),
+            () => TestUserWithReflection.new,
             null,
             null,
             null,
