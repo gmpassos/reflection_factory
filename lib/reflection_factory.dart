@@ -1,5 +1,5 @@
 /// Library for reflection factory.
-library reflection_factory;
+library;
 
 export 'dart:async';
 

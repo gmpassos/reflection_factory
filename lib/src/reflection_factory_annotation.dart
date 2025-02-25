@@ -81,7 +81,7 @@ class ClassProxy {
   /// The name of the generated reflection proxy.
   final String reflectionProxyName;
 
-  /// If `true` all methods will return a Future<R>.
+  /// If `true` all methods will return a `Future<R>`.
   final bool alwaysReturnFuture;
 
   /// The list return o types to traverse.

@@ -1,5 +1,5 @@
 /// Library for [reflection_factory]'s builder.
-library reflection_factory.builder;
+library;
 
 import 'package:build/build.dart';
 import 'package:reflection_factory/reflection_factory.dart';

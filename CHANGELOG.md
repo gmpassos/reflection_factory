@@ -1,3 +1,17 @@
+## 2.5.0
+
+- `Constructor`: added `fullName`.
+
+- `ClassTree._buildConstructors`: use as direct constructor name as `constructorAccessor`, reducing generated code.
+
+- sdk: '>=3.6.0 <4.0.0'
+
+- collection: ^1.19.0
+
+- build_runner: ^2.4.15
+- lints: ^5.1.1
+- test: ^1.25.15
+
 ## 2.4.10
 
 - New `InputAnalyzer` and `InputAnalyzerResolved`:

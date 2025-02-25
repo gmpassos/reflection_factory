@@ -1648,10 +1648,10 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       }
 
       var declaringType = constructor.declaringType!.typeNameResolvable;
-      var callerCode = constructor.asCallerCode;
+      var fullName = constructor.fullName;
 
       return "ConstructorReflection<$className>("
-          "this, $declaringType, '$name', () => $callerCode , "
+          "this, $declaringType, '$name', () => $fullName , "
           "${constructor.normalParametersAsCode} , "
           "${constructor.optionalParametersAsCode}, "
           "${constructor.namedParametersAsCode}, "
@@ -2766,6 +2766,12 @@ class _Constructor<T> extends _Element {
   String get namedParametersAsCode =>
       _buildNamedParameterReflectionMap(typeAliasTable, namedParameters,
           nullOnEmpty: true);
+
+  String get fullName {
+    var className = classTree.className;
+    var constructorName = name.isEmpty ? 'new' : name;
+    return '$className.$constructorName';
+  }
 
   String get asCallerCode {
     var s = StringBuffer();
