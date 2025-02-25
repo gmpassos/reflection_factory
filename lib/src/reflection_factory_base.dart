@@ -20,7 +20,7 @@ import 'reflection_factory_utils.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.5.0';
+  static const String VERSION = '2.5.1';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -143,6 +143,13 @@ abstract class Reflection<O> {
 
   /// Returns a new instances without an [object] instance.
   Reflection<O> withoutObjectInstance();
+
+  /// Returns a `const` [Symbol] that can be safely used for
+  /// named parameters in [Function.apply].
+  ///
+  /// - NOTE: A non-`const` [Symbol] may not work depending on the
+  ///   compiled architecture, such as on Wasm.
+  Symbol? getSymbol(String? key);
 
   /// Returns the Dart language [Version] of the reflected code.
   Version get languageVersion;
@@ -3787,6 +3794,7 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
     var optionalParametersValues = optionalValues.map((e) => e.value).toList();
 
     return MethodInvocation<O>.withPositionalParametersNames(
+      classReflection,
       classReflection.classType,
       name,
       positionalParametersNames,
@@ -4109,6 +4117,10 @@ class StaticMethodReflection<O, R> extends StaticFunctionReflection<O, R> {
 
 /// Represents a method invocation parameters.
 class MethodInvocation<T> {
+  /// The generated [Reflection] instance that resolves this method.
+  /// - Required to resolve named parameter [Symbol]s using [Reflection.getSymbol].
+  final Reflection<T> reflection;
+
   /// The class [Type] of this invocation parameters.
   final Type classType;
 
@@ -4128,15 +4140,21 @@ class MethodInvocation<T> {
   /// - Needed for [parametersToMap].
   final List<String>? positionalParametersNames;
 
-  MethodInvocation(this.classType, this.methodName, this.normalParameters,
+  MethodInvocation(
+      this.reflection, this.classType, this.methodName, this.normalParameters,
       [this.optionalParameters, this.namedParameters])
       : positionalParametersNames = null;
 
   /// Constructor with [positionalParametersNames].
   /// See [parametersToMap].
-  MethodInvocation.withPositionalParametersNames(this.classType,
-      this.methodName, this.positionalParametersNames, this.normalParameters,
-      [this.optionalParameters, this.namedParameters]);
+  MethodInvocation.withPositionalParametersNames(
+      this.reflection,
+      this.classType,
+      this.methodName,
+      this.positionalParametersNames,
+      this.normalParameters,
+      [this.optionalParameters,
+      this.namedParameters]);
 
   /// The positional arguments, derived from [normalParameters] and [optionalParameters].
   /// Used by [invoke].
@@ -4164,8 +4182,12 @@ class MethodInvocation<T> {
     if (namedParameters == null || namedParameters.isEmpty) {
       return null;
     }
-    var args =
-        namedParameters.map((key, value) => MapEntry(Symbol(key), value));
+
+    var args = namedParameters.map((key, value) {
+      var symbol = reflection.getSymbol(key) ?? Symbol(key);
+      return MapEntry(symbol, value);
+    });
+
     return args;
   }
 

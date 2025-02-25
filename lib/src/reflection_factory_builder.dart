@@ -217,6 +217,8 @@ class ReflectionBuilder implements Builder {
     fullCode.write('\n');
 
     fullCode.write(codeTable.codeReflectionMixin);
+    fullCode.write('\n');
+    fullCode.write(codeTable.codeSymbolsTable);
 
     var codeKeys = codeTable.allKeys.toList();
     _sortCodeKeys(codeKeys);
@@ -232,14 +234,20 @@ class ReflectionBuilder implements Builder {
 
     var generatedCode = fullCode.toString();
 
+    var languageVersion = codeTable.resolveLanguageVersion();
+
+    log.info(" Resolved languageVersion: $languageVersion");
+
     await _writeGeneratedCode(
-        buildStep, genPart, generatedCode, initTime, codeKeys);
+        buildStep, genPart, generatedCode, initTime, languageVersion, codeKeys);
   }
 
   Future<void> _writeGeneratedCode(BuildStep buildStep, GeneratedPart genPart,
-      String generatedCode, DateTime initTime,
+      String generatedCode, DateTime initTime, Version? languageVersion,
       [List<String>? codeKeys]) async {
-    var dartFormatter = DartFormatter();
+    languageVersion ??= DartFormatter.latestLanguageVersion;
+
+    var dartFormatter = DartFormatter(languageVersion: languageVersion);
 
     String formattedCode;
     try {
@@ -356,6 +364,9 @@ class ReflectionBuilder implements Builder {
     }
 
     _buildReflectionMixin(codeTable);
+
+    _buildSymbolsTable(codeTable);
+
     _buildSiblingsClassReflection(codeTable);
 
     return codeTable;
@@ -458,6 +469,9 @@ class ReflectionBuilder implements Builder {
       await inputAnalyzer.buildStep.readAsBytes(classLibraryAssetId);
     }
 
+    var languageVersion = classLibrary.languageVersion.effective;
+    typeAliasTable.addLanguageVersion(languageVersion);
+
     var classTree = _ClassTree(
       typeAliasTable,
       classElement,
@@ -465,7 +479,7 @@ class ReflectionBuilder implements Builder {
       '?%',
       reflectionProxyName,
       false,
-      classLibrary.languageVersion.effective,
+      languageVersion,
       verbose: verbose,
     );
 
@@ -533,6 +547,9 @@ class ReflectionBuilder implements Builder {
       var reflectionClassName = reflectionClassNames[classType] ?? '';
       var reflectionExtensionName = reflectionExtensionNames[classType] ?? '';
 
+      var languageVersion = classLibrary.languageVersion.effective;
+      typeAliasTable.addLanguageVersion(languageVersion);
+
       var classTree = _ClassTree(
         typeAliasTable,
         classElement,
@@ -540,7 +557,7 @@ class ReflectionBuilder implements Builder {
         reflectionExtensionName,
         '?%',
         optimizeReflectionInstances,
-        classLibrary.languageVersion.effective,
+        languageVersion,
         verbose: verbose,
       );
 
@@ -615,12 +632,15 @@ class ReflectionBuilder implements Builder {
     var (enumLibrary, enumLibraryAssetId) =
         await inputAnalyzer.getElementLibrary(enumElement);
 
+    var languageVersion = enumLibrary.languageVersion.effective;
+    typeAliasTable.addLanguageVersion(languageVersion);
+
     var enumTree = _EnumTree(
       enumElement,
       reflectionClassName,
       reflectionExtensionName,
       optimizeReflectionInstances,
-      enumLibrary.languageVersion.effective,
+      languageVersion,
       verbose: verbose,
     );
 
@@ -655,6 +675,9 @@ class ReflectionBuilder implements Builder {
     var (classLibrary, classLibraryAssetId) =
         await inputAnalyzer.getElementLibrary(classElement);
 
+    var languageVersion = classLibrary.languageVersion.effective;
+    typeAliasTable.addLanguageVersion(languageVersion);
+
     var classTree = _ClassTree(
       typeAliasTable,
       classElement,
@@ -662,7 +685,7 @@ class ReflectionBuilder implements Builder {
       reflectionExtensionName,
       '?%',
       optimizeReflectionInstances,
-      classLibrary.languageVersion.effective,
+      languageVersion,
       verbose: verbose,
     );
 
@@ -767,6 +790,41 @@ class ReflectionBuilder implements Builder {
 
     codeTable.codeSiblingsClassReflection = str.toString();
   }
+
+  void _buildSymbolsTable(_CodeTable codeTable) {
+    var str = StringBuffer();
+
+    var namedParameters = codeTable.typeAliasTable.namedParameters;
+    namedParameters.sort();
+
+    str.write('Symbol? _getSymbol(String? key) ');
+
+    if (namedParameters.isEmpty) {
+      str.write(' => null;\n');
+    } else {
+      str.write('{\n');
+
+      str.write(' if (key == null) return null;\n\n');
+
+      str.write(' switch(key) {\n');
+
+      for (var n in namedParameters) {
+        assert(!n.contains("'"));
+        assert(!n.contains('"'));
+        assert(!n.contains(r'\'));
+
+        var nQ = 'r"$n"';
+        str.write('   case $nQ: return const Symbol($nQ);\n');
+      }
+
+      str.write('   default: return null;\n');
+      str.write(' }\n');
+
+      str.write('}\n');
+    }
+
+    codeTable.codeSymbolsTable = str.toString();
+  }
 }
 
 class _TypeAliasTable {
@@ -835,6 +893,31 @@ class _TypeAliasTable {
       if (!usedNames.contains(name)) return name;
     }
   }
+
+  final Set<String> _namedParameters = {};
+
+  List<String> get namedParameters => _namedParameters.toList();
+
+  void addNamedParameter(String namedParameter) =>
+      _namedParameters.add(namedParameter);
+
+  void addAllNamedParameters(Iterable<String> namedParameters) {
+    for (var n in namedParameters) {
+      addNamedParameter(n);
+    }
+  }
+
+  final Set<Version> _languageVersions = {};
+
+  void addLanguageVersion(Version languageVersion) =>
+      _languageVersions.add(languageVersion);
+
+  Version? resolveLanguageVersion() {
+    var versions = _languageVersions.toList();
+    if (versions.isEmpty) return null;
+    versions.sort();
+    return versions.last;
+  }
 }
 
 class _CodeTable {
@@ -842,6 +925,7 @@ class _CodeTable {
 
   String codeReflectionMixin = '';
   String codeSiblingsClassReflection = '';
+  String codeSymbolsTable = '';
 
   _CodeTable(this.typeAliasTable);
 
@@ -917,6 +1001,8 @@ class _CodeTable {
       addFunction(e.key, e.value);
     }
   }
+
+  Version? resolveLanguageVersion() => typeAliasTable.resolveLanguageVersion();
 }
 
 String _buildClassGlobalFunction(
@@ -1094,6 +1180,11 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
     str.write('  @override\n');
     str.write(
         '  $reflectionClass withoutObjectInstance() => staticInstance;\n\n');
+
+    str.write('\n');
+    str.write('@override\n');
+    str.write('Symbol? getSymbol(String? key) => _getSymbol(key);\n');
+    str.write('\n\n');
 
     str.write(
         '  static $reflectionClass get staticInstance => _withoutObjectInstance ??= $reflectionClass._();\n\n');
@@ -1559,6 +1650,11 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write(
         '  $reflectionClass withoutObjectInstance() => staticInstance;\n\n');
 
+    str.write('\n');
+    str.write('@override\n');
+    str.write('Symbol? getSymbol(String? key) => _getSymbol(key);\n');
+    str.write('\n\n');
+
     str.write(
         '  static $reflectionClass get staticInstance => _withoutObjectInstance ??= $reflectionClass._();\n\n');
 
@@ -1646,6 +1742,8 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       if (verbose) {
         log.info('[CONSTRUCTOR] $constructor');
       }
+
+      typeAliasTable.addAllNamedParameters(constructor.namedParameters.keys);
 
       var declaringType = constructor.declaringType!.typeNameResolvable;
       var fullName = constructor.fullName;
@@ -2069,6 +2167,8 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       if (verbose) {
         log.info('[METHOD] $method');
       }
+
+      typeAliasTable.addAllNamedParameters(method.namedParameters.keys);
 
       var declaringType = method.declaringType!.typeNameResolvable;
       var returnType = method.returnTypeNameAsCode;

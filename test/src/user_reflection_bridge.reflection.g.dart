@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.5.0
+// BUILDER: reflection_factory/2.5.1
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -22,11 +22,22 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.5.0');
+  static final Version _version = Version.parse('2.5.1');
 
   Version get reflectionFactoryVersion => _version;
 
   List<Reflection> siblingsReflection() => _siblingsReflection();
+}
+
+Symbol? _getSymbol(String? key) {
+  if (key == null) return null;
+
+  switch (key) {
+    case r"ignoreCase":
+      return const Symbol(r"ignoreCase");
+    default:
+      return null;
+  }
 }
 
 Future<T> __retFut$<T>(Object? o) => ClassProxy.returnFuture<T>(o);
@@ -78,6 +89,9 @@ class TestAddress$reflection extends ClassReflection<TestAddress>
   static TestAddress$reflection? _withoutObjectInstance;
   @override
   TestAddress$reflection withoutObjectInstance() => staticInstance;
+
+  @override
+  Symbol? getSymbol(String? key) => _getSymbol(key);
 
   static TestAddress$reflection get staticInstance =>
       _withoutObjectInstance ??= TestAddress$reflection._();
@@ -402,6 +416,9 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple>
   static TestUserSimple$reflection? _withoutObjectInstance;
   @override
   TestUserSimple$reflection withoutObjectInstance() => staticInstance;
+
+  @override
+  Symbol? getSymbol(String? key) => _getSymbol(key);
 
   static TestUserSimple$reflection get staticInstance =>
       _withoutObjectInstance ??= TestUserSimple$reflection._();

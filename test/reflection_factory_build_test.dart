@@ -78,8 +78,8 @@ void main() {
             allOf(
               contains('TestEmpty\$reflection'),
               contains('TestEmpty\$reflectionExtension'),
-              isNot(contains(
-                  "Map<String, dynamic> getJsonFieldsVisibleValues(TestEmpty? obj,")),
+              isNot(
+                  contains("Map<String, dynamic> getJsonFieldsVisibleValues(")),
             ),
           )),
         },
@@ -250,8 +250,7 @@ void main() {
             allOf(
               contains("JsonField.hidden()"),
               contains("JsonField.visible()"),
-              contains(
-                  "Map<String, dynamic> getJsonFieldsVisibleValues(User? obj,"),
+              contains("Map<String, dynamic> getJsonFieldsVisibleValues("),
               contains("case 'tojson':"),
               contains("case 'getfield':"),
               contains("case 'setfield':"),
@@ -342,7 +341,7 @@ void main() {
                     r"case 'callfx':.*?const <__PR>\[\s*__PR\(\s*__TR<Fx>\(Fx\), 'f', true, false\)\s*\]",
                     dotAll: true)),
                 matches(RegExp(
-                    r"case 'callallfx':.*?__PR\(\s*__TR<List<Function>>\(\s*List, <__TI>\[__TI.tFunction\]\),\s*'fxs',\s*false,\s*true\)",
+                    r"case 'callallfx':.*?__PR\(\s*__TR<List<Function>>\(\s*List, <__TI>\[__TI.tFunction\]\),\s*'fxs',\s*false,\s*true,\s*\)",
                     dotAll: true)),
                 matches(RegExp(
                     r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\(')),
@@ -1498,7 +1497,7 @@ void main() {
               contains(
                   'Future<R> computeFunctionAsync<R>(FutureOr<R> Function() callback) {'),
               matches(RegExp(
-                  "onCall(\nthis,\n'computeSum3',\n<String, dynamic>{\n'a': a,\n'b': b,\n'c': c,\n},"
+                  "onCall(\\s*this,\\s*'computeSum3',\\s*<String, dynamic>{\n'a': a,\n'b': b,\n'c': c,\n},"
                       .replaceAll('\n', r'\s+')
                       .replaceAll('(', r'\(')
                       .replaceAll(')', r'\)'))),
@@ -1595,7 +1594,7 @@ void main() {
               contains(
                   'Future<R> computeFunctionAsync<R>(FutureOr<R> Function() callback) {'),
               matches(RegExp(
-                  "onCall(\nthis,\n'computeSum3',\n<String, dynamic>{\n'a': a,\n'b': b,\n'c': c,\n},"
+                  "onCall(\\s*this,\\s*'computeSum3',\\s*<String, dynamic>{\n'a': a,\n'b': b,\n'c': c,\n},"
                       .replaceAll('\n', r'\s+')
                       .replaceAll('(', r'\(')
                       .replaceAll(')', r'\)'))),

@@ -1,3 +1,17 @@
+## 2.5.1
+
+- `Reflection`:
+  - Added `getSymbol`, to allow resolution of `const Symbol` instances.
+
+- `MethodInvocation`:
+  - Added field `reflection`.
+  - `namedArguments`: use `reflection.getSymbol` to resolve the `const Symbol` for the named parameters keys.
+
+- `ReflectionBuilder`:
+  - `_writeGeneratedCode`: `DartFormatter(languageVersion)`.
+
+- dart_style: ^3.0.1
+
 ## 2.5.0
 
 - `Constructor`: added `fullName`.
