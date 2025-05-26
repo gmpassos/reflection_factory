@@ -1,3 +1,13 @@
+## 2.5.2
+
+- analyzer: ^7.4.5
+- meta: ^1.17.0
+- mime: '>=1.0.0 <3.0.0'
+- pub_semver: ^2.2.0
+- dependency_validator: ^5.0.2
+- test: ^1.26.2
+- coverage: ^1.14.0
+
 ## 2.5.1
 
 - `Reflection`:

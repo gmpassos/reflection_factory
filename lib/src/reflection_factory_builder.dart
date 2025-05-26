@@ -3592,7 +3592,26 @@ extension _ConstructorElementExtension on ConstructorElement {
 }
 
 extension _FunctionTypeExtension on FunctionType {
+  //Iterable<String> get formalParametersNames => _formalParametersNames.toList();
+
+  Iterable<String> get _formalParametersNames {
+    final formalParameters = this.formalParameters;
+    return formalParameters.map((p) => p.name3 ?? '').toList();
+  }
+
+  List<String> get normalParameterNames =>
+      _formalParametersNames.take(normalParameterTypes.length).toList();
+
+  List<String> get optionalParameterNames => _formalParametersNames
+      .skip(normalParameterTypes.length)
+      .take(optionalParameterTypes.length)
+      .toList();
+
   List<_Parameter> get normalParameters {
+    final parameters = this.parameters;
+    final normalParameterNames = this.normalParameterNames;
+    final normalParameterTypes = this.normalParameterTypes;
+
     return List<_Parameter>.generate(normalParameterNames.length, (i) {
       var n = normalParameterNames[i];
       var t = normalParameterTypes[i];
@@ -3602,19 +3621,25 @@ extension _FunctionTypeExtension on FunctionType {
   }
 
   List<_Parameter> get optionalParameters {
+    final parameters = this.parameters;
+    final normalParameterTypesLength = normalParameterTypes.length;
+    final optionalParameterNames = this.optionalParameterNames;
+    final optionalParameterTypes = this.optionalParameterTypes;
+
     return List<_Parameter>.generate(optionalParameterNames.length, (i) {
       var n = optionalParameterNames[i];
       var t = optionalParameterTypes[i];
-      var idx = normalParameterNames.length + i;
+
+      var idx = normalParameterTypesLength + i;
       var p = parameters[idx];
       return _Parameter(p, idx, t, n, t.isNullable, false);
     });
   }
 
   Map<String, _Parameter> get namedParameters {
+    final normalParametersLength = normalParameterTypes.length;
+    final namedParametersLength = namedParameterTypes.length;
     var map = <String, _Parameter>{};
-    var normalParametersLength = normalParameterNames.length;
-    var namedParametersLength = namedParameterTypes.length;
 
     for (var i = 0; i < namedParametersLength; ++i) {
       var idx = normalParametersLength + i;
