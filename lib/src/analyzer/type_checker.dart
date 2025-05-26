@@ -8,6 +8,7 @@ import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:source_span/source_span.dart';
@@ -45,12 +46,18 @@ abstract class TypeChecker {
   ///
   /// Throws on unresolved annotations unless [throwOnUnresolved] is `false`.
   DartObject? firstAnnotationOf(
-    Element element, {
+    Element2 element, {
     bool throwOnUnresolved = true,
   }) {
-    if (element.metadata.isEmpty) {
+    if (element is! Annotatable) {
       return null;
     }
+
+    var annotatable = element as Annotatable;
+    if (annotatable.metadata2.annotations.isEmpty) {
+      return null;
+    }
+
     final results =
         annotationsOf(element, throwOnUnresolved: throwOnUnresolved);
     return results.isEmpty ? null : results.first;
@@ -59,7 +66,7 @@ abstract class TypeChecker {
   /// Returns if a constant annotating [element] is assignable to this type.
   ///
   /// Throws on unresolved annotations unless [throwOnUnresolved] is `false`.
-  bool hasAnnotationOf(Element element, {bool throwOnUnresolved = true}) =>
+  bool hasAnnotationOf(Element2 element, {bool throwOnUnresolved = true}) =>
       firstAnnotationOf(element, throwOnUnresolved: throwOnUnresolved) != null;
 
   /// Returns the first constant annotating [element] that is exactly this type.
@@ -67,12 +74,18 @@ abstract class TypeChecker {
   /// Throws [UnresolvedAnnotationException] on unresolved annotations unless
   /// [throwOnUnresolved] is explicitly set to `false` (default is `true`).
   DartObject? firstAnnotationOfExact(
-    Element element, {
+    Element2 element, {
     bool throwOnUnresolved = true,
   }) {
-    if (element.metadata.isEmpty) {
+    if (element is! Annotatable) {
       return null;
     }
+
+    var annotatable = element as Annotatable;
+    if (annotatable.metadata2.annotations.isEmpty) {
+      return null;
+    }
+
     final results =
         annotationsOfExact(element, throwOnUnresolved: throwOnUnresolved);
     return results.isEmpty ? null : results.first;
@@ -82,16 +95,17 @@ abstract class TypeChecker {
   ///
   /// Throws [UnresolvedAnnotationException] on unresolved annotations unless
   /// [throwOnUnresolved] is explicitly set to `false` (default is `true`).
-  bool hasAnnotationOfExact(Element element, {bool throwOnUnresolved = true}) =>
+  bool hasAnnotationOfExact(Element2 element,
+          {bool throwOnUnresolved = true}) =>
       firstAnnotationOfExact(element, throwOnUnresolved: throwOnUnresolved) !=
       null;
 
   DartObject? _computeConstantValue(
-    Element element,
-    int annotationIndex, {
+    Element2 element,
+    int annotationIndex,
+    ElementAnnotation annotation, {
     bool throwOnUnresolved = true,
   }) {
-    final annotation = element.metadata[annotationIndex];
     final result = annotation.computeConstantValue();
 
     if (result == null && throwOnUnresolved) {
@@ -105,7 +119,7 @@ abstract class TypeChecker {
   /// Throws [UnresolvedAnnotationException] on unresolved annotations unless
   /// [throwOnUnresolved] is explicitly set to `false` (default is `true`).
   Iterable<DartObject> annotationsOf(
-    Element element, {
+    Element2 element, {
     bool throwOnUnresolved = true,
   }) =>
       _annotationsWhere(
@@ -115,14 +129,18 @@ abstract class TypeChecker {
       );
 
   Iterable<DartObject> _annotationsWhere(
-    Element element,
+    Element2 element,
     bool Function(DartType) predicate, {
     bool throwOnUnresolved = true,
   }) sync* {
-    for (var i = 0; i < element.metadata.length; i++) {
+    var annotations = (element as Annotatable).metadata2.annotations;
+
+    for (var i = 0; i < annotations.length; i++) {
+      var annotation = annotations[i];
       final value = _computeConstantValue(
         element,
         i,
+        annotation,
         throwOnUnresolved: throwOnUnresolved,
       );
       if (value?.type != null && predicate(value!.type!)) {
@@ -136,7 +154,7 @@ abstract class TypeChecker {
   /// Throws [UnresolvedAnnotationException] on unresolved annotations unless
   /// [throwOnUnresolved] is explicitly set to `false` (default is `true`).
   Iterable<DartObject> annotationsOfExact(
-    Element element, {
+    Element2 element, {
     bool throwOnUnresolved = true,
   }) =>
       _annotationsWhere(
@@ -146,11 +164,11 @@ abstract class TypeChecker {
       );
 
   /// Returns `true` if the type of [element] can be assigned to this type.
-  bool isAssignableFrom(Element? element) {
+  bool isAssignableFrom(Element2? element) {
     if (element == null) return false;
 
     return isExactly(element) ||
-        (element is InterfaceElement &&
+        (element is InterfaceElement2 &&
             element.allSupertypes.any(isExactlyType));
   }
 
@@ -159,7 +177,7 @@ abstract class TypeChecker {
       isAssignableFrom(staticType?.elementDeclaration);
 
   /// Returns `true` if representing the exact same class as [element].
-  bool isExactly(Element? element);
+  bool isExactly(Element2? element);
 
   /// Returns `true` if representing the exact same type as [staticType].
   bool isExactlyType(DartType? staticType) =>
@@ -169,8 +187,8 @@ abstract class TypeChecker {
   ///
   /// This check only takes into account the *extends* hierarchy. If you wish
   /// to check mixins and interfaces, use [isAssignableFrom].
-  bool isSuperOf(Element element) {
-    if (element is InterfaceElement) {
+  bool isSuperOf(Element2 element) {
+    if (element is InterfaceElement2) {
       var theSuper = element.supertype;
 
       while (theSuper != null) {
@@ -210,7 +228,7 @@ class _MirrorTypeChecker extends TypeChecker {
       _cache[this] ??= TypeChecker.fromUrl(_uriOf(reflectClass(_type)));
 
   @override
-  bool isExactly(Element? element) => _computed.isExactly(element);
+  bool isExactly(Element2? element) => _computed.isExactly(element);
 
   @override
   String toString() => _computed.toString();
@@ -242,7 +260,7 @@ class _UriTypeChecker extends TypeChecker {
       (url is String ? url : normalizeUrl(url as Uri).toString());
 
   @override
-  bool isExactly(Element? element) {
+  bool isExactly(Element2? element) {
     if (element == null) return false;
     return hasSameUrl(urlOfElement(element));
   }
@@ -259,7 +277,7 @@ class _UriTypeChecker extends TypeChecker {
 /// defined (for build systems such as Bazel).
 class UnresolvedAnnotationException implements Exception {
   /// Element that was annotated with something we could not resolve.
-  final Element annotatedElement;
+  final Element2 annotatedElement;
 
   /// Source span of the annotation that was not resolved.
   ///
@@ -267,14 +285,16 @@ class UnresolvedAnnotationException implements Exception {
   final SourceSpan? annotationSource;
 
   static SourceSpan? _findSpan(
-    Element annotatedElement,
+    Element2 annotatedElement,
     int annotationIndex,
   ) {
     try {
       final parsedLibrary = annotatedElement.session!
-              .getParsedLibraryByElement(annotatedElement.library!)
+              .getParsedLibraryByElement2(annotatedElement.library2!)
           as ParsedLibraryResult;
-      final declaration = parsedLibrary.getElementDeclaration(annotatedElement);
+      final declaration = annotatedElement is Fragment
+          ? parsedLibrary.getFragmentDeclaration(annotatedElement as Fragment)
+          : null;
       if (declaration == null) {
         return null;
       }
@@ -306,9 +326,9 @@ the version of `package:source_gen`, `package:analyzer` from `pubspec.lock`.
   }
 
   /// Creates an exception from an annotation ([annotationIndex]) that was not
-  /// resolvable while traversing [Element.metadata] on [annotatedElement].
+  /// resolvable while traversing [Element2] on [annotatedElement].
   factory UnresolvedAnnotationException._from(
-    Element annotatedElement,
+    Element2 annotatedElement,
     int annotationIndex,
   ) {
     final sourceSpan = _findSpan(annotatedElement, annotationIndex);
@@ -331,10 +351,10 @@ the version of `package:source_gen`, `package:analyzer` from `pubspec.lock`.
 }
 
 extension DartTypeExtension on DartType {
-  Element? get elementDeclaration {
+  Element2? get elementDeclaration {
     var self = this;
     if (self is InterfaceType) {
-      return self.element;
+      return self.element3;
     }
     return null;
   }

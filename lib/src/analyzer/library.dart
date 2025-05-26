@@ -2,7 +2,8 @@
 // Original package: https://pub.dev/packages/source_gen
 // Original source: https://github.com/dart-lang/source_gen
 
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
+import 'package:collection/collection.dart';
 
 import 'reader.dart';
 import 'type_checker.dart';
@@ -10,40 +11,47 @@ import 'type_checker.dart';
 /// Result of finding an [annotation] on [element] through [LibraryReader].
 class AnnotatedElement {
   final ConstantReader annotation;
-  final Element element;
+  final Element2 element;
 
   const AnnotatedElement(this.annotation, this.element);
 }
 
 class LibraryReader {
-  final LibraryElement element;
+  final LibraryElement2 element;
 
   LibraryReader(this.element);
 
-  /// All the compilation unit of this element ([CompilationUnitElement]).
-  Iterable<PartElement> get allParts => element.definingCompilationUnit.parts;
+  /// All the compilation unit of this element ([CompilationUnitElement2]).
+  Iterable<PartInclude> get allParts =>
+      element.library2.fragments.expand((e) => e.partIncludes);
 
   /// All of the declarations in this library.
-  Iterable<Element> get allElements => element.topLevelElements;
+  Iterable<Element2> get allElements => CombinedIterableView([
+        element.classes,
+        element.enums,
+        element.extensions,
+        element.topLevelFunctions,
+        element.topLevelVariables,
+      ]);
 
   /// All the declared classes in this library
-  Iterable<Element> get allClasses =>
+  Iterable<Element2> get allClasses =>
       allElements.where((e) => e.kind == ElementKind.CLASS);
 
   /// All the declared enums in this library
-  Iterable<Element> get allEnums =>
+  Iterable<Element2> get allEnums =>
       allElements.where((e) => e.kind == ElementKind.ENUM);
 
   /// All the declared classes and enums in this library
-  Iterable<Element> get allClassesOrEnums => allElements.where((e) {
+  Iterable<Element2> get allClassesOrEnums => allElements.where((e) {
         var kind = e.kind;
         return kind == ElementKind.CLASS || kind == ElementKind.ENUM;
       });
 
-  /// [allElements] with annotations ([Element.metadata]).
-  Iterable<Element> allAnnotatedElements(
+  /// [allElements] with annotations ([Element2.metadata]).
+  Iterable<Element2> allAnnotatedElements(
       {bool classes = false, bool enums = false}) {
-    Iterable<Element> elements;
+    Iterable<Element2> elements;
 
     if (classes) {
       if (enums) {
@@ -57,7 +65,13 @@ class LibraryReader {
       elements = allElements;
     }
 
-    return elements.where((e) => e.metadata.isNotEmpty);
+    return elements.where((e) {
+      if (e is Annotatable) {
+        var ann = e as Annotatable;
+        return ann.metadata2.annotations.isNotEmpty;
+      }
+      return false;
+    });
   }
 
   /// All of the declarations in this library annotated with [checker].
@@ -67,27 +81,41 @@ class LibraryReader {
 
   /// All of the elements names in this library
   /// (classes, enums, mixins, functions, extensions, typeAliases, topLevelVariables).
-  Iterable<String> get elementsNames => element.units
-      .expand((CompilationUnitElement cu) => <String?>[
-            ...cu.classes.map((e) => e.name),
-            ...cu.enums.map((e) => e.name),
-            ...cu.mixins.map((e) => e.name),
-            ...cu.functions.map((e) => e.name),
-            ...cu.extensions.map((e) => e.name),
-            ...cu.typeAliases.map((e) => e.name),
-            ...cu.topLevelVariables.map((e) => e.name),
+  Iterable<String> get elementsNames {
+    final library2 = element.library2;
+    return CombinedIterableView([
+      library2.classes.map((e) => e.name3),
+      library2.enums.map((e) => e.name3),
+      library2.mixins.map((e) => e.name3),
+      library2.topLevelFunctions.map((e) => e.name3),
+      library2.extensions.map((e) => e.name3),
+      library2.typeAliases.map((e) => e.name3),
+      library2.topLevelVariables.map((e) => e.name3),
+      // TODO: add getters and setters?
+    ]).nonNulls;
+  }
+
+  Iterable<String> get elementsNames2 => element.library2.fragments
+      .expand((LibraryFragment cu) => <String?>[
+            ...cu.classes2.map((e) => e.name2),
+            ...cu.enums2.map((e) => e.name2),
+            ...cu.mixins2.map((e) => e.name2),
+            ...cu.functions2.map((e) => e.name2),
+            ...cu.extensions2.map((e) => e.name2),
+            ...cu.typeAliases2.map((e) => e.name2),
+            ...cu.topLevelVariables2.map((e) => e.name2),
+            // TODO: add getters and setters?
           ])
       .nonNulls;
 
   /// All of the elements representing classes in this library.
-  Iterable<ClassElement> get classes =>
-      element.units.expand((CompilationUnitElement cu) => cu.classes);
+  Iterable<ClassElement2> get classes => element.library2.classes;
 
   /// All of the elements representing enums in this library.
-  Iterable<EnumElement> get enums => element.units.expand((cu) => cu.enums);
+  Iterable<EnumElement2> get enums => element.library2.enums;
 }
 
-extension ElementExtension on Element {
+extension ElementExtension on Element2 {
   bool isAnnotatedWith(TypeChecker checker, {bool throwOnUnresolved = true}) {
     final annotation = checker.firstAnnotationOf(
       this,
@@ -97,7 +125,7 @@ extension ElementExtension on Element {
   }
 }
 
-extension IterableElementExtension on Iterable<Element> {
+extension IterableElementExtension on Iterable<Element2> {
   Iterable<AnnotatedElement> annotatedWith(TypeChecker checker,
       {bool throwOnUnresolved = true}) sync* {
     for (final element in this) {
@@ -111,7 +139,7 @@ extension IterableElementExtension on Iterable<Element> {
     }
   }
 
-  Iterable<Element> withAnnotation(TypeChecker checker,
+  Iterable<Element2> withAnnotation(TypeChecker checker,
           {bool throwOnUnresolved = true}) =>
       where((e) =>
           e.isAnnotatedWith(checker, throwOnUnresolved: throwOnUnresolved));

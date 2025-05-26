@@ -5,7 +5,7 @@
 import 'dart:io';
 
 import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:build/build.dart';
 import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
@@ -17,11 +17,11 @@ String computePartUrl(AssetId input, AssetId output) =>
     p.joinAll(p.split(p.relative(output.path, from: input.path)).skip(1));
 
 /// Returns a URL representing [element].
-String urlOfElement(Element element) => element.kind == ElementKind.DYNAMIC
+String urlOfElement(Element2 element) => element.kind == ElementKind.DYNAMIC
     ? 'dart:core#dynamic'
     // using librarySource.uri – in case the element is in a part
-    : normalizeUrl(element.librarySource!.uri)
-        .replace(fragment: element.name)
+    : normalizeUrl(element.library2!.uri)
+        .replace(fragment: element.name3)
         .toString();
 
 Uri normalizeUrl(Uri url) {
