@@ -1,3 +1,8 @@
+## 2.5.2
+
+- `JsonCodec` and `JsonEncoder`:
+  - Added `encodeToSink`.
+
 ## 2.5.1
 
 - `Reflection`:
