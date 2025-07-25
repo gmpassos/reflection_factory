@@ -86,10 +86,10 @@ class ReflectionBuilder implements Builder {
     Future<void> callBuildImpl(_) {
       var future = _buildImpl(buildStep);
 
-      future
+      unawaited(future
           .timeout(buildStepTimeout,
               onTimeout: () => _onBuildTimeout(buildStep))
-          .then(complete, onError: complete);
+          .then(complete, onError: complete));
 
       return future;
     }
