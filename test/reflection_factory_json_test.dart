@@ -1265,6 +1265,24 @@ void main() {
           equals({'a': 1, 'b': 2}));
     });
 
+    test('encodeToBytes/decodeFromBytes', () async {
+      var bytesSink = _MyBytesSink();
+      JsonCodec().encodeToSink({'a': 1, 'b': 2}, bytesSink);
+      var jsonBytes = bytesSink.bytes;
+
+      expect(utf8.decode(jsonBytes), equals('{"a":1,"b":2}'));
+      expect(JsonCodec().decodeFromBytes(jsonBytes), equals({'a': 1, 'b': 2}));
+
+      var bytesSink2 = _MyBytesSink();
+      JsonCodec().encodeToSink({'a': 1, 'b': 2}, bytesSink2, pretty: true);
+      var jsonBytes2 = bytesSink2.bytes;
+
+      expect(utf8.decode(jsonBytes2), equals('{\n  "a": 1,\n  "b": 2\n}'));
+      expect(JsonCodec().decodeFromBytes(jsonBytes2), equals({'a': 1, 'b': 2}));
+      expect(await JsonCodec().decodeFromBytesAsync(Future.value(jsonBytes2)),
+          equals({'a': 1, 'b': 2}));
+    });
+
     test('entity TestUserWithReflection', () async {
       TestUserWithReflection$reflection.boot();
 
@@ -2131,4 +2149,18 @@ void main() {
       );
     });
   });
+}
+
+class _MyBytesSink extends ByteConversionSink {
+  var output = <List<int>>[];
+
+  Uint8List get bytes => Uint8List.fromList(output.reduce((a, b) => a + b));
+
+  @override
+  void add(List<int> chunk) {
+    output.add(chunk);
+  }
+
+  @override
+  void close() {}
 }
