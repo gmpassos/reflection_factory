@@ -3,11 +3,14 @@
 - `JsonCodec` and `JsonEncoder`:
   - Added `encodeToSink`.
 
-- build: 2.4.2 # fix to avoid issues with Dart 3.6.2 and the new version of `builder`.
+- Dart CI:
+  - `DART_VERSION: "3.6.2"`: avoid CI issues with Dart 3.8+ and `build_test`.
+
+- build: ^2.4.2
 - meta: ^1.17.0
 - pub_semver: ^2.2.0
 
-- build_runner: '>=2.4.15 <2.6.0'
+- build_runner: ^2.4.15
 - test: ^1.26.3
 - coverage: ^1.15.0
 
