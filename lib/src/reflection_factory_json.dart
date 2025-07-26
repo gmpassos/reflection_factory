@@ -309,6 +309,16 @@ class JsonCodec {
           duplicatedEntitiesAsID: duplicatedEntitiesAsID,
           autoResetEntityCache: autoResetEntityCache);
 
+  /// Sames as [encodeToBytes] but outputs to a [sink].
+  void encodeToSink(Object? o, Sink<List<int>> sink,
+          {bool pretty = false,
+          bool duplicatedEntitiesAsID = false,
+          bool? autoResetEntityCache}) =>
+      encoder.encodeToSink(o, sink,
+          pretty: pretty,
+          duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+          autoResetEntityCache: autoResetEntityCache);
+
   /// Decodes [encodedJson] to a JSON collection/data.
   T decode<T>(String encodedJson,
       {Type? type,
@@ -470,6 +480,12 @@ abstract class JsonEncoder extends JsonConverter<Object?, String> {
 
   /// Sames as [encode] but returns a [Uint8List].
   Uint8List encodeToBytes(Object? o,
+      {bool pretty = false,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache});
+
+  /// Sames as [encodeToBytes] but outputs to a [sink].
+  void encodeToSink(Object? o, Sink<List<int>> sink,
       {bool pretty = false,
       bool duplicatedEntitiesAsID = false,
       bool? autoResetEntityCache});
@@ -874,11 +890,25 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
         duplicatedEntitiesAsID: duplicatedEntitiesAsID,
         autoResetEntityCache: autoResetEntityCache);
 
-    if (pretty) {
-      return dart_convert.JsonUtf8Encoder('  ').convert(json).toUint8List();
-    } else {
-      return dart_convert.JsonUtf8Encoder().convert(json).toUint8List();
-    }
+    return dart_convert.JsonUtf8Encoder(pretty ? '  ' : null)
+        .convert(json)
+        .toUint8List();
+  }
+
+  @override
+  void encodeToSink(Object? o, Sink<List<int>> sink,
+      {bool pretty = false,
+      bool duplicatedEntitiesAsID = false,
+      bool? autoResetEntityCache}) {
+    var json = toJson(o,
+        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+        autoResetEntityCache: autoResetEntityCache);
+
+    var jsonSink = dart_convert.JsonUtf8Encoder(pretty ? '  ' : null)
+        .startChunkedConversion(sink);
+
+    jsonSink.add(json);
+    jsonSink.close();
   }
 }
 
