@@ -1265,7 +1265,7 @@ void main() {
           equals({'a': 1, 'b': 2}));
     });
 
-    test('encodeToBytes/decodeFromBytes', () async {
+    test('encodeToSink/decodeFromBytes', () async {
       var bytesSink = _MyBytesSink();
       JsonCodec().encodeToSink({'a': 1, 'b': 2}, bytesSink);
       var jsonBytes = bytesSink.bytes;
