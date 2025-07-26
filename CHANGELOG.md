@@ -3,6 +3,13 @@
 - `JsonCodec` and `JsonEncoder`:
   - Added `encodeToSink`.
 
+- meta: ^1.17.0
+- pub_semver: ^2.2.0
+
+- build_runner: '>=2.4.15 <2.6.0'
+- test: ^1.26.3
+- coverage: ^1.15.0
+
 ## 2.5.1
 
 - `Reflection`:
