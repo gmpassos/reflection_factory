@@ -7,7 +7,7 @@ environment:
   sdk: '>=3.6.0 <4.0.0'
 
 dependencies:
-  build: ^2.4.2
+  build: 2.4.2 # fix to avoid issues with Dart 3.6.2 and the new version of `builder`.
   analyzer: ^6.11.0
   dart_style: ^3.0.1
   meta: ^1.17.0

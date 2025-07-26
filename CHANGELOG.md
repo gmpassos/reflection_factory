@@ -3,6 +3,7 @@
 - `JsonCodec` and `JsonEncoder`:
   - Added `encodeToSink`.
 
+- build: 2.4.2 # fix to avoid issues with Dart 3.6.2 and the new version of `builder`.
 - meta: ^1.17.0
 - pub_semver: ^2.2.0
 
