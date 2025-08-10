@@ -530,7 +530,8 @@ void main() {
               matches(RegExp(r"typedef __RCD1 = \(bool, String\?\);")),
               matches(
                   RegExp(r"MethodReflection<User,\s+\(bool, String\?\)>\(")),
-              matches(RegExp(r"'checkPassword',\s+__TR<__RCD1>\(__RCD1\),")),
+              matches(
+                  RegExp(r"'checkPassword',\s+const __TR<__RCD1>\(__RCD1\),")),
             ),
           )),
         },
