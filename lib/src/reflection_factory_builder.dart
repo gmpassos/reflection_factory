@@ -1695,8 +1695,8 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     _buildFields(str);
     _buildStaticFields(str);
 
-    _buildMethod(str);
-    _buildStaticMethod(str);
+    _buildMethods(str);
+    _buildStaticMethods(str);
 
     str.write('}\n\n');
 
@@ -2093,7 +2093,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     }
   }
 
-  void _buildMethod(StringBuffer str) {
+  void _buildMethods(StringBuffer str) {
     var entries = _toMethodsEntries(methods);
     var names = _buildStringListCode(entries.keys, sorted: true);
 
@@ -2189,7 +2189,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
     str.write('  }\n\n');
   }
 
-  void _buildStaticMethod(StringBuffer str) {
+  void _buildStaticMethods(StringBuffer str) {
     var entries = _toMethodsEntries(staticMethods);
     var names = _buildStringListCode(entries.keys, sorted: true);
 
@@ -3118,7 +3118,8 @@ extension _ListDartTypeExtension on List<DartType> {
   List<String> get typesNamesResolvable =>
       map((a) => a.typeNameResolvable).toList();
 
-  String toListOfConstTypeCode(_TypeAliasTable typeAliasTable) {
+  String toListOfConstTypeCode(_TypeAliasTable typeAliasTable,
+      {bool allowConstPrefix = true}) {
     final tr = typeAliasTable.trName;
     final ti = typeAliasTable.tiName;
 
@@ -3135,8 +3136,8 @@ extension _ListDartTypeExtension on List<DartType> {
       return '<$ti>[${listConstTypeInfo.join(',')}]';
     }
 
-    var listTypeReflection = map((e) => e.asTypeReflectionCode(typeAliasTable))
-        .toList(growable: false);
+    var listTypeReflection = map((e) => e.asTypeReflectionCode(typeAliasTable,
+        allowConstPrefix: allowConstPrefix)).toList(growable: false);
     return '<$tr>[${listTypeReflection.join(',')}]';
   }
 
@@ -3454,6 +3455,20 @@ extension _DartTypeExtension on DartType {
     var arguments = resolvedTypeArguments;
 
     if (arguments.isNotEmpty) {
+      if (self.isDartAsyncFuture) {
+        if (arguments.isEmpty) {
+          return '$tr.tFutureDynamic';
+        } else if (arguments[0] is VoidType) {
+          return '$tr.tFutureVoid';
+        }
+      } else if (self.isDartAsyncFutureOr) {
+        if (arguments.isEmpty) {
+          return '$tr.tFutureOrDynamic';
+        } else if (arguments[0] is VoidType) {
+          return '$tr.tFutureOrVoid';
+        }
+      }
+
       if (hasSimpleTypeArguments) {
         var typeArgs = arguments.typesNamesResolvable;
 
@@ -3476,7 +3491,8 @@ extension _DartTypeExtension on DartType {
     }
   }
 
-  String asTypeReflectionCode(_TypeAliasTable typeAliasTable) {
+  String asTypeReflectionCode(_TypeAliasTable typeAliasTable,
+      {bool allowConstPrefix = true}) {
     var self = this;
     final tr = typeAliasTable.trName;
 
@@ -3491,9 +3507,14 @@ extension _DartTypeExtension on DartType {
         List<DartType> arguments = alias.typeArguments;
 
         if (arguments.isEmpty) {
-          return '$tr<$name>($name)';
+          var constPrefix = allowConstPrefix ? 'const ' : '';
+          return '$constPrefix$tr<$name>($name)';
         } else {
-          return '$tr<$name<${arguments.typesNames}>>($name, ${arguments.toListOfConstTypeCode(typeAliasTable)})';
+          var argsCode = arguments.toListOfConstTypeCode(typeAliasTable,
+              allowConstPrefix: false);
+          var allowConst = allowConstPrefix && !argsCode.contains('.tVoid');
+          var constPrefix = allowConst ? 'const ' : '';
+          return '$constPrefix$tr<$name<${arguments.typesNames}>>($name, $argsCode)';
         }
       } else {
         return '$tr.tFunction';
@@ -3502,6 +3523,20 @@ extension _DartTypeExtension on DartType {
 
     var name = typeNameResolvable;
     var arguments = resolvedTypeArguments;
+
+    if (self.isDartAsyncFuture) {
+      if (arguments.isEmpty) {
+        return '$tr.tFutureDynamic';
+      } else if (arguments[0] is VoidType) {
+        return '$tr.tFutureVoid';
+      }
+    } else if (self.isDartAsyncFutureOr) {
+      if (arguments.isEmpty) {
+        return '$tr.tFutureOrDynamic';
+      } else if (arguments[0] is VoidType) {
+        return '$tr.tFutureOrVoid';
+      }
+    }
 
     if (arguments.isNotEmpty) {
       if (hasSimpleTypeArguments) {
@@ -3514,23 +3549,27 @@ extension _DartTypeExtension on DartType {
       }
 
       var argsT = arguments.typesNames;
-      var argsCode = arguments.toListOfConstTypeCode(typeAliasTable);
-
-      return '$tr<$name<$argsT>>($name, $argsCode)';
+      var argsCode = arguments.toListOfConstTypeCode(typeAliasTable,
+          allowConstPrefix: false);
+      var allowConst = allowConstPrefix && !argsCode.contains('.tVoid');
+      var constPrefix = allowConst ? 'const ' : '';
+      return '$constPrefix$tr<$name<$argsT>>($name, $argsCode)';
     } else {
       var constName = _getTypeReflectionConstantName(name);
       if (constName != null) {
         return '$tr.$constName';
       } else {
+        var constPrefix = allowConstPrefix ? 'const ' : '';
+
         if (isRecordType) {
           typeNameResolvable;
 
           var typeAlias = typeAliasTable.aliasForRecordType(name);
-          return '$tr<$typeAlias>($typeAlias)';
+          return '$constPrefix$tr<$typeAlias>($typeAlias)';
         } else if (this is TypeParameterType) {
           return '$tr.tDynamic';
         } else {
-          return '$tr<$name>($name)';
+          return '$constPrefix$tr<$name>($name)';
         }
       }
     }
@@ -3666,7 +3705,7 @@ String _buildParameterReflectionList(
       var annotationsAsListCode = e.annotationsAsListCode;
 
       return "$pr( "
-          "${e.type.asTypeReflectionCode(typeAliasTable)} , "
+          "${e.type.asTypeReflectionCode(typeAliasTable, allowConstPrefix: false)} , "
           "'${e.name}' , "
           "${e.isNullable} , "
           "$required"
@@ -3694,7 +3733,7 @@ String _buildNamedParameterReflectionMap(
       var annotationsAsListCode = e.value.annotationsAsListCode;
 
       return "'$key': $pr( "
-          "${value.type.asTypeReflectionCode(typeAliasTable)} , "
+          "${value.type.asTypeReflectionCode(typeAliasTable, allowConstPrefix: false)} , "
           "'${e.value.name}' , "
           "${e.value.isNullable} , "
           "${e.value.required} "

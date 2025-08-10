@@ -1378,7 +1378,7 @@ class TypeInfo<T> {
 
     if (hasArguments) {
       if (this.isIterable) {
-        var arg = arguments[0];
+        var arg = _arguments[0];
         var valid = arg.isValidGenericType;
         if (valid) {
           TypeInfo<Iterable> iterableTypeInfo;
@@ -1396,8 +1396,8 @@ class TypeInfo<T> {
           }
         }
       } else if (this.isMap || this.isMapEntry) {
-        var arg0 = arguments[0];
-        var arg1 = arguments[1];
+        var arg0 = _arguments[0];
+        var arg1 = _arguments[1];
 
         var valid = arg0.isValidGenericType && arg1.isValidGenericType;
         if (valid) {
@@ -1607,14 +1607,14 @@ class TypeInfo<T> {
 
   /// Calls [f] casting [A] as [arguments0] `T`.
   R callCastedArgumentA<R, A>(R Function<A>() f) {
-    var arg0 = arguments[0];
+    var arg0 = _arguments[0];
     return arg0.callCasted(f);
   }
 
   /// Calls [f] casting [A] as [arguments0] `T` and [B] as [arguments1] `T`.
   R callCastedArgumentsAB<R, A, B>(R Function<A, B>() f) {
-    var arg0 = arguments[0];
-    var arg1 = arguments[1];
+    var arg0 = _arguments[0];
+    var arg1 = _arguments[1];
     return arg0.callCasted(<A>() {
       return arg1.callCasted(<B>() => f<A, B>());
     });

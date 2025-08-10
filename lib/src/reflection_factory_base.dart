@@ -20,7 +20,7 @@ import 'reflection_factory_utils.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.5.2';
+  static const String VERSION = '2.5.3';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -2422,6 +2422,8 @@ class TypeReflection<T> {
       TypeReflection(Future, [TypeInfo.tBool]);
   static const TypeReflection<Future<int>> tFutureInt =
       TypeReflection(Future, [TypeInfo.tInt]);
+  static final TypeReflection<Future<void>> tFutureVoid =
+      TypeReflection(Future, [TypeInfo.tVoid]);
 
   static const TypeReflection<FutureOr<Object>> tFutureOrObject =
       TypeReflection(FutureOr, [TypeInfo.tObject]);
@@ -2433,6 +2435,8 @@ class TypeReflection<T> {
       TypeReflection(FutureOr, [TypeInfo.tBool]);
   static const TypeReflection<FutureOr<int>> tFutureOrInt =
       TypeReflection(FutureOr, [TypeInfo.tInt]);
+  static final TypeReflection<FutureOr<void>> tFutureOrVoid =
+      TypeReflection(FutureOr, [TypeInfo.tVoid]);
 
   static String? getConstantName(String typeName,
       [List<String> args = const <String>[]]) {

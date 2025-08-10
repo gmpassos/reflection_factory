@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.5.2
+// BUILDER: reflection_factory/2.5.3
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -22,7 +22,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.5.2');
+  static final Version _version = Version.parse('2.5.3');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -818,7 +818,7 @@ class TestCompanyWithReflection$reflection
             TestAddressWithReflection?>(
           this,
           TestCompanyWithReflection,
-          __TR<TestAddressWithReflection>(TestAddressWithReflection),
+          const __TR<TestAddressWithReflection>(TestAddressWithReflection),
           'mainAddress',
           true,
           (o) => () => o!.mainAddress,
@@ -843,7 +843,7 @@ class TestCompanyWithReflection$reflection
             List<TestAddressWithReflection>>(
           this,
           TestCompanyWithReflection,
-          __TR<List<TestAddressWithReflection>>(List, <__TR>[
+          const __TR<List<TestAddressWithReflection>>(List, <__TR>[
             __TR<TestAddressWithReflection>(TestAddressWithReflection)
           ]),
           'branchesAddresses',
@@ -858,7 +858,7 @@ class TestCompanyWithReflection$reflection
             List<TestAddressWithReflection>>(
           this,
           TestCompanyWithReflection,
-          __TR<List<TestAddressWithReflection>>(List, <__TR>[
+          const __TR<List<TestAddressWithReflection>>(List, <__TR>[
             __TR<TestAddressWithReflection>(TestAddressWithReflection)
           ]),
           'extraAddresses',
@@ -1248,7 +1248,7 @@ class TestDataWithReflection$reflection
         return FieldReflection<TestDataWithReflection, Uint8List>(
           this,
           TestDataWithReflection,
-          __TR<Uint8List>(Uint8List),
+          const __TR<Uint8List>(Uint8List),
           'bytes',
           false,
           (o) => () => o!.bytes,
@@ -1261,7 +1261,7 @@ class TestDataWithReflection$reflection
             TestDomainWithReflection?>(
           this,
           TestDataWithReflection,
-          __TR<TestDomainWithReflection>(TestDomainWithReflection),
+          const __TR<TestDomainWithReflection>(TestDomainWithReflection),
           'domain',
           true,
           (o) => () => o!.domain,
@@ -1586,7 +1586,7 @@ class TestDomainWithReflection$reflection
         return FieldReflection<TestDomainWithReflection, DomainFunction?>(
           this,
           TestDomainWithReflection,
-          __TR<DomainFunction>(DomainFunction),
+          const __TR<DomainFunction>(DomainFunction),
           'domainFunction',
           true,
           (o) => () => o!.domainFunction,
@@ -2226,7 +2226,7 @@ class TestFranchiseWithReflection$reflection
             Map<String, TestAddressWithReflection>>(
           this,
           TestFranchiseWithReflection,
-          __TR<Map<String, TestAddressWithReflection>>(Map, <__TR>[
+          const __TR<Map<String, TestAddressWithReflection>>(Map, <__TR>[
             __TR.tString,
             __TR<TestAddressWithReflection>(TestAddressWithReflection)
           ]),
@@ -4028,7 +4028,7 @@ class TestTransactionWithReflection$reflection
             TestUserWithReflection>(
           this,
           TestTransactionWithReflection,
-          __TR<TestUserWithReflection>(TestUserWithReflection),
+          const __TR<TestUserWithReflection>(TestUserWithReflection),
           'fromUser',
           false,
           (o) => () => o!.fromUser,
@@ -4041,7 +4041,7 @@ class TestTransactionWithReflection$reflection
             TestUserWithReflection>(
           this,
           TestTransactionWithReflection,
-          __TR<TestUserWithReflection>(TestUserWithReflection),
+          const __TR<TestUserWithReflection>(TestUserWithReflection),
           'toUser',
           false,
           (o) => () => o!.toUser,
@@ -4386,7 +4386,7 @@ class TestUserWithReflection$reflection
         return FieldReflection<TestUserWithReflection, TestEnumWithReflection>(
           this,
           TestUserWithReflection,
-          __TR<TestEnumWithReflection>(TestEnumWithReflection),
+          const __TR<TestEnumWithReflection>(TestEnumWithReflection),
           'axis',
           false,
           (o) => () => o!.axis,

@@ -1,3 +1,9 @@
+## 2.5.3
+
+- `ReflectionBuilder`: improve use of `const` for generated code.
+
+- dependency_validator: ^4.1.3
+
 ## 2.5.2
 
 - `JsonCodec` and `JsonEncoder`:
