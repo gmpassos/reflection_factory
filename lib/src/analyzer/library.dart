@@ -15,13 +15,40 @@ class AnnotatedElement {
   const AnnotatedElement(this.annotation, this.element);
 }
 
+extension LibraryElementExtension on LibraryElement {
+  String get libraryName {
+    var name = this.name;
+    if (name != null && name.isNotEmpty) return name;
+
+    var uri = firstFragment.source.uri;
+    return uri.toString();
+  }
+
+  Iterable<Fragment> get topLevelFragments sync* {
+    for (var unit in fragments) {
+      yield* unit.classes;
+      yield* unit.enums;
+      yield* unit.extensions;
+      yield* unit.extensionTypes;
+      yield* unit.functions;
+      yield* unit.mixins;
+      yield* unit.topLevelVariables;
+      yield* unit.typeAliases;
+    }
+  }
+
+  Iterable<Element> get topLevelElements =>
+      topLevelFragments.map((e) => e.element);
+}
+
 class LibraryReader {
   final LibraryElement element;
 
   LibraryReader(this.element);
 
   /// All the compilation unit of this element ([CompilationUnitElement]).
-  Iterable<PartElement> get allParts => element.definingCompilationUnit.parts;
+  Iterable<PartInclude> get allParts =>
+      element.fragments.expand((e) => e.partIncludes);
 
   /// All of the declarations in this library.
   Iterable<Element> get allElements => element.topLevelElements;
@@ -57,7 +84,7 @@ class LibraryReader {
       elements = allElements;
     }
 
-    return elements.where((e) => e.metadata.isNotEmpty);
+    return elements.where((e) => e.metadata.annotations.isNotEmpty);
   }
 
   /// All of the declarations in this library annotated with [checker].
@@ -67,8 +94,8 @@ class LibraryReader {
 
   /// All of the elements names in this library
   /// (classes, enums, mixins, functions, extensions, typeAliases, topLevelVariables).
-  Iterable<String> get elementsNames => element.units
-      .expand((CompilationUnitElement cu) => <String?>[
+  Iterable<String> get elementsNames => element.fragments
+      .expand((cu) => <String?>[
             ...cu.classes.map((e) => e.name),
             ...cu.enums.map((e) => e.name),
             ...cu.mixins.map((e) => e.name),
@@ -81,10 +108,11 @@ class LibraryReader {
 
   /// All of the elements representing classes in this library.
   Iterable<ClassElement> get classes =>
-      element.units.expand((CompilationUnitElement cu) => cu.classes);
+      element.fragments.expand((cu) => cu.classes.map((c) => c.element));
 
   /// All of the elements representing enums in this library.
-  Iterable<EnumElement> get enums => element.units.expand((cu) => cu.enums);
+  Iterable<EnumElement> get enums =>
+      element.fragments.expand((cu) => cu.enums.map((c) => c.element));
 }
 
 extension ElementExtension on Element {
@@ -115,4 +143,12 @@ extension IterableElementExtension on Iterable<Element> {
           {bool throwOnUnresolved = true}) =>
       where((e) =>
           e.isAnnotatedWith(checker, throwOnUnresolved: throwOnUnresolved));
+}
+
+extension ConstructorElementExtension on ConstructorElement {
+  String get codeName {
+    var name = this.name;
+    if (name == null || name == 'new') return '';
+    return name;
+  }
 }

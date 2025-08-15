@@ -2,20 +2,38 @@
 @Tags(['build', 'slow'])
 library;
 
+import 'dart:io' as io;
+
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
+import 'package:logging/logging.dart'
+    show LogRecord, Level, hierarchicalLoggingEnabled;
 import 'package:reflection_factory/builder.dart';
 import 'package:reflection_factory/src/reflection_factory_builder.dart';
 import 'package:test/test.dart';
 
+void _printToConsole(Object? o) {
+  if (o == null) return;
+
+  if (o is LogRecord && o.level >= Level.SEVERE) {
+    io.stderr.write('$o\n');
+  } else {
+    io.stdout.write('$o\n');
+  }
+}
+
 void main() {
+  hierarchicalLoggingEnabled = true;
+
   tearDown(() {
     // Increment this after each test so the next test has it's own package
     _pkgCacheCount++;
   });
 
   group('ReflectionBuilder', () {
-    setUp(() {});
+    setUp(() {
+      ReflectionBuilder.logger.level = Level.ALL;
+    });
 
     test('NO Reflection: TestEmpty', () async {
       var builder = ReflectionBuilder(verbose: true);
@@ -28,17 +46,20 @@ void main() {
                 
           class TestEmpty {}
         
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {},
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -57,36 +78,46 @@ void main() {
           @EnableReflection()
           class TestEmpty {}
         
-        '''
+        ''',
       };
 
-      await testBuilder(
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
+      var res = await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
-              contains(
-                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+                contains(
+                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')",
+                ),
+              ),
+              allOf(
+                contains('TestEmpty\$reflection'),
+                contains('TestEmpty\$reflectionExtension'),
+                isNot(
+                  contains("Map<String, dynamic> getJsonFieldsVisibleValues("),
+                ),
+              ),
             ),
-            allOf(
-              contains('TestEmpty\$reflection'),
-              contains('TestEmpty\$reflectionExtension'),
-              isNot(
-                  contains("Map<String, dynamic> getJsonFieldsVisibleValues(")),
-            ),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
+
+      expect(res.buildResult.status.name, equals('success'));
     });
 
     test('EnableReflection: TestEmpty', () async {
@@ -102,34 +133,43 @@ void main() {
           @EnableReflection()
           class \$TestSpecial {}
         
-        '''
+        ''',
       };
 
-      await testBuilder(
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
+      var res = await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
-              contains(
-                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+                contains(
+                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')",
+                ),
+              ),
+              allOf(
+                contains('\$TestSpecial\$reflection'),
+                contains('\$TestSpecial\$reflectionExtension'),
+              ),
             ),
-            allOf(
-              contains('\$TestSpecial\$reflection'),
-              contains('\$TestSpecial\$reflectionExtension'),
-            ),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
+
+      expect(res.buildResult.status.name, equals('success'));
     });
 
     test('EnableReflection: User', () async {
@@ -212,53 +252,73 @@ void main() {
             
           }
         
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
-              contains(
-                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+                contains(
+                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')",
+                ),
+              ),
+              allOf(
+                contains('User\$reflection'),
+                contains('User\$reflectionExtension'),
+              ),
+              matches(
+                RegExp(
+                  r"'ignoreCase':\s*__PR\(\s*__TR.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*false\s*\)",
+                ),
+              ),
+              allOf(
+                contains(
+                  "TestAnnotation(['static method', 'version checker'])",
+                ),
+                contains("TestAnnotation(['method', 'password checker'])"),
+                contains("TestAnnotation(['static field', 'version'])"),
+                contains("TestAnnotation(['field', 'email'])"),
+                contains("TestAnnotation(['parameter', 'pass'])"),
+                isNot(
+                  matches(
+                    RegExp(
+                      r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\(',
+                    ),
+                  ),
+                ),
+                matches(
+                  RegExp(
+                    r'Map<String, dynamic>\?\s+toJsonMap\(\{bool duplicatedEntitiesAsID = false\}\)\s+=>\s+reflection.toJsonMap\(duplicatedEntitiesAsID: duplicatedEntitiesAsID\)',
+                  ),
+                ),
+              ),
+              allOf(
+                contains("JsonField.hidden()"),
+                contains("JsonField.visible()"),
+                contains("Map<String, dynamic> getJsonFieldsVisibleValues("),
+                contains("case 'tojson':"),
+                contains("case 'getfield':"),
+                contains("case 'setfield':"),
+              ),
             ),
-            allOf(
-              contains('User\$reflection'),
-              contains('User\$reflectionExtension'),
-            ),
-            matches(RegExp(
-                r"'ignoreCase':\s*__PR\(\s*__TR.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*false\s*\)")),
-            allOf(
-              contains("TestAnnotation(['static method', 'version checker'])"),
-              contains("TestAnnotation(['method', 'password checker'])"),
-              contains("TestAnnotation(['static field', 'version'])"),
-              contains("TestAnnotation(['field', 'email'])"),
-              contains("TestAnnotation(['parameter', 'pass'])"),
-              isNot(matches(RegExp(
-                  r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\('))),
-              matches(RegExp(
-                  r'Map<String, dynamic>\?\s+toJsonMap\(\{bool duplicatedEntitiesAsID = false\}\)\s+=>\s+reflection.toJsonMap\(duplicatedEntitiesAsID: duplicatedEntitiesAsID\)')),
-            ),
-            allOf(
-              contains("JsonField.hidden()"),
-              contains("JsonField.visible()"),
-              contains("Map<String, dynamic> getJsonFieldsVisibleValues("),
-              contains("case 'tojson':"),
-              contains("case 'getfield':"),
-              contains("case 'setfield':"),
-            ),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -303,56 +363,84 @@ void main() {
             }
           }
         
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/reflection/foo.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/reflection/foo.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of '../foo.dart'"),
-            ),
-            allOf(
-              contains('Domain\$reflection'),
-              contains('Domain\$reflectionExtension'),
-            ),
-            allOf(
-              contains('bool get hasDefaultConstructor => true;'),
-              contains(
-                  'Domain? createInstanceWithDefaultConstructor() => Domain();'),
-              contains('bool get hasEmptyConstructor => true;'),
-              contains(
-                  'Domain? createInstanceWithEmptyConstructor() => Domain.empty();'),
-              contains('bool get hasNoRequiredArgsConstructor => true;'),
-              contains(
-                  'Domain? createInstanceWithNoRequiredArgsConstructor() => Domain.empty();'),
-            ),
-            matches(RegExp(
-                r"'suffix':\s*__PR\(\s*__TR.tString\s*,\s*'suffix'\s*,\s*false\s*,\s*false\s*,\s*'net'\s*\)")),
-            allOf(
-                matches(RegExp(
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of '../foo.dart'"),
+              ),
+              allOf(
+                contains('Domain\$reflection'),
+                contains('Domain\$reflectionExtension'),
+              ),
+              allOf(
+                contains('bool get hasDefaultConstructor => true;'),
+                contains(
+                  'Domain? createInstanceWithDefaultConstructor() => Domain();',
+                ),
+                contains('bool get hasEmptyConstructor => true;'),
+                contains(
+                  'Domain? createInstanceWithEmptyConstructor() => Domain.empty();',
+                ),
+                contains('bool get hasNoRequiredArgsConstructor => true;'),
+                contains(
+                  'Domain? createInstanceWithNoRequiredArgsConstructor() => Domain.empty();',
+                ),
+              ),
+              matches(
+                RegExp(
+                  r"'suffix':\s*__PR\(\s*__TR.tString\s*,\s*'suffix'\s*,\s*false\s*,\s*false\s*,\s*'net'\s*\)",
+                ),
+              ),
+              allOf(
+                matches(
+                  RegExp(
                     r"case 'callfx':.*?const <__PR>\[\s*__PR\(\s*__TR<Fx>\(Fx\), 'f', true, false\)\s*\]",
-                    dotAll: true)),
-                matches(RegExp(
+                    dotAll: true,
+                  ),
+                ),
+                matches(
+                  RegExp(
                     r"case 'callallfx':.*?__PR\(\s*__TR<List<Function>>\(\s*List, <__TI>\[__TI.tFunction\]\),\s*'fxs',\s*false,\s*true,\s*\)",
-                    dotAll: true)),
-                matches(RegExp(
-                    r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\(')),
-                matches(RegExp(
-                    r'Object\?\s+toJson\(\{bool duplicatedEntitiesAsID = false\}\)\s+=>\s+reflection.toJson\(null, null, duplicatedEntitiesAsID\)')),
-                matches(RegExp(
-                    r'Map<String, dynamic>\?\s+toJsonMap\(\{bool duplicatedEntitiesAsID = false\}\)\s+=>\s+reflection.toJsonMap\(duplicatedEntitiesAsID: duplicatedEntitiesAsID\)'))),
-          )),
+                    dotAll: true,
+                  ),
+                ),
+                matches(
+                  RegExp(
+                    r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\(',
+                  ),
+                ),
+                matches(
+                  RegExp(
+                    r'Object\?\s+toJson\(\{bool duplicatedEntitiesAsID = false\}\)\s+=>\s+reflection.toJson\(null, null, duplicatedEntitiesAsID\)',
+                  ),
+                ),
+                matches(
+                  RegExp(
+                    r'Map<String, dynamic>\?\s+toJsonMap\(\{bool duplicatedEntitiesAsID = false\}\)\s+=>\s+reflection.toJsonMap\(duplicatedEntitiesAsID: duplicatedEntitiesAsID\)',
+                  ),
+                ),
+              ),
+            ),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -375,23 +463,31 @@ void main() {
             bool equalsName(String name) => this.name == name;
           }
         
-        '''
+        ''',
       };
 
-      var packageAssetReader = await PackageAssetReader.currentIsolate();
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
-      expectLater(
-          () => testBuilder(
-                builder,
-                sourceAssets,
-                reader: packageAssetReader,
-                generateFor: {'$_pkgName|lib/foo.dart'},
-                onLog: (msg) {
-                  print(msg);
-                },
-              ),
-          throwsA(isA<StateError>().having((e) => e.message,
-              'NO part directive', contains('NO reflection part directive '))));
+      var logs = <LogRecord>[];
+
+      var res = await testBuilder(
+        builder,
+        sourceAssets,
+        readerWriter: readerWriter,
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        onLog: (msg) {
+          _printToConsole(msg);
+          logs.add(msg);
+        },
+      );
+
+      expect(res.buildResult.status.name, equals('failure'));
+
+      var logsSevere = logs.where((r) => r.level == Level.SEVERE).toList();
+
+      expect(logsSevere, isNotEmpty);
+      expect(logsSevere.join('\n'), contains('NO reflection part directive '));
     });
 
     test('EnableReflection[super class]', () async {
@@ -428,50 +524,71 @@ void main() {
             Set<List<T>> opAMethod<T>() => <List<T>>{<T>[]};
           }
           
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+              ),
+              allOf([
+                contains('Op\$reflection'),
+                contains('Op\$reflectionExtension'),
+                contains('OpA\$reflection'),
+                contains('OpA\$reflectionExtension'),
+              ]),
+              allOf(
+                matches(
+                  RegExp(
+                    r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\(',
+                  ),
+                ),
+                matches(
+                  RegExp(
+                    r'Map<String, dynamic>\?\s+toJsonMap\(.*?\)\s+=>\s+reflection.toJsonMap\(',
+                  ),
+                ),
+              ),
+              allOf(
+                contains("case 'type':"),
+                contains("case 'value':"),
+                contains("_fieldsNames = const <String>['type', 'value']"),
+                contains("_supperTypes = const <Type>[Op, WithType];"),
+                matches(
+                  RegExp(
+                    r"__TR<List<Set<int>>>\(\s*List, <__TR>\[__TR.tSetInt\]\)",
+                  ),
+                ),
+                matches(
+                  RegExp(
+                    r"__TR<List<Set<int\?>>>\(\s*List, <__TR>\[__TR.tSetInt\]\)",
+                  ),
+                ),
+                matches(
+                  RegExp(
+                    r"__TR<Set<List>>\(\s*Set, <__TR>\[__TR.tListDynamic\]\)",
+                  ),
+                ),
+              ),
             ),
-            allOf([
-              contains('Op\$reflection'),
-              contains('Op\$reflectionExtension'),
-              contains('OpA\$reflection'),
-              contains('OpA\$reflectionExtension'),
-            ]),
-            allOf(
-              matches(RegExp(
-                  r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\(')),
-              matches(RegExp(
-                  r'Map<String, dynamic>\?\s+toJsonMap\(.*?\)\s+=>\s+reflection.toJsonMap\(')),
-            ),
-            allOf(
-              contains("case 'type':"),
-              contains("case 'value':"),
-              contains("_fieldsNames = const <String>['type', 'value']"),
-              contains("_supperTypes = const <Type>[Op, WithType];"),
-              matches(RegExp(
-                  r"__TR<List<Set<int>>>\(\s*List, <__TR>\[__TR.tSetInt\]\)")),
-              matches(RegExp(
-                  r"__TR<List<Set<int\?>>>\(\s*List, <__TR>\[__TR.tSetInt\]\)")),
-              matches(RegExp(
-                  r"__TR<Set<List>>\(\s*Set, <__TR>\[__TR.tListDynamic\]\)")),
-            ),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -502,41 +619,53 @@ void main() {
             
           }
         
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
-              contains(
-                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')"),
-            ),
-            allOf(
-              contains('User\$reflection'),
-              contains('User\$reflectionExtension'),
-            ),
-            matches(RegExp(
-                r"'ignoreCase':\s*__PR\(\s*__TR.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*false\s*\)")),
-            allOf(
-              matches(RegExp(r"typedef __RCD1 = \(bool, String\?\);")),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+                contains(
+                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')",
+                ),
+              ),
+              allOf(
+                contains('User\$reflection'),
+                contains('User\$reflectionExtension'),
+              ),
               matches(
-                  RegExp(r"MethodReflection<User,\s+\(bool, String\?\)>\(")),
-              matches(
-                  RegExp(r"'checkPassword',\s+const __TR<__RCD1>\(__RCD1\),")),
+                RegExp(
+                  r"'ignoreCase':\s*__PR\(\s*__TR.tBool\s*,\s*'ignoreCase'\s*,\s*false\s*,\s*false\s*,\s*false\s*\)",
+                ),
+              ),
+              allOf(
+                matches(RegExp(r"typedef __RCD1 = \(bool, String\?\);")),
+                matches(
+                  RegExp(r"MethodReflection<User,\s+\(bool, String\?\)>\("),
+                ),
+                matches(
+                  RegExp(r"'checkPassword',\s+const __TR<__RCD1>\(__RCD1\),"),
+                ),
+              ),
             ),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -582,42 +711,58 @@ void main() {
             
           }
         
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
-              contains(
-                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+                contains(
+                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')",
+                ),
+              ),
+              allOf(
+                contains('User\$reflection'),
+                contains('User\$reflectionExtension'),
+              ),
+              allOf(
+                matches(RegExp(r"typedef\s+__RCD1\s+=\s+\(dynamic,\s+Info\);")),
+                matches(
+                  RegExp(
+                    r"case\s+'base1':\s+return\s+MethodReflection<User,\s+\(dynamic,\s+Info\)>\(",
+                  ),
+                ),
+                matches(
+                  RegExp(
+                    r"case\s+'base2':\s+return\s+MethodReflection<User,\s+dynamic>\(",
+                  ),
+                ),
+                matches(
+                  RegExp(
+                    r"case\s+'info':\s+return\s+MethodReflection<User,\s+\(dynamic,\s+Info\)>\(",
+                  ),
+                ),
+                matches(RegExp(r"__TR<__RCD1>\(__RCD1\),")),
+              ),
             ),
-            allOf(
-              contains('User\$reflection'),
-              contains('User\$reflectionExtension'),
-            ),
-            allOf(
-              matches(RegExp(r"typedef\s+__RCD1\s+=\s+\(dynamic,\s+Info\);")),
-              matches(RegExp(
-                  r"case\s+'base1':\s+return\s+MethodReflection<User,\s+\(dynamic,\s+Info\)>\(")),
-              matches(RegExp(
-                  r"case\s+'base2':\s+return\s+MethodReflection<User,\s+dynamic>\(")),
-              matches(RegExp(
-                  r"case\s+'info':\s+return\s+MethodReflection<User,\s+\(dynamic,\s+Info\)>\(")),
-              matches(RegExp(r"__TR<__RCD1>\(__RCD1\),")),
-            ),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -639,43 +784,51 @@ void main() {
           
           }
         
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
-              contains(
-                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+                contains(
+                  "Version _version = Version.parse('${ReflectionFactory.VERSION}')",
+                ),
+              ),
+              allOf(
+                contains('Validator\$reflection'),
+                contains('Validator\$reflectionExtension'),
+                contains("typedef __RCD1 = ({String? error, bool ok});"),
+              ),
             ),
-            allOf(
-              contains('Validator\$reflection'),
-              contains('Validator\$reflectionExtension'),
-              contains("typedef __RCD1 = ({String? error, bool ok});"),
-            ),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
 
-    test('EnableReflection(reflectionClassName, reflectionExtensionName)',
-        () async {
-      var builder = ReflectionBuilder(verbose: true);
+    test(
+      'EnableReflection(reflectionClassName, reflectionExtensionName)',
+      () async {
+        var builder = ReflectionBuilder(verbose: true);
 
-      var sourceAssets = {
-        '$_pkgName|lib/foo.dart': '''
+        var sourceAssets = {
+          '$_pkgName|lib/foo.dart': '''
         
           import 'package:reflection_factory/reflection_factory.dart';
         
@@ -701,32 +854,44 @@ void main() {
             }
           }
         
-        '''
-      };
+        ''',
+        };
 
-      await testBuilder(
-        builder,
-        sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
-        generateFor: {'$_pkgName|lib/foo.dart'},
-        outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
-            contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-            contains("part of 'foo.dart'"),
-            contains('RefUser'),
-            contains('RefUserExt'),
-            matches(
-                RegExp(r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\(')),
-            matches(RegExp(
-                r'Map<String, dynamic>\?\s+toJsonMap\(.*?\)\s+=>\s+reflection.toJsonMap\(')),
-          ))
-        },
-        onLog: (msg) {
-          print(msg);
-        },
-        //packageConfig: packageConfig,
-      );
-    });
+        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+        await readerWriter.testing.loadIsolateSources();
+
+        await testBuilder(
+          builder,
+          sourceAssets,
+          readerWriter: readerWriter,
+          generateFor: {'$_pkgName|lib/foo.dart'},
+          outputs: {
+            '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains("part of 'foo.dart'"),
+                contains('RefUser'),
+                contains('RefUserExt'),
+                matches(
+                  RegExp(
+                    r'Object\?\s+toJson\(.*?\)\s+=>\s+reflection.toJson\(',
+                  ),
+                ),
+                matches(
+                  RegExp(
+                    r'Map<String, dynamic>\?\s+toJsonMap\(.*?\)\s+=>\s+reflection.toJsonMap\(',
+                  ),
+                ),
+              ),
+            ),
+          },
+          onLog: (msg) {
+            _printToConsole(msg);
+          },
+          //packageConfig: packageConfig,
+        );
+      },
+    );
 
     test('EnableReflection + source with part file', () async {
       var builder = ReflectionBuilder(verbose: true);
@@ -759,24 +924,29 @@ void main() {
             Foo(this.a, this.b);
           }
         
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart', '$_pkgName|lib/foo_extra.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
-            contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-            contains("part of 'foo.dart'"),
-            contains('Foo\$reflection'),
-            contains('FooExtra\$reflection'),
-          ))
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains("part of 'foo.dart'"),
+              contains('Foo\$reflection'),
+              contains('FooExtra\$reflection'),
+            ),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -801,38 +971,46 @@ void main() {
             Foo(this.n, {this.status = Status.a});
           }
 
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+              ),
+              allOf([
+                contains('Status\$reflection'),
+                contains('Status\$reflectionExtension'),
+                contains('Foo\$reflection'),
+                contains('Foo\$reflectionExtension'),
+              ]),
+              allOf([
+                contains(
+                  'final Expando<Status\$reflection> _objectReflections',
+                ),
+                contains('factory Status\$reflection([Status? object]) {'),
+                contains('final Expando<Foo\$reflection> _objectReflections'),
+                contains('factory Foo\$reflection([Foo? object]) {'),
+              ]),
             ),
-            allOf([
-              contains('Status\$reflection'),
-              contains('Status\$reflectionExtension'),
-              contains('Foo\$reflection'),
-              contains('Foo\$reflectionExtension'),
-            ]),
-            allOf([
-              contains('final Expando<Status\$reflection> _objectReflections'),
-              contains('factory Status\$reflection([Status? object]) {'),
-              contains('final Expando<Foo\$reflection> _objectReflections'),
-              contains('factory Foo\$reflection([Foo? object]) {'),
-            ]),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -857,39 +1035,49 @@ void main() {
             Foo(this.n, {this.status = Status.a});
           }
 
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+              ),
+              allOf([
+                contains('Status\$reflection'),
+                contains('Status\$reflectionExtension'),
+                contains('Foo\$reflection'),
+                contains('Foo\$reflectionExtension'),
+              ]),
+              isNot(
+                anyOf([
+                  contains(
+                    'final Expando<Status\$reflection> _objectReflections',
+                  ),
+                  contains('factory Status\$reflection([Status? object]) {'),
+                  contains('final Expando<Foo\$reflection> _objectReflections'),
+                  contains('factory Foo\$reflection([Foo? object]) {'),
+                  contains('// Dependency reflections:'),
+                ]),
+              ),
             ),
-            allOf([
-              contains('Status\$reflection'),
-              contains('Status\$reflectionExtension'),
-              contains('Foo\$reflection'),
-              contains('Foo\$reflectionExtension'),
-            ]),
-            isNot(anyOf([
-              contains('final Expando<Status\$reflection> _objectReflections'),
-              contains('factory Status\$reflection([Status? object]) {'),
-              contains('final Expando<Foo\$reflection> _objectReflections'),
-              contains('factory Foo\$reflection([Foo? object]) {'),
-              contains('// Dependency reflections:'),
-            ])),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -922,59 +1110,70 @@ void main() {
             Status s;
             Foo(this.n, {this.status = Status.a});
           }
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/status.dart', '$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/status.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/status.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'status.dart'"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'status.dart'"),
+              ),
+              allOf([
+                contains('Status\$reflection extends'),
+                contains('Status\$reflectionExtension'),
+                isNot(contains('Foo\$reflection extends')),
+                isNot(contains('Foo\$reflectionExtension')),
+              ]),
+              allOf([
+                contains(
+                  'final Expando<Status\$reflection> _objectReflections',
+                ),
+                contains('factory Status\$reflection([Status? object]) {'),
+              ]),
             ),
-            allOf([
-              contains('Status\$reflection extends'),
-              contains('Status\$reflectionExtension'),
-              isNot(contains('Foo\$reflection extends')),
-              isNot(contains('Foo\$reflectionExtension')),
-            ]),
-            allOf([
-              contains('final Expando<Status\$reflection> _objectReflections'),
-              contains('factory Status\$reflection([Status? object]) {'),
-            ]),
-          )),
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          ),
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+              ),
+              allOf([
+                isNot(contains('Status\$reflection extends')),
+                isNot(contains('Status\$reflectionExtension')),
+                contains('Foo\$reflection extends'),
+                contains('Foo\$reflectionExtension'),
+              ]),
+              allOf([
+                contains('final Expando<Foo\$reflection> _objectReflections'),
+                contains('factory Foo\$reflection([Foo? object]) {'),
+              ]),
+              allOf([
+                contains('Foo\$reflection()'),
+                contains('// Dependency reflections:'),
+                contains('Status\$reflection()'),
+              ]),
             ),
-            allOf([
-              isNot(contains('Status\$reflection extends')),
-              isNot(contains('Status\$reflectionExtension')),
-              contains('Foo\$reflection extends'),
-              contains('Foo\$reflectionExtension'),
-            ]),
-            allOf([
-              contains('final Expando<Foo\$reflection> _objectReflections'),
-              contains('factory Foo\$reflection([Foo? object]) {'),
-            ]),
-            allOf([
-              contains('Foo\$reflection()'),
-              contains('// Dependency reflections:'),
-              contains('Status\$reflection()'),
-            ]),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -1013,59 +1212,70 @@ void main() {
             Wrapper<Status> s;
             Foo(this.n, {this.status = Status.a});
           }
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/status.dart', '$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/status.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/status.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'status.dart'"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'status.dart'"),
+              ),
+              allOf([
+                contains('Status\$reflection extends'),
+                contains('Status\$reflectionExtension'),
+                isNot(contains('Foo\$reflection extends')),
+                isNot(contains('Foo\$reflectionExtension')),
+              ]),
+              allOf([
+                contains(
+                  'final Expando<Status\$reflection> _objectReflections',
+                ),
+                contains('factory Status\$reflection([Status? object]) {'),
+              ]),
             ),
-            allOf([
-              contains('Status\$reflection extends'),
-              contains('Status\$reflectionExtension'),
-              isNot(contains('Foo\$reflection extends')),
-              isNot(contains('Foo\$reflectionExtension')),
-            ]),
-            allOf([
-              contains('final Expando<Status\$reflection> _objectReflections'),
-              contains('factory Status\$reflection([Status? object]) {'),
-            ]),
-          )),
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          ),
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+              ),
+              allOf([
+                isNot(contains('Status\$reflection extends')),
+                isNot(contains('Status\$reflectionExtension')),
+                contains('Foo\$reflection extends'),
+                contains('Foo\$reflectionExtension'),
+              ]),
+              allOf([
+                contains('final Expando<Foo\$reflection> _objectReflections'),
+                contains('factory Foo\$reflection([Foo? object]) {'),
+              ]),
+              allOf([
+                contains('Foo\$reflection()'),
+                contains('// Dependency reflections:'),
+                contains('Status\$reflection()'),
+              ]),
             ),
-            allOf([
-              isNot(contains('Status\$reflection extends')),
-              isNot(contains('Status\$reflectionExtension')),
-              contains('Foo\$reflection extends'),
-              contains('Foo\$reflectionExtension'),
-            ]),
-            allOf([
-              contains('final Expando<Foo\$reflection> _objectReflections'),
-              contains('factory Foo\$reflection([Foo? object]) {'),
-            ]),
-            allOf([
-              contains('Foo\$reflection()'),
-              contains('// Dependency reflections:'),
-              contains('Status\$reflection()'),
-            ]),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -1100,69 +1310,81 @@ void main() {
             
             Foo(this.n);
           }
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/status.dart', '$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/status.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/status.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'status.dart'"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'status.dart'"),
+              ),
+              allOf([
+                contains('Status\$reflection extends'),
+                contains('Status\$reflectionExtension'),
+                isNot(contains('Foo\$reflection extends')),
+                isNot(contains('Foo\$reflectionExtension')),
+              ]),
+              allOf([
+                contains(
+                  'final Expando<Status\$reflection> _objectReflections',
+                ),
+                contains('factory Status\$reflection([Status? object]) {'),
+              ]),
             ),
-            allOf([
-              contains('Status\$reflection extends'),
-              contains('Status\$reflectionExtension'),
-              isNot(contains('Foo\$reflection extends')),
-              isNot(contains('Foo\$reflectionExtension')),
-            ]),
-            allOf([
-              contains('final Expando<Status\$reflection> _objectReflections'),
-              contains('factory Status\$reflection([Status? object]) {'),
-            ]),
-          )),
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          ),
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+              ),
+              allOf([
+                isNot(contains('Status\$reflection extends')),
+                isNot(contains('Status\$reflectionExtension')),
+                contains('Foo\$reflection extends'),
+                contains('Foo\$reflectionExtension'),
+              ]),
+              allOf([
+                contains('final Expando<Foo\$reflection> _objectReflections'),
+                contains('factory Foo\$reflection([Foo? object]) {'),
+              ]),
+              allOf([
+                contains('Foo\$reflection()'),
+                contains('// Dependency reflections:'),
+                contains('Status\$reflection()'),
+              ]),
             ),
-            allOf([
-              isNot(contains('Status\$reflection extends')),
-              isNot(contains('Status\$reflectionExtension')),
-              contains('Foo\$reflection extends'),
-              contains('Foo\$reflectionExtension'),
-            ]),
-            allOf([
-              contains('final Expando<Foo\$reflection> _objectReflections'),
-              contains('factory Foo\$reflection([Foo? object]) {'),
-            ]),
-            allOf([
-              contains('Foo\$reflection()'),
-              contains('// Dependency reflections:'),
-              contains('Status\$reflection()'),
-            ]),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
 
-    test('EnableReflection + import + type recursion [2 source files]',
-        () async {
-      var builder = ReflectionBuilder(verbose: true);
+    test(
+      'EnableReflection + import + type recursion [2 source files]',
+      () async {
+        var builder = ReflectionBuilder(verbose: true);
 
-      var sourceAssets = {
-        '$_pkgName|lib/status.dart': '''
+        var sourceAssets = {
+          '$_pkgName|lib/status.dart': '''
         
           import 'package:reflection_factory/reflection_factory.dart';
         
@@ -1188,7 +1410,7 @@ void main() {
           }
           
         ''',
-        '$_pkgName|lib/foo.dart': '''
+          '$_pkgName|lib/foo.dart': '''
         
           import 'package:reflection_factory/reflection_factory.dart';
           
@@ -1204,62 +1426,74 @@ void main() {
             
             Foo(this.n, {this.status = Status.a, this.w});
           }
-        '''
-      };
+        ''',
+        };
 
-      await testBuilder(
-        builder,
-        sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
-        generateFor: {'$_pkgName|lib/status.dart', '$_pkgName|lib/foo.dart'},
-        outputs: {
-          '$_pkgName|lib/status.reflection.g.dart': decodedMatches(allOf(
-            allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'status.dart'"),
+        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+        await readerWriter.testing.loadIsolateSources();
+
+        await testBuilder(
+          builder,
+          sourceAssets,
+          readerWriter: readerWriter,
+          generateFor: {'$_pkgName|lib/status.dart', '$_pkgName|lib/foo.dart'},
+          outputs: {
+            '$_pkgName|lib/status.reflection.g.dart': decodedMatches(
+              allOf(
+                allOf(
+                  contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                  contains(
+                    'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                  ),
+                  contains("part of 'status.dart'"),
+                ),
+                allOf([
+                  contains('Status\$reflection extends'),
+                  contains('Status\$reflectionExtension'),
+                  isNot(contains('Foo\$reflection extends')),
+                  isNot(contains('Foo\$reflectionExtension')),
+                ]),
+                allOf([
+                  contains(
+                    'final Expando<Status\$reflection> _objectReflections',
+                  ),
+                  contains('factory Status\$reflection([Status? object]) {'),
+                ]),
+              ),
             ),
-            allOf([
-              contains('Status\$reflection extends'),
-              contains('Status\$reflectionExtension'),
-              isNot(contains('Foo\$reflection extends')),
-              isNot(contains('Foo\$reflectionExtension')),
-            ]),
-            allOf([
-              contains('final Expando<Status\$reflection> _objectReflections'),
-              contains('factory Status\$reflection([Status? object]) {'),
-            ]),
-          )),
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
-            allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
+            '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+              allOf(
+                allOf(
+                  contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                  contains(
+                    'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                  ),
+                  contains("part of 'foo.dart'"),
+                ),
+                allOf([
+                  isNot(contains('Status\$reflection extends')),
+                  isNot(contains('Status\$reflectionExtension')),
+                  contains('Foo\$reflection extends'),
+                  contains('Foo\$reflectionExtension'),
+                ]),
+                allOf([
+                  contains('final Expando<Foo\$reflection> _objectReflections'),
+                  contains('factory Foo\$reflection([Foo? object]) {'),
+                ]),
+                allOf([
+                  contains('Foo\$reflection()'),
+                  contains('// Dependency reflections:'),
+                  contains('Status\$reflection()'),
+                ]),
+              ),
             ),
-            allOf([
-              isNot(contains('Status\$reflection extends')),
-              isNot(contains('Status\$reflectionExtension')),
-              contains('Foo\$reflection extends'),
-              contains('Foo\$reflectionExtension'),
-            ]),
-            allOf([
-              contains('final Expando<Foo\$reflection> _objectReflections'),
-              contains('factory Foo\$reflection([Foo? object]) {'),
-            ]),
-            allOf([
-              contains('Foo\$reflection()'),
-              contains('// Dependency reflections:'),
-              contains('Status\$reflection()'),
-            ]),
-          )),
-        },
-        onLog: (msg) {
-          print(msg);
-        },
-      );
-    });
+          },
+          onLog: (msg) {
+            _printToConsole(msg);
+          },
+        );
+      },
+    );
 
     test('ReflectionBridge', () async {
       var builder = ReflectionBuilder(verbose: true);
@@ -1287,25 +1521,30 @@ void main() {
             }
           }
         
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
-            contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-            contains("part of 'foo.dart'"),
-            contains('User\$reflection'),
-            contains('User\$reflectionExtension'),
-            contains('UserReflection\$reflectionExtension'),
-          ))
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains("part of 'foo.dart'"),
+              contains('User\$reflection'),
+              contains('User\$reflectionExtension'),
+              contains('UserReflection\$reflectionExtension'),
+            ),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
         //packageConfig: packageConfig,
       );
@@ -1342,47 +1581,55 @@ void main() {
             }
           }
         
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
-            contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-            contains("part of 'foo.dart'"),
-            contains('UserRef'),
-            contains('UserRefExt'),
-            contains('BridgeExt'),
-          ))
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+            allOf(
+              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+              contains("part of 'foo.dart'"),
+              contains('UserRef'),
+              contains('UserRefExt'),
+              contains('BridgeExt'),
+            ),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
 
-    void testClassProxyLlibraryPath(bool sequential) async {
-      var builder = reflectionFactory(BuilderOptions({
-        'verbose': true,
-        'sequential': sequential,
-        'timeout': '45 sec',
-      }));
+    void testClassProxyLibraryPath(bool sequential) async {
+      var builder = reflectionFactory(
+        BuilderOptions({
+          'verbose': true,
+          'sequential': sequential,
+          'timeout': '45 sec',
+        }),
+      );
 
       expect(builder.verbose, isTrue);
       expect(builder.sequential, equals(sequential));
       expect(builder.buildStepTimeout, equals(Duration(seconds: 45)));
 
       expect(
-          builder.toString(),
-          allOf(
-            contains('verbose: true'),
-            contains('sequential: $sequential'),
-            contains('buildStepTimeout: 45 sec'),
-          ));
+        builder.toString(verbose: true),
+        allOf(
+          contains('verbose: true'),
+          contains('sequential: $sequential'),
+          contains('buildStepTimeout: 45 sec'),
+        ),
+      );
 
       var sourceAssets = {
         '$_pkgName|lib/simple_api.dart': '''
@@ -1457,74 +1704,95 @@ void main() {
         ''',
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {
           '$_pkgName|lib/simple_api.dart',
           '$_pkgName|lib/foo.dart',
           '$_pkgName|lib/extra_api.dart',
         },
         outputs: {
-          '$_pkgName|lib/reflection/simple_api.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/reflection/simple_api.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of '../simple_api.dart'"),
-              contains('SimpleAPI\$reflection'),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of '../simple_api.dart'"),
+                contains('SimpleAPI\$reflection'),
+              ),
             ),
-          )),
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          ),
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
-              contains('SimpleAPIProxy\$reflectionProxy'),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+                contains('SimpleAPIProxy\$reflectionProxy'),
+              ),
+              allOf(
+                contains('void nothing() {'),
+                isNot(contains('void ignore1() {')),
+                contains('int compute() {'),
+                contains('int computeSum(int a, int? b) {'),
+                contains('Future<int?>? computeMultiply(int a, int b) {'),
+                contains(
+                  'FutureOr<int?>? computeDivide(int a, int b, Future<dynamic> future) {',
+                ),
+              ),
+              allOf(
+                contains('int computeSum3(int a, {int? b, int? c}) {'),
+                contains(
+                  'Future<R> computeFunctionAsync<R>(FutureOr<R> Function() callback) {',
+                ),
+                matches(
+                  RegExp(
+                    "onCall(\\s*this,\\s*'computeSum3',\\s*<String, dynamic>{\n'a': a,\n'b': b,\n'c': c,\n},"
+                        .replaceAll('\n', r'\s+')
+                        .replaceAll('(', r'\(')
+                        .replaceAll(')', r'\)'),
+                  ),
+                ),
+              ),
             ),
+          ),
+          '$_pkgName|lib/reflection/extra_api.g.dart': decodedMatches(
             allOf(
-              contains('void nothing() {'),
-              isNot(contains('void ignore1() {')),
-              contains('int compute() {'),
-              contains('int computeSum(int a, int? b) {'),
-              contains('Future<int?>? computeMultiply(int a, int b) {'),
-              contains(
-                  'FutureOr<int?>? computeDivide(int a, int b, Future<dynamic> future) {'),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of '../extra_api.dart'"),
+                contains('ExtraAPI\$reflection'),
+              ),
             ),
-            allOf(
-              contains('int computeSum3(int a, {int? b, int? c}) {'),
-              contains(
-                  'Future<R> computeFunctionAsync<R>(FutureOr<R> Function() callback) {'),
-              matches(RegExp(
-                  "onCall(\\s*this,\\s*'computeSum3',\\s*<String, dynamic>{\n'a': a,\n'b': b,\n'c': c,\n},"
-                      .replaceAll('\n', r'\s+')
-                      .replaceAll('(', r'\(')
-                      .replaceAll(')', r'\)'))),
-            ),
-          )),
-          '$_pkgName|lib/reflection/extra_api.g.dart': decodedMatches(allOf(
-            allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of '../extra_api.dart'"),
-              contains('ExtraAPI\$reflection'),
-            ),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     }
 
-    test('ClassProxy: SimpleAPI (through libraryPath) +sequential',
-        () => testClassProxyLlibraryPath(true));
+    test(
+      'ClassProxy: SimpleAPI (through libraryPath) +sequential',
+      () => testClassProxyLibraryPath(true),
+    );
 
-    test('ClassProxy: SimpleAPI (through libraryPath) -sequential',
-        () => testClassProxyLlibraryPath(false));
+    test(
+      'ClassProxy: SimpleAPI (through libraryPath) -sequential',
+      () => testClassProxyLibraryPath(false),
+    );
 
     test('ClassProxy: SimpleAPI', () async {
       var builder = ReflectionBuilder(verbose: true);
@@ -1566,44 +1834,54 @@ void main() {
             String toString() => 'SimpleAPI{ name: \$name }';
           }
         
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
-              contains('SimpleAPIProxy\$reflectionProxy'),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+                contains('SimpleAPIProxy\$reflectionProxy'),
+              ),
+              allOf(
+                contains('void nothing() {'),
+                contains('int compute() {'),
+                contains('int computeSum(int a, int? b) {'),
+                contains('Future<int?>? computeMultiply(int a, int b) {'),
+                contains('FutureOr<int?>? computeDivide(int a, int b) {'),
+              ),
+              allOf(
+                contains('int computeSum3(int a, {int? b, int? c}) {'),
+                contains(
+                  'Future<R> computeFunctionAsync<R>(FutureOr<R> Function() callback) {',
+                ),
+                matches(
+                  RegExp(
+                    "onCall(\\s*this,\\s*'computeSum3',\\s*<String, dynamic>{\n'a': a,\n'b': b,\n'c': c,\n},"
+                        .replaceAll('\n', r'\s+')
+                        .replaceAll('(', r'\(')
+                        .replaceAll(')', r'\)'),
+                  ),
+                ),
+              ),
             ),
-            allOf(
-              contains('void nothing() {'),
-              contains('int compute() {'),
-              contains('int computeSum(int a, int? b) {'),
-              contains('Future<int?>? computeMultiply(int a, int b) {'),
-              contains('FutureOr<int?>? computeDivide(int a, int b) {'),
-            ),
-            allOf(
-              contains('int computeSum3(int a, {int? b, int? c}) {'),
-              contains(
-                  'Future<R> computeFunctionAsync<R>(FutureOr<R> Function() callback) {'),
-              matches(RegExp(
-                  "onCall(\\s*this,\\s*'computeSum3',\\s*<String, dynamic>{\n'a': a,\n'b': b,\n'c': c,\n},"
-                      .replaceAll('\n', r'\s+')
-                      .replaceAll('(', r'\(')
-                      .replaceAll(')', r'\)'))),
-            ),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -1641,34 +1919,40 @@ void main() {
             String toString() => 'SimpleAPI{ name: \$name }';
           }
         
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+              ),
+              allOf(
+                contains('SimpleAPIProxy\$reflectionProxy'),
+                contains('Future<void> nothing() {'),
+                contains('Future<int> compute() {'),
+                contains('Future<int> computeSum(int a, int b) {'),
+                contains('Future<int?>? computeMultiply(int a, int b) {'),
+                contains('Future<int?> computeDivide(int a, int b) {'),
+              ),
             ),
-            allOf(
-              contains('SimpleAPIProxy\$reflectionProxy'),
-              contains('Future<void> nothing() {'),
-              contains('Future<int> compute() {'),
-              contains('Future<int> computeSum(int a, int b) {'),
-              contains('Future<int?>? computeMultiply(int a, int b) {'),
-              contains('Future<int?> computeDivide(int a, int b) {'),
-            ),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -1709,43 +1993,50 @@ void main() {
             Wrapper(this.value);
           }
         
-        '''
+        ''',
       };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'foo.dart'"),
+              ),
+              allOf(
+                contains('SimpleAPIProxy\$reflectionProxy'),
+                contains('void nothing() {'),
+                contains('int compute() {'),
+                contains('int computeSum(int a, int b) {'),
+                contains('Future<int> computeMultiply(int a, int b) {'),
+              ),
             ),
-            allOf(
-              contains('SimpleAPIProxy\$reflectionProxy'),
-              contains('void nothing() {'),
-              contains('int compute() {'),
-              contains('int computeSum(int a, int b) {'),
-              contains('Future<int> computeMultiply(int a, int b) {'),
-            ),
-          )),
+          ),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
 
-    test('ClassProxy: SimpleAPI (alwaysReturnFuture+traverseReturnTypes)',
-        () async {
-      var builder = ReflectionBuilder(verbose: true);
+    test(
+      'ClassProxy: SimpleAPI (alwaysReturnFuture+traverseReturnTypes)',
+      () async {
+        var builder = ReflectionBuilder(verbose: true);
 
-      var sourceAssets = {
-        '$_pkgName|lib/foo.dart': '''
+        var sourceAssets = {
+          '$_pkgName|lib/foo.dart': '''
         
           import 'package:reflection_factory/reflection_factory.dart';
         
@@ -1777,44 +2068,51 @@ void main() {
             Wrapper(this.value);
           }
         
-        '''
-      };
+        ''',
+        };
 
-      await testBuilder(
-        builder,
-        sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
-        generateFor: {'$_pkgName|lib/foo.dart'},
-        outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
-            allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
+        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+        await readerWriter.testing.loadIsolateSources();
+
+        await testBuilder(
+          builder,
+          sourceAssets,
+          readerWriter: readerWriter,
+          generateFor: {'$_pkgName|lib/foo.dart'},
+          outputs: {
+            '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+              allOf(
+                allOf(
+                  contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                  contains(
+                    'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                  ),
+                  contains("part of 'foo.dart'"),
+                ),
+                allOf(
+                  contains('SimpleAPIProxy\$reflectionProxy'),
+                  contains('Future<void> nothing() {'),
+                  contains('Future<int> compute() {'),
+                  contains('Future<int> computeSum(int a, int b) {'),
+                  contains('Future<int> computeMultiply(int a, int b) {'),
+                ),
+              ),
             ),
-            allOf(
-              contains('SimpleAPIProxy\$reflectionProxy'),
-              contains('Future<void> nothing() {'),
-              contains('Future<int> compute() {'),
-              contains('Future<int> computeSum(int a, int b) {'),
-              contains('Future<int> computeMultiply(int a, int b) {'),
-            ),
-          )),
-        },
-        onLog: (msg) {
-          print(msg);
-        },
-      );
-    });
+          },
+          onLog: (msg) {
+            _printToConsole(msg);
+          },
+        );
+      },
+    );
 
     test(
-        'ClassProxy: MimeTypeResolverProxy (libraryPath: package:mime/mime.dart)',
-        () async {
-      var builder = ReflectionBuilder(verbose: true);
+      'ClassProxy: MimeTypeResolverProxy (libraryPath: package:mime/mime.dart)',
+      () async {
+        var builder = ReflectionBuilder(verbose: true);
 
-      var sourceAssets = {
-        '$_pkgName|lib/foo.dart': '''
+        var sourceAssets = {
+          '$_pkgName|lib/foo.dart': '''
         
           import 'package:reflection_factory/reflection_factory.dart';
         
@@ -1824,36 +2122,45 @@ void main() {
           class MimeTypeResolverProxy implements ClassProxyListener {
           }
           
-        '''
-      };
+        ''',
+        };
 
-      await testBuilder(
-        builder,
-        sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
-        generateFor: {'$_pkgName|lib/foo.dart'},
-        outputs: {
-          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
-            allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
+        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+        await readerWriter.testing.loadIsolateSources();
+
+        await testBuilder(
+          builder,
+          sourceAssets,
+          readerWriter: readerWriter,
+          generateFor: {'$_pkgName|lib/foo.dart'},
+          outputs: {
+            '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+              allOf(
+                allOf(
+                  contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                  contains(
+                    'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                  ),
+                  contains("part of 'foo.dart'"),
+                ),
+                allOf(
+                  contains('MimeTypeResolverProxy\$reflectionProxy'),
+                  contains(
+                    'String? lookup(String path, {List<int>? headerBytes}) {',
+                  ),
+                  contains(
+                    'void addExtension(String extension, String mimeType) {',
+                  ),
+                ),
+              ),
             ),
-            allOf(
-              contains('MimeTypeResolverProxy\$reflectionProxy'),
-              contains(
-                  'String? lookup(String path, {List<int>? headerBytes}) {'),
-              contains(
-                  'void addExtension(String extension, String mimeType) {'),
-            ),
-          )),
-        },
-        onLog: (msg) {
-          print(msg);
-        },
-      );
-    });
+          },
+          onLog: (msg) {
+            _printToConsole(msg);
+          },
+        );
+      },
+    );
   });
 }
 
