@@ -15,6 +15,8 @@
   
 - Comment `#dependency_validator: ^5.0.2` (incompatible with `analyzer: ^8.1.1`).
 
+- Dart CI: `DART_VERSION: "3.8.3"`
+
 ## 2.5.3
 
 - `ReflectionBuilder`: improve use of `const` for generated code.
