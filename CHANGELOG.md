@@ -1,3 +1,6 @@
+## 2.6.0
+- Comment `#dependency_validator: ^5.0.2` (incompatible with `analyzer: ^8.1.1`).
+
 ## 2.5.3
 
 - `ReflectionBuilder`: improve use of `const` for generated code.
