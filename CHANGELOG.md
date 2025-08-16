@@ -1,4 +1,4 @@
-## 2.6.0
+## 2.6.0-beta.1
 
 - Migrate to `analyzer: ^8.1.1` and `build: ^3.0.2`.
 
