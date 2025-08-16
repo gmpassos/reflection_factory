@@ -15,7 +15,7 @@
   
 - Comment `#dependency_validator: ^5.0.2` (incompatible with `analyzer: ^8.1.1`).
 
-- DART_VERSION: "stable"
+- Dart CI: `DART_VERSION: "3.8.3"`
 
 - sdk: '>=3.7.0 <4.0.0'
 
