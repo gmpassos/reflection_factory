@@ -18,36 +18,65 @@ void main() {
       expect(Duration(milliseconds: 10).toHumanReadable(), equals('10 ms'));
       expect(Duration(milliseconds: 3).toHumanReadable(), equals('3 ms'));
 
-      expect(Duration(minutes: 4, seconds: 11).toHumanReadable(),
-          equals('4 min 11 sec'));
-
-      expect(Duration(hours: 3, minutes: 4, seconds: 11).toHumanReadable(),
-          equals('3 h 4 min 11 sec'));
+      expect(
+        Duration(minutes: 4, seconds: 11).toHumanReadable(),
+        equals('4 min 11 sec'),
+      );
 
       expect(
-          Duration(hours: 3, minutes: 4, seconds: 11, milliseconds: 101)
-              .toHumanReadable(),
-          equals('3 h 4 min 11 sec 101 ms'));
+        Duration(hours: 3, minutes: 4, seconds: 11).toHumanReadable(),
+        equals('3 h 4 min 11 sec'),
+      );
 
       expect(
-          Duration(hours: 3, minutes: 0, seconds: 11, milliseconds: 101)
-              .toHumanReadable(),
-          equals('3 h 0 min 11 sec 101 ms'));
+        Duration(
+          hours: 3,
+          minutes: 4,
+          seconds: 11,
+          milliseconds: 101,
+        ).toHumanReadable(),
+        equals('3 h 4 min 11 sec 101 ms'),
+      );
 
       expect(
-          Duration(hours: 3, minutes: 0, seconds: 0, milliseconds: 101)
-              .toHumanReadable(),
-          equals('3 h 0 min 0 sec 101 ms'));
+        Duration(
+          hours: 3,
+          minutes: 0,
+          seconds: 11,
+          milliseconds: 101,
+        ).toHumanReadable(),
+        equals('3 h 0 min 11 sec 101 ms'),
+      );
 
       expect(
-          Duration(hours: 3, minutes: 4, seconds: 0, milliseconds: 101)
-              .toHumanReadable(),
-          equals('3 h 4 min 0 sec 101 ms'));
+        Duration(
+          hours: 3,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 101,
+        ).toHumanReadable(),
+        equals('3 h 0 min 0 sec 101 ms'),
+      );
 
       expect(
-          Duration(hours: 3, minutes: 4, seconds: 0, milliseconds: 0)
-              .toHumanReadable(),
-          equals('3 h 4 min'));
+        Duration(
+          hours: 3,
+          minutes: 4,
+          seconds: 0,
+          milliseconds: 101,
+        ).toHumanReadable(),
+        equals('3 h 4 min 0 sec 101 ms'),
+      );
+
+      expect(
+        Duration(
+          hours: 3,
+          minutes: 4,
+          seconds: 0,
+          milliseconds: 0,
+        ).toHumanReadable(),
+        equals('3 h 4 min'),
+      );
     });
 
     test('tryParseDuration', () {
@@ -72,9 +101,13 @@ void main() {
       expect(tryParseDuration('101'), Duration(milliseconds: 101));
 
       expect(
-          tryParseDuration('', Duration(seconds: 103)), Duration(seconds: 103));
-      expect(tryParseDuration('x', Duration(seconds: 104)),
-          Duration(seconds: 104));
+        tryParseDuration('', Duration(seconds: 103)),
+        Duration(seconds: 103),
+      );
+      expect(
+        tryParseDuration('x', Duration(seconds: 104)),
+        Duration(seconds: 104),
+      );
     });
   });
 }

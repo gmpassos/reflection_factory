@@ -21,33 +21,41 @@ void main() {
       expect(reflectionInspector.dartFiles.length > 5, isTrue);
       expect(reflectionInspector.generatedDartFiles.length >= 2, isTrue);
 
-      expect(reflectionInspector.generatedDartFiles.length,
-          equals(reflectionInspector.generatedDartFilesPaths.length));
+      expect(
+        reflectionInspector.generatedDartFiles.length,
+        equals(reflectionInspector.generatedDartFilesPaths.length),
+      );
 
       expect(reflectionInspector.dartFilesWithExpiredReflection, isEmpty);
       expect(
-          reflectionInspector.dartFilesMissingGeneratedReflection.length >= 2,
-          isTrue);
+        reflectionInspector.dartFilesMissingGeneratedReflection.length >= 2,
+        isTrue,
+      );
     });
 
     test('with tests', () async {
       var packDir = _getPackageRootDirectory();
 
-      var reflectionInspector =
-          ReflectionInspector(packDir, includeTestFiles: true);
+      var reflectionInspector = ReflectionInspector(
+        packDir,
+        includeTestFiles: true,
+      );
 
       print(reflectionInspector);
 
       expect(reflectionInspector.dartFiles.length > 5, isTrue);
       expect(reflectionInspector.generatedDartFiles.length >= 4, isTrue);
 
-      expect(reflectionInspector.generatedDartFiles.length,
-          equals(reflectionInspector.generatedDartFilesPaths.length));
+      expect(
+        reflectionInspector.generatedDartFiles.length,
+        equals(reflectionInspector.generatedDartFilesPaths.length),
+      );
 
       expect(reflectionInspector.dartFilesWithExpiredReflection, isEmpty);
       expect(
-          reflectionInspector.dartFilesMissingGeneratedReflection.length >= 3,
-          isTrue);
+        reflectionInspector.dartFilesMissingGeneratedReflection.length >= 3,
+        isTrue,
+      );
     });
   });
 }
@@ -60,7 +68,7 @@ Directory _getPackageRootDirectory() {
     '..',
     './reflection_factory',
     '../reflection_factory',
-    '../../reflection_factory'
+    '../../reflection_factory',
   ]) {
     var file = File('$p/$refFile');
 

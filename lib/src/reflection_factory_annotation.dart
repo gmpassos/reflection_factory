@@ -164,15 +164,19 @@ class ClassProxyCallError extends StateError {
   ClassProxyCallError(super.message) : super();
 
   ClassProxyCallError.returnedValueError(Type t, Object? value)
-      : this("Can't cast returned value to `$t`: $value");
+    : this("Can't cast returned value to `$t`: $value");
 }
 
 /// Interface that a proxy class (annotated with [ClassProxy]) should implement
 /// to list for proxy calls.
 abstract class ClassProxyListener<T> {
   /// Calls made through a [ClassProxy] will be intercepted by [onCall] implementation.
-  Object? onCall(T instance, String methodName, Map<String, dynamic> parameters,
-      TypeReflection? returnType);
+  Object? onCall(
+    T instance,
+    String methodName,
+    Map<String, dynamic> parameters,
+    TypeReflection? returnType,
+  );
 }
 
 /// A [ClassProxyListener] that delegates to [targetListener].
@@ -183,8 +187,12 @@ class ClassProxyDelegateListener<T> extends ClassProxyListener<T> {
   ClassProxyDelegateListener(this.targetListener);
 
   @override
-  Object? onCall(T instance, String methodName, Map<String, dynamic> parameters,
-      TypeReflection? returnType) {
+  Object? onCall(
+    T instance,
+    String methodName,
+    Map<String, dynamic> parameters,
+    TypeReflection? returnType,
+  ) {
     return targetListener.onCall(instance, methodName, parameters, returnType);
   }
 }
@@ -247,8 +255,10 @@ extension IterableJsonFieldAliasExtension on Iterable<JsonFieldAlias> {
       } else if (name == a) {
         continue;
       } else {
-        throw StateError("Multiple JSON field aliases: "
-            "${where((a) => a.isValid).map((a) => a.name).toList()}");
+        throw StateError(
+          "Multiple JSON field aliases: "
+          "${where((a) => a.isValid).map((a) => a.name).toList()}",
+        );
       }
     }
     return name;

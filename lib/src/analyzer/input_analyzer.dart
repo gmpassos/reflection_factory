@@ -13,11 +13,13 @@ import 'library.dart';
 import 'type_checker.dart';
 
 class InputAnalyzer {
-  static const TypeChecker typeReflectionBridge =
-      TypeChecker.fromRuntime(ReflectionBridge);
+  static const TypeChecker typeReflectionBridge = TypeChecker.fromRuntime(
+    ReflectionBridge,
+  );
 
-  static const TypeChecker typeEnableReflection =
-      TypeChecker.fromRuntime(EnableReflection);
+  static const TypeChecker typeEnableReflection = TypeChecker.fromRuntime(
+    EnableReflection,
+  );
 
   static const TypeChecker typeClassProxy = TypeChecker.fromRuntime(ClassProxy);
 
@@ -40,9 +42,14 @@ class InputAnalyzer {
   Future<LibraryReader> get libraryReader async =>
       _libraryReader ??= LibraryReader(await buildStep.inputLibrary);
 
-  Future<InputAnalyzerResolved> resolved() async => _inputAnalyzerResolved ??=
-      InputAnalyzerResolved(buildStep, inputId, resolver, await compilationUnit,
-          libraryReader: _libraryReader);
+  Future<InputAnalyzerResolved> resolved() async =>
+      _inputAnalyzerResolved ??= InputAnalyzerResolved(
+        buildStep,
+        inputId,
+        resolver,
+        await compilationUnit,
+        libraryReader: _libraryReader,
+      );
 }
 
 class InputAnalyzerResolved {
@@ -52,9 +59,12 @@ class InputAnalyzerResolved {
   final CompilationUnit compilationUnit;
 
   InputAnalyzerResolved(
-      this.buildStep, this.inputId, this.resolver, this.compilationUnit,
-      {LibraryReader? libraryReader})
-      : _libraryReader = libraryReader;
+    this.buildStep,
+    this.inputId,
+    this.resolver,
+    this.compilationUnit, {
+    LibraryReader? libraryReader,
+  }) : _libraryReader = libraryReader;
 
   String get inputFileName => inputId.pathSegments.last;
 
@@ -109,8 +119,8 @@ class InputAnalyzerResolved {
       _inputCompilationUnitParts ??= getCompilationUnitParts(compilationUnit);
 
   List<PartDirective> getCompilationUnitParts(
-          CompilationUnit compilationUnit) =>
-      compilationUnit.directives.whereType<PartDirective>().toList();
+    CompilationUnit compilationUnit,
+  ) => compilationUnit.directives.whereType<PartDirective>().toList();
 
   List<String>? _allGParts;
 
@@ -119,34 +129,43 @@ class InputAnalyzerResolved {
   List<String> _allGPartsImpl() {
     var allParts = inputCompilationUnitParts();
 
-    var allPartsPaths = allParts
-        .map((e) {
-          var uri = e.uri;
-          return uri.stringValue;
-        })
-        .nonNulls
-        .toList();
+    var allPartsPaths =
+        allParts
+            .map((e) {
+              var uri = e.uri;
+              return uri.stringValue;
+            })
+            .nonNulls
+            .toList();
 
     return allPartsPaths.where((e) => e.endsWith('.g.dart')).toList();
   }
 
   Future<List<Annotation>> getDeclaredAnnotations(
-      CompilationUnit compilationUnit, AssetId compilationUnitId,
-      {bool deep = false}) async {
+    CompilationUnit compilationUnit,
+    AssetId compilationUnitId, {
+    bool deep = false,
+  }) async {
     var annotations = <Annotation>[];
     await _getDeclaredAnnotationsImpl(
-        annotations, compilationUnit, compilationUnitId, deep);
+      annotations,
+      compilationUnit,
+      compilationUnitId,
+      deep,
+    );
     return annotations;
   }
 
   Future<void> _getDeclaredAnnotationsImpl(
-      List<Annotation> annotations,
-      CompilationUnit compilationUnit,
-      AssetId compilationUnitId,
-      bool deep) async {
-    var declaredAnnotations = compilationUnit.declarations
-        .expand((e) => e.sortedCommentAndAnnotations)
-        .whereType<Annotation>();
+    List<Annotation> annotations,
+    CompilationUnit compilationUnit,
+    AssetId compilationUnitId,
+    bool deep,
+  ) async {
+    var declaredAnnotations =
+        compilationUnit.declarations
+            .expand((e) => e.sortedCommentAndAnnotations)
+            .whereType<Annotation>();
 
     annotations.addAll(declaredAnnotations);
 
@@ -161,7 +180,11 @@ class InputAnalyzerResolved {
           var partCompUnit = await resolver.compilationUnitFor(partId);
 
           await _getDeclaredAnnotationsImpl(
-              annotations, partCompUnit, partId, deep);
+            annotations,
+            partCompUnit,
+            partId,
+            deep,
+          );
         }
       }
     }
@@ -173,8 +196,10 @@ class InputAnalyzerResolved {
       return null;
     }
 
-    var partId =
-        AssetId.resolve(Uri.parse(partUriPath), from: compilationUnitId);
+    var partId = AssetId.resolve(
+      Uri.parse(partUriPath),
+      from: compilationUnitId,
+    );
     return partId;
   }
 
@@ -184,32 +209,39 @@ class InputAnalyzerResolved {
   final Expando<CompilationUnit> _compilationUnitForCache = Expando();
 
   Future<CompilationUnit> compilationUnitFor(AssetId assetId) async =>
-      _compilationUnitForCache[assetId] ??=
-          await resolver.compilationUnitFor(assetId);
+      _compilationUnitForCache[assetId] ??= await resolver.compilationUnitFor(
+        assetId,
+      );
 
   final Expando<AssetId> _assetIdForElementCache = Expando();
 
   Future<AssetId> assetIdForElement(Element element) async =>
-      _assetIdForElementCache[element] ??=
-          await resolver.assetIdForElement(element);
+      _assetIdForElementCache[element] ??= await resolver.assetIdForElement(
+        element,
+      );
 
-  Future<List<Annotation>> inputReflectionAnnotations(
-          {bool deep = true}) async =>
-      getReflectionAnnotations(compilationUnit, inputId, deep: deep);
+  Future<List<Annotation>> inputReflectionAnnotations({
+    bool deep = true,
+  }) async => getReflectionAnnotations(compilationUnit, inputId, deep: deep);
 
   Future<List<Annotation>> getReflectionAnnotations(
-      CompilationUnit compilationUnit, AssetId compilationUnitId,
-      {bool deep = true}) async {
+    CompilationUnit compilationUnit,
+    AssetId compilationUnitId, {
+    bool deep = true,
+  }) async {
     var annotations = await getDeclaredAnnotations(
-        compilationUnit, compilationUnitId,
-        deep: deep);
+      compilationUnit,
+      compilationUnitId,
+      deep: deep,
+    );
 
-    var reflectionAnnotations = annotations.where((e) {
-      var name = e.name.name;
-      return name == 'EnableReflection' ||
-          name == 'ReflectionBridge' ||
-          name == 'ClassProxy';
-    }).toList();
+    var reflectionAnnotations =
+        annotations.where((e) {
+          var name = e.name.name;
+          return name == 'EnableReflection' ||
+              name == 'ReflectionBridge' ||
+              name == 'ClassProxy';
+        }).toList();
 
     return reflectionAnnotations;
   }
@@ -237,7 +269,10 @@ class InputAnalyzerResolved {
   }
 
   Future<List<ClassElement>> findCandidateClassElements(
-      String className, String libraryName, String libraryPath) async {
+    String className,
+    String libraryName,
+    String libraryPath,
+  ) async {
     var inputLibrary = await this.inputLibrary;
 
     var mainLibraries = <LibraryElement>[inputLibrary];
@@ -246,8 +281,9 @@ class InputAnalyzerResolved {
     if (libraryPath.isNotEmpty) {
       libraryPath =
           libraryPath.replaceAll(RegExp(r'^(?:package:)?/*'), '').trim();
-      var result =
-          await inputLibrary.session.getLibraryByUri('package:$libraryPath');
+      var result = await inputLibrary.session.getLibraryByUri(
+        'package:$libraryPath',
+      );
 
       if (result is LibraryElementResult) {
         var libraryElement = result.element;
@@ -272,19 +308,21 @@ class InputAnalyzerResolved {
     var mainLibrariesExported =
         mainLibraries.expand((e) => e.exportedLibraries).toList();
 
-    var allLibraries = <LibraryElement>{
-      ...mainLibraries,
-      ...resolverLibraries,
-      ...mainLibrariesExported
-    }.toList();
+    var allLibraries =
+        <LibraryElement>{
+          ...mainLibraries,
+          ...resolverLibraries,
+          ...mainLibrariesExported,
+        }.toList();
 
     var candidateClasses =
         allLibraries.allUsedClasses.where((c) => c.name == className).toList();
 
     if (candidateClasses.length > 1) {
       if (libraryName.isNotEmpty) {
-        var targetClass = candidateClasses
-            .firstWhereOrNull((e) => e.library.name == libraryName);
+        var targetClass = candidateClasses.firstWhereOrNull(
+          (e) => e.library.name == libraryName,
+        );
         if (targetClass != null) {
           return <ClassElement>[targetClass];
         }
@@ -296,7 +334,8 @@ class InputAnalyzerResolved {
 
   // Attempt to load a `LibraryElement` with sub-elements resolved:
   Future<LibraryElement> _resolveLibraryElement(
-      LibraryElement libraryElement) async {
+    LibraryElement libraryElement,
+  ) async {
     var libraryAssetId = await resolver.assetIdForElement(libraryElement);
     var libraryElementResolved = await resolver.libraryFor(
       libraryAssetId,
@@ -307,8 +346,10 @@ class InputAnalyzerResolved {
   Future<bool> hasCodeToGenerate() async {
     final libraryReader = await this.libraryReader;
 
-    var allAnnotatedElementsItr =
-        libraryReader.allAnnotatedElements(classes: true, enums: true);
+    var allAnnotatedElementsItr = libraryReader.allAnnotatedElements(
+      classes: true,
+      enums: true,
+    );
 
     final allAnnotatedClasses = <Element>[];
 
@@ -322,15 +363,17 @@ class InputAnalyzerResolved {
       }
     }
 
-    var hasReflectionBridge = allAnnotatedClasses
-        .withAnnotation(InputAnalyzer.typeReflectionBridge)
-        .isNotEmpty;
+    var hasReflectionBridge =
+        allAnnotatedClasses
+            .withAnnotation(InputAnalyzer.typeReflectionBridge)
+            .isNotEmpty;
 
     if (hasReflectionBridge) return true;
 
-    var hasClassProxy = allAnnotatedClasses
-        .withAnnotation(InputAnalyzer.typeClassProxy)
-        .isNotEmpty;
+    var hasClassProxy =
+        allAnnotatedClasses
+            .withAnnotation(InputAnalyzer.typeClassProxy)
+            .isNotEmpty;
 
     if (hasClassProxy) return true;
 
@@ -347,8 +390,9 @@ class InputAnalyzerResolved {
 
     if (isSiblingPart && isSubPart) {
       throw StateError(
-          "Can't generate multiple `reflection` files. Multiple reflection parts directives: "
-          "${reflectionParts.siblingPart} AND ${reflectionParts.subPart}");
+        "Can't generate multiple `reflection` files. Multiple reflection parts directives: "
+        "${reflectionParts.siblingPart} AND ${reflectionParts.subPart}",
+      );
     }
 
     final hasCodeToGenerate = await this.hasCodeToGenerate();
@@ -357,8 +401,9 @@ class InputAnalyzerResolved {
     }
 
     final genSiblingId = inputId.changeExtension('.reflection.g.dart');
-    final genSubId =
-        inputId.changeExtension('.g.dart').withParentDirectory('reflection');
+    final genSubId = inputId
+        .changeExtension('.g.dart')
+        .withParentDirectory('reflection');
 
     final genId = isSiblingPart ? genSiblingId : genSubId;
 
@@ -369,19 +414,23 @@ class InputAnalyzerResolved {
       var outputsPaths = reflectionPartDirectivesPaths();
 
       throw StateError(
-          "Code generated but NO reflection part directive was found for input file: $inputId\n"
-          "  » Can't generate ONE of the output files:\n"
-          "    -- $genSiblingId\n"
-          "    -- $genSubId\n"
-          "  » Please ADD one of the directives below to the input file:\n"
-          "       part '${outputsPaths.siblingPath}';\n"
-          "       part '${outputsPaths.subPath}';\n"
-          "  » Found part directives:\n"
-          "${gParts.map((e) => '    -- $e').join('\n')}\n");
+        "Code generated but NO reflection part directive was found for input file: $inputId\n"
+        "  » Can't generate ONE of the output files:\n"
+        "    -- $genSiblingId\n"
+        "    -- $genSubId\n"
+        "  » Please ADD one of the directives below to the input file:\n"
+        "       part '${outputsPaths.siblingPath}';\n"
+        "       part '${outputsPaths.subPath}';\n"
+        "  » Found part directives:\n"
+        "${gParts.map((e) => '    -- $e').join('\n')}\n",
+      );
     }
 
     return GeneratedPart(
-        genId.path, genId, isSiblingPart ? inputFile : '../$inputFile');
+      genId.path,
+      genId,
+      isSiblingPart ? inputFile : '../$inputFile',
+    );
   }
 
   ({String? siblingPart, String? subPart}) readInputReflectionPartDirectives() {
@@ -391,18 +440,22 @@ class InputAnalyzerResolved {
 
     var allGParts = this.allGParts();
 
-    var siblingParts = allGParts
-        .where(
-            (p) => p == outputFileSibling || p.endsWith('/$outputFileSibling'))
-        .toList();
+    var siblingParts =
+        allGParts
+            .where(
+              (p) =>
+                  p == outputFileSibling || p.endsWith('/$outputFileSibling'),
+            )
+            .toList();
 
-    var subParts = allGParts
-        .where((p) => p == outputFileSub || p.endsWith('/$outputFileSub'))
-        .toList();
+    var subParts =
+        allGParts
+            .where((p) => p == outputFileSub || p.endsWith('/$outputFileSub'))
+            .toList();
 
     return (
       siblingPart: siblingParts.firstOrNull,
-      subPart: subParts.firstOrNull
+      subPart: subParts.firstOrNull,
     );
   }
 
@@ -410,7 +463,7 @@ class InputAnalyzerResolved {
       buildReflectionPartDirectivesPaths(inputFileName);
 
   static ({String siblingPath, String subPath})
-      buildReflectionPartDirectivesPaths(String inputFile) {
+  buildReflectionPartDirectivesPaths(String inputFile) {
     var inputParts = pack_path.split(inputFile);
 
     var inputFileName = inputParts.last;
@@ -457,57 +510,65 @@ extension _LibraryElementExtension on LibraryElement {
 
   List<ClassElement> get exportedClasses =>
       _exportedClasses[this] ??= UnmodifiableListView(
-          fragments.expand((e) => e.classes.map((c) => c.element)));
+        fragments.expand((e) => e.classes.map((c) => c.element)),
+      );
 
   static final Expando<List<LibraryElement>> _allExports =
       Expando<List<LibraryElement>>();
 
-  List<LibraryElement> get allExports => _allExports[this] ??=
-      UnmodifiableListView(exportedLibraries.nonNulls.toList(growable: false));
+  List<LibraryElement> get allExports =>
+      _allExports[this] ??= UnmodifiableListView(
+        exportedLibraries.nonNulls.toList(growable: false),
+      );
 
   static final Expando<Set<ClassElement>> _allExportedClasses =
       Expando<Set<ClassElement>>();
 
-  Set<ClassElement> get allExportedClasses => _allExportedClasses[this] ??=
-      UnmodifiableSetView(allExports.expand((e) => e.exportedClasses).toSet());
+  Set<ClassElement> get allExportedClasses =>
+      _allExportedClasses[this] ??= UnmodifiableSetView(
+        allExports.expand((e) => e.exportedClasses).toSet(),
+      );
 
   static final Expando<Set<ClassElement>> _allImportedClasses =
       Expando<Set<ClassElement>>();
 
   Set<ClassElement> get allImportedClasses =>
-      _allImportedClasses[this] ??= UnmodifiableSetView(fragments
-          .expand((e) => e.importedLibraries.expand((e) => e.exportedClasses))
-          .toSet());
+      _allImportedClasses[this] ??= UnmodifiableSetView(
+        fragments
+            .expand((e) => e.importedLibraries.expand((e) => e.exportedClasses))
+            .toSet(),
+      );
 
   static final Expando<Set<ClassElement>> _allUnitsClasses =
       Expando<Set<ClassElement>>();
 
   Set<ClassElement> get allUnitsClasses =>
       _allUnitsClasses[this] ??= UnmodifiableSetView(
-          fragments.expand((e) => e.classes.map((c) => c.element)).toSet());
+        fragments.expand((e) => e.classes.map((c) => c.element)).toSet(),
+      );
 
   static final Expando<Set<ClassElement>> _allClassesFromExportedClassesUnits =
       Expando<Set<ClassElement>>();
 
   Set<ClassElement> get allClassesFromExportedClassesUnits =>
       _allClassesFromExportedClassesUnits[this] ??= UnmodifiableSetView(
-          allExportedClasses.expand((e) => e.library.allUnitsClasses).toSet());
+        allExportedClasses.expand((e) => e.library.allUnitsClasses).toSet(),
+      );
 
   static final Expando<Set<ClassElement>>
-      _allImportedClassesFromExportedClasses = Expando<Set<ClassElement>>();
+  _allImportedClassesFromExportedClasses = Expando<Set<ClassElement>>();
 
   Set<ClassElement> get allImportedClassesFromExportedClasses =>
       _allImportedClassesFromExportedClasses[this] ??= UnmodifiableSetView(
-          allExportedClasses
-              .expand((e) => e.library.allImportedClasses)
-              .toSet());
+        allExportedClasses.expand((e) => e.library.allImportedClasses).toSet(),
+      );
 }
 
 extension _IterableLibraryElementExtension on Iterable<LibraryElement> {
   Set<ClassElement> get allUsedClasses => <ClassElement>{
-        ...expand((l) => l.exportedClasses),
-        ...expand((l) => l.allExportedClasses),
-        ...expand((l) => l.allClassesFromExportedClassesUnits),
-        ...expand((l) => l.allImportedClassesFromExportedClasses),
-      };
+    ...expand((l) => l.exportedClasses),
+    ...expand((l) => l.allExportedClasses),
+    ...expand((l) => l.allClassesFromExportedClassesUnits),
+    ...expand((l) => l.allImportedClassesFromExportedClasses),
+  };
 }

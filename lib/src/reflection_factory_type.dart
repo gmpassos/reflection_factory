@@ -13,12 +13,17 @@ typedef TypeElementParser<T> = T? Function(Object? o);
 /// Lenient parsers for basic Dart types.
 class TypeParser {
   /// Returns the parser for the desired type, defined by [T], [obj] or [type].
-  static TypeElementParser<T>? parserFor<T>(
-          {Object? obj, Type? type, TypeInfo? typeInfo}) =>
-      _parserForImpl<T>(obj, type, typeInfo) as TypeElementParser<T>?;
+  static TypeElementParser<T>? parserFor<T>({
+    Object? obj,
+    Type? type,
+    TypeInfo? typeInfo,
+  }) => _parserForImpl<T>(obj, type, typeInfo) as TypeElementParser<T>?;
 
   static TypeElementParser? _parserForImpl<T>(
-      Object? obj, Type? type, TypeInfo? typeInfo) {
+    Object? obj,
+    Type? type,
+    TypeInfo? typeInfo,
+  ) {
     if (obj != null) {
       var f = _parserForObj(obj);
       if (f != null) return f;
@@ -133,8 +138,11 @@ class TypeParser {
   /// Tries to parse a [List].
   /// - Returns [def] if [value] is `null` or an empty [String].
   /// - [elementParser] is an optional parser for the elements of the parsed [List].
-  static List<T>? parseList<T>(Object? value,
-      {List<T>? def, TypeElementParser<T>? elementParser}) {
+  static List<T>? parseList<T>(
+    Object? value, {
+    List<T>? def,
+    TypeElementParser<T>? elementParser,
+  }) {
     if (value == null) return def;
 
     var l = _parseListImpl(value);
@@ -184,8 +192,11 @@ class TypeParser {
   /// Tries to parse a [Set].
   ///
   /// See [parseList].
-  static Set<T>? parseSet<T>(Object? value,
-      {Set<T>? def, TypeElementParser<T>? elementParser}) {
+  static Set<T>? parseSet<T>(
+    Object? value, {
+    Set<T>? def,
+    TypeElementParser<T>? elementParser,
+  }) {
     var l = parseList<T>(value, elementParser: elementParser);
     return l?.toSet() ?? def;
   }
@@ -195,10 +206,12 @@ class TypeParser {
 
   /// Tries to parse a [Map].
   /// - Returns [def] if [value] is `null` or an empty [String].
-  static Map<K, V>? parseMap<K, V>(Object? value,
-      {Map<K, V>? def,
-      TypeElementParser<K>? keyParser,
-      TypeElementParser<V>? valueParser}) {
+  static Map<K, V>? parseMap<K, V>(
+    Object? value, {
+    Map<K, V>? def,
+    TypeElementParser<K>? keyParser,
+    TypeElementParser<V>? valueParser,
+  }) {
     if (value == null) return def;
 
     if (value is Map<K, V>) {
@@ -212,35 +225,55 @@ class TypeParser {
     valueParser ??= (v) => v as V;
 
     if (value is Map) {
-      return value
-          .map((k, v) => MapEntry(keyParser!(k) as K, valueParser!(v) as V));
+      return value.map(
+        (k, v) => MapEntry(keyParser!(k) as K, valueParser!(v) as V),
+      );
     } else if (value is Iterable) {
-      return Map.fromEntries(value
-          .map((e) => parseMapEntry<K, V>(e,
-              keyParser: keyParser, valueParser: valueParser))
-          .nonNulls);
+      return Map.fromEntries(
+        value
+            .map(
+              (e) => parseMapEntry<K, V>(
+                e,
+                keyParser: keyParser,
+                valueParser: valueParser,
+              ),
+            )
+            .nonNulls,
+      );
     } else if (value is num) {
-      var e = parseMapEntry<K, V>(value,
-          keyParser: keyParser, valueParser: valueParser);
+      var e = parseMapEntry<K, V>(
+        value,
+        keyParser: keyParser,
+        valueParser: valueParser,
+      );
       return Map<K, V>.fromEntries([if (e != null) e]);
     } else {
       var s = '$value'.trim();
       if (s.isEmpty) return def;
 
       var pairs = s.split(_regexpPairDelimiter);
-      return Map.fromEntries(pairs
-          .map((e) => parseMapEntry<K, V>(e,
-              keyParser: keyParser, valueParser: valueParser))
-          .nonNulls);
+      return Map.fromEntries(
+        pairs
+            .map(
+              (e) => parseMapEntry<K, V>(
+                e,
+                keyParser: keyParser,
+                valueParser: valueParser,
+              ),
+            )
+            .nonNulls,
+      );
     }
   }
 
   /// Tries to parse a [MapEntry].
   /// - Returns [def] if [value] is `null` or an empty [String].
-  static MapEntry<K, V>? parseMapEntry<K, V>(Object? value,
-      {MapEntry<K, V>? def,
-      TypeElementParser<K>? keyParser,
-      TypeElementParser<V>? valueParser}) {
+  static MapEntry<K, V>? parseMapEntry<K, V>(
+    Object? value, {
+    MapEntry<K, V>? def,
+    TypeElementParser<K>? keyParser,
+    TypeElementParser<V>? valueParser,
+  }) {
     if (value == null) return def;
 
     if (value is MapEntry<K, V>) {
@@ -507,11 +540,12 @@ class TypeParser {
       var mc = ns.length > 4 ? ns[4] : 0;
 
       return Duration(
-          hours: hour,
-          minutes: min,
-          seconds: sec,
-          milliseconds: ms,
-          microseconds: mc);
+        hours: hour,
+        minutes: min,
+        seconds: sec,
+        milliseconds: ms,
+        microseconds: mc,
+      );
     }
   }
 
@@ -619,8 +653,11 @@ class _TypeWrapper {
 
   final BasicDartType basicDartType;
 
-  static BasicDartType detectBasicType(Type type,
-      [Object? object, bool? hasArguments]) {
+  static BasicDartType detectBasicType(
+    Type type, [
+    Object? object,
+    bool? hasArguments,
+  ]) {
     if (type == tString || object is String) return BasicDartType.string;
     if (type == tInt || object is int) return BasicDartType.int;
     if (type == tDouble || object is double) return BasicDartType.double;
@@ -660,8 +697,12 @@ class _TypeWrapper {
 
   _TypeWrapper._(this.type, this.basicDartType);
 
-  factory _TypeWrapper(Type type,
-      {BasicDartType? basicType, Object? object, bool? hasArguments}) {
+  factory _TypeWrapper(
+    Type type, {
+    BasicDartType? basicType,
+    Object? object,
+    bool? hasArguments,
+  }) {
     basicType ??= detectBasicType(type, object, hasArguments);
 
     switch (basicType) {
@@ -897,7 +938,7 @@ class _TypeWrapper {
 
 class _TypeWrapperObject extends _TypeWrapper {
   const _TypeWrapperObject._const()
-      : super._const(_TypeWrapper.tObject, BasicDartType.object);
+    : super._const(_TypeWrapper.tObject, BasicDartType.object);
 
   @override
   bool get isObject => true;
@@ -911,7 +952,7 @@ class _TypeWrapperObject extends _TypeWrapper {
 
 class _TypeWrapperDynamic extends _TypeWrapper {
   const _TypeWrapperDynamic._const()
-      : super._const(_TypeWrapper.tDynamic, BasicDartType.dynamic);
+    : super._const(_TypeWrapper.tDynamic, BasicDartType.dynamic);
 
   @override
   bool get isDynamic => true;
@@ -925,7 +966,7 @@ class _TypeWrapperDynamic extends _TypeWrapper {
 
 abstract class _TypeWrapperPrimitive extends _TypeWrapper {
   const _TypeWrapperPrimitive._const(super.type, super.basicDartType)
-      : super._const();
+    : super._const();
 
   @override
   bool get isPrimitiveType => true;
@@ -936,7 +977,7 @@ abstract class _TypeWrapperPrimitive extends _TypeWrapper {
 
 class _TypeWrapperString extends _TypeWrapperPrimitive {
   const _TypeWrapperString._const()
-      : super._const(_TypeWrapper.tString, BasicDartType.string);
+    : super._const(_TypeWrapper.tString, BasicDartType.string);
 
   @override
   bool get isString => true;
@@ -948,7 +989,7 @@ class _TypeWrapperString extends _TypeWrapperPrimitive {
 
 class _TypeWrapperBool extends _TypeWrapperPrimitive {
   const _TypeWrapperBool._const()
-      : super._const(_TypeWrapper.tBool, BasicDartType.bool);
+    : super._const(_TypeWrapper.tBool, BasicDartType.bool);
 
   @override
   bool get isBool => true;
@@ -960,7 +1001,7 @@ class _TypeWrapperBool extends _TypeWrapperPrimitive {
 
 abstract class _TypeWrapperNumber extends _TypeWrapperPrimitive {
   const _TypeWrapperNumber._const(super.type, super.basicDartType)
-      : super._const();
+    : super._const();
 
   @override
   bool get isNumber => true;
@@ -968,7 +1009,7 @@ abstract class _TypeWrapperNumber extends _TypeWrapperPrimitive {
 
 class _TypeWrapperInt extends _TypeWrapperNumber {
   const _TypeWrapperInt._const()
-      : super._const(_TypeWrapper.tInt, BasicDartType.int);
+    : super._const(_TypeWrapper.tInt, BasicDartType.int);
 
   @override
   bool get isInt => true;
@@ -980,7 +1021,7 @@ class _TypeWrapperInt extends _TypeWrapperNumber {
 
 class _TypeWrapperDouble extends _TypeWrapperNumber {
   const _TypeWrapperDouble._const()
-      : super._const(_TypeWrapper.tDouble, BasicDartType.double);
+    : super._const(_TypeWrapper.tDouble, BasicDartType.double);
 
   @override
   bool get isDouble => true;
@@ -992,7 +1033,7 @@ class _TypeWrapperDouble extends _TypeWrapperNumber {
 
 class _TypeWrapperNum extends _TypeWrapperNumber {
   const _TypeWrapperNum._const()
-      : super._const(_TypeWrapper.tNum, BasicDartType.num);
+    : super._const(_TypeWrapper.tNum, BasicDartType.num);
 
   @override
   bool get isNum => true;
@@ -1004,7 +1045,7 @@ class _TypeWrapperNum extends _TypeWrapperNumber {
 
 abstract class _TypeWrapperCollection extends _TypeWrapper {
   const _TypeWrapperCollection._const(super.type, super.basicDartType)
-      : super._const();
+    : super._const();
 
   @override
   bool get isCollection => true;
@@ -1015,7 +1056,7 @@ abstract class _TypeWrapperCollection extends _TypeWrapper {
 
 class _TypeWrapperList extends _TypeWrapperCollection {
   const _TypeWrapperList._const()
-      : super._const(_TypeWrapper.tList, BasicDartType.list);
+    : super._const(_TypeWrapper.tList, BasicDartType.list);
 
   @override
   bool get isList => true;
@@ -1023,9 +1064,14 @@ class _TypeWrapperList extends _TypeWrapperCollection {
   @override
   V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
     if (typeInfo != null && typeInfo.argumentsLength >= 1) {
-      return typeInfo.callCastedArgumentA(<A>() => TypeParser.parseList<A>(
-          value,
-          elementParser: typeInfo.argumentParser<A>(0)) as V?);
+      return typeInfo.callCastedArgumentA(
+        <A>() =>
+            TypeParser.parseList<A>(
+                  value,
+                  elementParser: typeInfo.argumentParser<A>(0),
+                )
+                as V?,
+      );
     } else {
       return TypeParser.parseList(value) as V?;
     }
@@ -1034,7 +1080,7 @@ class _TypeWrapperList extends _TypeWrapperCollection {
 
 class _TypeWrapperIterable extends _TypeWrapperCollection {
   const _TypeWrapperIterable._const()
-      : super._const(_TypeWrapper.tIterable, BasicDartType.iterable);
+    : super._const(_TypeWrapper.tIterable, BasicDartType.iterable);
 
   @override
   bool get isIterable => true;
@@ -1053,8 +1099,11 @@ class _TypeWrapperIterable extends _TypeWrapperCollection {
             return value.whereType<A>() as V?;
           }
         } else {
-          return TypeParser.parseList<A>(value,
-              elementParser: typeInfo.argumentParser<A>(0)) as V?;
+          return TypeParser.parseList<A>(
+                value,
+                elementParser: typeInfo.argumentParser<A>(0),
+              )
+              as V?;
         }
       });
     } else {
@@ -1069,7 +1118,7 @@ class _TypeWrapperIterable extends _TypeWrapperCollection {
 
 class _TypeWrapperMap extends _TypeWrapperCollection {
   const _TypeWrapperMap._const()
-      : super._const(_TypeWrapper.tMap, BasicDartType.map);
+    : super._const(_TypeWrapper.tMap, BasicDartType.map);
 
   @override
   bool get isMap => true;
@@ -1078,14 +1127,22 @@ class _TypeWrapperMap extends _TypeWrapperCollection {
   V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
     if (typeInfo != null) {
       if (typeInfo.argumentsLength >= 2) {
-        return typeInfo.callCastedArgumentsAB(<A, B>() =>
-            TypeParser.parseMap<A, B>(value,
-                keyParser: typeInfo.argumentParser<A>(0),
-                valueParser: typeInfo.argumentParser<B>(1)) as V?);
+        return typeInfo.callCastedArgumentsAB(
+          <A, B>() =>
+              TypeParser.parseMap<A, B>(
+                    value,
+                    keyParser: typeInfo.argumentParser<A>(0),
+                    valueParser: typeInfo.argumentParser<B>(1),
+                  )
+                  as V?,
+        );
       } else {
-        return TypeParser.parseMap(value,
-            keyParser: typeInfo.argumentParser(0),
-            valueParser: typeInfo.argumentParser(1)) as V?;
+        return TypeParser.parseMap(
+              value,
+              keyParser: typeInfo.argumentParser(0),
+              valueParser: typeInfo.argumentParser(1),
+            )
+            as V?;
       }
     } else {
       return TypeParser.parseMap(value) as V?;
@@ -1095,7 +1152,7 @@ class _TypeWrapperMap extends _TypeWrapperCollection {
 
 class _TypeWrapperSet extends _TypeWrapperCollection {
   const _TypeWrapperSet._const()
-      : super._const(_TypeWrapper.tSet, BasicDartType.set);
+    : super._const(_TypeWrapper.tSet, BasicDartType.set);
 
   @override
   bool get isSet => true;
@@ -1103,8 +1160,14 @@ class _TypeWrapperSet extends _TypeWrapperCollection {
   @override
   V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
     if (typeInfo != null && typeInfo.argumentsLength >= 1) {
-      return typeInfo.callCastedArgumentA(<A>() => TypeParser.parseSet<A>(value,
-          elementParser: typeInfo.argumentParser<A>(0)) as V?);
+      return typeInfo.callCastedArgumentA(
+        <A>() =>
+            TypeParser.parseSet<A>(
+                  value,
+                  elementParser: typeInfo.argumentParser<A>(0),
+                )
+                as V?,
+      );
     } else {
       return TypeParser.parseSet(value) as V?;
     }
@@ -1113,12 +1176,12 @@ class _TypeWrapperSet extends _TypeWrapperCollection {
 
 abstract class _TypeWrapperAsync extends _TypeWrapper {
   const _TypeWrapperAsync._const(super.type, super.basicDartType)
-      : super._const();
+    : super._const();
 }
 
 class _TypeWrapperFuture extends _TypeWrapperAsync {
   const _TypeWrapperFuture._const()
-      : super._const(_TypeWrapper.tFuture, BasicDartType.future);
+    : super._const(_TypeWrapper.tFuture, BasicDartType.future);
 
   @override
   bool get isFuture => true;
@@ -1126,7 +1189,7 @@ class _TypeWrapperFuture extends _TypeWrapperAsync {
 
 class _TypeWrapperFutureOr extends _TypeWrapperAsync {
   const _TypeWrapperFutureOr._const()
-      : super._const(_TypeWrapper.tFutureOr, BasicDartType.futureOr);
+    : super._const(_TypeWrapper.tFutureOr, BasicDartType.futureOr);
 
   @override
   bool get isFutureOr => true;
@@ -1134,7 +1197,7 @@ class _TypeWrapperFutureOr extends _TypeWrapperAsync {
 
 class _TypeWrapperBigInt extends _TypeWrapper {
   const _TypeWrapperBigInt._const()
-      : super._const(_TypeWrapper.tBigInt, BasicDartType.bigInt);
+    : super._const(_TypeWrapper.tBigInt, BasicDartType.bigInt);
 
   @override
   bool get isBigInt => true;
@@ -1146,7 +1209,7 @@ class _TypeWrapperBigInt extends _TypeWrapper {
 
 class _TypeWrapperMapEntry extends _TypeWrapper {
   const _TypeWrapperMapEntry._const()
-      : super._const(_TypeWrapper.tMapEntry, BasicDartType.mapEntry);
+    : super._const(_TypeWrapper.tMapEntry, BasicDartType.mapEntry);
 
   @override
   bool get isMapEntry => true;
@@ -1155,14 +1218,22 @@ class _TypeWrapperMapEntry extends _TypeWrapper {
   V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
     if (typeInfo != null) {
       if (typeInfo.argumentsLength >= 2) {
-        return typeInfo.callCastedArgumentsAB(<A, B>() =>
-            TypeParser.parseMapEntry<A, B>(value,
-                keyParser: typeInfo.argumentParser<A>(0),
-                valueParser: typeInfo.argumentParser<B>(1)) as V?);
+        return typeInfo.callCastedArgumentsAB(
+          <A, B>() =>
+              TypeParser.parseMapEntry<A, B>(
+                    value,
+                    keyParser: typeInfo.argumentParser<A>(0),
+                    valueParser: typeInfo.argumentParser<B>(1),
+                  )
+                  as V?,
+        );
       } else {
-        return TypeParser.parseMapEntry(value,
-            keyParser: typeInfo.argumentParser(0),
-            valueParser: typeInfo.argumentParser(1)) as V?;
+        return TypeParser.parseMapEntry(
+              value,
+              keyParser: typeInfo.argumentParser(0),
+              valueParser: typeInfo.argumentParser(1),
+            )
+            as V?;
       }
     } else {
       return TypeParser.parseMapEntry(value) as V?;
@@ -1172,7 +1243,7 @@ class _TypeWrapperMapEntry extends _TypeWrapper {
 
 class _TypeWrapperDateTime extends _TypeWrapper {
   const _TypeWrapperDateTime._const()
-      : super._const(_TypeWrapper.tDateTime, BasicDartType.dateTime);
+    : super._const(_TypeWrapper.tDateTime, BasicDartType.dateTime);
 
   @override
   bool get isDateTime => true;
@@ -1184,7 +1255,7 @@ class _TypeWrapperDateTime extends _TypeWrapper {
 
 class _TypeWrapperDuration extends _TypeWrapper {
   const _TypeWrapperDuration._const()
-      : super._const(_TypeWrapper.tDuration, BasicDartType.duration);
+    : super._const(_TypeWrapper.tDuration, BasicDartType.duration);
 
   @override
   bool get isDuration => true;
@@ -1196,7 +1267,7 @@ class _TypeWrapperDuration extends _TypeWrapper {
 
 class _TypeWrapperUInt8List extends _TypeWrapper {
   const _TypeWrapperUInt8List._const()
-      : super._const(_TypeWrapper.tUint8List, BasicDartType.uInt8List);
+    : super._const(_TypeWrapper.tUint8List, BasicDartType.uInt8List);
 
   @override
   bool get isUInt8List => true;
@@ -1208,7 +1279,7 @@ class _TypeWrapperUInt8List extends _TypeWrapper {
 
 class _TypeWrapperVoid extends _TypeWrapper {
   _TypeWrapperVoid._const()
-      : super._const(_TypeWrapper.tVoid, BasicDartType.voidType);
+    : super._const(_TypeWrapper.tVoid, BasicDartType.voidType);
 
   @override
   bool get isVoid => true;
@@ -1324,39 +1395,51 @@ class TypeInfo<T> {
   static bool equivalentTypeInfoList(List<TypeInfo> a, List<TypeInfo> b) =>
       _listEquivalencyTypeInfo.equals(a, b);
 
-  static const TypeInfo<String> tString =
-      TypeInfo._const(_TypeWrapper.twString);
+  static const TypeInfo<String> tString = TypeInfo._const(
+    _TypeWrapper.twString,
+  );
   static const TypeInfo<bool> tBool = TypeInfo._const(_TypeWrapper.twBool);
   static const TypeInfo<int> tInt = TypeInfo._const(_TypeWrapper.twInt);
-  static const TypeInfo<double> tDouble =
-      TypeInfo._const(_TypeWrapper.twDouble);
+  static const TypeInfo<double> tDouble = TypeInfo._const(
+    _TypeWrapper.twDouble,
+  );
   static const TypeInfo<num> tNum = TypeInfo._const(_TypeWrapper.twNum);
-  static const TypeInfo<BigInt> tBigInt =
-      TypeInfo._const(_TypeWrapper.twBigInt);
-  static const TypeInfo<DateTime> tDateTime =
-      TypeInfo._const(_TypeWrapper.twDateTime);
-  static const TypeInfo<Duration> tDuration =
-      TypeInfo._const(_TypeWrapper.twDuration);
-  static const TypeInfo<Uint8List> tUint8List =
-      TypeInfo._const(_TypeWrapper.twUint8List);
+  static const TypeInfo<BigInt> tBigInt = TypeInfo._const(
+    _TypeWrapper.twBigInt,
+  );
+  static const TypeInfo<DateTime> tDateTime = TypeInfo._const(
+    _TypeWrapper.twDateTime,
+  );
+  static const TypeInfo<Duration> tDuration = TypeInfo._const(
+    _TypeWrapper.twDuration,
+  );
+  static const TypeInfo<Uint8List> tUint8List = TypeInfo._const(
+    _TypeWrapper.twUint8List,
+  );
 
   static const TypeInfo<List> tList = TypeInfo._const(_TypeWrapper.twList);
   static const TypeInfo<Set> tSet = TypeInfo._const(_TypeWrapper.twSet);
   static const TypeInfo<Map> tMap = TypeInfo._const(_TypeWrapper.twMap);
-  static const TypeInfo<Map> tMapEntry =
-      TypeInfo._const(_TypeWrapper.twMapEntry);
-  static const TypeInfo<Iterable> tIterable =
-      TypeInfo._const(_TypeWrapper.twIterable);
+  static const TypeInfo<Map> tMapEntry = TypeInfo._const(
+    _TypeWrapper.twMapEntry,
+  );
+  static const TypeInfo<Iterable> tIterable = TypeInfo._const(
+    _TypeWrapper.twIterable,
+  );
 
-  static const TypeInfo<Future> tFuture =
-      TypeInfo._const(_TypeWrapper.twFuture);
-  static const TypeInfo<FutureOr> tFutureOr =
-      TypeInfo._const(_TypeWrapper.twFutureOr);
+  static const TypeInfo<Future> tFuture = TypeInfo._const(
+    _TypeWrapper.twFuture,
+  );
+  static const TypeInfo<FutureOr> tFutureOr = TypeInfo._const(
+    _TypeWrapper.twFutureOr,
+  );
 
-  static const TypeInfo<Object> tObject =
-      TypeInfo._const(_TypeWrapper.twObject);
-  static const TypeInfo<dynamic> tDynamic =
-      TypeInfo._const(_TypeWrapper.twDynamic);
+  static const TypeInfo<Object> tObject = TypeInfo._const(
+    _TypeWrapper.twObject,
+  );
+  static const TypeInfo<dynamic> tDynamic = TypeInfo._const(
+    _TypeWrapper.twDynamic,
+  );
   static final TypeInfo<void> tVoid = TypeInfo._wrapper(_TypeWrapper.twVoid);
 
   final _TypeWrapper _typeWrapper;
@@ -1401,9 +1484,10 @@ class TypeInfo<T> {
 
         var valid = arg0.isValidGenericType && arg1.isValidGenericType;
         if (valid) {
-          var typeInfo = this.isMapEntry
-              ? arg0.toMapEntryType(arg1)
-              : arg0.toMapType(arg1);
+          var typeInfo =
+              this.isMapEntry
+                  ? arg0.toMapEntryType(arg1)
+                  : arg0.toMapType(arg1);
           var genericType2 = typeInfo.genericType;
           if (genericType2 == genericType) {
             return true;
@@ -1445,32 +1529,44 @@ class TypeInfo<T> {
   /// The [type] arguments (generics).
   final List<TypeInfo> _arguments;
 
-  List<TypeInfo> get arguments => _arguments is UnmodifiableListView<TypeInfo>
-      ? _arguments
-      : UnmodifiableListView<TypeInfo>(_arguments);
+  List<TypeInfo> get arguments =>
+      _arguments is UnmodifiableListView<TypeInfo>
+          ? _arguments
+          : UnmodifiableListView<TypeInfo>(_arguments);
 
   static const _emptyArguments = <TypeInfo>[];
 
   TypeInfo(Type type, [Iterable<Object>? arguments])
-      : this._(type, arguments, null);
+    : this._(type, arguments, null);
 
-  TypeInfo._(Type type,
-      [Iterable<Object>? arguments, Object? object, _TypeWrapper? typeWrapper])
-      : _typeWrapper = typeWrapper ??
-            _TypeWrapper(type,
-                object: object,
-                hasArguments: arguments != null && arguments.isNotEmpty),
-        _arguments = arguments == null || arguments.isEmpty
-            ? _emptyArguments
-            : List<TypeInfo>.unmodifiable(
-                arguments.map((o) => TypeInfo.from(o)));
+  TypeInfo._(
+    Type type, [
+    Iterable<Object>? arguments,
+    Object? object,
+    _TypeWrapper? typeWrapper,
+  ]) : _typeWrapper =
+           typeWrapper ??
+           _TypeWrapper(
+             type,
+             object: object,
+             hasArguments: arguments != null && arguments.isNotEmpty,
+           ),
+       _arguments =
+           arguments == null || arguments.isEmpty
+               ? _emptyArguments
+               : List<TypeInfo>.unmodifiable(
+                 arguments.map((o) => TypeInfo.from(o)),
+               );
 
   const TypeInfo._wrapper(this._typeWrapper) : _arguments = _emptyArguments;
 
   const TypeInfo._const(this._typeWrapper) : _arguments = _emptyArguments;
 
-  factory TypeInfo.from(Object o,
-      [Iterable<Object>? arguments, Object? object]) {
+  factory TypeInfo.from(
+    Object o, [
+    Iterable<Object>? arguments,
+    Object? object,
+  ]) {
     if (o is TypeInfo) return o as TypeInfo<T>;
     if (o is Type) return TypeInfo<T>.fromType(o, arguments, object);
 
@@ -1489,8 +1585,11 @@ class TypeInfo<T> {
     }
   }
 
-  factory TypeInfo.fromObject(T o,
-      [Iterable<Object>? arguments, Object? object]) {
+  factory TypeInfo.fromObject(
+    T o, [
+    Iterable<Object>? arguments,
+    Object? object,
+  ]) {
     if (arguments == null || arguments.isEmpty) {
       return TypeInfo<T>.fromType(o.runtimeType, null, object ?? o);
     }
@@ -1519,8 +1618,11 @@ class TypeInfo<T> {
     return TypeInfo<T>.fromType(Map, [k, v]);
   }
 
-  factory TypeInfo.fromType(Type type,
-      [Iterable<Object>? arguments, Object? object]) {
+  factory TypeInfo.fromType(
+    Type type, [
+    Iterable<Object>? arguments,
+    Object? object,
+  ]) {
     if (type == _TypeWrapper.tString || object is String) {
       return tString as TypeInfo<T>;
     }
@@ -1552,8 +1654,12 @@ class TypeInfo<T> {
     if (type == _TypeWrapper.tDynamic) {
       // A FutureOr is a `dynamic` with arguments:
       if (hasArguments) {
-        return TypeInfo._(_TypeWrapper.tFutureOr, arguments, object,
-            TypeInfo.tFutureOr._typeWrapper);
+        return TypeInfo._(
+          _TypeWrapper.tFutureOr,
+          arguments,
+          object,
+          TypeInfo.tFutureOr._typeWrapper,
+        );
       } else {
         return tDynamic as TypeInfo<T>;
       }
@@ -1561,8 +1667,12 @@ class TypeInfo<T> {
 
     if (type == _TypeWrapper.tFuture) {
       if (hasArguments) {
-        return TypeInfo._(_TypeWrapper.tFuture, arguments, object,
-            TypeInfo.tFuture._typeWrapper);
+        return TypeInfo._(
+          _TypeWrapper.tFuture,
+          arguments,
+          object,
+          TypeInfo.tFuture._typeWrapper,
+        );
       } else {
         return TypeInfo.tFuture as TypeInfo<T>;
       }
@@ -1699,7 +1809,9 @@ class TypeInfo<T> {
     }
 
     return _listEqualityTypeInfo.equals(
-        arguments, TypeInfo.toList(types, growable: false));
+      arguments,
+      TypeInfo.toList(types, growable: false),
+    );
   }
 
   /// Returns `true` if [arguments] have equivalent [types].
@@ -1722,9 +1834,10 @@ class TypeInfo<T> {
   TypeElementParser<T>? get parser => TypeParser.parserForTypeInfo<T>(this);
 
   /// Returns the parser of the argument at [index].
-  TypeElementParser<A>? argumentParser<A>(int index) => index < argumentsLength
-      ? _arguments[index].parser as TypeElementParser<A>?
-      : null;
+  TypeElementParser<A>? argumentParser<A>(int index) =>
+      index < argumentsLength
+          ? _arguments[index].parser as TypeElementParser<A>?
+          : null;
 
   /// Parse [value] or return [def].
   ///
@@ -1837,7 +1950,9 @@ class TypeInfo<T> {
 
   /// Returns this instance as [TypeReflection].
   TypeReflection get asTypeReflection => TypeReflection<T>(
-      type, _arguments.map((e) => e.asTypeReflection).toList(growable: false));
+    type,
+    _arguments.map((e) => e.asTypeReflection).toList(growable: false),
+  );
 
   /// Returns `true` if this instances has the same [type] and [arguments].
   bool isOf(Type type, [List<Object>? arguments]) {
@@ -1849,7 +1964,9 @@ class TypeInfo<T> {
       if (hasArguments) {
         return argumentsLength == arguments.length &&
             _listEqualityTypeInfo.equals(
-                _arguments, TypeInfo.toList(arguments));
+              _arguments,
+              TypeInfo.toList(arguments),
+            );
       } else {
         return arguments.isEmpty;
       }
@@ -1909,16 +2026,26 @@ class TypeInfo<T> {
         : typeName;
   }
 
-  Object? fromJson(dynamic json,
-      {JsonDecoder? jsonDecoder,
-      bool duplicatedEntitiesAsID = true,
-      bool? autoResetEntityCache}) {
+  Object? fromJson(
+    dynamic json, {
+    JsonDecoder? jsonDecoder,
+    bool duplicatedEntitiesAsID = true,
+    bool? autoResetEntityCache,
+  }) {
     return _fromJsonImpl(
-        json, jsonDecoder, duplicatedEntitiesAsID, autoResetEntityCache);
+      json,
+      jsonDecoder,
+      duplicatedEntitiesAsID,
+      autoResetEntityCache,
+    );
   }
 
-  Object? _fromJsonImpl(dynamic json, JsonDecoder? jsonDecoder,
-      bool duplicatedEntitiesAsID, bool? autoResetEntityCache) {
+  Object? _fromJsonImpl(
+    dynamic json,
+    JsonDecoder? jsonDecoder,
+    bool duplicatedEntitiesAsID,
+    bool? autoResetEntityCache,
+  ) {
     if (isPrimitiveType) {
       return parse(json);
     } else if (isIterable) {
@@ -1930,10 +2057,12 @@ class TypeInfo<T> {
         if (arg != null) {
           jsonDecoder ??= JsonDecoder.defaultDecoder;
 
-          list = jsonDecoder.fromJsonList(list,
-              typeInfo: arg,
-              duplicatedEntitiesAsID: duplicatedEntitiesAsID,
-              autoResetEntityCache: autoResetEntityCache);
+          list = jsonDecoder.fromJsonList(
+            list,
+            typeInfo: arg,
+            duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+            autoResetEntityCache: autoResetEntityCache,
+          );
         }
       }
 
@@ -1948,12 +2077,22 @@ class TypeInfo<T> {
         if (arg0 != null && arg1 != null) {
           jsonDecoder ??= JsonDecoder.defaultDecoder;
 
-          map = map.map((key, value) => MapEntry(
-                arg0._fromJsonImpl(
-                    key, jsonDecoder, duplicatedEntitiesAsID, false),
-                arg1._fromJsonImpl(
-                    value, jsonDecoder, duplicatedEntitiesAsID, false),
-              ));
+          map = map.map(
+            (key, value) => MapEntry(
+              arg0._fromJsonImpl(
+                key,
+                jsonDecoder,
+                duplicatedEntitiesAsID,
+                false,
+              ),
+              arg1._fromJsonImpl(
+                value,
+                jsonDecoder,
+                duplicatedEntitiesAsID,
+                false,
+              ),
+            ),
+          );
 
           if (autoResetEntityCache != null) {
             if (autoResetEntityCache) {
@@ -1967,25 +2106,30 @@ class TypeInfo<T> {
 
       return castCollection(map);
     } else {
-      var classReflection =
-          ReflectionFactory().getRegisterClassReflection(type);
+      var classReflection = ReflectionFactory().getRegisterClassReflection(
+        type,
+      );
 
       if (classReflection != null) {
         jsonDecoder ??= JsonDecoder.defaultDecoder;
 
-        return classReflection.fromJson(json,
-            jsonDecoder: jsonDecoder,
-            duplicatedEntitiesAsID: duplicatedEntitiesAsID,
-            autoResetEntityCache: autoResetEntityCache);
+        return classReflection.fromJson(
+          json,
+          jsonDecoder: jsonDecoder,
+          duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+          autoResetEntityCache: autoResetEntityCache,
+        );
       }
     }
 
     jsonDecoder ??= JsonDecoder.defaultDecoder;
 
-    return jsonDecoder.fromJson(json,
-        typeInfo: this,
-        duplicatedEntitiesAsID: duplicatedEntitiesAsID,
-        autoResetEntityCache: autoResetEntityCache);
+    return jsonDecoder.fromJson(
+      json,
+      typeInfo: this,
+      duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+      autoResetEntityCache: autoResetEntityCache,
+    );
   }
 
   /// Casts [o] to this collection type if a [ClassReflection] or [EnumReflection]
@@ -2001,7 +2145,7 @@ class TypeInfo<T> {
 
     var reflection =
         reflectionFactory.getRegisterClassReflection(mainType.type) ??
-            reflectionFactory.getRegisterEnumReflection(mainType.type);
+        reflectionFactory.getRegisterEnumReflection(mainType.type);
 
     if (reflection != null) {
       return reflection.castCollection(o, this, nullable: nullable) ?? o;
@@ -2028,7 +2172,7 @@ class TypeInfo<T> {
 
     var reflection =
         reflectionFactory.getRegisterClassReflection(mainType.type) ??
-            reflectionFactory.getRegisterEnumReflection(mainType.type);
+        reflectionFactory.getRegisterEnumReflection(mainType.type);
 
     if (reflection != null) {
       return reflection.castList(list, mainType.type, nullable: nullable) ??
@@ -2055,7 +2199,7 @@ class TypeInfo<T> {
 
     var reflection =
         reflectionFactory.getRegisterClassReflection(mainType.type) ??
-            reflectionFactory.getRegisterEnumReflection(mainType.type);
+        reflectionFactory.getRegisterEnumReflection(mainType.type);
 
     if (reflection != null) {
       return reflection.castSet(set, mainType.type, nullable: nullable) ?? set;
@@ -2077,7 +2221,7 @@ class TypeInfo<T> {
 
     var reflection =
         reflectionFactory.getRegisterClassReflection(mainType.type) ??
-            reflectionFactory.getRegisterEnumReflection(mainType.type);
+        reflectionFactory.getRegisterEnumReflection(mainType.type);
 
     if (reflection != null) {
       return reflection.castIterable(itr, mainType.type, nullable: nullable) ??
@@ -2095,26 +2239,30 @@ class TypeInfo<T> {
   /// `K` and `V` if there's a [ClassReflection] or [EnumReflection]
   /// for them registered at [ReflectionFactory].
   Map castMap(Map map, {bool nullable = false}) {
-    var keyType = isCollection
-        ? (argumentType(0) ?? TypeInfo.tDynamic)
-        : TypeInfo.tDynamic;
-    var valueType = isCollection
-        ? (argumentType(1) ?? TypeInfo.tDynamic)
-        : TypeInfo.tDynamic;
+    var keyType =
+        isCollection
+            ? (argumentType(0) ?? TypeInfo.tDynamic)
+            : TypeInfo.tDynamic;
+    var valueType =
+        isCollection
+            ? (argumentType(1) ?? TypeInfo.tDynamic)
+            : TypeInfo.tDynamic;
 
     var reflectionFactory = ReflectionFactory();
 
     var keyReflection =
         reflectionFactory.getRegisterClassReflection(keyType.type) ??
-            reflectionFactory.getRegisterEnumReflection(keyType.type);
+        reflectionFactory.getRegisterEnumReflection(keyType.type);
 
     var valueReflection =
         reflectionFactory.getRegisterClassReflection(valueType.type) ??
-            reflectionFactory.getRegisterEnumReflection(valueType.type);
+        reflectionFactory.getRegisterEnumReflection(valueType.type);
 
     if (keyReflection != null && valueReflection != null) {
       var tMap = TypeInfo.fromMapType(
-          keyReflection.typeInfo, valueReflection.typeInfo);
+        keyReflection.typeInfo,
+        valueReflection.typeInfo,
+      );
 
       if (valueReflection == keyReflection) {
         return keyReflection.castMap(map, tMap, nullable: nullable) ?? map;
@@ -2122,8 +2270,12 @@ class TypeInfo<T> {
         var mapKeysCast =
             keyReflection.castMapKeys(map, tMap, nullable: nullable) ?? map;
 
-        var mapCast = valueReflection.castMapValues(mapKeysCast, this,
-                nullable: nullable) ??
+        var mapCast =
+            valueReflection.castMapValues(
+              mapKeysCast,
+              this,
+              nullable: nullable,
+            ) ??
             map;
 
         return mapCast;

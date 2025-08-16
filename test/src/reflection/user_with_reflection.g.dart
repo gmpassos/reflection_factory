@@ -68,40 +68,44 @@ Symbol? _getSymbol(String? key) {
 
 // ignore: non_constant_identifier_names
 TestAddressWithReflection TestAddressWithReflection$fromJson(
-        Map<String, Object?> map) =>
-    TestAddressWithReflection$reflection.staticInstance.fromJson(map);
+  Map<String, Object?> map,
+) => TestAddressWithReflection$reflection.staticInstance.fromJson(map);
 // ignore: non_constant_identifier_names
 TestAddressWithReflection TestAddressWithReflection$fromJsonEncoded(
-        String jsonEncoded) =>
-    TestAddressWithReflection$reflection.staticInstance
-        .fromJsonEncoded(jsonEncoded);
+  String jsonEncoded,
+) => TestAddressWithReflection$reflection.staticInstance.fromJsonEncoded(
+  jsonEncoded,
+);
 // ignore: non_constant_identifier_names
 TestCompanyWithReflection TestCompanyWithReflection$fromJson(
-        Map<String, Object?> map) =>
-    TestCompanyWithReflection$reflection.staticInstance.fromJson(map);
+  Map<String, Object?> map,
+) => TestCompanyWithReflection$reflection.staticInstance.fromJson(map);
 // ignore: non_constant_identifier_names
 TestCompanyWithReflection TestCompanyWithReflection$fromJsonEncoded(
-        String jsonEncoded) =>
-    TestCompanyWithReflection$reflection.staticInstance
-        .fromJsonEncoded(jsonEncoded);
+  String jsonEncoded,
+) => TestCompanyWithReflection$reflection.staticInstance.fromJsonEncoded(
+  jsonEncoded,
+);
 // ignore: non_constant_identifier_names
 TestDataWithReflection TestDataWithReflection$fromJson(
-        Map<String, Object?> map) =>
-    TestDataWithReflection$reflection.staticInstance.fromJson(map);
+  Map<String, Object?> map,
+) => TestDataWithReflection$reflection.staticInstance.fromJson(map);
 // ignore: non_constant_identifier_names
 TestDataWithReflection TestDataWithReflection$fromJsonEncoded(
-        String jsonEncoded) =>
-    TestDataWithReflection$reflection.staticInstance
-        .fromJsonEncoded(jsonEncoded);
+  String jsonEncoded,
+) => TestDataWithReflection$reflection.staticInstance.fromJsonEncoded(
+  jsonEncoded,
+);
 // ignore: non_constant_identifier_names
 TestDomainWithReflection TestDomainWithReflection$fromJson(
-        Map<String, Object?> map) =>
-    TestDomainWithReflection$reflection.staticInstance.fromJson(map);
+  Map<String, Object?> map,
+) => TestDomainWithReflection$reflection.staticInstance.fromJson(map);
 // ignore: non_constant_identifier_names
 TestDomainWithReflection TestDomainWithReflection$fromJsonEncoded(
-        String jsonEncoded) =>
-    TestDomainWithReflection$reflection.staticInstance
-        .fromJsonEncoded(jsonEncoded);
+  String jsonEncoded,
+) => TestDomainWithReflection$reflection.staticInstance.fromJsonEncoded(
+  jsonEncoded,
+);
 // ignore: non_constant_identifier_names
 TestEmpty TestEmpty$fromJson(Map<String, Object?> map) =>
     TestEmpty$reflection.staticInstance.fromJson(map);
@@ -113,13 +117,14 @@ TestEnumWithReflection? TestEnumWithReflection$from(Object? o) =>
     TestEnumWithReflection$reflection.staticInstance.from(o);
 // ignore: non_constant_identifier_names
 TestFranchiseWithReflection TestFranchiseWithReflection$fromJson(
-        Map<String, Object?> map) =>
-    TestFranchiseWithReflection$reflection.staticInstance.fromJson(map);
+  Map<String, Object?> map,
+) => TestFranchiseWithReflection$reflection.staticInstance.fromJson(map);
 // ignore: non_constant_identifier_names
 TestFranchiseWithReflection TestFranchiseWithReflection$fromJsonEncoded(
-        String jsonEncoded) =>
-    TestFranchiseWithReflection$reflection.staticInstance
-        .fromJsonEncoded(jsonEncoded);
+  String jsonEncoded,
+) => TestFranchiseWithReflection$reflection.staticInstance.fromJsonEncoded(
+  jsonEncoded,
+);
 // ignore: non_constant_identifier_names
 TestName TestName$fromJson(Map<String, Object?> map) =>
     TestName$reflection.staticInstance.fromJson(map);
@@ -128,22 +133,24 @@ TestName TestName$fromJsonEncoded(String jsonEncoded) =>
     TestName$reflection.staticInstance.fromJsonEncoded(jsonEncoded);
 // ignore: non_constant_identifier_names
 TestOpAWithReflection TestOpAWithReflection$fromJson(
-        Map<String, Object?> map) =>
-    TestOpAWithReflection$reflection.staticInstance.fromJson(map);
+  Map<String, Object?> map,
+) => TestOpAWithReflection$reflection.staticInstance.fromJson(map);
 // ignore: non_constant_identifier_names
 TestOpAWithReflection TestOpAWithReflection$fromJsonEncoded(
-        String jsonEncoded) =>
-    TestOpAWithReflection$reflection.staticInstance
-        .fromJsonEncoded(jsonEncoded);
+  String jsonEncoded,
+) => TestOpAWithReflection$reflection.staticInstance.fromJsonEncoded(
+  jsonEncoded,
+);
 // ignore: non_constant_identifier_names
 TestOpBWithReflection TestOpBWithReflection$fromJson(
-        Map<String, Object?> map) =>
-    TestOpBWithReflection$reflection.staticInstance.fromJson(map);
+  Map<String, Object?> map,
+) => TestOpBWithReflection$reflection.staticInstance.fromJson(map);
 // ignore: non_constant_identifier_names
 TestOpBWithReflection TestOpBWithReflection$fromJsonEncoded(
-        String jsonEncoded) =>
-    TestOpBWithReflection$reflection.staticInstance
-        .fromJsonEncoded(jsonEncoded);
+  String jsonEncoded,
+) => TestOpBWithReflection$reflection.staticInstance.fromJsonEncoded(
+  jsonEncoded,
+);
 // ignore: non_constant_identifier_names
 TestOpWithReflection TestOpWithReflection$fromJson(Map<String, Object?> map) =>
     TestOpWithReflection$reflection.staticInstance.fromJson(map);
@@ -152,30 +159,33 @@ TestOpWithReflection TestOpWithReflection$fromJsonEncoded(String jsonEncoded) =>
     TestOpWithReflection$reflection.staticInstance.fromJsonEncoded(jsonEncoded);
 // ignore: non_constant_identifier_names
 TestTransactionWithReflection TestTransactionWithReflection$fromJson(
-        Map<String, Object?> map) =>
-    TestTransactionWithReflection$reflection.staticInstance.fromJson(map);
+  Map<String, Object?> map,
+) => TestTransactionWithReflection$reflection.staticInstance.fromJson(map);
 // ignore: non_constant_identifier_names
 TestTransactionWithReflection TestTransactionWithReflection$fromJsonEncoded(
-        String jsonEncoded) =>
-    TestTransactionWithReflection$reflection.staticInstance
-        .fromJsonEncoded(jsonEncoded);
+  String jsonEncoded,
+) => TestTransactionWithReflection$reflection.staticInstance.fromJsonEncoded(
+  jsonEncoded,
+);
 // ignore: non_constant_identifier_names
 TestUserWithReflection TestUserWithReflection$fromJson(
-        Map<String, Object?> map) =>
-    TestUserWithReflection$reflection.staticInstance.fromJson(map);
+  Map<String, Object?> map,
+) => TestUserWithReflection$reflection.staticInstance.fromJson(map);
 // ignore: non_constant_identifier_names
 TestUserWithReflection TestUserWithReflection$fromJsonEncoded(
-        String jsonEncoded) =>
-    TestUserWithReflection$reflection.staticInstance
-        .fromJsonEncoded(jsonEncoded);
+  String jsonEncoded,
+) => TestUserWithReflection$reflection.staticInstance.fromJsonEncoded(
+  jsonEncoded,
+);
 
 class TestAddressWithReflection$reflection
-    extends ClassReflection<TestAddressWithReflection> with __ReflectionMixin {
+    extends ClassReflection<TestAddressWithReflection>
+    with __ReflectionMixin {
   TestAddressWithReflection$reflection([TestAddressWithReflection? object])
-      : this._(object);
+    : this._(object);
 
   TestAddressWithReflection$reflection._([TestAddressWithReflection? object])
-      : super(TestAddressWithReflection, r'TestAddressWithReflection', object);
+    : super(TestAddressWithReflection, r'TestAddressWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -191,9 +201,9 @@ class TestAddressWithReflection$reflection
   Version get languageVersion => Version.parse('3.6.0');
 
   @override
-  TestAddressWithReflection$reflection withObject(
-          [TestAddressWithReflection? obj]) =>
-      TestAddressWithReflection$reflection(obj)..setupInternalsWith(this);
+  TestAddressWithReflection$reflection withObject([
+    TestAddressWithReflection? obj,
+  ]) => TestAddressWithReflection$reflection(obj)..setupInternalsWith(this);
 
   static TestAddressWithReflection$reflection? _withoutObjectInstance;
   @override
@@ -235,18 +245,19 @@ class TestAddressWithReflection$reflection
   static const List<String> _constructorsNames = const <String>[
     'empty',
     'simple',
-    'withCity'
+    'withCity',
   ];
 
   @override
   List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestAddressWithReflection>>
-      _constructors = {};
+  _constructors = {};
 
   @override
   ConstructorReflection<TestAddressWithReflection>? constructor(
-      String constructorName) {
+    String constructorName,
+  ) {
     var c = _constructors[constructorName];
     if (c != null) return c;
     c = _constructorImpl(constructorName);
@@ -256,43 +267,47 @@ class TestAddressWithReflection$reflection
   }
 
   ConstructorReflection<TestAddressWithReflection>? _constructorImpl(
-      String constructorName) {
+    String constructorName,
+  ) {
     var lc = constructorName.trim().toLowerCase();
 
     switch (lc) {
       case 'simple':
         return ConstructorReflection<TestAddressWithReflection>(
-            this,
-            TestAddressWithReflection,
-            'simple',
-            () => TestAddressWithReflection.simple,
-            const <__PR>[__PR(__TR.tString, 'state', false, true)],
-            null,
-            const <String, __PR>{'id': __PR(__TR.tInt, 'id', true, false)},
-            null);
+          this,
+          TestAddressWithReflection,
+          'simple',
+          () => TestAddressWithReflection.simple,
+          const <__PR>[__PR(__TR.tString, 'state', false, true)],
+          null,
+          const <String, __PR>{'id': __PR(__TR.tInt, 'id', true, false)},
+          null,
+        );
       case 'withcity':
         return ConstructorReflection<TestAddressWithReflection>(
-            this,
-            TestAddressWithReflection,
-            'withCity',
-            () => TestAddressWithReflection.withCity,
-            const <__PR>[__PR(__TR.tString, 'state', false, true)],
-            null,
-            const <String, __PR>{
-              'city': __PR(__TR.tString, 'city', false, false, ''),
-              'id': __PR(__TR.tInt, 'id', true, false)
-            },
-            const [JsonConstructor(mandatory: true)]);
+          this,
+          TestAddressWithReflection,
+          'withCity',
+          () => TestAddressWithReflection.withCity,
+          const <__PR>[__PR(__TR.tString, 'state', false, true)],
+          null,
+          const <String, __PR>{
+            'city': __PR(__TR.tString, 'city', false, false, ''),
+            'id': __PR(__TR.tInt, 'id', true, false),
+          },
+          const [JsonConstructor(mandatory: true)],
+        );
       case 'empty':
         return ConstructorReflection<TestAddressWithReflection>(
-            this,
-            TestAddressWithReflection,
-            'empty',
-            () => TestAddressWithReflection.empty,
-            null,
-            null,
-            null,
-            null);
+          this,
+          TestAddressWithReflection,
+          'empty',
+          () => TestAddressWithReflection.empty,
+          null,
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
@@ -321,21 +336,23 @@ class TestAddressWithReflection$reflection
     'city',
     'hashCode',
     'id',
-    'state'
+    'state',
   ];
 
   @override
   List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestAddressWithReflection, dynamic>>
-      _fieldsNoObject = {};
+  _fieldsNoObject = {};
 
   final Map<String, FieldReflection<TestAddressWithReflection, dynamic>>
-      _fieldsObject = {};
+  _fieldsObject = {};
 
   @override
-  FieldReflection<TestAddressWithReflection, T>? field<T>(String fieldName,
-      [TestAddressWithReflection? obj]) {
+  FieldReflection<TestAddressWithReflection, T>? field<T>(
+    String fieldName, [
+    TestAddressWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _fieldObjectImpl<T>(fieldName);
@@ -349,7 +366,8 @@ class TestAddressWithReflection$reflection
   }
 
   FieldReflection<TestAddressWithReflection, T>? _fieldNoObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsNoObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestAddressWithReflection, T>;
@@ -361,7 +379,8 @@ class TestAddressWithReflection$reflection
   }
 
   FieldReflection<TestAddressWithReflection, T>? _fieldObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestAddressWithReflection, T>;
@@ -374,7 +393,9 @@ class TestAddressWithReflection$reflection
   }
 
   FieldReflection<TestAddressWithReflection, dynamic>? _fieldImpl(
-      String fieldName, TestAddressWithReflection? obj) {
+    String fieldName,
+    TestAddressWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = fieldName.trim().toLowerCase();
@@ -435,8 +456,10 @@ class TestAddressWithReflection$reflection
   }
 
   @override
-  Map<String, dynamic> getFieldsValues(TestAddressWithReflection? obj,
-      {bool withHashCode = false}) {
+  Map<String, dynamic> getFieldsValues(
+    TestAddressWithReflection? obj, {
+    bool withHashCode = false,
+  }) {
     obj ??= object;
     return <String, dynamic>{
       'id': obj?.id,
@@ -453,26 +476,28 @@ class TestAddressWithReflection$reflection
 
   @override
   StaticFieldReflection<TestAddressWithReflection, T>? staticField<T>(
-          String fieldName) =>
-      null;
+    String fieldName,
+  ) => null;
 
   static const List<String> _methodsNames = const <String>[
     'toJson',
-    'toString'
+    'toString',
   ];
 
   @override
   List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestAddressWithReflection, dynamic>>
-      _methodsNoObject = {};
+  _methodsNoObject = {};
 
   final Map<String, MethodReflection<TestAddressWithReflection, dynamic>>
-      _methodsObject = {};
+  _methodsObject = {};
 
   @override
-  MethodReflection<TestAddressWithReflection, R>? method<R>(String methodName,
-      [TestAddressWithReflection? obj]) {
+  MethodReflection<TestAddressWithReflection, R>? method<R>(
+    String methodName, [
+    TestAddressWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _methodObjectImpl<R>(methodName);
@@ -486,7 +511,8 @@ class TestAddressWithReflection$reflection
   }
 
   MethodReflection<TestAddressWithReflection, R>? _methodNoObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsNoObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestAddressWithReflection, R>;
@@ -498,7 +524,8 @@ class TestAddressWithReflection$reflection
   }
 
   MethodReflection<TestAddressWithReflection, R>? _methodObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestAddressWithReflection, R>;
@@ -511,39 +538,45 @@ class TestAddressWithReflection$reflection
   }
 
   MethodReflection<TestAddressWithReflection, dynamic>? _methodImpl(
-      String methodName, TestAddressWithReflection? obj) {
+    String methodName,
+    TestAddressWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = methodName.trim().toLowerCase();
 
     switch (lc) {
       case 'tojson':
-        return MethodReflection<TestAddressWithReflection,
-                Map<String, dynamic>>(
-            this,
-            TestAddressWithReflection,
-            'toJson',
-            __TR.tMapStringDynamic,
-            false,
-            (o) => o!.toJson,
-            obj,
-            null,
-            null,
-            null,
-            null);
+        return MethodReflection<
+          TestAddressWithReflection,
+          Map<String, dynamic>
+        >(
+          this,
+          TestAddressWithReflection,
+          'toJson',
+          __TR.tMapStringDynamic,
+          false,
+          (o) => o!.toJson,
+          obj,
+          null,
+          null,
+          null,
+          null,
+        );
       case 'tostring':
         return MethodReflection<TestAddressWithReflection, String>(
-            this,
-            TestAddressWithReflection,
-            'toString',
-            __TR.tString,
-            false,
-            (o) => o!.toString,
-            obj,
-            null,
-            null,
-            null,
-            const [override]);
+          this,
+          TestAddressWithReflection,
+          'toString',
+          __TR.tString,
+          false,
+          (o) => o!.toString,
+          obj,
+          null,
+          null,
+          null,
+          const [override],
+        );
       default:
         return null;
     }
@@ -556,24 +589,26 @@ class TestAddressWithReflection$reflection
 
   @override
   StaticMethodReflection<TestAddressWithReflection, R>? staticMethod<R>(
-          String methodName) =>
-      null;
+    String methodName,
+  ) => null;
 }
 
 class TestCompanyWithReflection$reflection
-    extends ClassReflection<TestCompanyWithReflection> with __ReflectionMixin {
+    extends ClassReflection<TestCompanyWithReflection>
+    with __ReflectionMixin {
   static final Expando<TestCompanyWithReflection$reflection>
-      _objectReflections = Expando();
+  _objectReflections = Expando();
 
-  factory TestCompanyWithReflection$reflection(
-      [TestCompanyWithReflection? object]) {
+  factory TestCompanyWithReflection$reflection([
+    TestCompanyWithReflection? object,
+  ]) {
     if (object == null) return staticInstance;
     return _objectReflections[object] ??=
         TestCompanyWithReflection$reflection._(object);
   }
 
   TestCompanyWithReflection$reflection._([TestCompanyWithReflection? object])
-      : super(TestCompanyWithReflection, r'TestCompanyWithReflection', object);
+    : super(TestCompanyWithReflection, r'TestCompanyWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -589,9 +624,9 @@ class TestCompanyWithReflection$reflection
   Version get languageVersion => Version.parse('3.6.0');
 
   @override
-  TestCompanyWithReflection$reflection withObject(
-          [TestCompanyWithReflection? obj]) =>
-      TestCompanyWithReflection$reflection(obj)..setupInternalsWith(this);
+  TestCompanyWithReflection$reflection withObject([
+    TestCompanyWithReflection? obj,
+  ]) => TestCompanyWithReflection$reflection(obj)..setupInternalsWith(this);
 
   static TestCompanyWithReflection$reflection? _withoutObjectInstance;
   @override
@@ -631,18 +666,19 @@ class TestCompanyWithReflection$reflection
 
   static const List<String> _constructorsNames = const <String>[
     '',
-    'noBranches'
+    'noBranches',
   ];
 
   @override
   List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestCompanyWithReflection>>
-      _constructors = {};
+  _constructors = {};
 
   @override
   ConstructorReflection<TestCompanyWithReflection>? constructor(
-      String constructorName) {
+    String constructorName,
+  ) {
     var c = _constructors[constructorName];
     if (c != null) return c;
     c = _constructorImpl(constructorName);
@@ -652,68 +688,92 @@ class TestCompanyWithReflection$reflection
   }
 
   ConstructorReflection<TestCompanyWithReflection>? _constructorImpl(
-      String constructorName) {
+    String constructorName,
+  ) {
     var lc = constructorName.trim().toLowerCase();
 
     switch (lc) {
       case '':
         return ConstructorReflection<TestCompanyWithReflection>(
-            this,
-            TestCompanyWithReflection,
-            '',
-            () => TestCompanyWithReflection.new,
-            const <__PR>[
-              __PR(__TR.tString, 'name', false, true),
-              __PR(__TR<TestAddressWithReflection>(TestAddressWithReflection),
-                  'mainAddress', true, true)
-            ],
-            null,
-            const <String, __PR>{
-              'branchesAddresses': __PR(
-                  __TR<List<TestAddressWithReflection>>(List, <__TR>[
-                    __TR<TestAddressWithReflection>(TestAddressWithReflection)
-                  ]),
-                  'branchesAddresses',
-                  false,
-                  false,
-                  const <TestAddressWithReflection>[]),
-              'extraAddresses': __PR(
-                  __TR<List<TestAddressWithReflection>>(List, <__TR>[
-                    __TR<TestAddressWithReflection>(TestAddressWithReflection)
-                  ]),
-                  'extraAddresses',
-                  false,
-                  false,
-                  const <TestAddressWithReflection>[]),
-              'extraNames': __PR(__TR.tListString, 'extraNames', false, false,
-                  const <String>[])
-            },
-            null);
+          this,
+          TestCompanyWithReflection,
+          '',
+          () => TestCompanyWithReflection.new,
+          const <__PR>[
+            __PR(__TR.tString, 'name', false, true),
+            __PR(
+              __TR<TestAddressWithReflection>(TestAddressWithReflection),
+              'mainAddress',
+              true,
+              true,
+            ),
+          ],
+          null,
+          const <String, __PR>{
+            'branchesAddresses': __PR(
+              __TR<List<TestAddressWithReflection>>(List, <__TR>[
+                __TR<TestAddressWithReflection>(TestAddressWithReflection),
+              ]),
+              'branchesAddresses',
+              false,
+              false,
+              const <TestAddressWithReflection>[],
+            ),
+            'extraAddresses': __PR(
+              __TR<List<TestAddressWithReflection>>(List, <__TR>[
+                __TR<TestAddressWithReflection>(TestAddressWithReflection),
+              ]),
+              'extraAddresses',
+              false,
+              false,
+              const <TestAddressWithReflection>[],
+            ),
+            'extraNames': __PR(
+              __TR.tListString,
+              'extraNames',
+              false,
+              false,
+              const <String>[],
+            ),
+          },
+          null,
+        );
       case 'nobranches':
         return ConstructorReflection<TestCompanyWithReflection>(
-            this,
-            TestCompanyWithReflection,
-            'noBranches',
-            () => TestCompanyWithReflection.noBranches,
-            const <__PR>[
-              __PR(__TR.tString, 'name', false, true),
-              __PR(__TR<TestAddressWithReflection>(TestAddressWithReflection),
-                  'mainAddress', true, true)
-            ],
-            null,
-            const <String, __PR>{
-              'extraAddresses': __PR(
-                  __TR<List<TestAddressWithReflection>>(List, <__TR>[
-                    __TR<TestAddressWithReflection>(TestAddressWithReflection)
-                  ]),
-                  'extraAddresses',
-                  false,
-                  false,
-                  const <TestAddressWithReflection>[]),
-              'extraNames': __PR(__TR.tListString, 'extraNames', false, false,
-                  const <String>[])
-            },
-            null);
+          this,
+          TestCompanyWithReflection,
+          'noBranches',
+          () => TestCompanyWithReflection.noBranches,
+          const <__PR>[
+            __PR(__TR.tString, 'name', false, true),
+            __PR(
+              __TR<TestAddressWithReflection>(TestAddressWithReflection),
+              'mainAddress',
+              true,
+              true,
+            ),
+          ],
+          null,
+          const <String, __PR>{
+            'extraAddresses': __PR(
+              __TR<List<TestAddressWithReflection>>(List, <__TR>[
+                __TR<TestAddressWithReflection>(TestAddressWithReflection),
+              ]),
+              'extraAddresses',
+              false,
+              false,
+              const <TestAddressWithReflection>[],
+            ),
+            'extraNames': __PR(
+              __TR.tListString,
+              'extraNames',
+              false,
+              false,
+              const <String>[],
+            ),
+          },
+          null,
+        );
       default:
         return null;
     }
@@ -742,21 +802,23 @@ class TestCompanyWithReflection$reflection
     'hashCode',
     'local',
     'mainAddress',
-    'name'
+    'name',
   ];
 
   @override
   List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestCompanyWithReflection, dynamic>>
-      _fieldsNoObject = {};
+  _fieldsNoObject = {};
 
   final Map<String, FieldReflection<TestCompanyWithReflection, dynamic>>
-      _fieldsObject = {};
+  _fieldsObject = {};
 
   @override
-  FieldReflection<TestCompanyWithReflection, T>? field<T>(String fieldName,
-      [TestCompanyWithReflection? obj]) {
+  FieldReflection<TestCompanyWithReflection, T>? field<T>(
+    String fieldName, [
+    TestCompanyWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _fieldObjectImpl<T>(fieldName);
@@ -770,7 +832,8 @@ class TestCompanyWithReflection$reflection
   }
 
   FieldReflection<TestCompanyWithReflection, T>? _fieldNoObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsNoObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestCompanyWithReflection, T>;
@@ -782,7 +845,8 @@ class TestCompanyWithReflection$reflection
   }
 
   FieldReflection<TestCompanyWithReflection, T>? _fieldObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestCompanyWithReflection, T>;
@@ -795,7 +859,9 @@ class TestCompanyWithReflection$reflection
   }
 
   FieldReflection<TestCompanyWithReflection, dynamic>? _fieldImpl(
-      String fieldName, TestCompanyWithReflection? obj) {
+    String fieldName,
+    TestCompanyWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = fieldName.trim().toLowerCase();
@@ -814,8 +880,10 @@ class TestCompanyWithReflection$reflection
           true,
         );
       case 'mainaddress':
-        return FieldReflection<TestCompanyWithReflection,
-            TestAddressWithReflection?>(
+        return FieldReflection<
+          TestCompanyWithReflection,
+          TestAddressWithReflection?
+        >(
           this,
           TestCompanyWithReflection,
           const __TR<TestAddressWithReflection>(TestAddressWithReflection),
@@ -839,12 +907,14 @@ class TestCompanyWithReflection$reflection
           true,
         );
       case 'branchesaddresses':
-        return FieldReflection<TestCompanyWithReflection,
-            List<TestAddressWithReflection>>(
+        return FieldReflection<
+          TestCompanyWithReflection,
+          List<TestAddressWithReflection>
+        >(
           this,
           TestCompanyWithReflection,
           const __TR<List<TestAddressWithReflection>>(List, <__TR>[
-            __TR<TestAddressWithReflection>(TestAddressWithReflection)
+            __TR<TestAddressWithReflection>(TestAddressWithReflection),
           ]),
           'branchesAddresses',
           false,
@@ -854,12 +924,14 @@ class TestCompanyWithReflection$reflection
           false,
         );
       case 'extraaddresses':
-        return FieldReflection<TestCompanyWithReflection,
-            List<TestAddressWithReflection>>(
+        return FieldReflection<
+          TestCompanyWithReflection,
+          List<TestAddressWithReflection>
+        >(
           this,
           TestCompanyWithReflection,
           const __TR<List<TestAddressWithReflection>>(List, <__TR>[
-            __TR<TestAddressWithReflection>(TestAddressWithReflection)
+            __TR<TestAddressWithReflection>(TestAddressWithReflection),
           ]),
           'extraAddresses',
           false,
@@ -900,8 +972,10 @@ class TestCompanyWithReflection$reflection
   }
 
   @override
-  Map<String, dynamic> getFieldsValues(TestCompanyWithReflection? obj,
-      {bool withHashCode = false}) {
+  Map<String, dynamic> getFieldsValues(
+    TestCompanyWithReflection? obj, {
+    bool withHashCode = false,
+  }) {
     obj ??= object;
     return <String, dynamic>{
       'name': obj?.name,
@@ -916,8 +990,9 @@ class TestCompanyWithReflection$reflection
 
   @override
   Map<String, dynamic> getJsonFieldsVisibleValues(
-      TestCompanyWithReflection? obj,
-      {bool withHashCode = false}) {
+    TestCompanyWithReflection? obj, {
+    bool withHashCode = false,
+  }) {
     obj ??= object;
     return <String, dynamic>{
       'name': obj?.name,
@@ -936,8 +1011,8 @@ class TestCompanyWithReflection$reflection
 
   @override
   StaticFieldReflection<TestCompanyWithReflection, T>? staticField<T>(
-          String fieldName) =>
-      null;
+    String fieldName,
+  ) => null;
 
   static const List<String> _methodsNames = const <String>['toString'];
 
@@ -945,14 +1020,16 @@ class TestCompanyWithReflection$reflection
   List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestCompanyWithReflection, dynamic>>
-      _methodsNoObject = {};
+  _methodsNoObject = {};
 
   final Map<String, MethodReflection<TestCompanyWithReflection, dynamic>>
-      _methodsObject = {};
+  _methodsObject = {};
 
   @override
-  MethodReflection<TestCompanyWithReflection, R>? method<R>(String methodName,
-      [TestCompanyWithReflection? obj]) {
+  MethodReflection<TestCompanyWithReflection, R>? method<R>(
+    String methodName, [
+    TestCompanyWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _methodObjectImpl<R>(methodName);
@@ -966,7 +1043,8 @@ class TestCompanyWithReflection$reflection
   }
 
   MethodReflection<TestCompanyWithReflection, R>? _methodNoObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsNoObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestCompanyWithReflection, R>;
@@ -978,7 +1056,8 @@ class TestCompanyWithReflection$reflection
   }
 
   MethodReflection<TestCompanyWithReflection, R>? _methodObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestCompanyWithReflection, R>;
@@ -991,7 +1070,9 @@ class TestCompanyWithReflection$reflection
   }
 
   MethodReflection<TestCompanyWithReflection, dynamic>? _methodImpl(
-      String methodName, TestCompanyWithReflection? obj) {
+    String methodName,
+    TestCompanyWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = methodName.trim().toLowerCase();
@@ -999,17 +1080,18 @@ class TestCompanyWithReflection$reflection
     switch (lc) {
       case 'tostring':
         return MethodReflection<TestCompanyWithReflection, String>(
-            this,
-            TestCompanyWithReflection,
-            'toString',
-            __TR.tString,
-            false,
-            (o) => o!.toString,
-            obj,
-            null,
-            null,
-            null,
-            const [override]);
+          this,
+          TestCompanyWithReflection,
+          'toString',
+          __TR.tString,
+          false,
+          (o) => o!.toString,
+          obj,
+          null,
+          null,
+          null,
+          const [override],
+        );
       default:
         return null;
     }
@@ -1022,23 +1104,25 @@ class TestCompanyWithReflection$reflection
 
   @override
   StaticMethodReflection<TestCompanyWithReflection, R>? staticMethod<R>(
-          String methodName) =>
-      null;
+    String methodName,
+  ) => null;
 }
 
 class TestDataWithReflection$reflection
-    extends ClassReflection<TestDataWithReflection> with __ReflectionMixin {
+    extends ClassReflection<TestDataWithReflection>
+    with __ReflectionMixin {
   static final Expando<TestDataWithReflection$reflection> _objectReflections =
       Expando();
 
   factory TestDataWithReflection$reflection([TestDataWithReflection? object]) {
     if (object == null) return staticInstance;
-    return _objectReflections[object] ??=
-        TestDataWithReflection$reflection._(object);
+    return _objectReflections[object] ??= TestDataWithReflection$reflection._(
+      object,
+    );
   }
 
   TestDataWithReflection$reflection._([TestDataWithReflection? object])
-      : super(TestDataWithReflection, r'TestDataWithReflection', object);
+    : super(TestDataWithReflection, r'TestDataWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1097,11 +1181,12 @@ class TestDataWithReflection$reflection
   List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestDataWithReflection>>
-      _constructors = {};
+  _constructors = {};
 
   @override
   ConstructorReflection<TestDataWithReflection>? constructor(
-      String constructorName) {
+    String constructorName,
+  ) {
     var c = _constructors[constructorName];
     if (c != null) return c;
     c = _constructorImpl(constructorName);
@@ -1111,30 +1196,33 @@ class TestDataWithReflection$reflection
   }
 
   ConstructorReflection<TestDataWithReflection>? _constructorImpl(
-      String constructorName) {
+    String constructorName,
+  ) {
     var lc = constructorName.trim().toLowerCase();
 
     switch (lc) {
       case '':
         return ConstructorReflection<TestDataWithReflection>(
-            this,
-            TestDataWithReflection,
-            '',
-            () => TestDataWithReflection.new,
-            const <__PR>[
-              __PR(__TR.tString, 'name', false, true),
-              __PR(__TR<Uint8List>(Uint8List), 'bytes', false, true)
-            ],
-            null,
-            const <String, __PR>{
-              'domain': __PR(
-                  __TR<TestDomainWithReflection>(TestDomainWithReflection),
-                  'domain',
-                  true,
-                  false),
-              'id': __PR(__TR.tBigInt, 'id', true, false)
-            },
-            null);
+          this,
+          TestDataWithReflection,
+          '',
+          () => TestDataWithReflection.new,
+          const <__PR>[
+            __PR(__TR.tString, 'name', false, true),
+            __PR(__TR<Uint8List>(Uint8List), 'bytes', false, true),
+          ],
+          null,
+          const <String, __PR>{
+            'domain': __PR(
+              __TR<TestDomainWithReflection>(TestDomainWithReflection),
+              'domain',
+              true,
+              false,
+            ),
+            'id': __PR(__TR.tBigInt, 'id', true, false),
+          },
+          null,
+        );
       default:
         return null;
     }
@@ -1161,21 +1249,23 @@ class TestDataWithReflection$reflection
     'domain',
     'hashCode',
     'id',
-    'name'
+    'name',
   ];
 
   @override
   List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestDataWithReflection, dynamic>>
-      _fieldsNoObject = {};
+  _fieldsNoObject = {};
 
   final Map<String, FieldReflection<TestDataWithReflection, dynamic>>
-      _fieldsObject = {};
+  _fieldsObject = {};
 
   @override
-  FieldReflection<TestDataWithReflection, T>? field<T>(String fieldName,
-      [TestDataWithReflection? obj]) {
+  FieldReflection<TestDataWithReflection, T>? field<T>(
+    String fieldName, [
+    TestDataWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _fieldObjectImpl<T>(fieldName);
@@ -1189,7 +1279,8 @@ class TestDataWithReflection$reflection
   }
 
   FieldReflection<TestDataWithReflection, T>? _fieldNoObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsNoObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestDataWithReflection, T>;
@@ -1201,7 +1292,8 @@ class TestDataWithReflection$reflection
   }
 
   FieldReflection<TestDataWithReflection, T>? _fieldObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestDataWithReflection, T>;
@@ -1214,7 +1306,9 @@ class TestDataWithReflection$reflection
   }
 
   FieldReflection<TestDataWithReflection, dynamic>? _fieldImpl(
-      String fieldName, TestDataWithReflection? obj) {
+    String fieldName,
+    TestDataWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = fieldName.trim().toLowerCase();
@@ -1257,8 +1351,10 @@ class TestDataWithReflection$reflection
           false,
         );
       case 'domain':
-        return FieldReflection<TestDataWithReflection,
-            TestDomainWithReflection?>(
+        return FieldReflection<
+          TestDataWithReflection,
+          TestDomainWithReflection?
+        >(
           this,
           TestDataWithReflection,
           const __TR<TestDomainWithReflection>(TestDomainWithReflection),
@@ -1288,8 +1384,10 @@ class TestDataWithReflection$reflection
   }
 
   @override
-  Map<String, dynamic> getFieldsValues(TestDataWithReflection? obj,
-      {bool withHashCode = false}) {
+  Map<String, dynamic> getFieldsValues(
+    TestDataWithReflection? obj, {
+    bool withHashCode = false,
+  }) {
     obj ??= object;
     return <String, dynamic>{
       'name': obj?.name,
@@ -1307,8 +1405,8 @@ class TestDataWithReflection$reflection
 
   @override
   StaticFieldReflection<TestDataWithReflection, T>? staticField<T>(
-          String fieldName) =>
-      null;
+    String fieldName,
+  ) => null;
 
   static const List<String> _methodsNames = const <String>[];
 
@@ -1316,9 +1414,10 @@ class TestDataWithReflection$reflection
   List<String> get methodsNames => _methodsNames;
 
   @override
-  MethodReflection<TestDataWithReflection, R>? method<R>(String methodName,
-          [TestDataWithReflection? obj]) =>
-      null;
+  MethodReflection<TestDataWithReflection, R>? method<R>(
+    String methodName, [
+    TestDataWithReflection? obj,
+  ]) => null;
   static const List<String> _staticMethodsNames = const <String>[];
 
   @override
@@ -1326,24 +1425,27 @@ class TestDataWithReflection$reflection
 
   @override
   StaticMethodReflection<TestDataWithReflection, R>? staticMethod<R>(
-          String methodName) =>
-      null;
+    String methodName,
+  ) => null;
 }
 
 class TestDomainWithReflection$reflection
-    extends ClassReflection<TestDomainWithReflection> with __ReflectionMixin {
+    extends ClassReflection<TestDomainWithReflection>
+    with __ReflectionMixin {
   static final Expando<TestDomainWithReflection$reflection> _objectReflections =
       Expando();
 
-  factory TestDomainWithReflection$reflection(
-      [TestDomainWithReflection? object]) {
+  factory TestDomainWithReflection$reflection([
+    TestDomainWithReflection? object,
+  ]) {
     if (object == null) return staticInstance;
-    return _objectReflections[object] ??=
-        TestDomainWithReflection$reflection._(object);
+    return _objectReflections[object] ??= TestDomainWithReflection$reflection._(
+      object,
+    );
   }
 
   TestDomainWithReflection$reflection._([TestDomainWithReflection? object])
-      : super(TestDomainWithReflection, r'TestDomainWithReflection', object);
+    : super(TestDomainWithReflection, r'TestDomainWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1359,9 +1461,9 @@ class TestDomainWithReflection$reflection
   Version get languageVersion => Version.parse('3.6.0');
 
   @override
-  TestDomainWithReflection$reflection withObject(
-          [TestDomainWithReflection? obj]) =>
-      TestDomainWithReflection$reflection(obj)..setupInternalsWith(this);
+  TestDomainWithReflection$reflection withObject([
+    TestDomainWithReflection? obj,
+  ]) => TestDomainWithReflection$reflection(obj)..setupInternalsWith(this);
 
   static TestDomainWithReflection$reflection? _withoutObjectInstance;
   @override
@@ -1401,18 +1503,19 @@ class TestDomainWithReflection$reflection
   static const List<String> _constructorsNames = const <String>[
     '',
     'named',
-    'parse'
+    'parse',
   ];
 
   @override
   List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestDomainWithReflection>>
-      _constructors = {};
+  _constructors = {};
 
   @override
   ConstructorReflection<TestDomainWithReflection>? constructor(
-      String constructorName) {
+    String constructorName,
+  ) {
     var c = _constructors[constructorName];
     if (c != null) return c;
     c = _constructorImpl(constructorName);
@@ -1422,54 +1525,65 @@ class TestDomainWithReflection$reflection
   }
 
   ConstructorReflection<TestDomainWithReflection>? _constructorImpl(
-      String constructorName) {
+    String constructorName,
+  ) {
     var lc = constructorName.trim().toLowerCase();
 
     switch (lc) {
       case '':
         return ConstructorReflection<TestDomainWithReflection>(
-            this,
-            TestDomainWithReflection,
-            '',
-            () => TestDomainWithReflection.new,
-            const <__PR>[
-              __PR(__TR.tString, 'name', false, true),
-              __PR(__TR.tString, 'suffix', false, true)
-            ],
-            const <__PR>[
-              __PR(__TR<DomainFunction>(DomainFunction), 'domainFunction', true,
-                  false),
-              __PR(__TR.tFunction, 'extraFunction', true, false)
-            ],
-            null,
-            null);
+          this,
+          TestDomainWithReflection,
+          '',
+          () => TestDomainWithReflection.new,
+          const <__PR>[
+            __PR(__TR.tString, 'name', false, true),
+            __PR(__TR.tString, 'suffix', false, true),
+          ],
+          const <__PR>[
+            __PR(
+              __TR<DomainFunction>(DomainFunction),
+              'domainFunction',
+              true,
+              false,
+            ),
+            __PR(__TR.tFunction, 'extraFunction', true, false),
+          ],
+          null,
+          null,
+        );
       case 'named':
         return ConstructorReflection<TestDomainWithReflection>(
-            this,
-            TestDomainWithReflection,
-            'named',
-            () => TestDomainWithReflection.named,
-            null,
-            null,
-            const <String, __PR>{
-              'domainFunction': __PR(__TR<DomainFunction>(DomainFunction),
-                  'domainFunction', true, false),
-              'extraFunction':
-                  __PR(__TR.tFunction, 'extraFunction', true, false),
-              'name': __PR(__TR.tString, 'name', false, true),
-              'suffix': __PR(__TR.tString, 'suffix', false, false, 'net')
-            },
-            null);
+          this,
+          TestDomainWithReflection,
+          'named',
+          () => TestDomainWithReflection.named,
+          null,
+          null,
+          const <String, __PR>{
+            'domainFunction': __PR(
+              __TR<DomainFunction>(DomainFunction),
+              'domainFunction',
+              true,
+              false,
+            ),
+            'extraFunction': __PR(__TR.tFunction, 'extraFunction', true, false),
+            'name': __PR(__TR.tString, 'name', false, true),
+            'suffix': __PR(__TR.tString, 'suffix', false, false, 'net'),
+          },
+          null,
+        );
       case 'parse':
         return ConstructorReflection<TestDomainWithReflection>(
-            this,
-            TestDomainWithReflection,
-            'parse',
-            () => TestDomainWithReflection.parse,
-            const <__PR>[__PR(__TR.tString, 's', false, true)],
-            null,
-            null,
-            null);
+          this,
+          TestDomainWithReflection,
+          'parse',
+          () => TestDomainWithReflection.parse,
+          const <__PR>[__PR(__TR.tString, 's', false, true)],
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
@@ -1499,21 +1613,23 @@ class TestDomainWithReflection$reflection
     'extraFunction',
     'hashCode',
     'name',
-    'suffix'
+    'suffix',
   ];
 
   @override
   List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestDomainWithReflection, dynamic>>
-      _fieldsNoObject = {};
+  _fieldsNoObject = {};
 
   final Map<String, FieldReflection<TestDomainWithReflection, dynamic>>
-      _fieldsObject = {};
+  _fieldsObject = {};
 
   @override
-  FieldReflection<TestDomainWithReflection, T>? field<T>(String fieldName,
-      [TestDomainWithReflection? obj]) {
+  FieldReflection<TestDomainWithReflection, T>? field<T>(
+    String fieldName, [
+    TestDomainWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _fieldObjectImpl<T>(fieldName);
@@ -1527,7 +1643,8 @@ class TestDomainWithReflection$reflection
   }
 
   FieldReflection<TestDomainWithReflection, T>? _fieldNoObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsNoObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestDomainWithReflection, T>;
@@ -1539,7 +1656,8 @@ class TestDomainWithReflection$reflection
   }
 
   FieldReflection<TestDomainWithReflection, T>? _fieldObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestDomainWithReflection, T>;
@@ -1552,7 +1670,9 @@ class TestDomainWithReflection$reflection
   }
 
   FieldReflection<TestDomainWithReflection, dynamic>? _fieldImpl(
-      String fieldName, TestDomainWithReflection? obj) {
+    String fieldName,
+    TestDomainWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = fieldName.trim().toLowerCase();
@@ -1625,8 +1745,10 @@ class TestDomainWithReflection$reflection
   }
 
   @override
-  Map<String, dynamic> getFieldsValues(TestDomainWithReflection? obj,
-      {bool withHashCode = false}) {
+  Map<String, dynamic> getFieldsValues(
+    TestDomainWithReflection? obj, {
+    bool withHashCode = false,
+  }) {
     obj ??= object;
     return <String, dynamic>{
       'name': obj?.name,
@@ -1644,27 +1766,29 @@ class TestDomainWithReflection$reflection
 
   @override
   StaticFieldReflection<TestDomainWithReflection, T>? staticField<T>(
-          String fieldName) =>
-      null;
+    String fieldName,
+  ) => null;
 
   static const List<String> _methodsNames = const <String>[
     'toJson',
     'toString',
-    'typedFunction'
+    'typedFunction',
   ];
 
   @override
   List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestDomainWithReflection, dynamic>>
-      _methodsNoObject = {};
+  _methodsNoObject = {};
 
   final Map<String, MethodReflection<TestDomainWithReflection, dynamic>>
-      _methodsObject = {};
+  _methodsObject = {};
 
   @override
-  MethodReflection<TestDomainWithReflection, R>? method<R>(String methodName,
-      [TestDomainWithReflection? obj]) {
+  MethodReflection<TestDomainWithReflection, R>? method<R>(
+    String methodName, [
+    TestDomainWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _methodObjectImpl<R>(methodName);
@@ -1678,7 +1802,8 @@ class TestDomainWithReflection$reflection
   }
 
   MethodReflection<TestDomainWithReflection, R>? _methodNoObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsNoObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestDomainWithReflection, R>;
@@ -1690,7 +1815,8 @@ class TestDomainWithReflection$reflection
   }
 
   MethodReflection<TestDomainWithReflection, R>? _methodObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestDomainWithReflection, R>;
@@ -1703,7 +1829,9 @@ class TestDomainWithReflection$reflection
   }
 
   MethodReflection<TestDomainWithReflection, dynamic>? _methodImpl(
-      String methodName, TestDomainWithReflection? obj) {
+    String methodName,
+    TestDomainWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = methodName.trim().toLowerCase();
@@ -1711,51 +1839,56 @@ class TestDomainWithReflection$reflection
     switch (lc) {
       case 'typedfunction':
         return MethodReflection<TestDomainWithReflection, bool>(
-            this,
-            TestDomainWithReflection,
-            'typedFunction',
-            __TR.tBool,
-            false,
-            (o) => o!.typedFunction,
-            obj,
-            const <__PR>[
-              __PR(
-                  __TR<TypedFunction<dynamic>>(
-                      TypedFunction, <__TR>[__TR.tDynamic]),
-                  'f',
-                  false,
-                  true),
-              __PR(__TR.tDynamic, 'x', false, true)
-            ],
-            null,
-            null,
-            null);
+          this,
+          TestDomainWithReflection,
+          'typedFunction',
+          __TR.tBool,
+          false,
+          (o) => o!.typedFunction,
+          obj,
+          const <__PR>[
+            __PR(
+              __TR<TypedFunction<dynamic>>(TypedFunction, <__TR>[
+                __TR.tDynamic,
+              ]),
+              'f',
+              false,
+              true,
+            ),
+            __PR(__TR.tDynamic, 'x', false, true),
+          ],
+          null,
+          null,
+          null,
+        );
       case 'tojson':
         return MethodReflection<TestDomainWithReflection, String>(
-            this,
-            TestDomainWithReflection,
-            'toJson',
-            __TR.tString,
-            false,
-            (o) => o!.toJson,
-            obj,
-            null,
-            null,
-            null,
-            null);
+          this,
+          TestDomainWithReflection,
+          'toJson',
+          __TR.tString,
+          false,
+          (o) => o!.toJson,
+          obj,
+          null,
+          null,
+          null,
+          null,
+        );
       case 'tostring':
         return MethodReflection<TestDomainWithReflection, String>(
-            this,
-            TestDomainWithReflection,
-            'toString',
-            __TR.tString,
-            false,
-            (o) => o!.toString,
-            obj,
-            null,
-            null,
-            null,
-            const [override]);
+          this,
+          TestDomainWithReflection,
+          'toString',
+          __TR.tString,
+          false,
+          (o) => o!.toString,
+          obj,
+          null,
+          null,
+          null,
+          const [override],
+        );
       default:
         return null;
     }
@@ -1768,8 +1901,8 @@ class TestDomainWithReflection$reflection
 
   @override
   StaticMethodReflection<TestDomainWithReflection, R>? staticMethod<R>(
-          String methodName) =>
-      null;
+    String methodName,
+  ) => null;
 }
 
 class TestEmpty$reflection extends ClassReflection<TestEmpty>
@@ -1782,7 +1915,7 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
   }
 
   TestEmpty$reflection._([TestEmpty? object])
-      : super(TestEmpty, r'TestEmpty', object);
+    : super(TestEmpty, r'TestEmpty', object);
 
   static bool _registered = false;
   @override
@@ -1858,7 +1991,15 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
     switch (lc) {
       case '':
         return ConstructorReflection<TestEmpty>(
-            this, TestEmpty, '', () => TestEmpty.new, null, null, null, null);
+          this,
+          TestEmpty,
+          '',
+          () => TestEmpty.new,
+          null,
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
@@ -1890,11 +2031,12 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
       null;
 
   @override
-  Map<String, dynamic> getFieldsValues(TestEmpty? obj,
-          {bool withHashCode = false}) =>
-      {
-        if (withHashCode) 'hashCode': obj?.hashCode,
-      };
+  Map<String, dynamic> getFieldsValues(
+    TestEmpty? obj, {
+    bool withHashCode = false,
+  }) => {
+    if (withHashCode) 'hashCode': obj?.hashCode,
+  };
 
   static const List<String> _staticFieldsNames = const <String>[];
 
@@ -1910,9 +2052,10 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
   List<String> get methodsNames => _methodsNames;
 
   @override
-  MethodReflection<TestEmpty, R>? method<R>(String methodName,
-          [TestEmpty? obj]) =>
-      null;
+  MethodReflection<TestEmpty, R>? method<R>(
+    String methodName, [
+    TestEmpty? obj,
+  ]) => null;
   static const List<String> _staticMethodsNames = const <String>[];
 
   @override
@@ -1924,18 +2067,20 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
 }
 
 class TestEnumWithReflection$reflection
-    extends EnumReflection<TestEnumWithReflection> with __ReflectionMixin {
+    extends EnumReflection<TestEnumWithReflection>
+    with __ReflectionMixin {
   static final Expando<TestEnumWithReflection$reflection> _objectReflections =
       Expando();
 
   factory TestEnumWithReflection$reflection([TestEnumWithReflection? object]) {
     if (object == null) return staticInstance;
-    return _objectReflections[object] ??=
-        TestEnumWithReflection$reflection._(object);
+    return _objectReflections[object] ??= TestEnumWithReflection$reflection._(
+      object,
+    );
   }
 
   TestEnumWithReflection$reflection._([TestEnumWithReflection? object])
-      : super(TestEnumWithReflection, r'TestEnumWithReflection', object);
+    : super(TestEnumWithReflection, r'TestEnumWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -1984,7 +2129,7 @@ class TestEnumWithReflection$reflection
     'length',
     'x',
     'y',
-    'z'
+    'z',
   ];
 
   @override
@@ -1992,11 +2137,11 @@ class TestEnumWithReflection$reflection
 
   static const Map<String, TestEnumWithReflection> _valuesByName =
       const <String, TestEnumWithReflection>{
-    'Z': TestEnumWithReflection.Z,
-    'x': TestEnumWithReflection.x,
-    'y': TestEnumWithReflection.y,
-    'z': TestEnumWithReflection.z,
-  };
+        'Z': TestEnumWithReflection.Z,
+        'x': TestEnumWithReflection.x,
+        'y': TestEnumWithReflection.y,
+        'z': TestEnumWithReflection.z,
+      };
 
   @override
   Map<String, TestEnumWithReflection> get valuesByName => _valuesByName;
@@ -2013,19 +2158,23 @@ class TestFranchiseWithReflection$reflection
     extends ClassReflection<TestFranchiseWithReflection>
     with __ReflectionMixin {
   static final Expando<TestFranchiseWithReflection$reflection>
-      _objectReflections = Expando();
+  _objectReflections = Expando();
 
-  factory TestFranchiseWithReflection$reflection(
-      [TestFranchiseWithReflection? object]) {
+  factory TestFranchiseWithReflection$reflection([
+    TestFranchiseWithReflection? object,
+  ]) {
     if (object == null) return staticInstance;
     return _objectReflections[object] ??=
         TestFranchiseWithReflection$reflection._(object);
   }
 
-  TestFranchiseWithReflection$reflection._(
-      [TestFranchiseWithReflection? object])
-      : super(TestFranchiseWithReflection, r'TestFranchiseWithReflection',
-            object);
+  TestFranchiseWithReflection$reflection._([
+    TestFranchiseWithReflection? object,
+  ]) : super(
+         TestFranchiseWithReflection,
+         r'TestFranchiseWithReflection',
+         object,
+       );
 
   static bool _registered = false;
   @override
@@ -2041,9 +2190,9 @@ class TestFranchiseWithReflection$reflection
   Version get languageVersion => Version.parse('3.6.0');
 
   @override
-  TestFranchiseWithReflection$reflection withObject(
-          [TestFranchiseWithReflection? obj]) =>
-      TestFranchiseWithReflection$reflection(obj)..setupInternalsWith(this);
+  TestFranchiseWithReflection$reflection withObject([
+    TestFranchiseWithReflection? obj,
+  ]) => TestFranchiseWithReflection$reflection(obj)..setupInternalsWith(this);
 
   static TestFranchiseWithReflection$reflection? _withoutObjectInstance;
   @override
@@ -2087,11 +2236,12 @@ class TestFranchiseWithReflection$reflection
   List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestFranchiseWithReflection>>
-      _constructors = {};
+  _constructors = {};
 
   @override
   ConstructorReflection<TestFranchiseWithReflection>? constructor(
-      String constructorName) {
+    String constructorName,
+  ) {
     var c = _constructors[constructorName];
     if (c != null) return c;
     c = _constructorImpl(constructorName);
@@ -2101,30 +2251,33 @@ class TestFranchiseWithReflection$reflection
   }
 
   ConstructorReflection<TestFranchiseWithReflection>? _constructorImpl(
-      String constructorName) {
+    String constructorName,
+  ) {
     var lc = constructorName.trim().toLowerCase();
 
     switch (lc) {
       case '':
         return ConstructorReflection<TestFranchiseWithReflection>(
-            this,
-            TestFranchiseWithReflection,
-            '',
-            () => TestFranchiseWithReflection.new,
-            const <__PR>[
-              __PR(__TR.tString, 'name', false, true),
-              __PR(
-                  __TR<Map<String, TestAddressWithReflection>>(Map, <__TR>[
-                    __TR.tString,
-                    __TR<TestAddressWithReflection>(TestAddressWithReflection)
-                  ]),
-                  'addresses',
-                  false,
-                  true)
-            ],
-            null,
-            null,
-            null);
+          this,
+          TestFranchiseWithReflection,
+          '',
+          () => TestFranchiseWithReflection.new,
+          const <__PR>[
+            __PR(__TR.tString, 'name', false, true),
+            __PR(
+              __TR<Map<String, TestAddressWithReflection>>(Map, <__TR>[
+                __TR.tString,
+                __TR<TestAddressWithReflection>(TestAddressWithReflection),
+              ]),
+              'addresses',
+              false,
+              true,
+            ),
+          ],
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
@@ -2149,22 +2302,26 @@ class TestFranchiseWithReflection$reflection
   static const List<String> _fieldsNames = const <String>[
     'addresses',
     'hashCode',
-    'name'
+    'name',
   ];
 
   @override
   List<String> get fieldsNames => _fieldsNames;
 
-  static final Map<String,
-          FieldReflection<TestFranchiseWithReflection, dynamic>>
-      _fieldsNoObject = {};
+  static final Map<
+    String,
+    FieldReflection<TestFranchiseWithReflection, dynamic>
+  >
+  _fieldsNoObject = {};
 
   final Map<String, FieldReflection<TestFranchiseWithReflection, dynamic>>
-      _fieldsObject = {};
+  _fieldsObject = {};
 
   @override
-  FieldReflection<TestFranchiseWithReflection, T>? field<T>(String fieldName,
-      [TestFranchiseWithReflection? obj]) {
+  FieldReflection<TestFranchiseWithReflection, T>? field<T>(
+    String fieldName, [
+    TestFranchiseWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _fieldObjectImpl<T>(fieldName);
@@ -2178,7 +2335,8 @@ class TestFranchiseWithReflection$reflection
   }
 
   FieldReflection<TestFranchiseWithReflection, T>? _fieldNoObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsNoObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestFranchiseWithReflection, T>;
@@ -2190,7 +2348,8 @@ class TestFranchiseWithReflection$reflection
   }
 
   FieldReflection<TestFranchiseWithReflection, T>? _fieldObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestFranchiseWithReflection, T>;
@@ -2203,7 +2362,9 @@ class TestFranchiseWithReflection$reflection
   }
 
   FieldReflection<TestFranchiseWithReflection, dynamic>? _fieldImpl(
-      String fieldName, TestFranchiseWithReflection? obj) {
+    String fieldName,
+    TestFranchiseWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = fieldName.trim().toLowerCase();
@@ -2222,13 +2383,15 @@ class TestFranchiseWithReflection$reflection
           true,
         );
       case 'addresses':
-        return FieldReflection<TestFranchiseWithReflection,
-            Map<String, TestAddressWithReflection>>(
+        return FieldReflection<
+          TestFranchiseWithReflection,
+          Map<String, TestAddressWithReflection>
+        >(
           this,
           TestFranchiseWithReflection,
           const __TR<Map<String, TestAddressWithReflection>>(Map, <__TR>[
             __TR.tString,
-            __TR<TestAddressWithReflection>(TestAddressWithReflection)
+            __TR<TestAddressWithReflection>(TestAddressWithReflection),
           ]),
           'addresses',
           false,
@@ -2256,8 +2419,10 @@ class TestFranchiseWithReflection$reflection
   }
 
   @override
-  Map<String, dynamic> getFieldsValues(TestFranchiseWithReflection? obj,
-      {bool withHashCode = false}) {
+  Map<String, dynamic> getFieldsValues(
+    TestFranchiseWithReflection? obj, {
+    bool withHashCode = false,
+  }) {
     obj ??= object;
     return <String, dynamic>{
       'name': obj?.name,
@@ -2273,24 +2438,28 @@ class TestFranchiseWithReflection$reflection
 
   @override
   StaticFieldReflection<TestFranchiseWithReflection, T>? staticField<T>(
-          String fieldName) =>
-      null;
+    String fieldName,
+  ) => null;
 
   static const List<String> _methodsNames = const <String>['toString'];
 
   @override
   List<String> get methodsNames => _methodsNames;
 
-  static final Map<String,
-          MethodReflection<TestFranchiseWithReflection, dynamic>>
-      _methodsNoObject = {};
+  static final Map<
+    String,
+    MethodReflection<TestFranchiseWithReflection, dynamic>
+  >
+  _methodsNoObject = {};
 
   final Map<String, MethodReflection<TestFranchiseWithReflection, dynamic>>
-      _methodsObject = {};
+  _methodsObject = {};
 
   @override
-  MethodReflection<TestFranchiseWithReflection, R>? method<R>(String methodName,
-      [TestFranchiseWithReflection? obj]) {
+  MethodReflection<TestFranchiseWithReflection, R>? method<R>(
+    String methodName, [
+    TestFranchiseWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _methodObjectImpl<R>(methodName);
@@ -2304,7 +2473,8 @@ class TestFranchiseWithReflection$reflection
   }
 
   MethodReflection<TestFranchiseWithReflection, R>? _methodNoObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsNoObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestFranchiseWithReflection, R>;
@@ -2316,7 +2486,8 @@ class TestFranchiseWithReflection$reflection
   }
 
   MethodReflection<TestFranchiseWithReflection, R>? _methodObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestFranchiseWithReflection, R>;
@@ -2329,7 +2500,9 @@ class TestFranchiseWithReflection$reflection
   }
 
   MethodReflection<TestFranchiseWithReflection, dynamic>? _methodImpl(
-      String methodName, TestFranchiseWithReflection? obj) {
+    String methodName,
+    TestFranchiseWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = methodName.trim().toLowerCase();
@@ -2337,17 +2510,18 @@ class TestFranchiseWithReflection$reflection
     switch (lc) {
       case 'tostring':
         return MethodReflection<TestFranchiseWithReflection, String>(
-            this,
-            TestFranchiseWithReflection,
-            'toString',
-            __TR.tString,
-            false,
-            (o) => o!.toString,
-            obj,
-            null,
-            null,
-            null,
-            const [override]);
+          this,
+          TestFranchiseWithReflection,
+          'toString',
+          __TR.tString,
+          false,
+          (o) => o!.toString,
+          obj,
+          null,
+          null,
+          null,
+          const [override],
+        );
       default:
         return null;
     }
@@ -2360,8 +2534,8 @@ class TestFranchiseWithReflection$reflection
 
   @override
   StaticMethodReflection<TestFranchiseWithReflection, R>? staticMethod<R>(
-          String methodName) =>
-      null;
+    String methodName,
+  ) => null;
 }
 
 class TestName$reflection extends ClassReflection<TestName>
@@ -2374,7 +2548,7 @@ class TestName$reflection extends ClassReflection<TestName>
   }
 
   TestName$reflection._([TestName? object])
-      : super(TestName, r'TestName', object);
+    : super(TestName, r'TestName', object);
 
   static bool _registered = false;
   @override
@@ -2450,7 +2624,15 @@ class TestName$reflection extends ClassReflection<TestName>
     switch (lc) {
       case '':
         return ConstructorReflection<TestName>(
-            this, TestName, '', () => TestName.new, null, null, null, null);
+          this,
+          TestName,
+          '',
+          () => TestName.new,
+          null,
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
@@ -2520,7 +2702,9 @@ class TestName$reflection extends ClassReflection<TestName>
   }
 
   FieldReflection<TestName, dynamic>? _fieldImpl(
-      String fieldName, TestName? obj) {
+    String fieldName,
+    TestName? obj,
+  ) {
     obj ??= object;
 
     var lc = fieldName.trim().toLowerCase();
@@ -2556,8 +2740,10 @@ class TestName$reflection extends ClassReflection<TestName>
   }
 
   @override
-  Map<String, dynamic> getFieldsValues(TestName? obj,
-      {bool withHashCode = false}) {
+  Map<String, dynamic> getFieldsValues(
+    TestName? obj, {
+    bool withHashCode = false,
+  }) {
     obj ??= object;
     return <String, dynamic>{
       'name': obj?.name,
@@ -2576,14 +2762,14 @@ class TestName$reflection extends ClassReflection<TestName>
 
   static const List<String> _methodsNames = const <String>[
     'nameNormalized',
-    'toString'
+    'toString',
   ];
 
   @override
   List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestName, dynamic>>
-      _methodsNoObject = {};
+  _methodsNoObject = {};
 
   final Map<String, MethodReflection<TestName, dynamic>> _methodsObject = {};
 
@@ -2625,7 +2811,9 @@ class TestName$reflection extends ClassReflection<TestName>
   }
 
   MethodReflection<TestName, dynamic>? _methodImpl(
-      String methodName, TestName? obj) {
+    String methodName,
+    TestName? obj,
+  ) {
     obj ??= object;
 
     var lc = methodName.trim().toLowerCase();
@@ -2633,30 +2821,32 @@ class TestName$reflection extends ClassReflection<TestName>
     switch (lc) {
       case 'namenormalized':
         return MethodReflection<TestName, String>(
-            this,
-            TestName,
-            'nameNormalized',
-            __TR.tString,
-            false,
-            (o) => o!.nameNormalized,
-            obj,
-            null,
-            null,
-            null,
-            null);
+          this,
+          TestName,
+          'nameNormalized',
+          __TR.tString,
+          false,
+          (o) => o!.nameNormalized,
+          obj,
+          null,
+          null,
+          null,
+          null,
+        );
       case 'tostring':
         return MethodReflection<TestName, String>(
-            this,
-            TestName,
-            'toString',
-            __TR.tString,
-            false,
-            (o) => o!.toString,
-            obj,
-            null,
-            null,
-            null,
-            const [override]);
+          this,
+          TestName,
+          'toString',
+          __TR.tString,
+          false,
+          (o) => o!.toString,
+          obj,
+          null,
+          null,
+          null,
+          const [override],
+        );
       default:
         return null;
     }
@@ -2673,18 +2863,20 @@ class TestName$reflection extends ClassReflection<TestName>
 }
 
 class TestOpAWithReflection$reflection
-    extends ClassReflection<TestOpAWithReflection> with __ReflectionMixin {
+    extends ClassReflection<TestOpAWithReflection>
+    with __ReflectionMixin {
   static final Expando<TestOpAWithReflection$reflection> _objectReflections =
       Expando();
 
   factory TestOpAWithReflection$reflection([TestOpAWithReflection? object]) {
     if (object == null) return staticInstance;
-    return _objectReflections[object] ??=
-        TestOpAWithReflection$reflection._(object);
+    return _objectReflections[object] ??= TestOpAWithReflection$reflection._(
+      object,
+    );
   }
 
   TestOpAWithReflection$reflection._([TestOpAWithReflection? object])
-      : super(TestOpAWithReflection, r'TestOpAWithReflection', object);
+    : super(TestOpAWithReflection, r'TestOpAWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -2743,11 +2935,12 @@ class TestOpAWithReflection$reflection
   List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestOpAWithReflection>>
-      _constructors = {};
+  _constructors = {};
 
   @override
   ConstructorReflection<TestOpAWithReflection>? constructor(
-      String constructorName) {
+    String constructorName,
+  ) {
     var c = _constructors[constructorName];
     if (c != null) return c;
     c = _constructorImpl(constructorName);
@@ -2757,20 +2950,22 @@ class TestOpAWithReflection$reflection
   }
 
   ConstructorReflection<TestOpAWithReflection>? _constructorImpl(
-      String constructorName) {
+    String constructorName,
+  ) {
     var lc = constructorName.trim().toLowerCase();
 
     switch (lc) {
       case '':
         return ConstructorReflection<TestOpAWithReflection>(
-            this,
-            TestOpAWithReflection,
-            '',
-            () => TestOpAWithReflection.new,
-            const <__PR>[__PR(__TR.tInt, 'value', false, true)],
-            null,
-            null,
-            null);
+          this,
+          TestOpAWithReflection,
+          '',
+          () => TestOpAWithReflection.new,
+          const <__PR>[__PR(__TR.tInt, 'value', false, true)],
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
@@ -2783,7 +2978,7 @@ class TestOpAWithReflection$reflection
 
   static const List<Type> _supperTypes = const <Type>[
     TestOpWithReflection,
-    WithValue
+    WithValue,
   ];
 
   @override
@@ -2801,14 +2996,16 @@ class TestOpAWithReflection$reflection
   List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestOpAWithReflection, dynamic>>
-      _fieldsNoObject = {};
+  _fieldsNoObject = {};
 
   final Map<String, FieldReflection<TestOpAWithReflection, dynamic>>
-      _fieldsObject = {};
+  _fieldsObject = {};
 
   @override
-  FieldReflection<TestOpAWithReflection, T>? field<T>(String fieldName,
-      [TestOpAWithReflection? obj]) {
+  FieldReflection<TestOpAWithReflection, T>? field<T>(
+    String fieldName, [
+    TestOpAWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _fieldObjectImpl<T>(fieldName);
@@ -2822,7 +3019,8 @@ class TestOpAWithReflection$reflection
   }
 
   FieldReflection<TestOpAWithReflection, T>? _fieldNoObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsNoObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestOpAWithReflection, T>;
@@ -2834,7 +3032,8 @@ class TestOpAWithReflection$reflection
   }
 
   FieldReflection<TestOpAWithReflection, T>? _fieldObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestOpAWithReflection, T>;
@@ -2847,7 +3046,9 @@ class TestOpAWithReflection$reflection
   }
 
   FieldReflection<TestOpAWithReflection, dynamic>? _fieldImpl(
-      String fieldName, TestOpAWithReflection? obj) {
+    String fieldName,
+    TestOpAWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = fieldName.trim().toLowerCase();
@@ -2884,8 +3085,10 @@ class TestOpAWithReflection$reflection
   }
 
   @override
-  Map<String, dynamic> getFieldsValues(TestOpAWithReflection? obj,
-      {bool withHashCode = false}) {
+  Map<String, dynamic> getFieldsValues(
+    TestOpAWithReflection? obj, {
+    bool withHashCode = false,
+  }) {
     obj ??= object;
     return <String, dynamic>{
       'value': obj?.value,
@@ -2899,12 +3102,16 @@ class TestOpAWithReflection$reflection
   @override
   List<String> get staticFieldsNames => _staticFieldsNames;
 
-  static final Map<String,
-      StaticFieldReflection<TestOpAWithReflection, dynamic>> _staticFields = {};
+  static final Map<
+    String,
+    StaticFieldReflection<TestOpAWithReflection, dynamic>
+  >
+  _staticFields = {};
 
   @override
   StaticFieldReflection<TestOpAWithReflection, T>? staticField<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     var f = _staticFields[fieldName];
     if (f != null) {
       return f as StaticFieldReflection<TestOpAWithReflection, T>;
@@ -2916,7 +3123,8 @@ class TestOpAWithReflection$reflection
   }
 
   StaticFieldReflection<TestOpAWithReflection, dynamic>? _staticFieldImpl(
-      String fieldName) {
+    String fieldName,
+  ) {
     var lc = fieldName.trim().toLowerCase();
 
     switch (lc) {
@@ -2939,21 +3147,23 @@ class TestOpAWithReflection$reflection
 
   static const List<String> _methodsNames = const <String>[
     'isEmptyType',
-    'methodA'
+    'methodA',
   ];
 
   @override
   List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestOpAWithReflection, dynamic>>
-      _methodsNoObject = {};
+  _methodsNoObject = {};
 
   final Map<String, MethodReflection<TestOpAWithReflection, dynamic>>
-      _methodsObject = {};
+  _methodsObject = {};
 
   @override
-  MethodReflection<TestOpAWithReflection, R>? method<R>(String methodName,
-      [TestOpAWithReflection? obj]) {
+  MethodReflection<TestOpAWithReflection, R>? method<R>(
+    String methodName, [
+    TestOpAWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _methodObjectImpl<R>(methodName);
@@ -2967,7 +3177,8 @@ class TestOpAWithReflection$reflection
   }
 
   MethodReflection<TestOpAWithReflection, R>? _methodNoObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsNoObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestOpAWithReflection, R>;
@@ -2979,7 +3190,8 @@ class TestOpAWithReflection$reflection
   }
 
   MethodReflection<TestOpAWithReflection, R>? _methodObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestOpAWithReflection, R>;
@@ -2992,7 +3204,9 @@ class TestOpAWithReflection$reflection
   }
 
   MethodReflection<TestOpAWithReflection, dynamic>? _methodImpl(
-      String methodName, TestOpAWithReflection? obj) {
+    String methodName,
+    TestOpAWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = methodName.trim().toLowerCase();
@@ -3000,30 +3214,32 @@ class TestOpAWithReflection$reflection
     switch (lc) {
       case 'methoda':
         return MethodReflection<TestOpAWithReflection, bool>(
-            this,
-            TestOpAWithReflection,
-            'methodA',
-            __TR.tBool,
-            false,
-            (o) => o!.methodA,
-            obj,
-            null,
-            null,
-            null,
-            null);
+          this,
+          TestOpAWithReflection,
+          'methodA',
+          __TR.tBool,
+          false,
+          (o) => o!.methodA,
+          obj,
+          null,
+          null,
+          null,
+          null,
+        );
       case 'isemptytype':
         return MethodReflection<TestOpAWithReflection, bool>(
-            this,
-            TestOpWithReflection,
-            'isEmptyType',
-            __TR.tBool,
-            false,
-            (o) => o!.isEmptyType,
-            obj,
-            null,
-            null,
-            null,
-            null);
+          this,
+          TestOpWithReflection,
+          'isEmptyType',
+          __TR.tBool,
+          false,
+          (o) => o!.isEmptyType,
+          obj,
+          null,
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
@@ -3036,23 +3252,25 @@ class TestOpAWithReflection$reflection
 
   @override
   StaticMethodReflection<TestOpAWithReflection, R>? staticMethod<R>(
-          String methodName) =>
-      null;
+    String methodName,
+  ) => null;
 }
 
 class TestOpBWithReflection$reflection
-    extends ClassReflection<TestOpBWithReflection> with __ReflectionMixin {
+    extends ClassReflection<TestOpBWithReflection>
+    with __ReflectionMixin {
   static final Expando<TestOpBWithReflection$reflection> _objectReflections =
       Expando();
 
   factory TestOpBWithReflection$reflection([TestOpBWithReflection? object]) {
     if (object == null) return staticInstance;
-    return _objectReflections[object] ??=
-        TestOpBWithReflection$reflection._(object);
+    return _objectReflections[object] ??= TestOpBWithReflection$reflection._(
+      object,
+    );
   }
 
   TestOpBWithReflection$reflection._([TestOpBWithReflection? object])
-      : super(TestOpBWithReflection, r'TestOpBWithReflection', object);
+    : super(TestOpBWithReflection, r'TestOpBWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -3111,11 +3329,12 @@ class TestOpBWithReflection$reflection
   List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestOpBWithReflection>>
-      _constructors = {};
+  _constructors = {};
 
   @override
   ConstructorReflection<TestOpBWithReflection>? constructor(
-      String constructorName) {
+    String constructorName,
+  ) {
     var c = _constructors[constructorName];
     if (c != null) return c;
     c = _constructorImpl(constructorName);
@@ -3125,20 +3344,22 @@ class TestOpBWithReflection$reflection
   }
 
   ConstructorReflection<TestOpBWithReflection>? _constructorImpl(
-      String constructorName) {
+    String constructorName,
+  ) {
     var lc = constructorName.trim().toLowerCase();
 
     switch (lc) {
       case '':
         return ConstructorReflection<TestOpBWithReflection>(
-            this,
-            TestOpBWithReflection,
-            '',
-            () => TestOpBWithReflection.new,
-            const <__PR>[__PR(__TR.tDouble, 'amount', false, true)],
-            null,
-            null,
-            null);
+          this,
+          TestOpBWithReflection,
+          '',
+          () => TestOpBWithReflection.new,
+          const <__PR>[__PR(__TR.tDouble, 'amount', false, true)],
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
@@ -3151,7 +3372,7 @@ class TestOpBWithReflection$reflection
 
   static const List<Type> _supperTypes = const <Type>[
     TestOpWithReflection,
-    WithValue
+    WithValue,
   ];
 
   @override
@@ -3166,21 +3387,23 @@ class TestOpBWithReflection$reflection
   static const List<String> _fieldsNames = const <String>[
     'amount',
     'type',
-    'value'
+    'value',
   ];
 
   @override
   List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestOpBWithReflection, dynamic>>
-      _fieldsNoObject = {};
+  _fieldsNoObject = {};
 
   final Map<String, FieldReflection<TestOpBWithReflection, dynamic>>
-      _fieldsObject = {};
+  _fieldsObject = {};
 
   @override
-  FieldReflection<TestOpBWithReflection, T>? field<T>(String fieldName,
-      [TestOpBWithReflection? obj]) {
+  FieldReflection<TestOpBWithReflection, T>? field<T>(
+    String fieldName, [
+    TestOpBWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _fieldObjectImpl<T>(fieldName);
@@ -3194,7 +3417,8 @@ class TestOpBWithReflection$reflection
   }
 
   FieldReflection<TestOpBWithReflection, T>? _fieldNoObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsNoObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestOpBWithReflection, T>;
@@ -3206,7 +3430,8 @@ class TestOpBWithReflection$reflection
   }
 
   FieldReflection<TestOpBWithReflection, T>? _fieldObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestOpBWithReflection, T>;
@@ -3219,7 +3444,9 @@ class TestOpBWithReflection$reflection
   }
 
   FieldReflection<TestOpBWithReflection, dynamic>? _fieldImpl(
-      String fieldName, TestOpBWithReflection? obj) {
+    String fieldName,
+    TestOpBWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = fieldName.trim().toLowerCase();
@@ -3267,8 +3494,10 @@ class TestOpBWithReflection$reflection
   }
 
   @override
-  Map<String, dynamic> getFieldsValues(TestOpBWithReflection? obj,
-      {bool withHashCode = false}) {
+  Map<String, dynamic> getFieldsValues(
+    TestOpBWithReflection? obj, {
+    bool withHashCode = false,
+  }) {
     obj ??= object;
     return <String, dynamic>{
       'amount': obj?.amount,
@@ -3285,26 +3514,28 @@ class TestOpBWithReflection$reflection
 
   @override
   StaticFieldReflection<TestOpBWithReflection, T>? staticField<T>(
-          String fieldName) =>
-      null;
+    String fieldName,
+  ) => null;
 
   static const List<String> _methodsNames = const <String>[
     'isEmptyType',
-    'methodB'
+    'methodB',
   ];
 
   @override
   List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestOpBWithReflection, dynamic>>
-      _methodsNoObject = {};
+  _methodsNoObject = {};
 
   final Map<String, MethodReflection<TestOpBWithReflection, dynamic>>
-      _methodsObject = {};
+  _methodsObject = {};
 
   @override
-  MethodReflection<TestOpBWithReflection, R>? method<R>(String methodName,
-      [TestOpBWithReflection? obj]) {
+  MethodReflection<TestOpBWithReflection, R>? method<R>(
+    String methodName, [
+    TestOpBWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _methodObjectImpl<R>(methodName);
@@ -3318,7 +3549,8 @@ class TestOpBWithReflection$reflection
   }
 
   MethodReflection<TestOpBWithReflection, R>? _methodNoObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsNoObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestOpBWithReflection, R>;
@@ -3330,7 +3562,8 @@ class TestOpBWithReflection$reflection
   }
 
   MethodReflection<TestOpBWithReflection, R>? _methodObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestOpBWithReflection, R>;
@@ -3343,7 +3576,9 @@ class TestOpBWithReflection$reflection
   }
 
   MethodReflection<TestOpBWithReflection, dynamic>? _methodImpl(
-      String methodName, TestOpBWithReflection? obj) {
+    String methodName,
+    TestOpBWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = methodName.trim().toLowerCase();
@@ -3351,49 +3586,54 @@ class TestOpBWithReflection$reflection
     switch (lc) {
       case 'methodb':
         return MethodReflection<TestOpBWithReflection, Set<dynamic>>(
-            this,
-            TestOpBWithReflection,
-            'methodB',
-            __TR.tSetDynamic,
-            false,
-            (o) => o!.methodB,
-            obj,
-            null,
-            null,
-            null,
-            null);
+          this,
+          TestOpBWithReflection,
+          'methodB',
+          __TR.tSetDynamic,
+          false,
+          (o) => o!.methodB,
+          obj,
+          null,
+          null,
+          null,
+          null,
+        );
       case 'isemptytype':
         return MethodReflection<TestOpBWithReflection, bool>(
-            this,
-            TestOpWithReflection,
-            'isEmptyType',
-            __TR.tBool,
-            false,
-            (o) => o!.isEmptyType,
-            obj,
-            null,
-            null,
-            null,
-            null);
+          this,
+          TestOpWithReflection,
+          'isEmptyType',
+          __TR.tBool,
+          false,
+          (o) => o!.isEmptyType,
+          obj,
+          null,
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
   }
 
   static const List<String> _staticMethodsNames = const <String>[
-    'staticMethodB'
+    'staticMethodB',
   ];
 
   @override
   List<String> get staticMethodsNames => _staticMethodsNames;
 
-  static final Map<String,
-          StaticMethodReflection<TestOpBWithReflection, dynamic>>
-      _staticMethods = {};
+  static final Map<
+    String,
+    StaticMethodReflection<TestOpBWithReflection, dynamic>
+  >
+  _staticMethods = {};
 
   @override
   StaticMethodReflection<TestOpBWithReflection, R>? staticMethod<R>(
-      String methodName) {
+    String methodName,
+  ) {
     var m = _staticMethods[methodName];
     if (m != null) {
       return m as StaticMethodReflection<TestOpBWithReflection, R>;
@@ -3405,22 +3645,24 @@ class TestOpBWithReflection$reflection
   }
 
   StaticMethodReflection<TestOpBWithReflection, dynamic>? _staticMethodImpl(
-      String methodName) {
+    String methodName,
+  ) {
     var lc = methodName.trim().toLowerCase();
 
     switch (lc) {
       case 'staticmethodb':
         return StaticMethodReflection<TestOpBWithReflection, bool>(
-            this,
-            TestOpBWithReflection,
-            'staticMethodB',
-            __TR.tBool,
-            false,
-            () => TestOpBWithReflection.staticMethodB,
-            null,
-            null,
-            null,
-            null);
+          this,
+          TestOpBWithReflection,
+          'staticMethodB',
+          __TR.tBool,
+          false,
+          () => TestOpBWithReflection.staticMethodB,
+          null,
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
@@ -3428,18 +3670,20 @@ class TestOpBWithReflection$reflection
 }
 
 class TestOpWithReflection$reflection
-    extends ClassReflection<TestOpWithReflection> with __ReflectionMixin {
+    extends ClassReflection<TestOpWithReflection>
+    with __ReflectionMixin {
   static final Expando<TestOpWithReflection$reflection> _objectReflections =
       Expando();
 
   factory TestOpWithReflection$reflection([TestOpWithReflection? object]) {
     if (object == null) return staticInstance;
-    return _objectReflections[object] ??=
-        TestOpWithReflection$reflection._(object);
+    return _objectReflections[object] ??= TestOpWithReflection$reflection._(
+      object,
+    );
   }
 
   TestOpWithReflection$reflection._([TestOpWithReflection? object])
-      : super(TestOpWithReflection, r'TestOpWithReflection', object);
+    : super(TestOpWithReflection, r'TestOpWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -3500,11 +3744,12 @@ class TestOpWithReflection$reflection
   List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestOpWithReflection>>
-      _constructors = {};
+  _constructors = {};
 
   @override
   ConstructorReflection<TestOpWithReflection>? constructor(
-      String constructorName) {
+    String constructorName,
+  ) {
     var c = _constructors[constructorName];
     if (c != null) return c;
     c = _constructorImpl(constructorName);
@@ -3514,33 +3759,36 @@ class TestOpWithReflection$reflection
   }
 
   ConstructorReflection<TestOpWithReflection>? _constructorImpl(
-      String constructorName) {
+    String constructorName,
+  ) {
     var lc = constructorName.trim().toLowerCase();
 
     switch (lc) {
       case '':
         return ConstructorReflection<TestOpWithReflection>(
-            this,
-            TestOpWithReflection,
-            '',
-            () => TestOpWithReflection.new,
-            const <__PR>[
-              __PR(__TR.tString, 'type', false, true),
-              __PR(__TR.tDynamic, 'value', true, true)
-            ],
-            null,
-            null,
-            null);
+          this,
+          TestOpWithReflection,
+          '',
+          () => TestOpWithReflection.new,
+          const <__PR>[
+            __PR(__TR.tString, 'type', false, true),
+            __PR(__TR.tDynamic, 'value', true, true),
+          ],
+          null,
+          null,
+          null,
+        );
       case 'empty':
         return ConstructorReflection<TestOpWithReflection>(
-            this,
-            TestOpWithReflection,
-            'empty',
-            () => TestOpWithReflection.empty,
-            null,
-            null,
-            null,
-            null);
+          this,
+          TestOpWithReflection,
+          'empty',
+          () => TestOpWithReflection.empty,
+          null,
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
@@ -3568,14 +3816,16 @@ class TestOpWithReflection$reflection
   List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestOpWithReflection, dynamic>>
-      _fieldsNoObject = {};
+  _fieldsNoObject = {};
 
   final Map<String, FieldReflection<TestOpWithReflection, dynamic>>
-      _fieldsObject = {};
+  _fieldsObject = {};
 
   @override
-  FieldReflection<TestOpWithReflection, T>? field<T>(String fieldName,
-      [TestOpWithReflection? obj]) {
+  FieldReflection<TestOpWithReflection, T>? field<T>(
+    String fieldName, [
+    TestOpWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _fieldObjectImpl<T>(fieldName);
@@ -3589,7 +3839,8 @@ class TestOpWithReflection$reflection
   }
 
   FieldReflection<TestOpWithReflection, T>? _fieldNoObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsNoObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestOpWithReflection, T>;
@@ -3601,7 +3852,8 @@ class TestOpWithReflection$reflection
   }
 
   FieldReflection<TestOpWithReflection, T>? _fieldObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestOpWithReflection, T>;
@@ -3614,7 +3866,9 @@ class TestOpWithReflection$reflection
   }
 
   FieldReflection<TestOpWithReflection, dynamic>? _fieldImpl(
-      String fieldName, TestOpWithReflection? obj) {
+    String fieldName,
+    TestOpWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = fieldName.trim().toLowerCase();
@@ -3650,8 +3904,10 @@ class TestOpWithReflection$reflection
   }
 
   @override
-  Map<String, dynamic> getFieldsValues(TestOpWithReflection? obj,
-      {bool withHashCode = false}) {
+  Map<String, dynamic> getFieldsValues(
+    TestOpWithReflection? obj, {
+    bool withHashCode = false,
+  }) {
     obj ??= object;
     return <String, dynamic>{
       'type': obj?.type,
@@ -3666,11 +3922,12 @@ class TestOpWithReflection$reflection
   List<String> get staticFieldsNames => _staticFieldsNames;
 
   static final Map<String, StaticFieldReflection<TestOpWithReflection, dynamic>>
-      _staticFields = {};
+  _staticFields = {};
 
   @override
   StaticFieldReflection<TestOpWithReflection, T>? staticField<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     var f = _staticFields[fieldName];
     if (f != null) {
       return f as StaticFieldReflection<TestOpWithReflection, T>;
@@ -3682,7 +3939,8 @@ class TestOpWithReflection$reflection
   }
 
   StaticFieldReflection<TestOpWithReflection, dynamic>? _staticFieldImpl(
-      String fieldName) {
+    String fieldName,
+  ) {
     var lc = fieldName.trim().toLowerCase();
 
     switch (lc) {
@@ -3709,14 +3967,16 @@ class TestOpWithReflection$reflection
   List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestOpWithReflection, dynamic>>
-      _methodsNoObject = {};
+  _methodsNoObject = {};
 
   final Map<String, MethodReflection<TestOpWithReflection, dynamic>>
-      _methodsObject = {};
+  _methodsObject = {};
 
   @override
-  MethodReflection<TestOpWithReflection, R>? method<R>(String methodName,
-      [TestOpWithReflection? obj]) {
+  MethodReflection<TestOpWithReflection, R>? method<R>(
+    String methodName, [
+    TestOpWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _methodObjectImpl<R>(methodName);
@@ -3730,7 +3990,8 @@ class TestOpWithReflection$reflection
   }
 
   MethodReflection<TestOpWithReflection, R>? _methodNoObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsNoObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestOpWithReflection, R>;
@@ -3742,7 +4003,8 @@ class TestOpWithReflection$reflection
   }
 
   MethodReflection<TestOpWithReflection, R>? _methodObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestOpWithReflection, R>;
@@ -3755,7 +4017,9 @@ class TestOpWithReflection$reflection
   }
 
   MethodReflection<TestOpWithReflection, dynamic>? _methodImpl(
-      String methodName, TestOpWithReflection? obj) {
+    String methodName,
+    TestOpWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = methodName.trim().toLowerCase();
@@ -3763,36 +4027,40 @@ class TestOpWithReflection$reflection
     switch (lc) {
       case 'isemptytype':
         return MethodReflection<TestOpWithReflection, bool>(
-            this,
-            TestOpWithReflection,
-            'isEmptyType',
-            __TR.tBool,
-            false,
-            (o) => o!.isEmptyType,
-            obj,
-            null,
-            null,
-            null,
-            null);
+          this,
+          TestOpWithReflection,
+          'isEmptyType',
+          __TR.tBool,
+          false,
+          (o) => o!.isEmptyType,
+          obj,
+          null,
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
   }
 
   static const List<String> _staticMethodsNames = const <String>[
-    'staticMethod'
+    'staticMethod',
   ];
 
   @override
   List<String> get staticMethodsNames => _staticMethodsNames;
 
-  static final Map<String,
-          StaticMethodReflection<TestOpWithReflection, dynamic>>
-      _staticMethods = {};
+  static final Map<
+    String,
+    StaticMethodReflection<TestOpWithReflection, dynamic>
+  >
+  _staticMethods = {};
 
   @override
   StaticMethodReflection<TestOpWithReflection, R>? staticMethod<R>(
-      String methodName) {
+    String methodName,
+  ) {
     var m = _staticMethods[methodName];
     if (m != null) {
       return m as StaticMethodReflection<TestOpWithReflection, R>;
@@ -3804,22 +4072,24 @@ class TestOpWithReflection$reflection
   }
 
   StaticMethodReflection<TestOpWithReflection, dynamic>? _staticMethodImpl(
-      String methodName) {
+    String methodName,
+  ) {
     var lc = methodName.trim().toLowerCase();
 
     switch (lc) {
       case 'staticmethod':
         return StaticMethodReflection<TestOpWithReflection, bool>(
-            this,
-            TestOpWithReflection,
-            'staticMethod',
-            __TR.tBool,
-            false,
-            () => TestOpWithReflection.staticMethod,
-            null,
-            null,
-            null,
-            null);
+          this,
+          TestOpWithReflection,
+          'staticMethod',
+          __TR.tBool,
+          false,
+          () => TestOpWithReflection.staticMethod,
+          null,
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
@@ -3830,19 +4100,23 @@ class TestTransactionWithReflection$reflection
     extends ClassReflection<TestTransactionWithReflection>
     with __ReflectionMixin {
   static final Expando<TestTransactionWithReflection$reflection>
-      _objectReflections = Expando();
+  _objectReflections = Expando();
 
-  factory TestTransactionWithReflection$reflection(
-      [TestTransactionWithReflection? object]) {
+  factory TestTransactionWithReflection$reflection([
+    TestTransactionWithReflection? object,
+  ]) {
     if (object == null) return staticInstance;
     return _objectReflections[object] ??=
         TestTransactionWithReflection$reflection._(object);
   }
 
-  TestTransactionWithReflection$reflection._(
-      [TestTransactionWithReflection? object])
-      : super(TestTransactionWithReflection, r'TestTransactionWithReflection',
-            object);
+  TestTransactionWithReflection$reflection._([
+    TestTransactionWithReflection? object,
+  ]) : super(
+         TestTransactionWithReflection,
+         r'TestTransactionWithReflection',
+         object,
+       );
 
   static bool _registered = false;
   @override
@@ -3858,9 +4132,9 @@ class TestTransactionWithReflection$reflection
   Version get languageVersion => Version.parse('3.6.0');
 
   @override
-  TestTransactionWithReflection$reflection withObject(
-          [TestTransactionWithReflection? obj]) =>
-      TestTransactionWithReflection$reflection(obj)..setupInternalsWith(this);
+  TestTransactionWithReflection$reflection withObject([
+    TestTransactionWithReflection? obj,
+  ]) => TestTransactionWithReflection$reflection(obj)..setupInternalsWith(this);
 
   static TestTransactionWithReflection$reflection? _withoutObjectInstance;
   @override
@@ -3897,7 +4171,7 @@ class TestTransactionWithReflection$reflection
   bool get hasNoRequiredArgsConstructor => false;
   @override
   TestTransactionWithReflection?
-      createInstanceWithNoRequiredArgsConstructor() => null;
+  createInstanceWithNoRequiredArgsConstructor() => null;
 
   static const List<String> _constructorsNames = const <String>['fromTo'];
 
@@ -3905,11 +4179,12 @@ class TestTransactionWithReflection$reflection
   List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestTransactionWithReflection>>
-      _constructors = {};
+  _constructors = {};
 
   @override
   ConstructorReflection<TestTransactionWithReflection>? constructor(
-      String constructorName) {
+    String constructorName,
+  ) {
     var c = _constructors[constructorName];
     if (c != null) return c;
     c = _constructorImpl(constructorName);
@@ -3919,26 +4194,36 @@ class TestTransactionWithReflection$reflection
   }
 
   ConstructorReflection<TestTransactionWithReflection>? _constructorImpl(
-      String constructorName) {
+    String constructorName,
+  ) {
     var lc = constructorName.trim().toLowerCase();
 
     switch (lc) {
       case 'fromto':
         return ConstructorReflection<TestTransactionWithReflection>(
-            this,
-            TestTransactionWithReflection,
-            'fromTo',
-            () => TestTransactionWithReflection.fromTo,
-            const <__PR>[
-              __PR(__TR.tInt, 'amount', false, true),
-              __PR(__TR<TestUserWithReflection>(TestUserWithReflection),
-                  'fromUser', false, true),
-              __PR(__TR<TestUserWithReflection>(TestUserWithReflection),
-                  'toUser', false, true)
-            ],
-            null,
-            null,
-            null);
+          this,
+          TestTransactionWithReflection,
+          'fromTo',
+          () => TestTransactionWithReflection.fromTo,
+          const <__PR>[
+            __PR(__TR.tInt, 'amount', false, true),
+            __PR(
+              __TR<TestUserWithReflection>(TestUserWithReflection),
+              'fromUser',
+              false,
+              true,
+            ),
+            __PR(
+              __TR<TestUserWithReflection>(TestUserWithReflection),
+              'toUser',
+              false,
+              true,
+            ),
+          ],
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
@@ -3963,22 +4248,26 @@ class TestTransactionWithReflection$reflection
   static const List<String> _fieldsNames = const <String>[
     'amount',
     'fromUser',
-    'toUser'
+    'toUser',
   ];
 
   @override
   List<String> get fieldsNames => _fieldsNames;
 
-  static final Map<String,
-          FieldReflection<TestTransactionWithReflection, dynamic>>
-      _fieldsNoObject = {};
+  static final Map<
+    String,
+    FieldReflection<TestTransactionWithReflection, dynamic>
+  >
+  _fieldsNoObject = {};
 
   final Map<String, FieldReflection<TestTransactionWithReflection, dynamic>>
-      _fieldsObject = {};
+  _fieldsObject = {};
 
   @override
-  FieldReflection<TestTransactionWithReflection, T>? field<T>(String fieldName,
-      [TestTransactionWithReflection? obj]) {
+  FieldReflection<TestTransactionWithReflection, T>? field<T>(
+    String fieldName, [
+    TestTransactionWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _fieldObjectImpl<T>(fieldName);
@@ -3992,7 +4281,8 @@ class TestTransactionWithReflection$reflection
   }
 
   FieldReflection<TestTransactionWithReflection, T>? _fieldNoObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsNoObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestTransactionWithReflection, T>;
@@ -4004,7 +4294,8 @@ class TestTransactionWithReflection$reflection
   }
 
   FieldReflection<TestTransactionWithReflection, T>? _fieldObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestTransactionWithReflection, T>;
@@ -4017,15 +4308,19 @@ class TestTransactionWithReflection$reflection
   }
 
   FieldReflection<TestTransactionWithReflection, dynamic>? _fieldImpl(
-      String fieldName, TestTransactionWithReflection? obj) {
+    String fieldName,
+    TestTransactionWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = fieldName.trim().toLowerCase();
 
     switch (lc) {
       case 'fromuser':
-        return FieldReflection<TestTransactionWithReflection,
-            TestUserWithReflection>(
+        return FieldReflection<
+          TestTransactionWithReflection,
+          TestUserWithReflection
+        >(
           this,
           TestTransactionWithReflection,
           const __TR<TestUserWithReflection>(TestUserWithReflection),
@@ -4037,8 +4332,10 @@ class TestTransactionWithReflection$reflection
           true,
         );
       case 'touser':
-        return FieldReflection<TestTransactionWithReflection,
-            TestUserWithReflection>(
+        return FieldReflection<
+          TestTransactionWithReflection,
+          TestUserWithReflection
+        >(
           this,
           TestTransactionWithReflection,
           const __TR<TestUserWithReflection>(TestUserWithReflection),
@@ -4067,8 +4364,10 @@ class TestTransactionWithReflection$reflection
   }
 
   @override
-  Map<String, dynamic> getFieldsValues(TestTransactionWithReflection? obj,
-      {bool withHashCode = false}) {
+  Map<String, dynamic> getFieldsValues(
+    TestTransactionWithReflection? obj, {
+    bool withHashCode = false,
+  }) {
     obj ??= object;
     return <String, dynamic>{
       'fromUser': obj?.fromUser,
@@ -4085,8 +4384,8 @@ class TestTransactionWithReflection$reflection
 
   @override
   StaticFieldReflection<TestTransactionWithReflection, T>? staticField<T>(
-          String fieldName) =>
-      null;
+    String fieldName,
+  ) => null;
 
   static const List<String> _methodsNames = const <String>[];
 
@@ -4095,9 +4394,9 @@ class TestTransactionWithReflection$reflection
 
   @override
   MethodReflection<TestTransactionWithReflection, R>? method<R>(
-          String methodName,
-          [TestTransactionWithReflection? obj]) =>
-      null;
+    String methodName, [
+    TestTransactionWithReflection? obj,
+  ]) => null;
   static const List<String> _staticMethodsNames = const <String>[];
 
   @override
@@ -4105,23 +4404,25 @@ class TestTransactionWithReflection$reflection
 
   @override
   StaticMethodReflection<TestTransactionWithReflection, R>? staticMethod<R>(
-          String methodName) =>
-      null;
+    String methodName,
+  ) => null;
 }
 
 class TestUserWithReflection$reflection
-    extends ClassReflection<TestUserWithReflection> with __ReflectionMixin {
+    extends ClassReflection<TestUserWithReflection>
+    with __ReflectionMixin {
   static final Expando<TestUserWithReflection$reflection> _objectReflections =
       Expando();
 
   factory TestUserWithReflection$reflection([TestUserWithReflection? object]) {
     if (object == null) return staticInstance;
-    return _objectReflections[object] ??=
-        TestUserWithReflection$reflection._(object);
+    return _objectReflections[object] ??= TestUserWithReflection$reflection._(
+      object,
+    );
   }
 
   TestUserWithReflection$reflection._([TestUserWithReflection? object])
-      : super(TestUserWithReflection, r'TestUserWithReflection', object);
+    : super(TestUserWithReflection, r'TestUserWithReflection', object);
 
   static bool _registered = false;
   @override
@@ -4181,11 +4482,12 @@ class TestUserWithReflection$reflection
   List<String> get constructorsNames => _constructorsNames;
 
   static final Map<String, ConstructorReflection<TestUserWithReflection>>
-      _constructors = {};
+  _constructors = {};
 
   @override
   ConstructorReflection<TestUserWithReflection>? constructor(
-      String constructorName) {
+    String constructorName,
+  ) {
     var c = _constructors[constructorName];
     if (c != null) return c;
     c = _constructorImpl(constructorName);
@@ -4195,41 +4497,50 @@ class TestUserWithReflection$reflection
   }
 
   ConstructorReflection<TestUserWithReflection>? _constructorImpl(
-      String constructorName) {
+    String constructorName,
+  ) {
     var lc = constructorName.trim().toLowerCase();
 
     switch (lc) {
       case 'fields':
         return ConstructorReflection<TestUserWithReflection>(
-            this,
-            TestUserWithReflection,
-            'fields',
-            () => TestUserWithReflection.fields,
-            const <__PR>[
-              __PR(__TR.tString, 'name', false, true),
-              __PR(__TR.tString, 'email', true, true),
-              __PR(__TR.tString, 'passphrase', true, true, null,
-                  const [JsonFieldAlias('password')])
-            ],
-            null,
-            const <String, __PR>{
-              'axis': __PR(__TR<TestEnumWithReflection>(TestEnumWithReflection),
-                  'axis', false, false, TestEnumWithReflection.x),
-              'enabled': __PR(__TR.tBool, 'enabled', false, false, true),
-              'id': __PR(__TR.tInt, 'id', true, false),
-              'level': __PR(__TR.tInt, 'level', true, false)
-            },
-            null);
+          this,
+          TestUserWithReflection,
+          'fields',
+          () => TestUserWithReflection.fields,
+          const <__PR>[
+            __PR(__TR.tString, 'name', false, true),
+            __PR(__TR.tString, 'email', true, true),
+            __PR(__TR.tString, 'passphrase', true, true, null, const [
+              JsonFieldAlias('password'),
+            ]),
+          ],
+          null,
+          const <String, __PR>{
+            'axis': __PR(
+              __TR<TestEnumWithReflection>(TestEnumWithReflection),
+              'axis',
+              false,
+              false,
+              TestEnumWithReflection.x,
+            ),
+            'enabled': __PR(__TR.tBool, 'enabled', false, false, true),
+            'id': __PR(__TR.tInt, 'id', true, false),
+            'level': __PR(__TR.tInt, 'level', true, false),
+          },
+          null,
+        );
       case '':
         return ConstructorReflection<TestUserWithReflection>(
-            this,
-            TestUserWithReflection,
-            '',
-            () => TestUserWithReflection.new,
-            null,
-            null,
-            null,
-            null);
+          this,
+          TestUserWithReflection,
+          '',
+          () => TestUserWithReflection.new,
+          null,
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
@@ -4261,21 +4572,23 @@ class TestUserWithReflection$reflection
     'isNotEnabled',
     'level',
     'name',
-    'password'
+    'password',
   ];
 
   @override
   List<String> get fieldsNames => _fieldsNames;
 
   static final Map<String, FieldReflection<TestUserWithReflection, dynamic>>
-      _fieldsNoObject = {};
+  _fieldsNoObject = {};
 
   final Map<String, FieldReflection<TestUserWithReflection, dynamic>>
-      _fieldsObject = {};
+  _fieldsObject = {};
 
   @override
-  FieldReflection<TestUserWithReflection, T>? field<T>(String fieldName,
-      [TestUserWithReflection? obj]) {
+  FieldReflection<TestUserWithReflection, T>? field<T>(
+    String fieldName, [
+    TestUserWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _fieldObjectImpl<T>(fieldName);
@@ -4289,7 +4602,8 @@ class TestUserWithReflection$reflection
   }
 
   FieldReflection<TestUserWithReflection, T>? _fieldNoObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsNoObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestUserWithReflection, T>;
@@ -4301,7 +4615,8 @@ class TestUserWithReflection$reflection
   }
 
   FieldReflection<TestUserWithReflection, T>? _fieldObjectImpl<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     final f = _fieldsObject[fieldName];
     if (f != null) {
       return f as FieldReflection<TestUserWithReflection, T>;
@@ -4314,7 +4629,9 @@ class TestUserWithReflection$reflection
   }
 
   FieldReflection<TestUserWithReflection, dynamic>? _fieldImpl(
-      String fieldName, TestUserWithReflection? obj) {
+    String fieldName,
+    TestUserWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = fieldName.trim().toLowerCase();
@@ -4452,8 +4769,10 @@ class TestUserWithReflection$reflection
   }
 
   @override
-  Map<String, dynamic> getFieldsValues(TestUserWithReflection? obj,
-      {bool withHashCode = false}) {
+  Map<String, dynamic> getFieldsValues(
+    TestUserWithReflection? obj, {
+    bool withHashCode = false,
+  }) {
     obj ??= object;
     return <String, dynamic>{
       'id': obj?.id,
@@ -4470,8 +4789,10 @@ class TestUserWithReflection$reflection
   }
 
   @override
-  Map<String, dynamic> getJsonFieldsVisibleValues(TestUserWithReflection? obj,
-      {bool withHashCode = false}) {
+  Map<String, dynamic> getJsonFieldsVisibleValues(
+    TestUserWithReflection? obj, {
+    bool withHashCode = false,
+  }) {
     obj ??= object;
     return <String, dynamic>{
       'id': obj?.id,
@@ -4487,19 +4808,22 @@ class TestUserWithReflection$reflection
 
   static const List<String> _staticFieldsNames = const <String>[
     'version',
-    'withReflection'
+    'withReflection',
   ];
 
   @override
   List<String> get staticFieldsNames => _staticFieldsNames;
 
-  static final Map<String,
-          StaticFieldReflection<TestUserWithReflection, dynamic>>
-      _staticFields = {};
+  static final Map<
+    String,
+    StaticFieldReflection<TestUserWithReflection, dynamic>
+  >
+  _staticFields = {};
 
   @override
   StaticFieldReflection<TestUserWithReflection, T>? staticField<T>(
-      String fieldName) {
+    String fieldName,
+  ) {
     var f = _staticFields[fieldName];
     if (f != null) {
       return f as StaticFieldReflection<TestUserWithReflection, T>;
@@ -4511,7 +4835,8 @@ class TestUserWithReflection$reflection
   }
 
   StaticFieldReflection<TestUserWithReflection, dynamic>? _staticFieldImpl(
-      String fieldName) {
+    String fieldName,
+  ) {
     var lc = fieldName.trim().toLowerCase();
 
     switch (lc) {
@@ -4548,21 +4873,23 @@ class TestUserWithReflection$reflection
     'checkPassword',
     'getField',
     'setField',
-    'toString'
+    'toString',
   ];
 
   @override
   List<String> get methodsNames => _methodsNames;
 
   static final Map<String, MethodReflection<TestUserWithReflection, dynamic>>
-      _methodsNoObject = {};
+  _methodsNoObject = {};
 
   final Map<String, MethodReflection<TestUserWithReflection, dynamic>>
-      _methodsObject = {};
+  _methodsObject = {};
 
   @override
-  MethodReflection<TestUserWithReflection, R>? method<R>(String methodName,
-      [TestUserWithReflection? obj]) {
+  MethodReflection<TestUserWithReflection, R>? method<R>(
+    String methodName, [
+    TestUserWithReflection? obj,
+  ]) {
     if (obj == null) {
       if (object != null) {
         return _methodObjectImpl<R>(methodName);
@@ -4576,7 +4903,8 @@ class TestUserWithReflection$reflection
   }
 
   MethodReflection<TestUserWithReflection, R>? _methodNoObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsNoObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestUserWithReflection, R>;
@@ -4588,7 +4916,8 @@ class TestUserWithReflection$reflection
   }
 
   MethodReflection<TestUserWithReflection, R>? _methodObjectImpl<R>(
-      String methodName) {
+    String methodName,
+  ) {
     final m = _methodsObject[methodName];
     if (m != null) {
       return m as MethodReflection<TestUserWithReflection, R>;
@@ -4601,7 +4930,9 @@ class TestUserWithReflection$reflection
   }
 
   MethodReflection<TestUserWithReflection, dynamic>? _methodImpl(
-      String methodName, TestUserWithReflection? obj) {
+    String methodName,
+    TestUserWithReflection? obj,
+  ) {
     obj ??= object;
 
     var lc = methodName.trim().toLowerCase();
@@ -4609,61 +4940,63 @@ class TestUserWithReflection$reflection
     switch (lc) {
       case 'checkpassword':
         return MethodReflection<TestUserWithReflection, bool>(
-            this,
-            TestUserWithReflection,
-            'checkPassword',
-            __TR.tBool,
-            false,
-            (o) => o!.checkPassword,
-            obj,
-            const <__PR>[__PR(__TR.tString, 'password', false, true)],
-            null,
-            null,
-            null);
+          this,
+          TestUserWithReflection,
+          'checkPassword',
+          __TR.tBool,
+          false,
+          (o) => o!.checkPassword,
+          obj,
+          const <__PR>[__PR(__TR.tString, 'password', false, true)],
+          null,
+          null,
+          null,
+        );
       case 'getfield':
         return MethodReflection<TestUserWithReflection, dynamic>(
-            this,
-            TestUserWithReflection,
-            'getField',
-            __TR.tDynamic,
-            true,
-            (o) => o!.getField,
-            obj,
-            const <__PR>[__PR(__TR.tString, 'key', false, true)],
-            const <__PR>[__PR(__TR.tDynamic, 'def', true, false)],
-            null,
-            null);
+          this,
+          TestUserWithReflection,
+          'getField',
+          __TR.tDynamic,
+          true,
+          (o) => o!.getField,
+          obj,
+          const <__PR>[__PR(__TR.tString, 'key', false, true)],
+          const <__PR>[__PR(__TR.tDynamic, 'def', true, false)],
+          null,
+          null,
+        );
       case 'setfield':
         return MethodReflection<TestUserWithReflection, void>(
-            this,
-            TestUserWithReflection,
-            'setField',
-            __TR.tVoid,
-            false,
-            (o) => o!.setField,
-            obj,
-            const <__PR>[
-              __PR(__TR.tString, 'key', false, true),
-              __PR(__TR.tDynamic, 'value', true, true)
-            ],
-            null,
-            const <String, __PR>{
-              'def': __PR(__TR.tDynamic, 'def', true, false)
-            },
-            null);
+          this,
+          TestUserWithReflection,
+          'setField',
+          __TR.tVoid,
+          false,
+          (o) => o!.setField,
+          obj,
+          const <__PR>[
+            __PR(__TR.tString, 'key', false, true),
+            __PR(__TR.tDynamic, 'value', true, true),
+          ],
+          null,
+          const <String, __PR>{'def': __PR(__TR.tDynamic, 'def', true, false)},
+          null,
+        );
       case 'tostring':
         return MethodReflection<TestUserWithReflection, String>(
-            this,
-            TestUserWithReflection,
-            'toString',
-            __TR.tString,
-            false,
-            (o) => o!.toString,
-            obj,
-            null,
-            null,
-            null,
-            const [override]);
+          this,
+          TestUserWithReflection,
+          'toString',
+          __TR.tString,
+          false,
+          (o) => o!.toString,
+          obj,
+          null,
+          null,
+          null,
+          const [override],
+        );
       default:
         return null;
     }
@@ -4674,13 +5007,16 @@ class TestUserWithReflection$reflection
   @override
   List<String> get staticMethodsNames => _staticMethodsNames;
 
-  static final Map<String,
-          StaticMethodReflection<TestUserWithReflection, dynamic>>
-      _staticMethods = {};
+  static final Map<
+    String,
+    StaticMethodReflection<TestUserWithReflection, dynamic>
+  >
+  _staticMethods = {};
 
   @override
   StaticMethodReflection<TestUserWithReflection, R>? staticMethod<R>(
-      String methodName) {
+    String methodName,
+  ) {
     var m = _staticMethods[methodName];
     if (m != null) {
       return m as StaticMethodReflection<TestUserWithReflection, R>;
@@ -4692,22 +5028,24 @@ class TestUserWithReflection$reflection
   }
 
   StaticMethodReflection<TestUserWithReflection, dynamic>? _staticMethodImpl(
-      String methodName) {
+    String methodName,
+  ) {
     var lc = methodName.trim().toLowerCase();
 
     switch (lc) {
       case 'isversion':
         return StaticMethodReflection<TestUserWithReflection, bool>(
-            this,
-            TestUserWithReflection,
-            'isVersion',
-            __TR.tBool,
-            false,
-            () => TestUserWithReflection.isVersion,
-            const <__PR>[__PR(__TR.tDouble, 'ver', false, true)],
-            null,
-            null,
-            null);
+          this,
+          TestUserWithReflection,
+          'isVersion',
+          __TR.tBool,
+          false,
+          () => TestUserWithReflection.isVersion,
+          const <__PR>[__PR(__TR.tDouble, 'ver', false, true)],
+          null,
+          null,
+          null,
+        );
       default:
         return null;
     }
@@ -4725,10 +5063,13 @@ extension TestAddressWithReflection$reflectionExtension
       reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestAddressWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded(
-          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
-      reflection.toJsonEncoded(
-          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+  String toJsonEncoded({
+    bool pretty = false,
+    bool duplicatedEntitiesAsID = false,
+  }) => reflection.toJsonEncoded(
+    pretty: pretty,
+    duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+  );
 
   /// Returns a JSON for type [TestAddressWithReflection] using the class fields. (Generated by [ReflectionFactory])
   Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
@@ -4750,10 +5091,13 @@ extension TestCompanyWithReflection$reflectionExtension
       reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestCompanyWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded(
-          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
-      reflection.toJsonEncoded(
-          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+  String toJsonEncoded({
+    bool pretty = false,
+    bool duplicatedEntitiesAsID = false,
+  }) => reflection.toJsonEncoded(
+    pretty: pretty,
+    duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+  );
 
   /// Returns a JSON for type [TestCompanyWithReflection] using the class fields. (Generated by [ReflectionFactory])
   Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
@@ -4774,10 +5118,13 @@ extension TestDataWithReflection$reflectionExtension on TestDataWithReflection {
       reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestDataWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded(
-          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
-      reflection.toJsonEncoded(
-          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+  String toJsonEncoded({
+    bool pretty = false,
+    bool duplicatedEntitiesAsID = false,
+  }) => reflection.toJsonEncoded(
+    pretty: pretty,
+    duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+  );
 
   /// Returns a JSON for type [TestDataWithReflection] using the class fields. (Generated by [ReflectionFactory])
   Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
@@ -4795,10 +5142,13 @@ extension TestDomainWithReflection$reflectionExtension
       reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestDomainWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded(
-          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
-      reflection.toJsonEncoded(
-          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+  String toJsonEncoded({
+    bool pretty = false,
+    bool duplicatedEntitiesAsID = false,
+  }) => reflection.toJsonEncoded(
+    pretty: pretty,
+    duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+  );
 
   /// Returns a JSON for type [TestDomainWithReflection] using the class fields. (Generated by [ReflectionFactory])
   Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
@@ -4818,10 +5168,13 @@ extension TestEmpty$reflectionExtension on TestEmpty {
       reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestEmpty]. (Generated by [ReflectionFactory])
-  String toJsonEncoded(
-          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
-      reflection.toJsonEncoded(
-          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+  String toJsonEncoded({
+    bool pretty = false,
+    bool duplicatedEntitiesAsID = false,
+  }) => reflection.toJsonEncoded(
+    pretty: pretty,
+    duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+  );
 
   /// Returns a JSON for type [TestEmpty] using the class fields. (Generated by [ReflectionFactory])
   Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
@@ -4862,10 +5215,13 @@ extension TestFranchiseWithReflection$reflectionExtension
       reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestFranchiseWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded(
-          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
-      reflection.toJsonEncoded(
-          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+  String toJsonEncoded({
+    bool pretty = false,
+    bool duplicatedEntitiesAsID = false,
+  }) => reflection.toJsonEncoded(
+    pretty: pretty,
+    duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+  );
 
   /// Returns a JSON for type [TestFranchiseWithReflection] using the class fields. (Generated by [ReflectionFactory])
   Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
@@ -4885,10 +5241,13 @@ extension TestName$reflectionExtension on TestName {
       reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestName]. (Generated by [ReflectionFactory])
-  String toJsonEncoded(
-          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
-      reflection.toJsonEncoded(
-          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+  String toJsonEncoded({
+    bool pretty = false,
+    bool duplicatedEntitiesAsID = false,
+  }) => reflection.toJsonEncoded(
+    pretty: pretty,
+    duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+  );
 
   /// Returns a JSON for type [TestName] using the class fields. (Generated by [ReflectionFactory])
   Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
@@ -4909,10 +5268,13 @@ extension TestOpAWithReflection$reflectionExtension on TestOpAWithReflection {
       reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestOpAWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded(
-          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
-      reflection.toJsonEncoded(
-          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+  String toJsonEncoded({
+    bool pretty = false,
+    bool duplicatedEntitiesAsID = false,
+  }) => reflection.toJsonEncoded(
+    pretty: pretty,
+    duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+  );
 
   /// Returns a JSON for type [TestOpAWithReflection] using the class fields. (Generated by [ReflectionFactory])
   Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
@@ -4933,10 +5295,13 @@ extension TestOpBWithReflection$reflectionExtension on TestOpBWithReflection {
       reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestOpBWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded(
-          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
-      reflection.toJsonEncoded(
-          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+  String toJsonEncoded({
+    bool pretty = false,
+    bool duplicatedEntitiesAsID = false,
+  }) => reflection.toJsonEncoded(
+    pretty: pretty,
+    duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+  );
 
   /// Returns a JSON for type [TestOpBWithReflection] using the class fields. (Generated by [ReflectionFactory])
   Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
@@ -4957,10 +5322,13 @@ extension TestOpWithReflection$reflectionExtension on TestOpWithReflection {
       reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestOpWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded(
-          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
-      reflection.toJsonEncoded(
-          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+  String toJsonEncoded({
+    bool pretty = false,
+    bool duplicatedEntitiesAsID = false,
+  }) => reflection.toJsonEncoded(
+    pretty: pretty,
+    duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+  );
 
   /// Returns a JSON for type [TestOpWithReflection] using the class fields. (Generated by [ReflectionFactory])
   Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
@@ -4982,10 +5350,13 @@ extension TestTransactionWithReflection$reflectionExtension
       reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestTransactionWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded(
-          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
-      reflection.toJsonEncoded(
-          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+  String toJsonEncoded({
+    bool pretty = false,
+    bool duplicatedEntitiesAsID = false,
+  }) => reflection.toJsonEncoded(
+    pretty: pretty,
+    duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+  );
 
   /// Returns a JSON for type [TestTransactionWithReflection] using the class fields. (Generated by [ReflectionFactory])
   Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
@@ -5006,10 +5377,13 @@ extension TestUserWithReflection$reflectionExtension on TestUserWithReflection {
       reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 
   /// Returns an encoded JSON [String] for type [TestUserWithReflection]. (Generated by [ReflectionFactory])
-  String toJsonEncoded(
-          {bool pretty = false, bool duplicatedEntitiesAsID = false}) =>
-      reflection.toJsonEncoded(
-          pretty: pretty, duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+  String toJsonEncoded({
+    bool pretty = false,
+    bool duplicatedEntitiesAsID = false,
+  }) => reflection.toJsonEncoded(
+    pretty: pretty,
+    duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+  );
 
   /// Returns a JSON for type [TestUserWithReflection] using the class fields. (Generated by [ReflectionFactory])
   Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
@@ -5017,24 +5391,26 @@ extension TestUserWithReflection$reflectionExtension on TestUserWithReflection {
 }
 
 List<Reflection> _listSiblingsReflection() => <Reflection>[
-      TestAddressWithReflection$reflection(),
-      TestCompanyWithReflection$reflection(),
-      TestDataWithReflection$reflection(),
-      TestDomainWithReflection$reflection(),
-      TestEmpty$reflection(),
-      TestEnumWithReflection$reflection(),
-      TestFranchiseWithReflection$reflection(),
-      TestName$reflection(),
-      TestOpAWithReflection$reflection(),
-      TestOpBWithReflection$reflection(),
-      TestOpWithReflection$reflection(),
-      TestTransactionWithReflection$reflection(),
-      TestUserWithReflection$reflection(),
-    ];
+  TestAddressWithReflection$reflection(),
+  TestCompanyWithReflection$reflection(),
+  TestDataWithReflection$reflection(),
+  TestDomainWithReflection$reflection(),
+  TestEmpty$reflection(),
+  TestEnumWithReflection$reflection(),
+  TestFranchiseWithReflection$reflection(),
+  TestName$reflection(),
+  TestOpAWithReflection$reflection(),
+  TestOpBWithReflection$reflection(),
+  TestOpWithReflection$reflection(),
+  TestTransactionWithReflection$reflection(),
+  TestUserWithReflection$reflection(),
+];
 
 List<Reflection>? _siblingsReflectionList;
-List<Reflection> _siblingsReflection() => _siblingsReflectionList ??=
-    List<Reflection>.unmodifiable(_listSiblingsReflection());
+List<Reflection> _siblingsReflection() =>
+    _siblingsReflectionList ??= List<Reflection>.unmodifiable(
+      _listSiblingsReflection(),
+    );
 
 bool _registerSiblingsReflectionCalled = false;
 void _registerSiblingsReflection() {
