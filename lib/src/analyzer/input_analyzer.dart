@@ -337,9 +337,7 @@ class InputAnalyzerResolved {
     LibraryElement libraryElement,
   ) async {
     var libraryAssetId = await resolver.assetIdForElement(libraryElement);
-    var libraryElementResolved = await resolver.libraryFor(
-      libraryAssetId,
-    );
+    var libraryElementResolved = await resolver.libraryFor(libraryAssetId);
     return libraryElementResolved;
   }
 

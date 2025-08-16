@@ -1821,25 +1821,21 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
         var map2 = typeInfo
             .callCastedArgumentsAB<Map<String, dynamic>, String, dynamic>(
-              <K, V>() => map.map<String, V>(
-                (k, v) {
-                  var v2 = _fromJsonImpl(v, arg1, duplicatedEntitiesAsID);
-                  return MapEntry<String, V>(k, v2);
-                },
-              ),
+              <K, V>() => map.map<String, V>((k, v) {
+                var v2 = _fromJsonImpl(v, arg1, duplicatedEntitiesAsID);
+                return MapEntry<String, V>(k, v2);
+              }),
             );
 
         return map2;
       }
 
       var map2 = typeInfo.callCastedArgumentsAB<Map, dynamic, dynamic>(
-        <K, V>() => map.map<K, V>(
-          (k, v) {
-            var k2 = _fromJsonImpl(k, arg0, duplicatedEntitiesAsID);
-            var v2 = _fromJsonImpl(v, arg1, duplicatedEntitiesAsID);
-            return MapEntry<K, V>(k2, v2);
-          },
-        ),
+        <K, V>() => map.map<K, V>((k, v) {
+          var k2 = _fromJsonImpl(k, arg0, duplicatedEntitiesAsID);
+          var v2 = _fromJsonImpl(v, arg1, duplicatedEntitiesAsID);
+          return MapEntry<K, V>(k2, v2);
+        }),
       );
 
       return map2;
@@ -3147,10 +3143,7 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
     return total == 0
         ? s
-        : '$s${CombinedMapView([
-          if (entities != null) entities,
-          if (entitiesInstantiators != null) entitiesInstantiators,
-        ]).map((key, value) => MapEntry(key, value.length))}';
+        : '$s${CombinedMapView([if (entities != null) entities, if (entitiesInstantiators != null) entitiesInstantiators]).map((key, value) => MapEntry(key, value.length))}';
   }
 }
 

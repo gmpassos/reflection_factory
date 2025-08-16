@@ -400,9 +400,7 @@ extension UserReflectionBridge$reflectionExtension on UserReflectionBridge {
   }
 }
 
-List<Reflection> _listSiblingsReflection() => <Reflection>[
-  User$reflection(),
-];
+List<Reflection> _listSiblingsReflection() => <Reflection>[User$reflection()];
 
 List<Reflection>? _siblingsReflectionList;
 List<Reflection> _siblingsReflection() =>

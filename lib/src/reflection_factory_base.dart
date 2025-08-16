@@ -4574,10 +4574,7 @@ class MethodInvocation<T> {
     var args =
         optionalParameters == null || optionalParameters.isEmpty
             ? normalParameters
-            : [
-              ...normalParameters,
-              ...optionalParameters,
-            ];
+            : [...normalParameters, ...optionalParameters];
 
     return args;
   }

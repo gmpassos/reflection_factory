@@ -267,10 +267,7 @@ class UnresolvedAnnotationException implements Exception {
   /// May be `null` if the import library was not found.
   final SourceSpan? annotationSource;
 
-  static SourceSpan? _findSpan(
-    Element annotatedElement,
-    int annotationIndex,
-  ) {
+  static SourceSpan? _findSpan(Element annotatedElement, int annotationIndex) {
     try {
       final parsedLibrary =
           annotatedElement.session!.getParsedLibraryByElement(

@@ -1296,9 +1296,7 @@ void main() {
       );
       expect(
         userReflection.allStaticFields().map((e) => e.name),
-        equals(
-          userReflection.staticFieldsNames,
-        ),
+        equals(userReflection.staticFieldsNames),
       );
 
       expect(
@@ -2130,40 +2128,28 @@ void main() {
 
       expect(
         method
-            .methodInvocationFromMap({
-              'password': '123',
-              'ignoreCase': false,
-            })
+            .methodInvocationFromMap({'password': '123', 'ignoreCase': false})
             .invoke(method.method),
         isFalse,
       );
 
       expect(
         method
-            .methodInvocationFromMap({
-              'password': 'abc',
-              'ignoreCase': false,
-            })
+            .methodInvocationFromMap({'password': 'abc', 'ignoreCase': false})
             .invoke(method.method),
         isTrue,
       );
 
       expect(
         method
-            .methodInvocationFromMap({
-              'password': 'ABC',
-              'ignoreCase': false,
-            })
+            .methodInvocationFromMap({'password': 'ABC', 'ignoreCase': false})
             .invoke(method.method),
         isFalse,
       );
 
       expect(
         method
-            .methodInvocationFromMap({
-              'password': 'ABC',
-              'ignoreCase': true,
-            })
+            .methodInvocationFromMap({'password': 'ABC', 'ignoreCase': true})
             .invoke(method.method),
         isTrue,
       );

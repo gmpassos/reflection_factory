@@ -294,38 +294,22 @@ void main() {
       );
 
       expect(
-        castMapType(
-          <dynamic, dynamic>{1: 'a', 'n': 'b'},
-          Object,
-          String,
-        ),
+        castMapType(<dynamic, dynamic>{1: 'a', 'n': 'b'}, Object, String),
         isA<Map<dynamic, String>>(),
       );
 
       expect(
-        castMapType(
-          <dynamic, dynamic>{1: 'a', 'n': 'b'},
-          Object,
-          String,
-        ),
+        castMapType(<dynamic, dynamic>{1: 'a', 'n': 'b'}, Object, String),
         isA<Map<Object, String>>(),
       );
 
       expect(
-        castMapType(
-          <dynamic, dynamic>{},
-          Object,
-          String,
-        ),
+        castMapType(<dynamic, dynamic>{}, Object, String),
         isA<Map<dynamic, String>>(),
       );
 
       expect(
-        castMapType(
-          <dynamic, dynamic>{},
-          Object,
-          String,
-        ),
+        castMapType(<dynamic, dynamic>{}, Object, String),
         isA<Map<Object, String>>(),
       );
     });
@@ -393,9 +377,7 @@ void main() {
       expect(
         JsonCodec(
           toEncodable: (o, j) => o is Foo ? '${o.id}:${o.name}' : o,
-        ).toJson(
-          {'a': 1, 'b': 2, 'foo': Foo(51, 'x')},
-        ),
+        ).toJson({'a': 1, 'b': 2, 'foo': Foo(51, 'x')}),
         equals({'a': 1, 'b': 2, 'foo': '51:x'}),
       );
 
@@ -488,19 +470,13 @@ void main() {
 
       expect(
         JsonCodec().toJson(
-          TestFranchiseWithReflection(
-            'FooInc',
-            {
-              'main': TestAddressWithReflection.withCity(
-                'State1',
-                city: 'City1',
-              ),
-              'extra': TestAddressWithReflection.withCity(
-                'State1',
-                city: 'City2',
-              ),
-            },
-          ),
+          TestFranchiseWithReflection('FooInc', {
+            'main': TestAddressWithReflection.withCity('State1', city: 'City1'),
+            'extra': TestAddressWithReflection.withCity(
+              'State1',
+              city: 'City2',
+            ),
+          }),
         ),
         equals({
           'addresses': {
@@ -928,9 +904,7 @@ void main() {
       );
 
       expect(
-        JsonCodec().fromJson({
-          'state': 'LA',
-        }, type: TestAddressWithReflection),
+        JsonCodec().fromJson({'state': 'LA'}, type: TestAddressWithReflection),
         equals(TestAddressWithReflection.withCity('LA')),
       );
 
@@ -1085,9 +1059,7 @@ void main() {
           'state': 'State1',
           'city': 'City1',
         }, type: TestAddressWithReflection),
-        equals(
-          TestAddressWithReflection.withCity('State1', city: 'City1'),
-        ),
+        equals(TestAddressWithReflection.withCity('State1', city: 'City1')),
       );
 
       expect(
@@ -1095,9 +1067,7 @@ void main() {
           Future.value({'state': 'State1', 'city': 'City1'}),
           type: TestAddressWithReflection,
         ),
-        equals(
-          TestAddressWithReflection.withCity('State1', city: 'City1'),
-        ),
+        equals(TestAddressWithReflection.withCity('State1', city: 'City1')),
       );
 
       expect(
@@ -1105,9 +1075,7 @@ void main() {
           'state': 'State1',
           'city': Future.value('City1'),
         }, type: TestAddressWithReflection),
-        equals(
-          TestAddressWithReflection.withCity('State1', city: 'City1'),
-        ),
+        equals(TestAddressWithReflection.withCity('State1', city: 'City1')),
       );
 
       expect(
@@ -2662,9 +2630,7 @@ void main() {
         jsonEntityCache2
             .getCachedEntitiesByIDs<TestAddressWithReflection>([11, 12])
             ?.map((k, v) => MapEntry(k, (v as dynamic).id)),
-        equals(
-          {11: 11, 12: 12},
-        ),
+        equals({11: 11, 12: 12}),
       );
 
       jsonEntityCache2.cacheEntityInstantiator(10, () {
@@ -2707,9 +2673,7 @@ void main() {
         jsonEntityCache2
             .getCachedEntitiesByIDs<TestAddressWithReflection>([11, 12, 9])
             ?.map((k, v) => MapEntry(k, (v as dynamic).id)),
-        equals(
-          {11: 11, 12: 12, 9: 9},
-        ),
+        equals({11: 11, 12: 12, 9: 9}),
       );
 
       expect(jsonEntityCache2.cachedEntitiesLength, equals(4));
@@ -2722,18 +2686,14 @@ void main() {
             ?.map(
               (k, v) => MapEntry(k, v is Function ? -1 : (v as dynamic).id),
             ),
-        equals(
-          {8: -1, 9: 9, 10: 10, 11: 11, 12: 12},
-        ),
+        equals({8: -1, 9: 9, 10: 10, 11: 11, 12: 12}),
       );
 
       expect(
         jsonEntityCache2
             .getCachedEntitiesByIDs<TestAddressWithReflection>([11, 8, 9])
             ?.map((k, v) => MapEntry(k, (v as dynamic).id)),
-        equals(
-          {11: 11, 8: 8, 9: 9},
-        ),
+        equals({11: 11, 8: 8, 9: 9}),
       );
 
       expect(jsonEntityCache2.cachedEntitiesLength, equals(5));
@@ -2744,9 +2704,7 @@ void main() {
         jsonEntityCache2.getCachedEntities<TestAddressWithReflection>()?.map(
           (k, v) => MapEntry(k, (v as dynamic).id),
         ),
-        equals(
-          {8: 8, 9: 9, 10: 10, 11: 11, 12: 12},
-        ),
+        equals({8: 8, 9: 9, 10: 10, 11: 11, 12: 12}),
       );
 
       jsonEntityCache2.cacheEntityInstantiator(7, () {

@@ -148,11 +148,7 @@ void main() {
 
         expect(
           t.parse("1,2,3"),
-          allOf(
-            isA<List>(),
-            isNot(isA<List<int>>()),
-            equals(['1', '2', '3']),
-          ),
+          allOf(isA<List>(), isNot(isA<List<int>>()), equals(['1', '2', '3'])),
         );
       }
 
@@ -166,10 +162,7 @@ void main() {
 
         expect(
           t.parse("1,2,3"),
-          allOf(
-            isA<List<int>>(),
-            equals(<int>[1, 2, 3]),
-          ),
+          allOf(isA<List<int>>(), equals(<int>[1, 2, 3])),
         );
       }
 
@@ -192,11 +185,7 @@ void main() {
 
         expect(
           t.parse([1, '2'].map((e) => e.toString()).nonNulls),
-          allOf(
-            isA<Iterable>(),
-            isNot(isA<List>()),
-            equals(['1', '2']),
-          ),
+          allOf(isA<Iterable>(), isNot(isA<List>()), equals(['1', '2'])),
         );
       }
 
@@ -210,19 +199,12 @@ void main() {
 
         expect(
           t.parse("1,2,3"),
-          allOf(
-            isA<Iterable<int>>(),
-            equals(<int>[1, 2, 3]),
-          ),
+          allOf(isA<Iterable<int>>(), equals(<int>[1, 2, 3])),
         );
 
         expect(
           t.parse(['1', '2'].map(TypeParser.parseInt).nonNulls),
-          allOf(
-            isA<Iterable<int>>(),
-            isNot(isA<List>()),
-            equals(<int>[1, 2]),
-          ),
+          allOf(isA<Iterable<int>>(), isNot(isA<List>()), equals(<int>[1, 2])),
         );
       }
 
@@ -273,11 +255,7 @@ void main() {
 
         expect(
           t.parse("1,2,3"),
-          allOf(
-            isA<Set>(),
-            isNot(isA<Set<int>>()),
-            equals({'1', '2', '3'}),
-          ),
+          allOf(isA<Set>(), isNot(isA<Set<int>>()), equals({'1', '2', '3'})),
         );
       }
 
@@ -291,10 +269,7 @@ void main() {
 
         expect(
           t.parse("1,2,3"),
-          allOf(
-            isA<Set<int>>(),
-            equals(<int>{1, 2, 3}),
-          ),
+          allOf(isA<Set<int>>(), equals(<int>{1, 2, 3})),
         );
       }
 
@@ -444,13 +419,7 @@ void main() {
         expect(t.equalsTypeAndArguments(TypeInfo.fromType(Set)), isFalse);
 
         var parser = t.parser!;
-        expect(
-          parser('a,b,c'),
-          allOf(
-            isA<List>(),
-            equals({'a', 'b', 'c'}),
-          ),
-        );
+        expect(parser('a,b,c'), allOf(isA<List>(), equals({'a', 'b', 'c'})));
       }
 
       {
@@ -488,10 +457,7 @@ void main() {
         var parser = t.parser!;
         expect(
           parser('a,b,c'),
-          allOf(
-            isA<List<String>>(),
-            equals({'a', 'b', 'c'}),
-          ),
+          allOf(isA<List<String>>(), equals({'a', 'b', 'c'})),
         );
       }
 
@@ -528,13 +494,7 @@ void main() {
         expect(t.equalsTypeAndArguments(TypeInfo.fromType(List)), isFalse);
 
         var parser = t.parser!;
-        expect(
-          parser('a,b,c'),
-          allOf(
-            isA<Set>(),
-            equals({'a', 'b', 'c'}),
-          ),
-        );
+        expect(parser('a,b,c'), allOf(isA<Set>(), equals({'a', 'b', 'c'})));
       }
 
       {
@@ -572,10 +532,7 @@ void main() {
         var parser = t.parser!;
         expect(
           parser('a,b,c'),
-          allOf(
-            isA<Set<String>>(),
-            equals({'a', 'b', 'c'}),
-          ),
+          allOf(isA<Set<String>>(), equals({'a', 'b', 'c'})),
         );
       }
 
@@ -1528,10 +1485,7 @@ void main() {
         var usersJson2 =
             usersJson
                 .mapIndexed(
-                  (i, e) => {
-                    ...e,
-                    'password': i == 0 ? 'j123456' : 's123456',
-                  },
+                  (i, e) => {...e, 'password': i == 0 ? 'j123456' : 's123456'},
                 )
                 .toList();
 
@@ -1718,10 +1672,7 @@ void main() {
 
         var usersJson2 = usersJson.mapIndexed((i, e) {
           return e is Map
-              ? {
-                ...e,
-                'password': i == 0 ? 'j123456' : 's123456',
-              }
+              ? {...e, 'password': i == 0 ? 'j123456' : 's123456'}
               : e;
         });
 

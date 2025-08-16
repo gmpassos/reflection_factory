@@ -51,12 +51,7 @@ class TestUserWithReflection {
     this.id,
   }) : password = passphrase?.trim();
 
-  TestUserWithReflection()
-    : this.fields(
-        '',
-        null,
-        '',
-      );
+  TestUserWithReflection() : this.fields('', null, '');
 
   @JsonField.visible()
   bool get isEnabled => enabled;

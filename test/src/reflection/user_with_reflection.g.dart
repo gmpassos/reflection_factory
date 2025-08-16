@@ -2034,9 +2034,7 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
   Map<String, dynamic> getFieldsValues(
     TestEmpty? obj, {
     bool withHashCode = false,
-  }) => {
-    if (withHashCode) 'hashCode': obj?.hashCode,
-  };
+  }) => {if (withHashCode) 'hashCode': obj?.hashCode};
 
   static const List<String> _staticFieldsNames = const <String>[];
 
