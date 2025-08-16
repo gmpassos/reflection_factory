@@ -17,6 +17,8 @@
 
 - Dart CI: `DART_VERSION: "3.8.3"`
 
+- sdk: '>=3.7.0 <4.0.0'
+
 ## 2.5.3
 
 - `ReflectionBuilder`: improve use of `const` for generated code.

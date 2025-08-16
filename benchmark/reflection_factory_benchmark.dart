@@ -21,37 +21,77 @@ void main() {
       reflection.field('name');
     });
 
-    benchmark('reflection.constructor', () {
-      reflection.constructor('fields')!;
-    }, iterations: 1000000, duration: Duration(seconds: 5));
+    benchmark(
+      'reflection.constructor',
+      () {
+        reflection.constructor('fields')!;
+      },
+      iterations: 1000000,
+      duration: Duration(seconds: 5),
+    );
 
-    benchmark('userReflection.constructor', () {
-      userReflection.constructor('fields')!;
-    }, iterations: 1000000, duration: Duration(seconds: 5));
+    benchmark(
+      'userReflection.constructor',
+      () {
+        userReflection.constructor('fields')!;
+      },
+      iterations: 1000000,
+      duration: Duration(seconds: 5),
+    );
 
-    benchmark('reflection.staticField', () {
-      reflection.staticField('version')!;
-    }, iterations: 1000000, duration: Duration(seconds: 5));
+    benchmark(
+      'reflection.staticField',
+      () {
+        reflection.staticField('version')!;
+      },
+      iterations: 1000000,
+      duration: Duration(seconds: 5),
+    );
 
-    benchmark('reflection.staticMethod', () {
-      reflection.staticMethod('isVersion')!;
-    }, iterations: 1000000, duration: Duration(seconds: 5));
+    benchmark(
+      'reflection.staticMethod',
+      () {
+        reflection.staticMethod('isVersion')!;
+      },
+      iterations: 1000000,
+      duration: Duration(seconds: 5),
+    );
 
-    benchmark('reflection.method', () {
-      userReflection.method('checkPassword')!;
-    }, iterations: 1000000, duration: Duration(seconds: 5));
+    benchmark(
+      'reflection.method',
+      () {
+        userReflection.method('checkPassword')!;
+      },
+      iterations: 1000000,
+      duration: Duration(seconds: 5),
+    );
 
-    benchmark('userReflection.method', () {
-      userReflection.method('checkPassword')!;
-    }, iterations: 1000000, duration: Duration(seconds: 5));
+    benchmark(
+      'userReflection.method',
+      () {
+        userReflection.method('checkPassword')!;
+      },
+      iterations: 1000000,
+      duration: Duration(seconds: 5),
+    );
 
-    benchmark('reflection.field', () {
-      reflection.field('name')!;
-    }, iterations: 1000000, duration: Duration(seconds: 5));
+    benchmark(
+      'reflection.field',
+      () {
+        reflection.field('name')!;
+      },
+      iterations: 1000000,
+      duration: Duration(seconds: 5),
+    );
 
-    benchmark('userReflection.field', () {
-      userReflection.field('name')!;
-    }, iterations: 1000000, duration: Duration(seconds: 5));
+    benchmark(
+      'userReflection.field',
+      () {
+        userReflection.field('name')!;
+      },
+      iterations: 1000000,
+      duration: Duration(seconds: 5),
+    );
   });
 
   group('reflection.toJson', () {
@@ -71,17 +111,32 @@ void main() {
       reflection.field('name');
     });
 
-    benchmark('reflection.toJson', () {
-      reflection.toJson(user);
-    }, iterations: 10, duration: Duration(seconds: 5));
+    benchmark(
+      'reflection.toJson',
+      () {
+        reflection.toJson(user);
+      },
+      iterations: 10,
+      duration: Duration(seconds: 5),
+    );
 
-    benchmark('userReflection.toJson', () {
-      userReflection.toJson();
-    }, iterations: 10, duration: Duration(seconds: 5));
+    benchmark(
+      'userReflection.toJson',
+      () {
+        userReflection.toJson();
+      },
+      iterations: 10,
+      duration: Duration(seconds: 5),
+    );
 
-    benchmark('user.toJson', () {
-      user.toJson();
-    }, iterations: 10, duration: Duration(seconds: 5));
+    benchmark(
+      'user.toJson',
+      () {
+        user.toJson();
+      },
+      iterations: 10,
+      duration: Duration(seconds: 5),
+    );
   });
 
   group('reflection.fromJson', () {
@@ -100,19 +155,29 @@ void main() {
           'a': TestAddressWithReflection.withCity('ST', city: 'city1', id: 101),
           'b': TestAddressWithReflection.simple('ST', id: 102),
           'c': TestAddressWithReflection.withCity('ST', city: 'city2', id: 103),
-        }
+        },
       ]);
 
       franchiseReflection = franchise.reflection;
       franchiseJson = reflection.toJson(franchise);
     });
 
-    benchmark('reflection.toJson', () {
-      reflection.fromJson(franchiseJson);
-    }, iterations: 10, duration: Duration(seconds: 5));
+    benchmark(
+      'reflection.toJson',
+      () {
+        reflection.fromJson(franchiseJson);
+      },
+      iterations: 10,
+      duration: Duration(seconds: 5),
+    );
 
-    benchmark('userReflection.toJson', () {
-      franchiseReflection.fromJson(franchiseJson);
-    }, iterations: 10, duration: Duration(seconds: 5));
+    benchmark(
+      'userReflection.toJson',
+      () {
+        franchiseReflection.fromJson(franchiseJson);
+      },
+      iterations: 10,
+      duration: Duration(seconds: 5),
+    );
   });
 }

@@ -99,18 +99,25 @@ extension IterableMethodReflectionExtension<O, R>
     }
 
     if (normalParameters != null) {
-      ret = ret.where((m) =>
-          _listEqualityType.equals(m.normalParametersTypes, normalParameters));
+      ret = ret.where(
+        (m) =>
+            _listEqualityType.equals(m.normalParametersTypes, normalParameters),
+      );
     }
 
     if (optionalParameters != null) {
-      ret = ret.where((m) => _listEqualityType.equals(
-          m.optionalParametersTypes, optionalParameters));
+      ret = ret.where(
+        (m) => _listEqualityType.equals(
+          m.optionalParametersTypes,
+          optionalParameters,
+        ),
+      );
     }
 
     if (namedParameters != null) {
-      ret = ret.where((m) =>
-          _mapEqualityType.equals(m.namedParametersTypes, namedParameters));
+      ret = ret.where(
+        (m) => _mapEqualityType.equals(m.namedParametersTypes, namedParameters),
+      );
     }
 
     return ret;
@@ -122,8 +129,9 @@ extension IterableMethodReflectionExtension<O, R>
 
   /// Returns the [MethodReflection] that matches annotations [test].
   /// If [test] is `null`, will match methods with any annotation.
-  Iterable<FunctionReflection<O, R>> whereAnnotated(
-      [bool Function(List<Object> annotations)? test]) {
+  Iterable<FunctionReflection<O, R>> whereAnnotated([
+    bool Function(List<Object> annotations)? test,
+  ]) {
     if (test != null) {
       return where((m) {
         return test(m.annotations);
@@ -134,7 +142,8 @@ extension IterableMethodReflectionExtension<O, R>
 
   /// Returns the [MethodReflection] that matches [annotations].
   Iterable<FunctionReflection<O, R>> whereAnnotatedWith(
-      List<Object> annotations) {
+    List<Object> annotations,
+  ) {
     if (annotations.isEmpty) {
       return whereNotAnnotated();
     }
@@ -143,7 +152,8 @@ extension IterableMethodReflectionExtension<O, R>
 
   /// Returns the [MethodReflection] that matches any [annotations].
   Iterable<FunctionReflection<O, R>> whereAnnotatedWithAnyOf(
-      List<Object> annotations) {
+    List<Object> annotations,
+  ) {
     if (annotations.isEmpty) {
       return <MethodReflection<O, R>>[];
     }
@@ -211,7 +221,7 @@ extension ReflectionDurationExtension on Duration {
       if (hasHour) "$sign$hours h",
       if (hasMin || (hasHour && (hasSec || hasMs))) "$minutes min",
       if (hasSec || ((hasHour || hasMin) && (hasSec || hasMs))) "$seconds sec",
-      if (hasMs) "$milliseconds ms"
+      if (hasMs) "$milliseconds ms",
     ];
 
     return l.isEmpty ? '0' : l.join(' ');

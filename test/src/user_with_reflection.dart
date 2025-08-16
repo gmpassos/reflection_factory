@@ -42,19 +42,16 @@ class TestUserWithReflection {
   int? level;
 
   TestUserWithReflection.fields(
-      this.name, this.email, @JsonFieldAlias('password') String? passphrase,
-      {this.enabled = true,
-      this.axis = TestEnumWithReflection.x,
-      this.level,
-      this.id})
-      : password = passphrase?.trim();
+    this.name,
+    this.email,
+    @JsonFieldAlias('password') String? passphrase, {
+    this.enabled = true,
+    this.axis = TestEnumWithReflection.x,
+    this.level,
+    this.id,
+  }) : password = passphrase?.trim();
 
-  TestUserWithReflection()
-      : this.fields(
-          '',
-          null,
-          '',
-        );
+  TestUserWithReflection() : this.fields('', null, '');
 
   @JsonField.visible()
   bool get isEnabled => enabled;
@@ -161,10 +158,10 @@ class TestAddressWithReflection {
 
   // Implements its own `toJson`:
   Map<String, dynamic> toJson() => {
-        if (id != null) 'id': id,
-        'state': state,
-        'city': city,
-      };
+    if (id != null) 'id': id,
+    'state': state,
+    'city': city,
+  };
 
   @override
   String toString() {
@@ -183,15 +180,20 @@ class TestCompanyWithReflection {
 
   List<TestAddressWithReflection> extraAddresses;
 
-  TestCompanyWithReflection(this.name, this.mainAddress,
-      {this.extraAddresses = const <TestAddressWithReflection>[],
-      this.branchesAddresses = const <TestAddressWithReflection>[],
-      this.extraNames = const <String>[]});
+  TestCompanyWithReflection(
+    this.name,
+    this.mainAddress, {
+    this.extraAddresses = const <TestAddressWithReflection>[],
+    this.branchesAddresses = const <TestAddressWithReflection>[],
+    this.extraNames = const <String>[],
+  });
 
-  TestCompanyWithReflection.noBranches(this.name, this.mainAddress,
-      {this.extraAddresses = const <TestAddressWithReflection>[],
-      this.extraNames = const <String>[]})
-      : branchesAddresses = [];
+  TestCompanyWithReflection.noBranches(
+    this.name,
+    this.mainAddress, {
+    this.extraAddresses = const <TestAddressWithReflection>[],
+    this.extraNames = const <String>[],
+  }) : branchesAddresses = [];
 
   @JsonField.hidden()
   bool local = false;
@@ -204,10 +206,14 @@ class TestCompanyWithReflection {
           name == other.name &&
           mainAddress == other.mainAddress &&
           ListEquality<String>().equals(extraNames, other.extraNames) &&
-          ListEquality<TestAddressWithReflection>()
-              .equals(branchesAddresses, other.branchesAddresses) &&
-          ListEquality<TestAddressWithReflection>()
-              .equals(extraAddresses, other.extraAddresses);
+          ListEquality<TestAddressWithReflection>().equals(
+            branchesAddresses,
+            other.branchesAddresses,
+          ) &&
+          ListEquality<TestAddressWithReflection>().equals(
+            extraAddresses,
+            other.extraAddresses,
+          );
 
   @override
   int get hashCode =>
@@ -237,8 +243,10 @@ class TestFranchiseWithReflection {
       other is TestFranchiseWithReflection &&
           runtimeType == other.runtimeType &&
           name == other.name &&
-          MapEquality<String, TestAddressWithReflection>()
-              .equals(addresses, other.addresses);
+          MapEquality<String, TestAddressWithReflection>().equals(
+            addresses,
+            other.addresses,
+          );
 
   @override
   int get hashCode =>
@@ -262,7 +270,7 @@ class TestDataWithReflection {
   TestDomainWithReflection? domain;
 
   TestDataWithReflection(this.name, this.bytes, {BigInt? id, this.domain})
-      : id = id ?? BigInt.zero;
+    : id = id ?? BigInt.zero;
 
   @override
   bool operator ==(Object other) =>
@@ -293,14 +301,19 @@ class TestDomainWithReflection {
   final DomainFunction? domainFunction;
   final bool Function()? extraFunction;
 
-  TestDomainWithReflection(this.name, this.suffix,
-      [this.domainFunction, this.extraFunction]);
+  TestDomainWithReflection(
+    this.name,
+    this.suffix, [
+    this.domainFunction,
+    this.extraFunction,
+  ]);
 
-  TestDomainWithReflection.named(
-      {required this.name,
-      this.suffix = 'net',
-      this.domainFunction,
-      this.extraFunction});
+  TestDomainWithReflection.named({
+    required this.name,
+    this.suffix = 'net',
+    this.domainFunction,
+    this.extraFunction,
+  });
 
   factory TestDomainWithReflection.parse(String s) {
     var parts = s.split('.');

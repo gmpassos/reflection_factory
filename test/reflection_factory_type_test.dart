@@ -72,7 +72,7 @@ void main() {
       {
         var v = [
           [123],
-          [456]
+          [456],
         ];
         expect(v.isPrimitiveValue, isFalse);
         expect(v.isPrimitiveList, isFalse);
@@ -86,7 +86,7 @@ void main() {
       }
       {
         var v = {
-          'a': [123]
+          'a': [123],
         };
         expect(v.isPrimitiveValue, isFalse);
         expect(v.isPrimitiveList, isFalse);
@@ -147,12 +147,9 @@ void main() {
         expect(t.argumentType(0), isNull);
 
         expect(
-            t.parse("1,2,3"),
-            allOf(
-              isA<List>(),
-              isNot(isA<List<int>>()),
-              equals(['1', '2', '3']),
-            ));
+          t.parse("1,2,3"),
+          allOf(isA<List>(), isNot(isA<List<int>>()), equals(['1', '2', '3'])),
+        );
       }
 
       {
@@ -164,11 +161,9 @@ void main() {
         expect(t.argumentType(0), equals(TypeInfo.tInt));
 
         expect(
-            t.parse("1,2,3"),
-            allOf(
-              isA<List<int>>(),
-              equals(<int>[1, 2, 3]),
-            ));
+          t.parse("1,2,3"),
+          allOf(isA<List<int>>(), equals(<int>[1, 2, 3])),
+        );
       }
 
       {
@@ -180,20 +175,18 @@ void main() {
         expect(t.argumentType(0), isNull);
 
         expect(
-            t.parse("1,2,3"),
-            allOf(
-              isA<Iterable>(),
-              isNot(isA<Iterable<int>>()),
-              equals(['1', '2', '3']),
-            ));
+          t.parse("1,2,3"),
+          allOf(
+            isA<Iterable>(),
+            isNot(isA<Iterable<int>>()),
+            equals(['1', '2', '3']),
+          ),
+        );
 
         expect(
-            t.parse([1, '2'].map((e) => e.toString()).nonNulls),
-            allOf(
-              isA<Iterable>(),
-              isNot(isA<List>()),
-              equals(['1', '2']),
-            ));
+          t.parse([1, '2'].map((e) => e.toString()).nonNulls),
+          allOf(isA<Iterable>(), isNot(isA<List>()), equals(['1', '2'])),
+        );
       }
 
       {
@@ -205,19 +198,14 @@ void main() {
         expect(t.argumentType(0), equals(TypeInfo.tInt));
 
         expect(
-            t.parse("1,2,3"),
-            allOf(
-              isA<Iterable<int>>(),
-              equals(<int>[1, 2, 3]),
-            ));
+          t.parse("1,2,3"),
+          allOf(isA<Iterable<int>>(), equals(<int>[1, 2, 3])),
+        );
 
         expect(
-            t.parse(['1', '2'].map(TypeParser.parseInt).nonNulls),
-            allOf(
-              isA<Iterable<int>>(),
-              isNot(isA<List>()),
-              equals(<int>[1, 2]),
-            ));
+          t.parse(['1', '2'].map(TypeParser.parseInt).nonNulls),
+          allOf(isA<Iterable<int>>(), isNot(isA<List>()), equals(<int>[1, 2])),
+        );
       }
 
       {
@@ -230,12 +218,13 @@ void main() {
         expect(t.argumentType(1), isNull);
 
         expect(
-            t.parse("a=1;b=2;c=3"),
-            allOf(
-              isA<Map>(),
-              isNot(isA<Map<String, int>>()),
-              equals({'a': '1', 'b': '2', 'c': '3'}),
-            ));
+          t.parse("a=1;b=2;c=3"),
+          allOf(
+            isA<Map>(),
+            isNot(isA<Map<String, int>>()),
+            equals({'a': '1', 'b': '2', 'c': '3'}),
+          ),
+        );
       }
 
       {
@@ -248,11 +237,12 @@ void main() {
         expect(t.argumentType(1), equals(TypeInfo.tInt));
 
         expect(
-            t.parse("a=1;b=2;c=3"),
-            allOf(
-              isA<Map<String, int>>(),
-              equals(<String, int>{'a': 1, 'b': 2, 'c': 3}),
-            ));
+          t.parse("a=1;b=2;c=3"),
+          allOf(
+            isA<Map<String, int>>(),
+            equals(<String, int>{'a': 1, 'b': 2, 'c': 3}),
+          ),
+        );
       }
 
       {
@@ -264,12 +254,9 @@ void main() {
         expect(t.argumentType(0), isNull);
 
         expect(
-            t.parse("1,2,3"),
-            allOf(
-              isA<Set>(),
-              isNot(isA<Set<int>>()),
-              equals({'1', '2', '3'}),
-            ));
+          t.parse("1,2,3"),
+          allOf(isA<Set>(), isNot(isA<Set<int>>()), equals({'1', '2', '3'})),
+        );
       }
 
       {
@@ -281,11 +268,9 @@ void main() {
         expect(t.argumentType(0), equals(TypeInfo.tInt));
 
         expect(
-            t.parse("1,2,3"),
-            allOf(
-              isA<Set<int>>(),
-              equals(<int>{1, 2, 3}),
-            ));
+          t.parse("1,2,3"),
+          allOf(isA<Set<int>>(), equals(<int>{1, 2, 3})),
+        );
       }
 
       {
@@ -303,8 +288,10 @@ void main() {
         expect(tList.argumentType(0), equals(TypeInfo.tInt));
         expect(tList.genericType, equals(List<int>));
 
-        expect(tList.castList(<Object>[1, 2, 3]),
-            allOf(equals([1, 2, 3]), isA<List<int>>()));
+        expect(
+          tList.castList(<Object>[1, 2, 3]),
+          allOf(equals([1, 2, 3]), isA<List<int>>()),
+        );
 
         var tSet = t.toSetType();
 
@@ -313,17 +300,22 @@ void main() {
         expect(tSet.argumentType(0), equals(TypeInfo.tInt));
         expect(tSet.genericType, equals(Set<int>));
 
-        expect(tSet.castSet(<Object>{1, 2, 3}),
-            allOf(equals({1, 2, 3}), isA<Set<int>>()));
+        expect(
+          tSet.castSet(<Object>{1, 2, 3}),
+          allOf(equals({1, 2, 3}), isA<Set<int>>()),
+        );
 
         var tItr = t.toIterableType();
 
         expect(
-            tItr.castIterable(<Object>[1, 2, 3].map((e) {
+          tItr.castIterable(
+            <Object>[1, 2, 3].map((e) {
               dynamic d = (e as int) * 10;
               return d;
-            })),
-            allOf(equals([10, 20, 30]), isA<Iterable<int>>()));
+            }),
+          ),
+          allOf(equals([10, 20, 30]), isA<Iterable<int>>()),
+        );
 
         expect(tItr, equals(TypeInfo<Iterable<int>>.fromIterableType(int)));
         expect(tItr.type, equals(Iterable));
@@ -333,9 +325,14 @@ void main() {
         var tMapV = t.toMapValueType<String>();
 
         expect(
-            tMapV,
-            equals(TypeInfo<Map<String, int>>.fromType(
-                Map, [TypeInfo.tString, TypeInfo.tInt])));
+          tMapV,
+          equals(
+            TypeInfo<Map<String, int>>.fromType(Map, [
+              TypeInfo.tString,
+              TypeInfo.tInt,
+            ]),
+          ),
+        );
 
         expect(tMapV.type, equals(Map));
         expect(tMapV.argumentType(0), equals(TypeInfo.tString));
@@ -343,16 +340,21 @@ void main() {
         expect(tMapV.genericType, equals(Map<String, int>));
 
         expect(
-            tMapV.castMap(<Object, Object>{'a': 1, 'b': 2}),
-            allOf(equals(<String, int>{'a': 1, 'b': 2}),
-                isA<Map<String, int>>()));
+          tMapV.castMap(<Object, Object>{'a': 1, 'b': 2}),
+          allOf(equals(<String, int>{'a': 1, 'b': 2}), isA<Map<String, int>>()),
+        );
 
         var tMapK = t.toMapKeyType<String>();
 
         expect(
-            tMapK,
-            equals(TypeInfo<Map<int, String>>.fromType(
-                Map, [TypeInfo.tInt, TypeInfo.tString])));
+          tMapK,
+          equals(
+            TypeInfo<Map<int, String>>.fromType(Map, [
+              TypeInfo.tInt,
+              TypeInfo.tString,
+            ]),
+          ),
+        );
 
         expect(tMapK.type, equals(Map));
         expect(tMapK.argumentType(0), equals(TypeInfo.tInt));
@@ -360,9 +362,9 @@ void main() {
         expect(tMapK.genericType, equals(Map<int, String>));
 
         expect(
-            tMapK.castMap(<Object, Object>{1: 'a', 2: 'b'}),
-            allOf(equals(<int, String>{1: 'a', 2: 'b'}),
-                isA<Map<int, String>>()));
+          tMapK.castMap(<Object, Object>{1: 'a', 2: 'b'}),
+          allOf(equals(<int, String>{1: 'a', 2: 'b'}), isA<Map<int, String>>()),
+        );
       }
 
       {
@@ -393,26 +395,31 @@ void main() {
         expect(t.equalsType(TypeInfo.fromType(Set)), isFalse);
         expect(t.equalsType(TypeInfo.fromType(Set, [String])), isFalse);
 
-        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
-            isTrue);
         expect(
-            t.equalsTypeAndArguments(TypeInfo.fromType(List, [int])), isFalse);
-        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
-            isTrue);
+          t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
+          isTrue,
+        );
+        expect(
+          t.equalsTypeAndArguments(TypeInfo.fromType(List, [int])),
+          isFalse,
+        );
+        expect(
+          t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
+          isTrue,
+        );
         expect(t.equalsTypeAndArguments(TypeInfo.fromType(List)), isFalse);
-        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])),
-            isFalse);
         expect(
-            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [int])), isFalse);
+          t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])),
+          isFalse,
+        );
+        expect(
+          t.equalsTypeAndArguments(TypeInfo.fromType(Set, [int])),
+          isFalse,
+        );
         expect(t.equalsTypeAndArguments(TypeInfo.fromType(Set)), isFalse);
 
         var parser = t.parser!;
-        expect(
-            parser('a,b,c'),
-            allOf(
-              isA<List>(),
-              equals({'a', 'b', 'c'}),
-            ));
+        expect(parser('a,b,c'), allOf(isA<List>(), equals({'a', 'b', 'c'})));
       }
 
       {
@@ -424,26 +431,34 @@ void main() {
         expect(t.equalsType(TypeInfo.fromType(Set)), isFalse);
         expect(t.equalsType(TypeInfo.fromType(Set, [String])), isFalse);
 
-        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
-            isTrue);
         expect(
-            t.equalsTypeAndArguments(TypeInfo.fromType(List, [int])), isFalse);
-        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
-            isTrue);
+          t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
+          isTrue,
+        );
+        expect(
+          t.equalsTypeAndArguments(TypeInfo.fromType(List, [int])),
+          isFalse,
+        );
+        expect(
+          t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
+          isTrue,
+        );
         expect(t.equalsTypeAndArguments(TypeInfo.fromType(List)), isFalse);
-        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])),
-            isFalse);
         expect(
-            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [int])), isFalse);
+          t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])),
+          isFalse,
+        );
+        expect(
+          t.equalsTypeAndArguments(TypeInfo.fromType(Set, [int])),
+          isFalse,
+        );
         expect(t.equalsTypeAndArguments(TypeInfo.fromType(Set)), isFalse);
 
         var parser = t.parser!;
         expect(
-            parser('a,b,c'),
-            allOf(
-              isA<List<String>>(),
-              equals({'a', 'b', 'c'}),
-            ));
+          parser('a,b,c'),
+          allOf(isA<List<String>>(), equals({'a', 'b', 'c'})),
+        );
       }
 
       {
@@ -456,25 +471,30 @@ void main() {
         expect(t.equalsType(TypeInfo.fromType(List, [String])), isFalse);
 
         expect(
-            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])), isTrue);
+          t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])),
+          isTrue,
+        );
         expect(
-            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [int])), isFalse);
+          t.equalsTypeAndArguments(TypeInfo.fromType(Set, [int])),
+          isFalse,
+        );
         expect(
-            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])), isTrue);
+          t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])),
+          isTrue,
+        );
         expect(t.equalsTypeAndArguments(TypeInfo.fromType(Set)), isFalse);
-        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
-            isFalse);
         expect(
-            t.equalsTypeAndArguments(TypeInfo.fromType(List, [int])), isFalse);
+          t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
+          isFalse,
+        );
+        expect(
+          t.equalsTypeAndArguments(TypeInfo.fromType(List, [int])),
+          isFalse,
+        );
         expect(t.equalsTypeAndArguments(TypeInfo.fromType(List)), isFalse);
 
         var parser = t.parser!;
-        expect(
-            parser('a,b,c'),
-            allOf(
-              isA<Set>(),
-              equals({'a', 'b', 'c'}),
-            ));
+        expect(parser('a,b,c'), allOf(isA<Set>(), equals({'a', 'b', 'c'})));
       }
 
       {
@@ -487,25 +507,33 @@ void main() {
         expect(t.equalsType(TypeInfo.fromType(List, [String])), isFalse);
 
         expect(
-            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])), isTrue);
+          t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])),
+          isTrue,
+        );
         expect(
-            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [int])), isFalse);
+          t.equalsTypeAndArguments(TypeInfo.fromType(Set, [int])),
+          isFalse,
+        );
         expect(
-            t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])), isTrue);
+          t.equalsTypeAndArguments(TypeInfo.fromType(Set, [String])),
+          isTrue,
+        );
         expect(t.equalsTypeAndArguments(TypeInfo.fromType(Set)), isFalse);
-        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
-            isFalse);
         expect(
-            t.equalsTypeAndArguments(TypeInfo.fromType(List, [int])), isFalse);
+          t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
+          isFalse,
+        );
+        expect(
+          t.equalsTypeAndArguments(TypeInfo.fromType(List, [int])),
+          isFalse,
+        );
         expect(t.equalsTypeAndArguments(TypeInfo.fromType(List)), isFalse);
 
         var parser = t.parser!;
         expect(
-            parser('a,b,c'),
-            allOf(
-              isA<Set<String>>(),
-              equals({'a', 'b', 'c'}),
-            ));
+          parser('a,b,c'),
+          allOf(isA<Set<String>>(), equals({'a', 'b', 'c'})),
+        );
       }
 
       {
@@ -515,12 +543,18 @@ void main() {
         expect(t.equalsType(TypeInfo.fromType(Map, [String, int])), isTrue);
         expect(t.equalsType(TypeInfo.fromType(Map)), isTrue);
 
-        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map, [String, int])),
-            isTrue);
-        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map, [int, int])),
-            isFalse);
-        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map, [String, int])),
-            isTrue);
+        expect(
+          t.equalsTypeAndArguments(TypeInfo.fromType(Map, [String, int])),
+          isTrue,
+        );
+        expect(
+          t.equalsTypeAndArguments(TypeInfo.fromType(Map, [int, int])),
+          isFalse,
+        );
+        expect(
+          t.equalsTypeAndArguments(TypeInfo.fromType(Map, [String, int])),
+          isTrue,
+        );
         expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map)), isFalse);
 
         var parser = t.parser!;
@@ -534,12 +568,18 @@ void main() {
         expect(t.equalsType(TypeInfo.fromType(Map, [String, int])), isTrue);
         expect(t.equalsType(TypeInfo.fromType(Map)), isTrue);
 
-        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map, [String, int])),
-            isTrue);
-        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map, [int, int])),
-            isFalse);
-        expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map, [String, int])),
-            isTrue);
+        expect(
+          t.equalsTypeAndArguments(TypeInfo.fromType(Map, [String, int])),
+          isTrue,
+        );
+        expect(
+          t.equalsTypeAndArguments(TypeInfo.fromType(Map, [int, int])),
+          isFalse,
+        );
+        expect(
+          t.equalsTypeAndArguments(TypeInfo.fromType(Map, [String, int])),
+          isTrue,
+        );
         expect(t.equalsTypeAndArguments(TypeInfo.fromType(Map)), isFalse);
 
         var parser = t.parser!;
@@ -552,8 +592,10 @@ void main() {
         expect(t.equalsType(TypeInfo.fromType(List, [String])), isTrue);
 
         expect(t.equalsTypeAndArguments(TypeInfo.fromType(List)), isTrue);
-        expect(t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
-            isFalse);
+        expect(
+          t.equalsTypeAndArguments(TypeInfo.fromType(List, [String])),
+          isFalse,
+        );
       }
 
       var t5 = TypeInfo.fromType(Future, [bool]);
@@ -685,16 +727,22 @@ void main() {
         expect(typeInfo.isDynamic, isFalse);
         expect(typeInfo.isObject, isFalse);
 
-        expect(typeInfo.listEntityType,
-            equals(TypeInfo.from(TestUserWithReflection)));
+        expect(
+          typeInfo.listEntityType,
+          equals(TypeInfo.from(TestUserWithReflection)),
+        );
       }
 
       {
-        expect(TypeInfo<Object>.from(TestUserSimple.empty()).type,
-            equals(TestUserSimple));
+        expect(
+          TypeInfo<Object>.from(TestUserSimple.empty()).type,
+          equals(TestUserSimple),
+        );
 
-        expect(TypeInfo<int>.from(TestUserSimple.empty()).type,
-            equals(TestUserSimple));
+        expect(
+          TypeInfo<int>.from(TestUserSimple.empty()).type,
+          equals(TestUserSimple),
+        );
       }
 
       {
@@ -721,8 +769,10 @@ void main() {
         expect(TypeInfo.from(int).isPrimitiveOrDynamicOrObjectType, isTrue);
         expect(TypeInfo.from(bool).isPrimitiveOrDynamicOrObjectType, isTrue);
 
-        expect(TypeInfo.from(TestUserSimple).isPrimitiveOrDynamicOrObjectType,
-            isFalse);
+        expect(
+          TypeInfo.from(TestUserSimple).isPrimitiveOrDynamicOrObjectType,
+          isFalse,
+        );
       }
 
       {
@@ -778,8 +828,10 @@ void main() {
         expect(TypeInfo.fromListType(Object).listEntityType, isNull);
         expect(TypeInfo.fromListType(dynamic).listEntityType, isNull);
 
-        expect(TypeInfo.fromListType(TestUserSimple).listEntityType,
-            equals(TypeInfo.from(TestUserSimple)));
+        expect(
+          TypeInfo.fromListType(TestUserSimple).listEntityType,
+          equals(TypeInfo.from(TestUserSimple)),
+        );
       }
 
       {
@@ -822,8 +874,10 @@ void main() {
         expect(TypeInfo.from(DateTime.now()), equals(TypeInfo.tDateTime));
         expect(TypeInfo.from(Duration.zero), equals(TypeInfo.tDuration));
 
-        expect(TypeInfo.from(Uint8List.fromList([0])),
-            equals(TypeInfo.tUint8List));
+        expect(
+          TypeInfo.from(Uint8List.fromList([0])),
+          equals(TypeInfo.tUint8List),
+        );
       }
 
       {
@@ -841,27 +895,33 @@ void main() {
         var t3 = TypeInfo.from([]);
         expect(t3.type, equals(t1.type));
 
-        var company = TestCompanyWithReflection('FooInc',
-            TestAddressWithReflection.withCity('State1', city: 'City1'),
-            extraAddresses: [
-              TestAddressWithReflection.withCity('State2', city: 'City2'),
-              TestAddressWithReflection.withCity('State3', city: 'City3')
-            ]);
+        var company = TestCompanyWithReflection(
+          'FooInc',
+          TestAddressWithReflection.withCity('State1', city: 'City1'),
+          extraAddresses: [
+            TestAddressWithReflection.withCity('State2', city: 'City2'),
+            TestAddressWithReflection.withCity('State3', city: 'City3'),
+          ],
+        );
 
         var fieldExtraAddressesTypeInfo =
             company.reflection.field('extraAddresses')!.type.typeInfo;
 
         expect(fieldExtraAddressesTypeInfo.type, equals(t1.type));
 
-        var t4 = TypeInfo.from([TestAddressWithReflection.empty()],
-            [TestAddressWithReflection.empty()]);
+        var t4 = TypeInfo.from(
+          [TestAddressWithReflection.empty()],
+          [TestAddressWithReflection.empty()],
+        );
         expect(fieldExtraAddressesTypeInfo.type, equals(t4.type));
         expect(fieldExtraAddressesTypeInfo, equals(t4));
       }
 
       {
         var typeReflection = TypeReflection<Future<TestUserWithReflection>>(
-            Future, [TypeInfo<TestUserWithReflection>(TestUserWithReflection)]);
+          Future,
+          [TypeInfo<TestUserWithReflection>(TestUserWithReflection)],
+        );
 
         var typeInfo = typeReflection.typeInfo;
 
@@ -871,8 +931,9 @@ void main() {
 
       {
         var typeReflection = TypeReflection<FutureOr<TestUserWithReflection>>(
-            FutureOr,
-            [TypeInfo<TestUserWithReflection>(TestUserWithReflection)]);
+          FutureOr,
+          [TypeInfo<TestUserWithReflection>(TestUserWithReflection)],
+        );
 
         var typeInfo = typeReflection.typeInfo;
 
@@ -882,10 +943,12 @@ void main() {
       }
 
       {
-        var typeReflection = TypeReflection<Future<TestOpAWithReflection>>(
-            Future, [
-          TypeInfo<TestOpAWithReflection>.fromObject(TestOpAWithReflection(123))
-        ]);
+        var typeReflection =
+            TypeReflection<Future<TestOpAWithReflection>>(Future, [
+              TypeInfo<TestOpAWithReflection>.fromObject(
+                TestOpAWithReflection(123),
+              ),
+            ]);
 
         var typeInfo = typeReflection.typeInfo;
 
@@ -897,27 +960,33 @@ void main() {
 
       {
         var typeReflection = TypeReflection<Future<TestOpWithReflection<int>>>(
-            Future, [TypeInfo.from(TestOpWithReflection<int>('test', 123))]);
+          Future,
+          [TypeInfo.from(TestOpWithReflection<int>('test', 123))],
+        );
 
         var typeInfo = typeReflection.typeInfo;
 
         expect(typeInfo.isFuture, isTrue);
         expect(
-            typeInfo
-                .equalsArgumentsTypes([TestOpWithReflection<int>('test', 456)]),
-            isTrue);
+          typeInfo.equalsArgumentsTypes([
+            TestOpWithReflection<int>('test', 456),
+          ]),
+          isTrue,
+        );
 
-        expect(typeInfo,
-            equals(TypeInfo(Future, [TestOpWithReflection<int>('test', 789)])));
+        expect(
+          typeInfo,
+          equals(TypeInfo(Future, [TestOpWithReflection<int>('test', 789)])),
+        );
 
         expect(typeInfo.asTypeReflection, equals(typeReflection));
       }
 
       {
         var typeReflection = TypeReflection<Future<TestOpWithReflection>>(
-            Future, [
-          TypeInfo.fromType(TestOpWithReflection$reflection().reflectedType)
-        ]);
+          Future,
+          [TypeInfo.fromType(TestOpWithReflection$reflection().reflectedType)],
+        );
 
         var typeInfo = typeReflection.typeInfo;
 
@@ -931,13 +1000,13 @@ void main() {
 
       {
         var typeInfo1 = TypeInfo(Future, [
-          TypeInfo(TestOpWithReflection, [int])
+          TypeInfo(TestOpWithReflection, [int]),
         ]);
         var typeInfo2 = TypeInfo(Future, [
-          TypeInfo(TestOpWithReflection, [dynamic])
+          TypeInfo(TestOpWithReflection, [dynamic]),
         ]);
         var typeInfo3 = TypeInfo(Future, [
-          TypeInfo(TestOpWithReflection, [Object])
+          TypeInfo(TestOpWithReflection, [Object]),
         ]);
         var typeInfo4 = TypeInfo(Future, [TestOpWithReflection]);
 
@@ -964,8 +1033,9 @@ void main() {
 
     test('callCasted', () async {
       {
-        var t = TypeInfo<List<TestUserSimple>>.fromType(
-            List, [TypeInfo<TestUserSimple>.fromType(TestUserSimple)]);
+        var t = TypeInfo<List<TestUserSimple>>.fromType(List, [
+          TypeInfo<TestUserSimple>.fromType(TestUserSimple),
+        ]);
 
         expect(t.type, equals(List));
 
@@ -976,15 +1046,19 @@ void main() {
 
         expect(t.callCasted(castCall), equals(<Type>[List<TestUserSimple>]));
 
-        expect(t.argumentType(0)?.callCasted(castCall),
-            equals(<Type>[TestUserSimple]));
+        expect(
+          t.argumentType(0)?.callCasted(castCall),
+          equals(<Type>[TestUserSimple]),
+        );
 
         expect(t.callCastedArgumentA(<A>() => A), equals(TestUserSimple));
       }
 
       {
-        var t = TypeInfo<Map<String, TestUserSimple>>.fromType(
-            Map, [String, TypeInfo<TestUserSimple>.fromType(TestUserSimple)]);
+        var t = TypeInfo<Map<String, TestUserSimple>>.fromType(Map, [
+          String,
+          TypeInfo<TestUserSimple>.fromType(TestUserSimple),
+        ]);
 
         expect(t.type, equals(Map));
         expect(t.genericType, equals(Map<String, TestUserSimple>));
@@ -997,8 +1071,10 @@ void main() {
 
         expect(t.callCastedArgumentA(<A>() => A), equals(String));
 
-        expect(t.callCastedArgumentsAB(<A, B>() => [A, B]),
-            equals([String, TestUserSimple]));
+        expect(
+          t.callCastedArgumentsAB(<A, B>() => [A, B]),
+          equals([String, TestUserSimple]),
+        );
       }
     });
 
@@ -1153,40 +1229,44 @@ void main() {
 
     test('isCastedMapEntry<K,V>', () async {
       {
-        var t =
-            TypeInfo<MapEntry<String, int>>.fromType(MapEntry, [String, int]);
+        var t = TypeInfo<MapEntry<String, int>>.fromType(MapEntry, [
+          String,
+          int,
+        ]);
 
         expect(t.isValidGenericType, isTrue);
         expect(t.genericType, equals(MapEntry<String, int>));
         expect(t.arguments0?.genericType, equals(String));
         expect(t.arguments1?.genericType, equals(int));
 
-        expect(t.arguments0!.toMapEntryType(t.arguments1!).genericType,
-            equals(MapEntry<String, int>));
+        expect(
+          t.arguments0!.toMapEntryType(t.arguments1!).genericType,
+          equals(MapEntry<String, int>),
+        );
 
         expect(
-            t.arguments0!
-                .toMapEntryKeyType<int>(valueType: t.arguments1!)
-                .genericType,
-            equals(MapEntry<String, int>));
+          t.arguments0!
+              .toMapEntryKeyType<int>(valueType: t.arguments1!)
+              .genericType,
+          equals(MapEntry<String, int>),
+        );
 
         expect(
-            t.arguments0!
-                .toMapEntryKeyType(valueType: t.arguments1!)
-                .genericType,
-            equals(MapEntry<String, dynamic>));
+          t.arguments0!.toMapEntryKeyType(valueType: t.arguments1!).genericType,
+          equals(MapEntry<String, dynamic>),
+        );
 
         expect(
-            t.arguments1!
-                .toMapEntryValueType<String>(keyType: t.arguments0!)
-                .genericType,
-            equals(MapEntry<String, int>));
+          t.arguments1!
+              .toMapEntryValueType<String>(keyType: t.arguments0!)
+              .genericType,
+          equals(MapEntry<String, int>),
+        );
 
         expect(
-            t.arguments1!
-                .toMapEntryValueType(keyType: t.arguments0!)
-                .genericType,
-            equals(MapEntry<dynamic, int>));
+          t.arguments1!.toMapEntryValueType(keyType: t.arguments0!).genericType,
+          equals(MapEntry<dynamic, int>),
+        );
 
         var mapEntry = MapEntry<String, int>('a', 1);
         var mapEntryObjKV = MapEntry<Object, Object>('a', 1);
@@ -1277,10 +1357,14 @@ void main() {
       {
         var t = TypeInfo(Uint8List);
 
-        expect(t.parse(base64.encode([10, 9, 8, 7, 6])),
-            equals(Uint8List.fromList([10, 9, 8, 7, 6])));
         expect(
-            t.parse('0403020100'), equals(Uint8List.fromList([4, 3, 2, 1, 0])));
+          t.parse(base64.encode([10, 9, 8, 7, 6])),
+          equals(Uint8List.fromList([10, 9, 8, 7, 6])),
+        );
+        expect(
+          t.parse('0403020100'),
+          equals(Uint8List.fromList([4, 3, 2, 1, 0])),
+        );
         expect(t.parse([3, 2, 1, 0]), equals(Uint8List.fromList([3, 2, 1, 0])));
       }
 
@@ -1350,135 +1434,156 @@ void main() {
         var typeListOfUser = TypeInfo.fromType(List, [TestUserWithReflection]);
 
         var users = [
-          TestUserWithReflection.fields('joe', 'joe@mail.com', 'j123456',
-              id: 101),
-          TestUserWithReflection.fields('smith', 'smith@mail.com', 's123456',
-              id: 102)
+          TestUserWithReflection.fields(
+            'joe',
+            'joe@mail.com',
+            'j123456',
+            id: 101,
+          ),
+          TestUserWithReflection.fields(
+            'smith',
+            'smith@mail.com',
+            's123456',
+            id: 102,
+          ),
         ];
 
-        var usersJson = (JsonEncoder.defaultEncoder
-                .toJson(users, duplicatedEntitiesAsID: true) as List)
-            .cast<Map>();
+        var usersJson =
+            (JsonEncoder.defaultEncoder.toJson(
+                      users,
+                      duplicatedEntitiesAsID: true,
+                    )
+                    as List)
+                .cast<Map>();
 
         expect(
-            usersJson,
-            equals([
-              {
-                'axis': 'x',
-                'email': 'joe@mail.com',
-                'enabled': true,
-                'id': 101,
-                'isEnabled': true,
-                'theLevel': null,
-                'name': 'joe',
-                //'password': 'j123456'
-              },
-              {
-                'axis': 'x',
-                'email': 'smith@mail.com',
-                'enabled': true,
-                'id': 102,
-                'isEnabled': true,
-                'theLevel': null,
-                'name': 'smith',
-                //'password': 's123456'
-              }
-            ]));
+          usersJson,
+          equals([
+            {
+              'axis': 'x',
+              'email': 'joe@mail.com',
+              'enabled': true,
+              'id': 101,
+              'isEnabled': true,
+              'theLevel': null,
+              'name': 'joe',
+              //'password': 'j123456'
+            },
+            {
+              'axis': 'x',
+              'email': 'smith@mail.com',
+              'enabled': true,
+              'id': 102,
+              'isEnabled': true,
+              'theLevel': null,
+              'name': 'smith',
+              //'password': 's123456'
+            },
+          ]),
+        );
 
-        var usersJson2 = usersJson
-            .mapIndexed((i, e) => {
-                  ...e,
-                  'password': i == 0 ? 'j123456' : 's123456',
-                })
-            .toList();
+        var usersJson2 =
+            usersJson
+                .mapIndexed(
+                  (i, e) => {...e, 'password': i == 0 ? 'j123456' : 's123456'},
+                )
+                .toList();
 
         var usersDecoded =
             typeListOfUser.fromJson(usersJson2) as List<TestUserWithReflection>;
 
         expect(
-            JsonEncoder.defaultEncoder
-                .toJson(usersDecoded, duplicatedEntitiesAsID: true),
-            equals([
-              {
-                'axis': 'x',
-                'email': 'joe@mail.com',
-                'enabled': true,
-                'id': 101,
-                'isEnabled': true,
-                'theLevel': null,
-                'name': 'joe',
-                //'password': 'j123456'
-              },
-              {
-                'axis': 'x',
-                'email': 'smith@mail.com',
-                'enabled': true,
-                'id': 102,
-                'isEnabled': true,
-                'theLevel': null,
-                'name': 'smith',
-                //'password': 's123456'
-              }
-            ]));
+          JsonEncoder.defaultEncoder.toJson(
+            usersDecoded,
+            duplicatedEntitiesAsID: true,
+          ),
+          equals([
+            {
+              'axis': 'x',
+              'email': 'joe@mail.com',
+              'enabled': true,
+              'id': 101,
+              'isEnabled': true,
+              'theLevel': null,
+              'name': 'joe',
+              //'password': 'j123456'
+            },
+            {
+              'axis': 'x',
+              'email': 'smith@mail.com',
+              'enabled': true,
+              'id': 102,
+              'isEnabled': true,
+              'theLevel': null,
+              'name': 'smith',
+              //'password': 's123456'
+            },
+          ]),
+        );
 
         expect(
-            JsonEncoder.defaultEncoder.toJson(
-                usersDecoded.map((e) => e.reflection.getFieldsValues(null)),
-                duplicatedEntitiesAsID: true),
-            equals([
-              {
-                'id': 101,
-                'name': 'joe',
-                'email': 'joe@mail.com',
-                'password': 'j123456',
-                'enabled': true,
-                'axis': 'x',
-                'level': null,
-                'isEnabled': true,
-                'isNotEnabled': false
-              },
-              {
-                'id': 102,
-                'name': 'smith',
-                'email': 'smith@mail.com',
-                'password': 's123456',
-                'enabled': true,
-                'axis': 'x',
-                'level': null,
-                'isEnabled': true,
-                'isNotEnabled': false
-              }
-            ]));
+          JsonEncoder.defaultEncoder.toJson(
+            usersDecoded.map((e) => e.reflection.getFieldsValues(null)),
+            duplicatedEntitiesAsID: true,
+          ),
+          equals([
+            {
+              'id': 101,
+              'name': 'joe',
+              'email': 'joe@mail.com',
+              'password': 'j123456',
+              'enabled': true,
+              'axis': 'x',
+              'level': null,
+              'isEnabled': true,
+              'isNotEnabled': false,
+            },
+            {
+              'id': 102,
+              'name': 'smith',
+              'email': 'smith@mail.com',
+              'password': 's123456',
+              'enabled': true,
+              'axis': 'x',
+              'level': null,
+              'isEnabled': true,
+              'isNotEnabled': false,
+            },
+          ]),
+        );
 
         expect(
-            JsonEncoder.defaultEncoder.toJson(
-                usersDecoded
-                    .map((e) => e.reflection.getJsonFieldsVisibleValues(null)),
-                duplicatedEntitiesAsID: true),
-            equals([
-              {
-                'id': 101,
-                'name': 'joe',
-                'email': 'joe@mail.com',
-                //'password': 'j123456',
-                'enabled': true,
-                'axis': 'x',
-                'level': null,
-                'isEnabled': true,
-                //'isNotEnabled': false
-              },
-              {
-                'id': 102,
-                'name': 'smith',
-                'email': 'smith@mail.com',
-                //'password': 's123456',
-                'enabled': true,
-                'axis': 'x',
-                'level': null,
-                'isEnabled': true,
-                //'isNotEnabled': false
-              }
-            ]));
+          JsonEncoder.defaultEncoder.toJson(
+            usersDecoded.map(
+              (e) => e.reflection.getJsonFieldsVisibleValues(null),
+            ),
+            duplicatedEntitiesAsID: true,
+          ),
+          equals([
+            {
+              'id': 101,
+              'name': 'joe',
+              'email': 'joe@mail.com',
+              //'password': 'j123456',
+              'enabled': true,
+              'axis': 'x',
+              'level': null,
+              'isEnabled': true,
+              //'isNotEnabled': false
+            },
+            {
+              'id': 102,
+              'name': 'smith',
+              'email': 'smith@mail.com',
+              //'password': 's123456',
+              'enabled': true,
+              'axis': 'x',
+              'level': null,
+              'isEnabled': true,
+              //'isNotEnabled': false
+            },
+          ]),
+        );
 
         // ignore: avoid_dynamic_calls
         var json2WithRef = [usersJson2[0], usersJson2[0]['id']];
@@ -1487,75 +1592,87 @@ void main() {
         expect(identical(usersDecoded2[0], usersDecoded2[1]), isTrue);
 
         expect(
-            JsonEncoder.defaultEncoder
-                .toJson(usersDecoded2, duplicatedEntitiesAsID: true),
-            equals([
-              {
-                'axis': 'x',
-                'email': 'joe@mail.com',
-                'enabled': true,
-                'id': 101,
-                'isEnabled': true,
-                'theLevel': null,
-                'name': 'joe'
-              },
-              101
-            ]));
+          JsonEncoder.defaultEncoder.toJson(
+            usersDecoded2,
+            duplicatedEntitiesAsID: true,
+          ),
+          equals([
+            {
+              'axis': 'x',
+              'email': 'joe@mail.com',
+              'enabled': true,
+              'id': 101,
+              'isEnabled': true,
+              'theLevel': null,
+              'name': 'joe',
+            },
+            101,
+          ]),
+        );
       }
 
       {
         TestUserWithReflection$reflection.boot();
 
-        var typeUser =
-            TypeInfo<TestUserWithReflection>.fromType(TestUserWithReflection);
+        var typeUser = TypeInfo<TestUserWithReflection>.fromType(
+          TestUserWithReflection,
+        );
 
         var typeListOfUser =
             TypeInfo<List<TestUserWithReflection>>.fromListType(typeUser);
 
         var user1 = TestUserWithReflection.fields(
-            'joe', 'joe@mail.com', 'j123456',
-            id: 101);
+          'joe',
+          'joe@mail.com',
+          'j123456',
+          id: 101,
+        );
         var user2 = TestUserWithReflection.fields(
-            'smith', 'smith@mail.com', 's123456',
-            id: 102);
+          'smith',
+          'smith@mail.com',
+          's123456',
+          id: 102,
+        );
 
         var users = [user1, user2, user1];
 
-        var usersJson = JsonEncoder.defaultEncoder
-            .toJson(users, duplicatedEntitiesAsID: true) as List;
+        var usersJson =
+            JsonEncoder.defaultEncoder.toJson(
+                  users,
+                  duplicatedEntitiesAsID: true,
+                )
+                as List;
 
         expect(
-            usersJson,
-            equals([
-              {
-                'axis': 'x',
-                'email': 'joe@mail.com',
-                'enabled': true,
-                'id': 101,
-                'isEnabled': true,
-                'theLevel': null,
-                'name': 'joe',
-                //'password': 'j123456'
-              },
-              {
-                'axis': 'x',
-                'email': 'smith@mail.com',
-                'enabled': true,
-                'id': 102,
-                'isEnabled': true,
-                'theLevel': null,
-                'name': 'smith',
-                //'password': 's123456'
-              },
-              101
-            ]));
+          usersJson,
+          equals([
+            {
+              'axis': 'x',
+              'email': 'joe@mail.com',
+              'enabled': true,
+              'id': 101,
+              'isEnabled': true,
+              'theLevel': null,
+              'name': 'joe',
+              //'password': 'j123456'
+            },
+            {
+              'axis': 'x',
+              'email': 'smith@mail.com',
+              'enabled': true,
+              'id': 102,
+              'isEnabled': true,
+              'theLevel': null,
+              'name': 'smith',
+              //'password': 's123456'
+            },
+            101,
+          ]),
+        );
 
         var usersJson2 = usersJson.mapIndexed((i, e) {
           return e is Map
-              ? {
-                  ...e,
-                  'password': i == 0 ? 'j123456' : 's123456',
-                }
+              ? {...e, 'password': i == 0 ? 'j123456' : 's123456'}
               : e;
         });
 
@@ -1571,89 +1688,103 @@ void main() {
         {
           var typeListOfListOfUser =
               TypeInfo<List<List<TestUserWithReflection>>>.fromListType(
-                  typeListOfUser);
+                typeListOfUser,
+              );
 
           var listUsersDecoded =
               typeListOfListOfUser.fromJson([usersJson2]) as List;
 
           expect(
-              listUsersDecoded,
-              equals([
-                [user1, user2, user1]
-              ]));
+            listUsersDecoded,
+            equals([
+              [user1, user2, user1],
+            ]),
+          );
 
           expect(listUsersDecoded, isA<List<List<TestUserWithReflection>>>());
         }
 
         expect(
-            JsonEncoder.defaultEncoder
-                .toJson(usersDecoded, duplicatedEntitiesAsID: true),
-            equals([
-              {
-                'axis': 'x',
-                'email': 'joe@mail.com',
-                'enabled': true,
-                'id': 101,
-                'isEnabled': true,
-                'theLevel': null,
-                'name': 'joe',
-                //'password': 'j123456'
-              },
-              {
-                'axis': 'x',
-                'email': 'smith@mail.com',
-                'enabled': true,
-                'id': 102,
-                'isEnabled': true,
-                'theLevel': null,
-                'name': 'smith',
-                //'password': 's123456'
-              },
-              101
-            ]));
+          JsonEncoder.defaultEncoder.toJson(
+            usersDecoded,
+            duplicatedEntitiesAsID: true,
+          ),
+          equals([
+            {
+              'axis': 'x',
+              'email': 'joe@mail.com',
+              'enabled': true,
+              'id': 101,
+              'isEnabled': true,
+              'theLevel': null,
+              'name': 'joe',
+              //'password': 'j123456'
+            },
+            {
+              'axis': 'x',
+              'email': 'smith@mail.com',
+              'enabled': true,
+              'id': 102,
+              'isEnabled': true,
+              'theLevel': null,
+              'name': 'smith',
+              //'password': 's123456'
+            },
+            101,
+          ]),
+        );
       }
 
       {
-        var typeMapOfUser =
-            TypeInfo.fromType(Map, [String, TestUserWithReflection]);
+        var typeMapOfUser = TypeInfo.fromType(Map, [
+          String,
+          TestUserWithReflection,
+        ]);
 
         var users = <String, TestUserWithReflection>{
           'a': TestUserWithReflection.fields('joe', 'j@mail', '123'),
           'b': TestUserWithReflection.fields('smith', 's@mail', 'abc'),
         };
 
-        var usersJson = JsonEncoder.defaultEncoder
-            .toJson(users, duplicatedEntitiesAsID: true) as Map;
+        var usersJson =
+            JsonEncoder.defaultEncoder.toJson(
+                  users,
+                  duplicatedEntitiesAsID: true,
+                )
+                as Map;
 
         expect(
-            usersJson,
-            equals({
-              'a': {
-                'axis': 'x',
-                'email': 'j@mail',
-                'enabled': true,
-                'id': null,
-                'isEnabled': true,
-                'theLevel': null,
-                'name': 'joe',
-                //'password': '123'
-              },
-              'b': {
-                'axis': 'x',
-                'email': 's@mail',
-                'enabled': true,
-                'id': null,
-                'isEnabled': true,
-                'theLevel': null,
-                'name': 'smith',
-                //'password': 'abc'
-              }
-            }));
+          usersJson,
+          equals({
+            'a': {
+              'axis': 'x',
+              'email': 'j@mail',
+              'enabled': true,
+              'id': null,
+              'isEnabled': true,
+              'theLevel': null,
+              'name': 'joe',
+              //'password': '123'
+            },
+            'b': {
+              'axis': 'x',
+              'email': 's@mail',
+              'enabled': true,
+              'id': null,
+              'isEnabled': true,
+              'theLevel': null,
+              'name': 'smith',
+              //'password': 'abc'
+            },
+          }),
+        );
 
-        var usersJson2 = usersJson.map((k, v) => MapEntry(k, {
-              ...(v as Map),
-              'password': k == 'a' ? '123' : 'abc',
-            }));
+        var usersJson2 = usersJson.map(
+          (k, v) => MapEntry(k, {
+            ...(v as Map),
+            'password': k == 'a' ? '123' : 'abc',
+          }),
+        );
 
         var users2 = typeMapOfUser.fromJson(usersJson2);
 
@@ -1662,69 +1793,97 @@ void main() {
 
       {
         var entityType = TypeInfo<TestCompanyWithReflection>.fromType(
-            TestCompanyWithReflection);
+          TestCompanyWithReflection,
+        );
 
-        var address1 =
-            TestAddressWithReflection.withCity('NY', city: 'New York', id: 1);
-        var address2 = TestAddressWithReflection.withCity('CA',
-            city: 'Los Angeles', id: 2);
-        var address3 =
-            TestAddressWithReflection.withCity('MA', city: 'Boston', id: 3);
+        var address1 = TestAddressWithReflection.withCity(
+          'NY',
+          city: 'New York',
+          id: 1,
+        );
+        var address2 = TestAddressWithReflection.withCity(
+          'CA',
+          city: 'Los Angeles',
+          id: 2,
+        );
+        var address3 = TestAddressWithReflection.withCity(
+          'MA',
+          city: 'Boston',
+          id: 3,
+        );
 
-        var company1 = TestCompanyWithReflection('Comp1', address1,
-            branchesAddresses: [address1],
-            extraAddresses: [address2, address3]);
+        var company1 = TestCompanyWithReflection(
+          'Comp1',
+          address1,
+          branchesAddresses: [address1],
+          extraAddresses: [address2, address3],
+        );
 
-        var company1Json = JsonEncoder.defaultEncoder
-            .toJson(company1, duplicatedEntitiesAsID: true);
+        var company1Json = JsonEncoder.defaultEncoder.toJson(
+          company1,
+          duplicatedEntitiesAsID: true,
+        );
 
         expect(
-            company1Json,
-            equals({
-              'branchesAddresses': [
-                {'id': 1, 'state': 'NY', 'city': 'New York'}
-              ],
-              'extraAddresses': [
-                {'id': 2, 'state': 'CA', 'city': 'Los Angeles'},
-                {'id': 3, 'state': 'MA', 'city': 'Boston'}
-              ],
-              'extraNames': [],
-              'mainAddress': 1,
-              'name': 'Comp1'
-            }));
+          company1Json,
+          equals({
+            'branchesAddresses': [
+              {'id': 1, 'state': 'NY', 'city': 'New York'},
+            ],
+            'extraAddresses': [
+              {'id': 2, 'state': 'CA', 'city': 'Los Angeles'},
+              {'id': 3, 'state': 'MA', 'city': 'Boston'},
+            ],
+            'extraNames': [],
+            'mainAddress': 1,
+            'name': 'Comp1',
+          }),
+        );
 
-        var company1Decoded = JsonDecoder.defaultDecoder.fromJson(company1Json,
-            type: TestCompanyWithReflection, duplicatedEntitiesAsID: true);
+        var company1Decoded = JsonDecoder.defaultDecoder.fromJson(
+          company1Json,
+          type: TestCompanyWithReflection,
+          duplicatedEntitiesAsID: true,
+        );
         expect(company1Decoded, equals(company1));
 
         var company1Decoded2 = entityType.fromJson(company1Json);
         expect(company1Decoded2, equals(company1));
 
-        var company2 = TestCompanyWithReflection('Comp2', address1,
-            branchesAddresses: [address2],
-            extraAddresses: [address2, address1, address2]);
+        var company2 = TestCompanyWithReflection(
+          'Comp2',
+          address1,
+          branchesAddresses: [address2],
+          extraAddresses: [address2, address1, address2],
+        );
 
-        var company2Json = JsonEncoder.defaultEncoder
-            .toJson(company2, duplicatedEntitiesAsID: true);
+        var company2Json = JsonEncoder.defaultEncoder.toJson(
+          company2,
+          duplicatedEntitiesAsID: true,
+        );
 
         expect(
-            company2Json,
-            equals({
-              'branchesAddresses': [
-                {'id': 2, 'state': 'CA', 'city': 'Los Angeles'}
-              ],
-              'extraAddresses': [
-                2,
-                {'id': 1, 'state': 'NY', 'city': 'New York'},
-                2
-              ],
-              'extraNames': [],
-              'mainAddress': 1,
-              'name': 'Comp2'
-            }));
+          company2Json,
+          equals({
+            'branchesAddresses': [
+              {'id': 2, 'state': 'CA', 'city': 'Los Angeles'},
+            ],
+            'extraAddresses': [
+              2,
+              {'id': 1, 'state': 'NY', 'city': 'New York'},
+              2,
+            ],
+            'extraNames': [],
+            'mainAddress': 1,
+            'name': 'Comp2',
+          }),
+        );
 
-        var company2Decoded = JsonDecoder.defaultDecoder.fromJson(company2Json,
-            type: TestCompanyWithReflection, duplicatedEntitiesAsID: true);
+        var company2Decoded = JsonDecoder.defaultDecoder.fromJson(
+          company2Json,
+          type: TestCompanyWithReflection,
+          duplicatedEntitiesAsID: true,
+        );
         expect(company2Decoded, equals(company2));
 
         var company2Decoded2 = entityType.fromJson(company2Json);
@@ -1734,36 +1893,40 @@ void main() {
 
         var companiesListType =
             TypeInfo<List<TestCompanyWithReflection>>.fromType(List, [
-          TypeInfo<TestCompanyWithReflection>.fromType(
-              TestCompanyWithReflection)
-        ]);
+              TypeInfo<TestCompanyWithReflection>.fromType(
+                TestCompanyWithReflection,
+              ),
+            ]);
 
-        var companiesJson = JsonEncoder.defaultEncoder
-            .toJson(companiesList, duplicatedEntitiesAsID: true);
+        var companiesJson = JsonEncoder.defaultEncoder.toJson(
+          companiesList,
+          duplicatedEntitiesAsID: true,
+        );
 
         expect(
-            companiesJson,
-            equals([
-              {
-                'branchesAddresses': [
-                  {'id': 1, 'state': 'NY', 'city': 'New York'}
-                ],
-                'extraAddresses': [
-                  {'id': 2, 'state': 'CA', 'city': 'Los Angeles'},
-                  {'id': 3, 'state': 'MA', 'city': 'Boston'}
-                ],
-                'extraNames': [],
-                'mainAddress': 1,
-                'name': 'Comp1'
-              },
-              {
-                'branchesAddresses': [2],
-                'extraAddresses': [2, 1, 2],
-                'extraNames': [],
-                'mainAddress': 1,
-                'name': 'Comp2'
-              }
-            ]));
+          companiesJson,
+          equals([
+            {
+              'branchesAddresses': [
+                {'id': 1, 'state': 'NY', 'city': 'New York'},
+              ],
+              'extraAddresses': [
+                {'id': 2, 'state': 'CA', 'city': 'Los Angeles'},
+                {'id': 3, 'state': 'MA', 'city': 'Boston'},
+              ],
+              'extraNames': [],
+              'mainAddress': 1,
+              'name': 'Comp1',
+            },
+            {
+              'branchesAddresses': [2],
+              'extraAddresses': [2, 1, 2],
+              'extraNames': [],
+              'mainAddress': 1,
+              'name': 'Comp2',
+            },
+          ]),
+        );
 
         var companiesDecoded = companiesListType.fromJson(companiesJson);
 
@@ -1772,40 +1935,59 @@ void main() {
 
       {
         var entityType = TypeInfo<TestCompanyWithReflection>.fromType(
-            TestCompanyWithReflection);
+          TestCompanyWithReflection,
+        );
 
-        var address1 =
-            TestAddressWithReflection.withCity('NY', city: 'New York', id: 1);
-        var address2 = TestAddressWithReflection.withCity('CA',
-            city: 'Los Angeles', id: 2);
-        var address3 =
-            TestAddressWithReflection.withCity('MA', city: 'Boston', id: 3);
+        var address1 = TestAddressWithReflection.withCity(
+          'NY',
+          city: 'New York',
+          id: 1,
+        );
+        var address2 = TestAddressWithReflection.withCity(
+          'CA',
+          city: 'Los Angeles',
+          id: 2,
+        );
+        var address3 = TestAddressWithReflection.withCity(
+          'MA',
+          city: 'Boston',
+          id: 3,
+        );
 
-        var company1 = TestCompanyWithReflection('Comp1', address2,
-            branchesAddresses: [address1, address3],
-            extraAddresses: [address2, address3]);
+        var company1 = TestCompanyWithReflection(
+          'Comp1',
+          address2,
+          branchesAddresses: [address1, address3],
+          extraAddresses: [address2, address3],
+        );
 
-        var company1Json = JsonEncoder.defaultEncoder
-            .toJson(company1, duplicatedEntitiesAsID: true);
+        var company1Json = JsonEncoder.defaultEncoder.toJson(
+          company1,
+          duplicatedEntitiesAsID: true,
+        );
 
         expect(
-            company1Json,
-            equals({
-              'branchesAddresses': [
-                {'id': 1, 'state': 'NY', 'city': 'New York'},
-                {'id': 3, 'state': 'MA', 'city': 'Boston'}
-              ],
-              'extraAddresses': [
-                {'id': 2, 'state': 'CA', 'city': 'Los Angeles'},
-                3
-              ],
-              'extraNames': [],
-              'mainAddress': 2,
-              'name': 'Comp1'
-            }));
+          company1Json,
+          equals({
+            'branchesAddresses': [
+              {'id': 1, 'state': 'NY', 'city': 'New York'},
+              {'id': 3, 'state': 'MA', 'city': 'Boston'},
+            ],
+            'extraAddresses': [
+              {'id': 2, 'state': 'CA', 'city': 'Los Angeles'},
+              3,
+            ],
+            'extraNames': [],
+            'mainAddress': 2,
+            'name': 'Comp1',
+          }),
+        );
 
-        var company1Decoded = JsonDecoder.defaultDecoder.fromJson(company1Json,
-            type: TestCompanyWithReflection, duplicatedEntitiesAsID: true);
+        var company1Decoded = JsonDecoder.defaultDecoder.fromJson(
+          company1Json,
+          type: TestCompanyWithReflection,
+          duplicatedEntitiesAsID: true,
+        );
         expect(company1Decoded, equals(company1));
 
         var company1Decoded2 = entityType.fromJson(company1Json);
@@ -1814,21 +1996,22 @@ void main() {
         var company1Json2 = {
           'branchesAddresses': [
             {'id': 1, 'state': 'NY', 'city': 'New York'},
-            3
+            3,
           ],
           'extraAddresses': [
             {'id': 2, 'state': 'CA', 'city': 'Los Angeles'},
-            {'id': 3, 'state': 'MA', 'city': 'Boston'}
+            {'id': 3, 'state': 'MA', 'city': 'Boston'},
           ],
           'extraNames': [],
           'mainAddress': 2,
-          'name': 'Comp1'
+          'name': 'Comp1',
         };
 
         var company1Decoded3 = JsonDecoder.defaultDecoder.fromJson(
-            company1Json2,
-            type: TestCompanyWithReflection,
-            duplicatedEntitiesAsID: true);
+          company1Json2,
+          type: TestCompanyWithReflection,
+          duplicatedEntitiesAsID: true,
+        );
         expect(company1Decoded3, equals(company1));
 
         var company1Decoded4 = entityType.fromJson(company1Json2);
@@ -1892,35 +2075,47 @@ void main() {
       expect(TypeInfo.equivalentTypeList(<Type>[int], <Type>[String]), isFalse);
 
       expect(
-          TypeInfo.equivalentTypeList(<Type>[int, String], <Type>[int, String]),
-          isTrue);
+        TypeInfo.equivalentTypeList(<Type>[int, String], <Type>[int, String]),
+        isTrue,
+      );
       expect(
-          TypeInfo.equivalentTypeList(<Type>[String, int], <Type>[int, String]),
-          isFalse);
+        TypeInfo.equivalentTypeList(<Type>[String, int], <Type>[int, String]),
+        isFalse,
+      );
     });
 
     test('TypeInfo.equalsTypeInfoList', () async {
       expect(
-          TypeInfo.equalsTypeInfoList(<TypeInfo>[TypeInfo.fromType(int)],
-              <TypeInfo>[TypeInfo.fromType(int)]),
-          isTrue);
+        TypeInfo.equalsTypeInfoList(
+          <TypeInfo>[TypeInfo.fromType(int)],
+          <TypeInfo>[TypeInfo.fromType(int)],
+        ),
+        isTrue,
+      );
 
       expect(
-          TypeInfo.equalsTypeInfoList(<TypeInfo>[TypeInfo.fromType(int)],
-              <TypeInfo>[TypeInfo.fromType(String)]),
-          isFalse);
+        TypeInfo.equalsTypeInfoList(
+          <TypeInfo>[TypeInfo.fromType(int)],
+          <TypeInfo>[TypeInfo.fromType(String)],
+        ),
+        isFalse,
+      );
 
       expect(
-          TypeInfo.equalsTypeInfoList(
-              <TypeInfo>[TypeInfo.fromType(int), TypeInfo.fromType(String)],
-              <TypeInfo>[TypeInfo.fromType(int), TypeInfo.fromType(String)]),
-          isTrue);
+        TypeInfo.equalsTypeInfoList(
+          <TypeInfo>[TypeInfo.fromType(int), TypeInfo.fromType(String)],
+          <TypeInfo>[TypeInfo.fromType(int), TypeInfo.fromType(String)],
+        ),
+        isTrue,
+      );
 
       expect(
-          TypeInfo.equalsTypeInfoList(
-              <TypeInfo>[TypeInfo.fromType(String), TypeInfo.fromType(int)],
-              <TypeInfo>[TypeInfo.fromType(int), TypeInfo.fromType(String)]),
-          isFalse);
+        TypeInfo.equalsTypeInfoList(
+          <TypeInfo>[TypeInfo.fromType(String), TypeInfo.fromType(int)],
+          <TypeInfo>[TypeInfo.fromType(int), TypeInfo.fromType(String)],
+        ),
+        isFalse,
+      );
     });
   });
 
@@ -1986,8 +2181,10 @@ void main() {
       expect(TypeParser.parseInt(' -123,456.78 '), equals(-123456));
       expect(TypeParser.parseInt(' "123,456.78 " '), equals(123456));
       expect(TypeParser.parseInt(' "-123,456.78 " '), equals(-123456));
-      expect(TypeParser.parseInt(DateTime.utc(2020, 1, 2, 3, 4, 5, 0, 0)),
-          equals(1577934245000));
+      expect(
+        TypeParser.parseInt(DateTime.utc(2020, 1, 2, 3, 4, 5, 0, 0)),
+        equals(1577934245000),
+      );
       expect(TypeParser.parseInt(Duration(seconds: 11)), equals(11000));
       expect(TypeParser.parseInt(null, 404), equals(404));
       expect(TypeParser.parseInt('', 404), equals(404));
@@ -2015,8 +2212,10 @@ void main() {
       expect(TypeParser.parseDouble(' -123,456.78 '), equals(-123456.78));
       expect(TypeParser.parseDouble(' "123,456.78 " '), equals(123456.78));
       expect(TypeParser.parseDouble(' "-123,456.78 " '), equals(-123456.78));
-      expect(TypeParser.parseDouble(DateTime.utc(2020, 1, 2, 3, 4, 5, 0, 0)),
-          equals(1577934245000));
+      expect(
+        TypeParser.parseDouble(DateTime.utc(2020, 1, 2, 3, 4, 5, 0, 0)),
+        equals(1577934245000),
+      );
       expect(TypeParser.parseDouble(Duration(seconds: 11)), equals(11000));
       expect(TypeParser.parseDouble(null, 404), equals(404));
       expect(TypeParser.parseDouble('', 404), equals(404));
@@ -2042,8 +2241,10 @@ void main() {
       expect(TypeParser.parseNum(' -123,456.78 '), equals(-123456.78));
       expect(TypeParser.parseNum(' "123,456.78 " '), equals(123456.78));
       expect(TypeParser.parseNum(' "-123,456.78 " '), equals(-123456.78));
-      expect(TypeParser.parseNum(DateTime.utc(2020, 1, 2, 3, 4, 5, 0, 0)),
-          equals(1577934245000));
+      expect(
+        TypeParser.parseNum(DateTime.utc(2020, 1, 2, 3, 4, 5, 0, 0)),
+        equals(1577934245000),
+      );
       expect(TypeParser.parseNum(Duration(seconds: 11)), equals(11000));
       expect(TypeParser.parseNum(null, 404), equals(404));
       expect(TypeParser.parseNum('', 404), equals(404));
@@ -2095,28 +2296,42 @@ void main() {
       expect(TypeParser.parseMap({'a': 1, 'b': 2}), equals({'a': 1, 'b': 2}));
       expect(TypeParser.parseMap('a:1&b:2'), equals({'a': '1', 'b': '2'}));
 
-      expect(TypeParser.parseMap<String, int>({'a': '1', 'b': '2'}),
-          equals({'a': 1, 'b': 2}));
-      expect(TypeParser.parseMap<String, int>('a:1&b:2'),
-          equals({'a': 1, 'b': 2}));
+      expect(
+        TypeParser.parseMap<String, int>({'a': '1', 'b': '2'}),
+        equals({'a': 1, 'b': 2}),
+      );
+      expect(
+        TypeParser.parseMap<String, int>('a:1&b:2'),
+        equals({'a': 1, 'b': 2}),
+      );
 
       expect(TypeParser.parseMap(['a:1', 'b:2']), equals({'a': '1', 'b': '2'}));
     });
 
     test('TypeParser.parseMapEntry', () async {
-      expect(TypeParser.parseMapEntry(MapEntry('a', 1)).toString(),
-          equals('MapEntry(a: 1)'));
+      expect(
+        TypeParser.parseMapEntry(MapEntry('a', 1)).toString(),
+        equals('MapEntry(a: 1)'),
+      );
 
       expect(
-          TypeParser.parseMapEntry('a:1').toString(), equals('MapEntry(a: 1)'));
+        TypeParser.parseMapEntry('a:1').toString(),
+        equals('MapEntry(a: 1)'),
+      );
       expect(
-          TypeParser.parseMapEntry('a=1').toString(), equals('MapEntry(a: 1)'));
+        TypeParser.parseMapEntry('a=1').toString(),
+        equals('MapEntry(a: 1)'),
+      );
 
-      expect(TypeParser.parseMapEntry(['x', 12]).toString(),
-          equals('MapEntry(x: 12)'));
+      expect(
+        TypeParser.parseMapEntry(['x', 12]).toString(),
+        equals('MapEntry(x: 12)'),
+      );
 
-      expect(TypeParser.parseMapEntry('y').toString(),
-          equals('MapEntry(y: null)'));
+      expect(
+        TypeParser.parseMapEntry('y').toString(),
+        equals('MapEntry(y: null)'),
+      );
 
       {
         var me = TypeParser.parseMapEntry<String, int>(MapEntry('A', '123'))!;
@@ -2159,65 +2374,92 @@ void main() {
       expect(TypeParser.parserFor(obj: 'x')!('x'), isA<String>());
 
       expect(
-          TypeParser.parserFor(obj: BigInt.from(101))!('101'), isA<BigInt>());
+        TypeParser.parserFor(obj: BigInt.from(101))!('101'),
+        isA<BigInt>(),
+      );
 
       expect(
-          TypeParser.parserFor(obj: DateTime(2020, 1, 2, 3, 4, 5, 0, 0))!(
-              '2020-01-02 03:04:05.000Z'),
-          isA<DateTime>());
+        TypeParser.parserFor(obj: DateTime(2020, 1, 2, 3, 4, 5, 0, 0))!(
+          '2020-01-02 03:04:05.000Z',
+        ),
+        isA<DateTime>(),
+      );
 
-      expect(TypeParser.parserFor(obj: Duration(hours: -3))!('-3'),
-          isA<Duration>());
+      expect(
+        TypeParser.parserFor(obj: Duration(hours: -3))!('-3'),
+        isA<Duration>(),
+      );
 
       expect(TypeParser.parserFor(obj: {'a': 1})!('a:1'), isA<Map>());
       expect(TypeParser.parserFor(obj: {1, 2})!('1,2'), isA<Set>());
       expect(TypeParser.parserFor(obj: [1, 2])!('1,2'), isA<List>());
-      expect(TypeParser.parserFor(obj: [1, 2].map((e) => e))!('1,2'),
-          isA<Iterable>());
-
-      expect(TypeParser.parserFor(obj: Uint8List(0))!('0001020304'),
-          allOf(isA<Uint8List>(), equals([0, 1, 2, 3, 4])));
+      expect(
+        TypeParser.parserFor(obj: [1, 2].map((e) => e))!('1,2'),
+        isA<Iterable>(),
+      );
 
       expect(
-          TypeParser.parserFor(obj: Uint8List(0))!(
-              base64.encode([5, 4, 3, 2, 1, 0])),
-          allOf(isA<Uint8List>(), equals([5, 4, 3, 2, 1, 0])));
-
-      expect(TypeParser.parserFor(obj: Uint8List(0))!([5, 4, 3]),
-          allOf(isA<Uint8List>(), equals([5, 4, 3])));
+        TypeParser.parserFor(obj: Uint8List(0))!('0001020304'),
+        allOf(isA<Uint8List>(), equals([0, 1, 2, 3, 4])),
+      );
 
       expect(
-          TypeParser.parserFor(obj: Uint8List(0))!([5, 4, 3].map((n) => n * 2)),
-          allOf(isA<Uint8List>(), equals([10, 8, 6])));
+        TypeParser.parserFor(obj: Uint8List(0))!(
+          base64.encode([5, 4, 3, 2, 1, 0]),
+        ),
+        allOf(isA<Uint8List>(), equals([5, 4, 3, 2, 1, 0])),
+      );
 
-      expect(TypeParser.parserFor(obj: Uint8List(0))!(['6', '5', '4', '3']),
-          allOf(isA<Uint8List>(), equals([6, 5, 4, 3])));
+      expect(
+        TypeParser.parserFor(obj: Uint8List(0))!([5, 4, 3]),
+        allOf(isA<Uint8List>(), equals([5, 4, 3])),
+      );
+
+      expect(
+        TypeParser.parserFor(obj: Uint8List(0))!([5, 4, 3].map((n) => n * 2)),
+        allOf(isA<Uint8List>(), equals([10, 8, 6])),
+      );
+
+      expect(
+        TypeParser.parserFor(obj: Uint8List(0))!(['6', '5', '4', '3']),
+        allOf(isA<Uint8List>(), equals([6, 5, 4, 3])),
+      );
     });
 
     test('TypeParser.parserFor', () async {
       expect(TypeParser.parseValueForType(double, '12.3'), equals(12.3));
 
-      expect(TypeParser.parseValueForType(BigInt, '123'),
-          equals(BigInt.from(123)));
-
-      expect(TypeParser.parseValueForType(DateTime, '2020-01-02 03:04:05.000Z'),
-          equals(DateTime.parse('2020-01-02 03:04:05.000Z')));
+      expect(
+        TypeParser.parseValueForType(BigInt, '123'),
+        equals(BigInt.from(123)),
+      );
 
       expect(
-          TypeParser.parseValueForType(Duration, '11:10:09:303.101'),
-          equals(Duration(
-              hours: 11,
-              minutes: 10,
-              seconds: 9,
-              milliseconds: 303,
-              microseconds: 101)));
+        TypeParser.parseValueForType(DateTime, '2020-01-02 03:04:05.000Z'),
+        equals(DateTime.parse('2020-01-02 03:04:05.000Z')),
+      );
+
+      expect(
+        TypeParser.parseValueForType(Duration, '11:10:09:303.101'),
+        equals(
+          Duration(
+            hours: 11,
+            minutes: 10,
+            seconds: 9,
+            milliseconds: 303,
+            microseconds: 101,
+          ),
+        ),
+      );
     });
 
     test('TypeParser.parseList', () async {
       expect(TypeParser.parseList([1, 2, 3]), equals([1, 2, 3]));
       expect(TypeParser.parseList('1,2,3'), equals(['1', '2', '3']));
-      expect(TypeParser.parseList('1,2,3', elementParser: TypeParser.parseInt),
-          equals([1, 2, 3]));
+      expect(
+        TypeParser.parseList('1,2,3', elementParser: TypeParser.parseInt),
+        equals([1, 2, 3]),
+      );
       expect(TypeParser.parseList<int>('1,2,3'), equals([1, 2, 3]));
 
       expect(TypeParser.parseList(123), equals([123]));
@@ -2233,8 +2475,10 @@ void main() {
     test('TypeParser.parseSet', () async {
       expect(TypeParser.parseSet([1, 2, 3]), equals({1, 2, 3}));
       expect(TypeParser.parseSet('1,2,3'), equals({'1', '2', '3'}));
-      expect(TypeParser.parseSet('1,2,3', elementParser: TypeParser.parseInt),
-          equals({1, 2, 3}));
+      expect(
+        TypeParser.parseSet('1,2,3', elementParser: TypeParser.parseInt),
+        equals({1, 2, 3}),
+      );
       expect(TypeParser.parseSet<int>('1,2,3'), equals({1, 2, 3}));
 
       expect(TypeParser.parseSet(123), equals({123}));
@@ -2251,85 +2495,130 @@ void main() {
       expect(TypeParser.parseMap({'a': 1, 'b': 2}), equals({'a': 1, 'b': 2}));
       expect(TypeParser.parseMap('a:1&b:2'), equals({'a': '1', 'b': '2'}));
       expect(
-          TypeParser.parseMap('a:1&b:2',
-              keyParser: TypeParser.parseString,
-              valueParser: TypeParser.parseInt),
-          equals({'a': 1, 'b': 2}));
-      expect(TypeParser.parseMap<String, int>('a:1&b:2'),
-          equals({'a': 1, 'b': 2}));
+        TypeParser.parseMap(
+          'a:1&b:2',
+          keyParser: TypeParser.parseString,
+          valueParser: TypeParser.parseInt,
+        ),
+        equals({'a': 1, 'b': 2}),
+      );
+      expect(
+        TypeParser.parseMap<String, int>('a:1&b:2'),
+        equals({'a': 1, 'b': 2}),
+      );
 
       expect(TypeParser.parseMap(123), equals({123: null}));
       expect(TypeParser.parseMap<int, Object?>(123), equals({123: null}));
 
-      expect(() => TypeParser.parseMap<int, String>(123),
-          throwsA(isA<TypeError>()));
+      expect(
+        () => TypeParser.parseMap<int, String>(123),
+        throwsA(isA<TypeError>()),
+      );
 
       expect(TypeParser.parseMap(12.3), equals({12.3: null}));
       expect(TypeParser.parseMap([123, 456]), equals({123: null, 456: null}));
 
-      expect(TypeParser.parseMap('123:a ; 456:b'),
-          equals({'123': 'a', '456': 'b'}));
-      expect(TypeParser.parseMap<int, String>('123:a ; 456:b'),
-          equals({123: 'a', 456: 'b'}));
+      expect(
+        TypeParser.parseMap('123:a ; 456:b'),
+        equals({'123': 'a', '456': 'b'}),
+      );
+      expect(
+        TypeParser.parseMap<int, String>('123:a ; 456:b'),
+        equals({123: 'a', 456: 'b'}),
+      );
     });
 
     test('TypeParser.parseDateTime', () async {
-      expect(TypeParser.parseDateTime(DateTime.utc(2020, 1, 2, 3, 4, 5, 0, 0)),
-          equals(DateTime.utc(2020, 1, 2, 3, 4, 5, 0, 0)));
+      expect(
+        TypeParser.parseDateTime(DateTime.utc(2020, 1, 2, 3, 4, 5, 0, 0)),
+        equals(DateTime.utc(2020, 1, 2, 3, 4, 5, 0, 0)),
+      );
 
-      expect(TypeParser.parseDateTime('2020-01-02 03:04:05.000Z'),
-          equals(DateTime.utc(2020, 1, 2, 3, 4, 5, 0, 0)));
+      expect(
+        TypeParser.parseDateTime('2020-01-02 03:04:05.000Z'),
+        equals(DateTime.utc(2020, 1, 2, 3, 4, 5, 0, 0)),
+      );
 
-      expect(TypeParser.parseDateTime(1577934245000),
-          equals(DateTime.fromMillisecondsSinceEpoch(1577934245000)));
+      expect(
+        TypeParser.parseDateTime(1577934245000),
+        equals(DateTime.fromMillisecondsSinceEpoch(1577934245000)),
+      );
     });
 
     test('TypeParser.parseDuration', () async {
-      expect(TypeParser.parseDuration(Duration(hours: -3)),
-          equals(Duration(hours: -3)));
+      expect(
+        TypeParser.parseDuration(Duration(hours: -3)),
+        equals(Duration(hours: -3)),
+      );
 
-      expect(TypeParser.parseDuration('4:10:20'),
-          equals(Duration(hours: 4, minutes: 10, seconds: 20)));
+      expect(
+        TypeParser.parseDuration('4:10:20'),
+        equals(Duration(hours: 4, minutes: 10, seconds: 20)),
+      );
 
-      expect(TypeParser.parseDuration(1000 * 60 * 30),
-          equals(Duration(milliseconds: 1000 * 60 * 30)));
+      expect(
+        TypeParser.parseDuration(1000 * 60 * 30),
+        equals(Duration(milliseconds: 1000 * 60 * 30)),
+      );
 
-      expect(TypeParser.parseDuration(-1000 * 60 * 30),
-          equals(Duration(milliseconds: -1000 * 60 * 30)));
+      expect(
+        TypeParser.parseDuration(-1000 * 60 * 30),
+        equals(Duration(milliseconds: -1000 * 60 * 30)),
+      );
     });
 
     test('TypeParser.parseUInt8List', () async {
-      expect(TypeParser.parseUInt8List([1, 2, 3, 4, 5]),
-          equals(Uint8List.fromList([1, 2, 3, 4, 5])));
+      expect(
+        TypeParser.parseUInt8List([1, 2, 3, 4, 5]),
+        equals(Uint8List.fromList([1, 2, 3, 4, 5])),
+      );
 
-      expect(TypeParser.parseUInt8List('aGVsbG8='),
-          equals(Uint8List.fromList(base64.decode('aGVsbG8='))));
+      expect(
+        TypeParser.parseUInt8List('aGVsbG8='),
+        equals(Uint8List.fromList(base64.decode('aGVsbG8='))),
+      );
     });
 
     test('TypeParser.parseBigInt', () async {
-      expect(TypeParser.parseBigInt(1577934245000),
-          equals(BigInt.from(1577934245000)));
+      expect(
+        TypeParser.parseBigInt(1577934245000),
+        equals(BigInt.from(1577934245000)),
+      );
 
-      expect(TypeParser.parseBigInt('1577934245000'),
-          equals(BigInt.from(1577934245000)));
+      expect(
+        TypeParser.parseBigInt('1577934245000'),
+        equals(BigInt.from(1577934245000)),
+      );
 
-      expect(TypeParser.parseBigInt(' 1577934245000 '),
-          equals(BigInt.from(1577934245000)));
+      expect(
+        TypeParser.parseBigInt(' 1577934245000 '),
+        equals(BigInt.from(1577934245000)),
+      );
 
-      expect(TypeParser.parseBigInt(' -1577934245000 '),
-          equals(BigInt.from(-1577934245000)));
+      expect(
+        TypeParser.parseBigInt(' -1577934245000 '),
+        equals(BigInt.from(-1577934245000)),
+      );
 
-      expect(TypeParser.parseBigInt('1,577,934,245,000'),
-          equals(BigInt.from(1577934245000)));
+      expect(
+        TypeParser.parseBigInt('1,577,934,245,000'),
+        equals(BigInt.from(1577934245000)),
+      );
 
-      expect(TypeParser.parseBigInt('-1,577,934,245,000'),
-          equals(BigInt.from(-1577934245000)));
+      expect(
+        TypeParser.parseBigInt('-1,577,934,245,000'),
+        equals(BigInt.from(-1577934245000)),
+      );
 
-      expect(TypeParser.parseBigInt(DateTime.utc(2020, 10, 2, 3, 4, 5, 0, 0)),
-          equals(BigInt.from(1601607845000)));
+      expect(
+        TypeParser.parseBigInt(DateTime.utc(2020, 10, 2, 3, 4, 5, 0, 0)),
+        equals(BigInt.from(1601607845000)),
+      );
 
-      expect(TypeParser.parseBigInt(Duration(hours: 3)),
-          equals(BigInt.from(1000 * 60 * 60 * 3)));
+      expect(
+        TypeParser.parseBigInt(Duration(hours: 3)),
+        equals(BigInt.from(1000 * 60 * 60 * 3)),
+      );
     });
   });
 }

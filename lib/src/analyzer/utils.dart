@@ -17,12 +17,13 @@ String computePartUrl(AssetId input, AssetId output) =>
     p.joinAll(p.split(p.relative(output.path, from: input.path)).skip(1));
 
 /// Returns a URL representing [element].
-String urlOfElement(Element element) => element.kind == ElementKind.DYNAMIC
-    ? 'dart:core#dynamic'
-    // using librarySource.uri – in case the element is in a part
-    : normalizeUrl(element.library!.uri)
-        .replace(fragment: element.name)
-        .toString();
+String urlOfElement(Element element) =>
+    element.kind == ElementKind.DYNAMIC
+        ? 'dart:core#dynamic'
+        // using librarySource.uri – in case the element is in a part
+        : normalizeUrl(
+          element.library!.uri,
+        ).replace(fragment: element.name).toString();
 
 Uri normalizeUrl(Uri url) {
   switch (url.scheme) {
@@ -43,14 +44,17 @@ Uri normalizeUrl(Uri url) {
 ///
 /// This isn't a user-knowable path, so we strip out extra path segments
 /// and only expose `dart:core`.
-Uri normalizeDartUrl(Uri url) => url.pathSegments.isNotEmpty
-    ? url.replace(pathSegments: url.pathSegments.take(1))
-    : url;
+Uri normalizeDartUrl(Uri url) =>
+    url.pathSegments.isNotEmpty
+        ? url.replace(pathSegments: url.pathSegments.take(1))
+        : url;
 
 Uri fileToAssetUrl(Uri url) {
   if (!p.isWithin(p.current, url.path)) return url;
   return Uri(
-      scheme: 'asset', path: p.join(rootPackageName, p.relative(url.path)));
+    scheme: 'asset',
+    path: p.join(rootPackageName, p.relative(url.path)),
+  );
 }
 
 /// Returns a `package:` URL converted to a `asset:` URL.
@@ -61,24 +65,26 @@ Uri fileToAssetUrl(Uri url) {
 ///
 /// For example, this transforms `package:source_gen/source_gen.dart` into:
 /// `asset:source_gen/lib/source_gen.dart`.
-Uri packageToAssetUrl(Uri url) => url.scheme == 'package'
-    ? url.replace(
-        scheme: 'asset',
-        pathSegments: <String>[
-          url.pathSegments.first,
-          'lib',
-          ...url.pathSegments.skip(1),
-        ],
-      )
-    : url;
+Uri packageToAssetUrl(Uri url) =>
+    url.scheme == 'package'
+        ? url.replace(
+          scheme: 'asset',
+          pathSegments: <String>[
+            url.pathSegments.first,
+            'lib',
+            ...url.pathSegments.skip(1),
+          ],
+        )
+        : url;
 
 final String rootPackageName = () {
   final name =
       (loadYaml(File('pubspec.yaml').readAsStringSync()) as Map)['name'];
   if (name is! String) {
     throw StateError(
-        'Your pubspec.yaml file is missing a `name` field or it isn\'t '
-        'a String.');
+      'Your pubspec.yaml file is missing a `name` field or it isn\'t '
+      'a String.',
+    );
   }
   return name;
 }();

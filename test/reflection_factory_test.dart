@@ -24,88 +24,148 @@ void main() {
       expect(TypeReflection.getConstantName('Future'), equals('tFuture'));
       expect(TypeReflection.getConstantName('FutureOr'), equals('tFutureOr'));
 
-      expect(TypeReflection.getConstantName('List', ['Object']),
-          equals('tListObject'));
-      expect(TypeReflection.getConstantName('List', ['dynamic']),
-          equals('tListDynamic'));
-      expect(TypeReflection.getConstantName('List', ['String']),
-          equals('tListString'));
       expect(
-          TypeReflection.getConstantName('List', ['int']), equals('tListInt'));
-      expect(TypeReflection.getConstantName('List', ['double']),
-          equals('tListDouble'));
+        TypeReflection.getConstantName('List', ['Object']),
+        equals('tListObject'),
+      );
       expect(
-          TypeReflection.getConstantName('List', ['num']), equals('tListNum'));
-      expect(TypeReflection.getConstantName('List', ['bool']),
-          equals('tListBool'));
+        TypeReflection.getConstantName('List', ['dynamic']),
+        equals('tListDynamic'),
+      );
+      expect(
+        TypeReflection.getConstantName('List', ['String']),
+        equals('tListString'),
+      );
+      expect(
+        TypeReflection.getConstantName('List', ['int']),
+        equals('tListInt'),
+      );
+      expect(
+        TypeReflection.getConstantName('List', ['double']),
+        equals('tListDouble'),
+      );
+      expect(
+        TypeReflection.getConstantName('List', ['num']),
+        equals('tListNum'),
+      );
+      expect(
+        TypeReflection.getConstantName('List', ['bool']),
+        equals('tListBool'),
+      );
 
-      expect(TypeReflection.getConstantName('Map', ['String', 'Object']),
-          equals('tMapStringObject'));
-      expect(TypeReflection.getConstantName('Map', ['String', 'dynamic']),
-          equals('tMapStringDynamic'));
-      expect(TypeReflection.getConstantName('Map', ['String', 'String']),
-          equals('tMapStringString'));
-      expect(TypeReflection.getConstantName('Map', ['Object', 'Object']),
-          equals('tMapObjectObject'));
+      expect(
+        TypeReflection.getConstantName('Map', ['String', 'Object']),
+        equals('tMapStringObject'),
+      );
+      expect(
+        TypeReflection.getConstantName('Map', ['String', 'dynamic']),
+        equals('tMapStringDynamic'),
+      );
+      expect(
+        TypeReflection.getConstantName('Map', ['String', 'String']),
+        equals('tMapStringString'),
+      );
+      expect(
+        TypeReflection.getConstantName('Map', ['Object', 'Object']),
+        equals('tMapObjectObject'),
+      );
 
-      expect(TypeReflection.getConstantName('Set', ['Object']),
-          equals('tSetObject'));
-      expect(TypeReflection.getConstantName('Set', ['dynamic']),
-          equals('tSetDynamic'));
-      expect(TypeReflection.getConstantName('Set', ['String']),
-          equals('tSetString'));
+      expect(
+        TypeReflection.getConstantName('Set', ['Object']),
+        equals('tSetObject'),
+      );
+      expect(
+        TypeReflection.getConstantName('Set', ['dynamic']),
+        equals('tSetDynamic'),
+      );
+      expect(
+        TypeReflection.getConstantName('Set', ['String']),
+        equals('tSetString'),
+      );
       expect(TypeReflection.getConstantName('Set', ['int']), equals('tSetInt'));
 
-      expect(TypeReflection.getConstantName('Future', ['Object']),
-          equals('tFutureObject'));
-      expect(TypeReflection.getConstantName('Future', ['dynamic']),
-          equals('tFutureDynamic'));
-      expect(TypeReflection.getConstantName('Future', ['String']),
-          equals('tFutureString'));
-      expect(TypeReflection.getConstantName('Future', ['int']),
-          equals('tFutureInt'));
-      expect(TypeReflection.getConstantName('Future', ['bool']),
-          equals('tFutureBool'));
+      expect(
+        TypeReflection.getConstantName('Future', ['Object']),
+        equals('tFutureObject'),
+      );
+      expect(
+        TypeReflection.getConstantName('Future', ['dynamic']),
+        equals('tFutureDynamic'),
+      );
+      expect(
+        TypeReflection.getConstantName('Future', ['String']),
+        equals('tFutureString'),
+      );
+      expect(
+        TypeReflection.getConstantName('Future', ['int']),
+        equals('tFutureInt'),
+      );
+      expect(
+        TypeReflection.getConstantName('Future', ['bool']),
+        equals('tFutureBool'),
+      );
 
-      expect(TypeReflection.getConstantName('FutureOr', ['Object']),
-          equals('tFutureOrObject'));
-      expect(TypeReflection.getConstantName('FutureOr', ['dynamic']),
-          equals('tFutureOrDynamic'));
-      expect(TypeReflection.getConstantName('FutureOr', ['String']),
-          equals('tFutureOrString'));
-      expect(TypeReflection.getConstantName('FutureOr', ['int']),
-          equals('tFutureOrInt'));
-      expect(TypeReflection.getConstantName('FutureOr', ['bool']),
-          equals('tFutureOrBool'));
+      expect(
+        TypeReflection.getConstantName('FutureOr', ['Object']),
+        equals('tFutureOrObject'),
+      );
+      expect(
+        TypeReflection.getConstantName('FutureOr', ['dynamic']),
+        equals('tFutureOrDynamic'),
+      );
+      expect(
+        TypeReflection.getConstantName('FutureOr', ['String']),
+        equals('tFutureOrString'),
+      );
+      expect(
+        TypeReflection.getConstantName('FutureOr', ['int']),
+        equals('tFutureOrInt'),
+      );
+      expect(
+        TypeReflection.getConstantName('FutureOr', ['bool']),
+        equals('tFutureOrBool'),
+      );
 
-      expect(TypeReflection.from(TypeReflection.tString),
-          equals(TypeReflection.tString));
-      expect(TypeReflection.from(TypeReflection.tInt),
-          equals(TypeReflection.tInt));
+      expect(
+        TypeReflection.from(TypeReflection.tString),
+        equals(TypeReflection.tString),
+      );
+      expect(
+        TypeReflection.from(TypeReflection.tInt),
+        equals(TypeReflection.tInt),
+      );
 
       expect(TypeReflection.from(String), equals(TypeReflection.tString));
       expect(TypeReflection.from(int), equals(TypeReflection.tInt));
 
-      expect(TypeReflection.from([List, String]),
-          equals(TypeReflection.tListString));
+      expect(
+        TypeReflection.from([List, String]),
+        equals(TypeReflection.tListString),
+      );
       expect(TypeReflection.from([List, int]), equals(TypeReflection.tListInt));
-      expect(TypeReflection.from([List, double]),
-          equals(TypeReflection.tListDouble));
+      expect(
+        TypeReflection.from([List, double]),
+        equals(TypeReflection.tListDouble),
+      );
 
-      expect(TypeReflection.from([Map, String, Object]),
-          equals(TypeReflection.tMapStringObject));
-      expect(TypeReflection.from([Map, String, String]),
-          equals(TypeReflection.tMapStringString));
+      expect(
+        TypeReflection.from([Map, String, Object]),
+        equals(TypeReflection.tMapStringObject),
+      );
+      expect(
+        TypeReflection.from([Map, String, String]),
+        equals(TypeReflection.tMapStringString),
+      );
 
       expect(TypeReflection.tListDouble.equalsArgumentsTypes([double]), isTrue);
       expect(
-          TypeReflection.tMapStringObject
-              .equalsArgumentsTypes([String, Object]),
-          isTrue);
+        TypeReflection.tMapStringObject.equalsArgumentsTypes([String, Object]),
+        isTrue,
+      );
       expect(
-          TypeReflection.tMapStringString
-              .equalsArgumentsTypes([String, String]),
-          isTrue);
+        TypeReflection.tMapStringString.equalsArgumentsTypes([String, String]),
+        isTrue,
+      );
 
       expect(TypeReflection.tBool.isPrimitiveType, isTrue);
       expect(TypeReflection.tBool.isStringType, isFalse);
@@ -177,25 +237,33 @@ void main() {
 
       expect(TypeReflection.tMap.isOfType(Map), isTrue);
       expect(TypeReflection.tMapStringObject.isOfType(Map), isTrue);
-      expect(TypeReflection.tMapStringObject.isOfType(Map, [String, Object]),
-          isTrue);
-      expect(TypeReflection.tMapStringObject.isOfType(Map, [String, String]),
-          isFalse);
+      expect(
+        TypeReflection.tMapStringObject.isOfType(Map, [String, Object]),
+        isTrue,
+      );
+      expect(
+        TypeReflection.tMapStringObject.isOfType(Map, [String, String]),
+        isFalse,
+      );
     });
 
     test('EnableReflection', () async {
       expect(
-          ReflectionFactory()
-              .hasRegisterClassReflection(TestEnumWithReflection),
-          isFalse);
+        ReflectionFactory().hasRegisterClassReflection(TestEnumWithReflection),
+        isFalse,
+      );
 
       expect(
-          ReflectionFactory()
-              .hasRegisterClassReflection(TestUserWithReflection),
-          isFalse);
+        ReflectionFactory().hasRegisterClassReflection(TestUserWithReflection),
+        isFalse,
+      );
 
-      var user =
-          TestUserWithReflection.fields('Joe', 'joe@mail.com', '123', id: 1001);
+      var user = TestUserWithReflection.fields(
+        'Joe',
+        'joe@mail.com',
+        '123',
+        id: 1001,
+      );
 
       var userReflection = user.reflection;
 
@@ -204,8 +272,10 @@ void main() {
       expect(userReflection.className, equals('TestUserWithReflection'));
       expect(userReflection.reflectionName, equals('TestUserWithReflection'));
       expect(userReflection.languageVersion.toString(), isNotEmpty);
-      expect(userReflection.reflectionFactoryVersion.toString(),
-          equals(ReflectionFactory.VERSION));
+      expect(
+        userReflection.reflectionFactoryVersion.toString(),
+        equals(ReflectionFactory.VERSION),
+      );
 
       expect(userReflection.hasJsonNameAlias, isTrue);
       expect(userReflection.canCreateInstanceWithoutArguments, isTrue);
@@ -214,23 +284,27 @@ void main() {
         var allFields = userReflection.allFields();
         expect(allFields.every((f) => identical(f.object, user)), isTrue);
         expect(
-            allFields.map((f) => f.name),
-            equals([
-              'axis',
-              'email',
-              'enabled',
-              'hashCode',
-              'id',
-              'isEnabled',
-              'isNotEnabled',
-              'level',
-              'name',
-              'password'
-            ]));
+          allFields.map((f) => f.name),
+          equals([
+            'axis',
+            'email',
+            'enabled',
+            'hashCode',
+            'id',
+            'isEnabled',
+            'isNotEnabled',
+            'level',
+            'name',
+            'password',
+          ]),
+        );
 
         var user2 = TestUserWithReflection.fields(
-            'Joe2', 'joe2@mail.com', '1234',
-            id: 1002);
+          'Joe2',
+          'joe2@mail.com',
+          '1234',
+          id: 1002,
+        );
 
         var allFields2 = userReflection.allFields(user2);
         expect(allFields2.every((f) => identical(f.object, user2)), isTrue);
@@ -241,32 +315,34 @@ void main() {
 
       {
         expect(
-            userReflection.getFieldsValues(null),
-            equals({
-              'id': 1001,
-              'name': 'Joe',
-              'email': 'joe@mail.com',
-              'password': '123',
-              'enabled': true,
-              'axis': TestEnumWithReflection.x,
-              'level': null,
-              'isEnabled': true,
-              'isNotEnabled': false
-            }));
+          userReflection.getFieldsValues(null),
+          equals({
+            'id': 1001,
+            'name': 'Joe',
+            'email': 'joe@mail.com',
+            'password': '123',
+            'enabled': true,
+            'axis': TestEnumWithReflection.x,
+            'level': null,
+            'isEnabled': true,
+            'isNotEnabled': false,
+          }),
+        );
 
         expect(
-            userReflection.getJsonFieldsVisibleValues(null),
-            equals({
-              'id': 1001,
-              'name': 'Joe',
-              'email': 'joe@mail.com',
-              //'password': '123',
-              'enabled': true,
-              'axis': TestEnumWithReflection.x,
-              'level': null,
-              'isEnabled': true,
-              //'isNotEnabled': false
-            }));
+          userReflection.getJsonFieldsVisibleValues(null),
+          equals({
+            'id': 1001,
+            'name': 'Joe',
+            'email': 'joe@mail.com',
+            //'password': '123',
+            'enabled': true,
+            'axis': TestEnumWithReflection.x,
+            'level': null,
+            'isEnabled': true,
+            //'isNotEnabled': false
+          }),
+        );
       }
 
       {
@@ -274,21 +350,25 @@ void main() {
         expect(entityFields.every((f) => identical(f.object, user)), isTrue);
 
         expect(
-            entityFields.map((f) => f.name).toList(),
-            equals([
-              'axis',
-              'email',
-              'enabled',
-              'id',
-              'isEnabled',
-              'level',
-              'name',
-              //'password'
-            ]));
+          entityFields.map((f) => f.name).toList(),
+          equals([
+            'axis',
+            'email',
+            'enabled',
+            'id',
+            'isEnabled',
+            'level',
+            'name',
+            //'password'
+          ]),
+        );
 
         var user2 = TestUserWithReflection.fields(
-            'Joe2', 'joe2@mail.com', '1234',
-            id: 1002);
+          'Joe2',
+          'joe2@mail.com',
+          '1234',
+          id: 1002,
+        );
 
         var entityFields2 = userReflection.entityFields(user2);
         expect(entityFields2.every((f) => identical(f.object, user2)), isTrue);
@@ -301,12 +381,17 @@ void main() {
       {
         var allMethods = userReflection.allMethods();
         expect(allMethods.every((f) => identical(f.object, user)), isTrue);
-        expect(allMethods.map((f) => f.name),
-            equals(['checkPassword', 'getField', 'setField', 'toString']));
+        expect(
+          allMethods.map((f) => f.name),
+          equals(['checkPassword', 'getField', 'setField', 'toString']),
+        );
 
         var user2 = TestUserWithReflection.fields(
-            'Joe2', 'joe2@mail.com', '1234',
-            id: 1002);
+          'Joe2',
+          'joe2@mail.com',
+          '1234',
+          id: 1002,
+        );
 
         var allMethods2 = userReflection.allMethods(user2);
         expect(allMethods2.every((f) => identical(f.object, user2)), isTrue);
@@ -317,477 +402,596 @@ void main() {
       }
 
       expect(
-          identical(userReflection.withoutObjectInstance(),
-              userReflection.withoutObjectInstance()),
-          isTrue);
-
-      expect(userReflection.toString(),
-          startsWith('ClassReflection{ class: TestUserWithReflection }'));
-
-      expect(
-          ReflectionFactory()
-              .hasRegisterClassReflection(TestUserWithReflection),
-          isTrue);
+        identical(
+          userReflection.withoutObjectInstance(),
+          userReflection.withoutObjectInstance(),
+        ),
+        isTrue,
+      );
 
       expect(
+        userReflection.toString(),
+        startsWith('ClassReflection{ class: TestUserWithReflection }'),
+      );
+
+      expect(
+        ReflectionFactory().hasRegisterClassReflection(TestUserWithReflection),
+        isTrue,
+      );
+
+      expect(
+        TestUserWithReflection$reflection.staticInstance.fromJson({
+          'name': 'Foo',
+          'email': 'a@a.com',
+          'Password': '123',
+        }),
+        equals(TestUserWithReflection.fields('Foo', 'a@a.com', '123')),
+      );
+
+      expect(
+        TestUserWithReflection$reflection.staticInstance.fromJson({
+          'name': 'Foo',
+          'email': 'a@a.com',
+          'password': '123',
+          'foo': 123,
+        }),
+        equals(TestUserWithReflection.fields('Foo', 'a@a.com', '123')),
+      );
+
+      expect(
+        TestUserWithReflection$reflection.staticInstance.fromJson({
+          'name': 'Foo',
+          'email': 'a@a.com',
+          'password': '123',
+          'level': 1001,
+        }),
+        equals(
+          TestUserWithReflection.fields('Foo', 'a@a.com', '123', level: 1001),
+        ),
+      );
+
+      expect(
+        TestUserWithReflection$reflection.staticInstance.fromJson({
+          'name': 'Foo',
+          'email': 'a@a.com',
+          'password': '123',
+          'thelevel': 1001,
+        }),
+        equals(
+          TestUserWithReflection.fields('Foo', 'a@a.com', '123', level: 1001),
+        ),
+      );
+
+      expect(
+        TestUserWithReflection.fields('Foo', 'a@a.com', '123').toJsonMap(),
+        equals({
+          'axis': 'x',
+          'email': 'a@a.com',
+          'enabled': true,
+          'id': null,
+          'isEnabled': true,
+          'theLevel': null,
+          'name': 'Foo',
+          //'password': '123'
+        }),
+      );
+
+      expect(
+        TestUserWithReflection.fields(
+          'Foo',
+          'a@a.com',
+          '123',
+          id: 1001,
+        ).toJsonMap(),
+        equals({
+          'axis': 'x',
+          'email': 'a@a.com',
+          'enabled': true,
+          'id': 1001,
+          'isEnabled': true,
+          'theLevel': null,
+          'name': 'Foo',
+          //'password': '123'
+        }),
+      );
+
+      expect(
+        TestUserWithReflection.fields('Foo', 'a@a.com', '123').toJson(),
+        equals({
+          'axis': 'x',
+          'email': 'a@a.com',
+          'enabled': true,
+          'id': null,
+          'isEnabled': true,
+          'theLevel': null,
+          'name': 'Foo',
+          //'password': '123'
+        }),
+      );
+
+      expect(
+        TestUserWithReflection.fields(
+          'Foo',
+          'a@a.com',
+          '123',
+        ).toJsonFromFields(),
+        equals({
+          'axis': 'x',
+          'email': 'a@a.com',
+          'enabled': true,
+          'id': null,
+          'isEnabled': true,
+          'theLevel': null,
+          'name': 'Foo',
+          //'password': '123'
+        }),
+      );
+
+      expect(
+        TestUserWithReflection$reflection.staticInstance.createInstanceFromMap({
+          'axis': TestEnumWithReflection.y,
+          'email': 'b@a.com',
+          'enabled': true,
+          'id': null,
+          'isEnabled': true,
+          'theLevel': null,
+          'name': 'Foo',
+          'password': '123',
+        })?.toJsonFromFields(),
+        equals({
+          'axis': 'y',
+          'email': 'b@a.com',
+          'enabled': true,
+          'id': null,
+          'isEnabled': true,
+          'theLevel': null,
+          'name': 'Foo',
+          //'password': '123'
+        }),
+      );
+
+      expect(
+        TestUserWithReflection$reflection.staticInstance.createInstanceFromMap({
+          'axis': TestEnumWithReflection.y,
+          'email': 'b@a.com',
+          'enabled': true,
+          'id': null,
+          'isEnabled': true,
+          'theLevel': null,
+          'name': 'Foo',
+          'password': '123',
+          'extraField1': 123456,
+          'extraField2': 123456,
+        })?.toJsonFromFields(),
+        equals({
+          'axis': 'y',
+          'email': 'b@a.com',
+          'enabled': true,
+          'id': null,
+          'isEnabled': true,
+          'theLevel': null,
+          'name': 'Foo',
+          //'password': '123'
+        }),
+      );
+
+      expect(
+        TestUserWithReflection$reflection.staticInstance.hasFinalField,
+        isTrue,
+      );
+
+      expect(
+        TestUserWithReflection$reflection.staticInstance.hasMethodToJson,
+        isFalse,
+      );
+
+      expect(
+        TestUserWithReflection$reflection.staticInstance.hasDefaultConstructor,
+        isTrue,
+      );
+
+      expect(
+        TestUserWithReflection$reflection.staticInstance.hasEmptyConstructor,
+        isFalse,
+      );
+
+      expect(
+        TestUserWithReflection$reflection.staticInstance.hasFieldWithoutSetter,
+        isTrue,
+      );
+
+      expect(
+        TestUserWithReflection$reflection
+            .staticInstance
+            .hasNoRequiredArgsConstructor,
+        isFalse,
+      );
+
+      expect(
+        TypeInfo.from(
+          TestUserWithReflection$reflection.staticInstance.field('axis')!,
+        ),
+        equals(TypeInfo.from(TestEnumWithReflection)),
+      );
+
+      expect(
+        TypeInfo.from(
+          TestUserWithReflection$reflection.staticInstance.field('axis')!.type,
+        ),
+        equals(TypeInfo.from(TestEnumWithReflection)),
+      );
+
+      expect(
+        TypeInfo.from(
           TestUserWithReflection$reflection.staticInstance
-              .fromJson({'name': 'Foo', 'email': 'a@a.com', 'Password': '123'}),
-          equals(TestUserWithReflection.fields('Foo', 'a@a.com', '123')));
-
-      expect(
-          TestUserWithReflection$reflection.staticInstance.fromJson({
-            'name': 'Foo',
-            'email': 'a@a.com',
-            'password': '123',
-            'foo': 123
-          }),
-          equals(TestUserWithReflection.fields('Foo', 'a@a.com', '123')));
-
-      expect(
-          TestUserWithReflection$reflection.staticInstance.fromJson({
-            'name': 'Foo',
-            'email': 'a@a.com',
-            'password': '123',
-            'level': 1001
-          }),
-          equals(TestUserWithReflection.fields('Foo', 'a@a.com', '123',
-              level: 1001)));
-
-      expect(
-          TestUserWithReflection$reflection.staticInstance.fromJson({
-            'name': 'Foo',
-            'email': 'a@a.com',
-            'password': '123',
-            'thelevel': 1001
-          }),
-          equals(TestUserWithReflection.fields('Foo', 'a@a.com', '123',
-              level: 1001)));
-
-      expect(
-          TestUserWithReflection.fields('Foo', 'a@a.com', '123').toJsonMap(),
-          equals({
-            'axis': 'x',
-            'email': 'a@a.com',
-            'enabled': true,
-            'id': null,
-            'isEnabled': true,
-            'theLevel': null,
-            'name': 'Foo',
-            //'password': '123'
-          }));
-
-      expect(
-          TestUserWithReflection.fields('Foo', 'a@a.com', '123', id: 1001)
-              .toJsonMap(),
-          equals({
-            'axis': 'x',
-            'email': 'a@a.com',
-            'enabled': true,
-            'id': 1001,
-            'isEnabled': true,
-            'theLevel': null,
-            'name': 'Foo',
-            //'password': '123'
-          }));
-
-      expect(
-          TestUserWithReflection.fields('Foo', 'a@a.com', '123').toJson(),
-          equals({
-            'axis': 'x',
-            'email': 'a@a.com',
-            'enabled': true,
-            'id': null,
-            'isEnabled': true,
-            'theLevel': null,
-            'name': 'Foo',
-            //'password': '123'
-          }));
-
-      expect(
-          TestUserWithReflection.fields('Foo', 'a@a.com', '123')
-              .toJsonFromFields(),
-          equals({
-            'axis': 'x',
-            'email': 'a@a.com',
-            'enabled': true,
-            'id': null,
-            'isEnabled': true,
-            'theLevel': null,
-            'name': 'Foo',
-            //'password': '123'
-          }));
-
-      expect(
-          TestUserWithReflection$reflection.staticInstance
-              .createInstanceFromMap({
-            'axis': TestEnumWithReflection.y,
-            'email': 'b@a.com',
-            'enabled': true,
-            'id': null,
-            'isEnabled': true,
-            'theLevel': null,
-            'name': 'Foo',
-            'password': '123'
-          })?.toJsonFromFields(),
-          equals({
-            'axis': 'y',
-            'email': 'b@a.com',
-            'enabled': true,
-            'id': null,
-            'isEnabled': true,
-            'theLevel': null,
-            'name': 'Foo',
-            //'password': '123'
-          }));
-
-      expect(
-          TestUserWithReflection$reflection.staticInstance
-              .createInstanceFromMap({
-            'axis': TestEnumWithReflection.y,
-            'email': 'b@a.com',
-            'enabled': true,
-            'id': null,
-            'isEnabled': true,
-            'theLevel': null,
-            'name': 'Foo',
-            'password': '123',
-            'extraField1': 123456,
-            'extraField2': 123456,
-          })?.toJsonFromFields(),
-          equals({
-            'axis': 'y',
-            'email': 'b@a.com',
-            'enabled': true,
-            'id': null,
-            'isEnabled': true,
-            'theLevel': null,
-            'name': 'Foo',
-            //'password': '123'
-          }));
-
-      expect(TestUserWithReflection$reflection.staticInstance.hasFinalField,
-          isTrue);
-
-      expect(TestUserWithReflection$reflection.staticInstance.hasMethodToJson,
-          isFalse);
-
-      expect(
-          TestUserWithReflection$reflection
-              .staticInstance.hasDefaultConstructor,
-          isTrue);
-
-      expect(
-          TestUserWithReflection$reflection.staticInstance.hasEmptyConstructor,
-          isFalse);
-
-      expect(
-          TestUserWithReflection$reflection
-              .staticInstance.hasFieldWithoutSetter,
-          isTrue);
-
-      expect(
-          TestUserWithReflection$reflection
-              .staticInstance.hasNoRequiredArgsConstructor,
-          isFalse);
-
-      expect(
-          TypeInfo.from(
-              TestUserWithReflection$reflection.staticInstance.field('axis')!),
-          equals(TypeInfo.from(TestEnumWithReflection)));
-
-      expect(
-          TypeInfo.from(TestUserWithReflection$reflection.staticInstance
-              .field('axis')!
-              .type),
-          equals(TypeInfo.from(TestEnumWithReflection)));
-
-      expect(
-          TypeInfo.from(TestUserWithReflection$reflection.staticInstance
               .method('checkPassword')!
-              .allParameters[0]),
-          equals(TypeInfo.from(String)));
+              .allParameters[0],
+        ),
+        equals(TypeInfo.from(String)),
+      );
 
       {
-        var t =
-            TypeInfo<TestUserWithReflection>.fromType(TestUserWithReflection);
+        var t = TypeInfo<TestUserWithReflection>.fromType(
+          TestUserWithReflection,
+        );
 
         var tList = t.toListType();
 
         expect(
-            tList,
-            equals(TypeInfo<List<TestUserWithReflection>>.fromListType(
-                TestUserWithReflection)));
+          tList,
+          equals(
+            TypeInfo<List<TestUserWithReflection>>.fromListType(
+              TestUserWithReflection,
+            ),
+          ),
+        );
 
         expect(
-            tList.castList(<Object>[
-              TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
+          tList.castList(<Object>[
+            TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'),
+          ]),
+          allOf(
+            equals(<TestUserWithReflection>[
+              TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'),
             ]),
-            allOf(
-                equals(<TestUserWithReflection>[
-                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
-                ]),
-                isA<List<TestUserWithReflection>>()));
+            isA<List<TestUserWithReflection>>(),
+          ),
+        );
 
         var tSet = t.toSetType();
 
         expect(
-            tSet,
-            equals(TypeInfo<Set<TestUserWithReflection>>.fromSetType(
-                TestUserWithReflection)));
+          tSet,
+          equals(
+            TypeInfo<Set<TestUserWithReflection>>.fromSetType(
+              TestUserWithReflection,
+            ),
+          ),
+        );
 
         expect(
-            tSet.castSet(<Object>{
-              TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
+          tSet.castSet(<Object>{
+            TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'),
+          }),
+          allOf(
+            equals(<TestUserWithReflection>{
+              TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'),
             }),
-            allOf(
-                equals(<TestUserWithReflection>{
-                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
-                }),
-                isA<Set<TestUserWithReflection>>()));
+            isA<Set<TestUserWithReflection>>(),
+          ),
+        );
 
         var tItr = t.toIterableType();
 
         expect(
-            tItr,
-            equals(TypeInfo<Iterable<TestUserWithReflection>>.fromIterableType(
-                TestUserWithReflection)));
+          tItr,
+          equals(
+            TypeInfo<Iterable<TestUserWithReflection>>.fromIterableType(
+              TestUserWithReflection,
+            ),
+          ),
+        );
 
         expect(
-            tItr.castIterable(<Object>[
-              TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
+          tItr.castIterable(<Object>[
+            TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'),
+          ]),
+          allOf(
+            equals(<TestUserWithReflection>[
+              TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'),
             ]),
-            allOf(
-                equals(<TestUserWithReflection>[
-                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
-                ]),
-                isA<Iterable<TestUserWithReflection>>()));
+            isA<Iterable<TestUserWithReflection>>(),
+          ),
+        );
 
         var tMapK = t.toMapKeyType<String>();
 
         expect(
-            tMapK,
-            equals(TypeInfo<Map<TestUserWithReflection, String>>.fromMapType(
-                TestUserWithReflection, String)));
+          tMapK,
+          equals(
+            TypeInfo<Map<TestUserWithReflection, String>>.fromMapType(
+              TestUserWithReflection,
+              String,
+            ),
+          ),
+        );
 
         var mapK = tMapK.castMap(<Object, Object>{
-          TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'): 'a'
+          TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'): 'a',
         });
 
         expect(
-            mapK,
-            allOf(
-                equals(<TestUserWithReflection, String>{
-                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
-                      'a'
-                }),
-                isA<Map<TestUserWithReflection, String>>()),
-            reason: '!!! ${mapK.runtimeType}');
+          mapK,
+          allOf(
+            equals(<TestUserWithReflection, String>{
+              TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'): 'a',
+            }),
+            isA<Map<TestUserWithReflection, String>>(),
+          ),
+          reason: '!!! ${mapK.runtimeType}',
+        );
 
         var tMapV = t.toMapValueType<String>();
 
-        expect(tMapV,
-            equals(TypeInfo.fromMapType(String, TestUserWithReflection)));
+        expect(
+          tMapV,
+          equals(TypeInfo.fromMapType(String, TestUserWithReflection)),
+        );
 
         var mapV = tMapV.castMap(<Object, Object>{
-          'a': TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
+          'a': TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'),
         });
 
         expect(
-            mapV,
-            allOf(
-                equals(<String, TestUserWithReflection>{
-                  'a': TestUserWithReflection.fields(
-                      'Joe', 'joe@mail.com', '123')
-                }),
-                isA<Map<String, TestUserWithReflection>>()));
+          mapV,
+          allOf(
+            equals(<String, TestUserWithReflection>{
+              'a': TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'),
+            }),
+            isA<Map<String, TestUserWithReflection>>(),
+          ),
+        );
 
         var tMapKV1 = TypeInfo<
-                Map<TestUserWithReflection,
-                    TestAddressWithReflection>>.fromMapType(
-            TestUserWithReflection, TestAddressWithReflection);
+          Map<TestUserWithReflection, TestAddressWithReflection>
+        >.fromMapType(TestUserWithReflection, TestAddressWithReflection);
 
         var mapKV1 = tMapKV1.castMap(<Object, Object>{
-          TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
-              TestAddressWithReflection.withCity('NY', city: 'New York')
+          TestUserWithReflection.fields(
+            'Joe',
+            'joe@mail.com',
+            '123',
+          ): TestAddressWithReflection.withCity('NY', city: 'New York'),
         });
 
         expect(
-            mapKV1,
-            allOf(
-                equals(<TestUserWithReflection, TestAddressWithReflection>{
-                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
-                      TestAddressWithReflection.withCity('NY', city: 'New York')
-                }),
-                isA<Map<TestUserWithReflection, TestAddressWithReflection>>()));
+          mapKV1,
+          allOf(
+            equals(<TestUserWithReflection, TestAddressWithReflection>{
+              TestUserWithReflection.fields(
+                'Joe',
+                'joe@mail.com',
+                '123',
+              ): TestAddressWithReflection.withCity('NY', city: 'New York'),
+            }),
+            isA<Map<TestUserWithReflection, TestAddressWithReflection>>(),
+          ),
+        );
 
         var tMapKV2 = TypeInfo<
-                Map<TestAddressWithReflection,
-                    TestAddressWithReflection>>.fromMapType(
-            TestAddressWithReflection, TestAddressWithReflection);
+          Map<TestAddressWithReflection, TestAddressWithReflection>
+        >.fromMapType(TestAddressWithReflection, TestAddressWithReflection);
 
         var mapKV2 = tMapKV2.castMap(<Object, Object>{
-          TestAddressWithReflection.withCity('CA', city: 'Los Angeles'):
-              TestAddressWithReflection.withCity('NY', city: 'New York')
+          TestAddressWithReflection.withCity(
+            'CA',
+            city: 'Los Angeles',
+          ): TestAddressWithReflection.withCity('NY', city: 'New York'),
         });
 
         expect(
-            mapKV2,
-            allOf(
-                equals(<TestAddressWithReflection, TestAddressWithReflection>{
-                  TestAddressWithReflection.withCity('CA', city: 'Los Angeles'):
-                      TestAddressWithReflection.withCity('NY', city: 'New York')
-                }),
-                isA<
-                    Map<TestAddressWithReflection,
-                        TestAddressWithReflection>>()));
+          mapKV2,
+          allOf(
+            equals(<TestAddressWithReflection, TestAddressWithReflection>{
+              TestAddressWithReflection.withCity(
+                'CA',
+                city: 'Los Angeles',
+              ): TestAddressWithReflection.withCity('NY', city: 'New York'),
+            }),
+            isA<Map<TestAddressWithReflection, TestAddressWithReflection>>(),
+          ),
+        );
 
         var tMapK2 = TypeInfo<Map<TestUserWithReflection, dynamic>>.fromMapType(
-            TestUserWithReflection, TypeInfo.tDynamic);
+          TestUserWithReflection,
+          TypeInfo.tDynamic,
+        );
 
         var mapK2 = TestUserWithReflection$reflection.staticInstance
             .castMap(<Object, Object>{
-          TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
-              TestAddressWithReflection.withCity('NY', city: 'New York')
-        }, tMapK2);
+              TestUserWithReflection.fields(
+                'Joe',
+                'joe@mail.com',
+                '123',
+              ): TestAddressWithReflection.withCity('NY', city: 'New York'),
+            }, tMapK2);
 
         expect(
-            mapK2,
-            allOf(
-                equals(<TestUserWithReflection, dynamic>{
-                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
-                      TestAddressWithReflection.withCity('NY', city: 'New York')
-                }),
-                isA<Map<TestUserWithReflection, dynamic>>()));
+          mapK2,
+          allOf(
+            equals(<TestUserWithReflection, dynamic>{
+              TestUserWithReflection.fields(
+                'Joe',
+                'joe@mail.com',
+                '123',
+              ): TestAddressWithReflection.withCity('NY', city: 'New York'),
+            }),
+            isA<Map<TestUserWithReflection, dynamic>>(),
+          ),
+        );
 
         var tMapV2 = TypeInfo<Map<TestUserWithReflection, dynamic>>.fromMapType(
-            TypeInfo.tDynamic, TestUserWithReflection);
+          TypeInfo.tDynamic,
+          TestUserWithReflection,
+        );
 
         var mapV2 = TestUserWithReflection$reflection.staticInstance
             .castMap(<Object, Object>{
-          TestAddressWithReflection.withCity('NY', city: 'New York'):
-              TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
-        }, tMapV2);
+              TestAddressWithReflection.withCity(
+                'NY',
+                city: 'New York',
+              ): TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'),
+            }, tMapV2);
 
         expect(
-            mapV2,
-            allOf(
-                equals(<dynamic, TestUserWithReflection>{
-                  TestAddressWithReflection.withCity('NY', city: 'New York'):
-                      TestUserWithReflection.fields(
-                          'Joe', 'joe@mail.com', '123')
-                }),
-                isA<Map<dynamic, TestUserWithReflection>>()));
+          mapV2,
+          allOf(
+            equals(<dynamic, TestUserWithReflection>{
+              TestAddressWithReflection.withCity(
+                'NY',
+                city: 'New York',
+              ): TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'),
+            }),
+            isA<Map<dynamic, TestUserWithReflection>>(),
+          ),
+        );
 
         var tMapK3 = TypeInfo<Map<String, TestUserWithReflection>>.fromMapType(
-            TypeInfo.tString, TestUserWithReflection);
+          TypeInfo.tString,
+          TestUserWithReflection,
+        );
 
         var mapK3 = TestUserWithReflection$reflection.staticInstance
             .castMapKeys(<Object, Object>{
-          'a': TestUserWithReflection.fields('Joe', 'joe@mail.com', '123')
-        }, tMapK3);
+              'a': TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'),
+            }, tMapK3);
 
         expect(
-            mapK3,
-            allOf(
-                equals(<String, dynamic>{
-                  'a': TestUserWithReflection.fields(
-                      'Joe', 'joe@mail.com', '123')
-                }),
-                isA<Map<String, dynamic>>()));
+          mapK3,
+          allOf(
+            equals(<String, dynamic>{
+              'a': TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'),
+            }),
+            isA<Map<String, dynamic>>(),
+          ),
+        );
 
         var tMapV3 = TypeInfo<Map<TestUserWithReflection, String>>.fromMapType(
-            TestUserWithReflection, TypeInfo.tString);
+          TestUserWithReflection,
+          TypeInfo.tString,
+        );
 
         var mapV3 = TestUserWithReflection$reflection.staticInstance
             .castMapValues(<Object, Object>{
-          TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'): 'a'
-        }, tMapV3);
+              TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'): 'a',
+            }, tMapV3);
 
         expect(
-            mapV3,
-            allOf(
-                equals(<dynamic, String>{
-                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
-                      'a'
-                }),
-                isA<Map<dynamic, String>>()));
+          mapV3,
+          allOf(
+            equals(<dynamic, String>{
+              TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'): 'a',
+            }),
+            isA<Map<dynamic, String>>(),
+          ),
+        );
       }
 
       expect(
-          TestUserWithReflection$reflection.staticInstance
-              .siblingsClassReflection(),
-          isNotEmpty);
+        TestUserWithReflection$reflection.staticInstance
+            .siblingsClassReflection(),
+        isNotEmpty,
+      );
 
       expect(
-          TestUserWithReflection$reflection.staticInstance
-              .siblingClassReflectionFor<TestUserWithReflection>(),
-          isNotNull);
+        TestUserWithReflection$reflection.staticInstance
+            .siblingClassReflectionFor<TestUserWithReflection>(),
+        isNotNull,
+      );
 
       expect(
-          TestUserWithReflection$reflection.staticInstance
-              .siblingReflectionFor<TestUserWithReflection>(),
-          isNotNull);
+        TestUserWithReflection$reflection.staticInstance
+            .siblingReflectionFor<TestUserWithReflection>(),
+        isNotNull,
+      );
 
       expect(
-          userReflection.siblingsClassReflection().map((e) => e.classType),
-          equals([
-            TestAddressWithReflection,
-            TestCompanyWithReflection,
-            TestDataWithReflection,
-            TestDomainWithReflection,
-            TestEmpty,
-            TestFranchiseWithReflection,
-            TestName,
-            TestOpAWithReflection,
-            TestOpBWithReflection,
-            TestOpWithReflection,
-            TestTransactionWithReflection,
-            TestUserWithReflection,
-          ]));
+        userReflection.siblingsClassReflection().map((e) => e.classType),
+        equals([
+          TestAddressWithReflection,
+          TestCompanyWithReflection,
+          TestDataWithReflection,
+          TestDomainWithReflection,
+          TestEmpty,
+          TestFranchiseWithReflection,
+          TestName,
+          TestOpAWithReflection,
+          TestOpBWithReflection,
+          TestOpWithReflection,
+          TestTransactionWithReflection,
+          TestUserWithReflection,
+        ]),
+      );
 
       expect(
-          userReflection
-              .siblingsClassReflection()
-              .sorted()
-              .map((e) => e.classType),
-          equals([
-            TestEmpty,
-            TestTransactionWithReflection,
-            TestDataWithReflection,
-            TestFranchiseWithReflection,
-            TestName,
-            TestOpAWithReflection,
-            TestOpWithReflection,
-            TestAddressWithReflection,
-            TestCompanyWithReflection,
-            TestOpBWithReflection,
-            TestDomainWithReflection,
-            TestUserWithReflection,
-          ]));
+        userReflection.siblingsClassReflection().sorted().map(
+          (e) => e.classType,
+        ),
+        equals([
+          TestEmpty,
+          TestTransactionWithReflection,
+          TestDataWithReflection,
+          TestFranchiseWithReflection,
+          TestName,
+          TestOpAWithReflection,
+          TestOpWithReflection,
+          TestAddressWithReflection,
+          TestCompanyWithReflection,
+          TestOpBWithReflection,
+          TestDomainWithReflection,
+          TestUserWithReflection,
+        ]),
+      );
 
       expect(
-          TestEnumWithReflection$from('x'), equals(TestEnumWithReflection.x));
+        TestEnumWithReflection$from('x'),
+        equals(TestEnumWithReflection.x),
+      );
 
       expect(
-          TestEnumWithReflection$from('Y'), equals(TestEnumWithReflection.y));
+        TestEnumWithReflection$from('Y'),
+        equals(TestEnumWithReflection.y),
+      );
 
       expect(
-          TestEnumWithReflection$from('z'), equals(TestEnumWithReflection.z));
+        TestEnumWithReflection$from('z'),
+        equals(TestEnumWithReflection.z),
+      );
 
       expect(
-          TestEnumWithReflection$from('Z'), equals(TestEnumWithReflection.Z));
+        TestEnumWithReflection$from('Z'),
+        equals(TestEnumWithReflection.Z),
+      );
 
       expect(TestEnumWithReflection$from('w'), isNull);
 
-      expect(TestEnumWithReflection.x.reflection.enumName,
-          equals('TestEnumWithReflection'));
-      expect(TestEnumWithReflection.x.reflection.reflectionName,
-          equals('TestEnumWithReflection'));
+      expect(
+        TestEnumWithReflection.x.reflection.enumName,
+        equals('TestEnumWithReflection'),
+      );
+      expect(
+        TestEnumWithReflection.x.reflection.reflectionName,
+        equals('TestEnumWithReflection'),
+      );
 
-      expect(TestEnumWithReflection.x.reflection.enumType,
-          equals(TestEnumWithReflection));
-      expect(TestEnumWithReflection.x.reflection.reflectedType,
-          equals(TestEnumWithReflection));
+      expect(
+        TestEnumWithReflection.x.reflection.enumType,
+        equals(TestEnumWithReflection),
+      );
+      expect(
+        TestEnumWithReflection.x.reflection.reflectedType,
+        equals(TestEnumWithReflection),
+      );
 
       expect(TestEnumWithReflection.x.reflection.name(), equals('x'));
       expect(TestEnumWithReflection.Z.reflection.name(), equals('Z'));
@@ -795,101 +999,146 @@ void main() {
       expect(TestEnumWithReflection.x.reflection.toJson(), equals('x'));
 
       expect(
-          TestEnumWithReflection.x.reflection.toJsonEncoded(), equals('"x"'));
-
-      expect(TestEnumWithReflection.x.reflection.toJsonMap(),
-          equals({'name': 'x', 'index': 0}));
-
-      expect(TestEnumWithReflection$reflection.staticInstance.fromJson('x'),
-          equals(TestEnumWithReflection.x));
+        TestEnumWithReflection.x.reflection.toJsonEncoded(),
+        equals('"x"'),
+      );
 
       expect(
-          TestEnumWithReflection$reflection.staticInstance
-              .fromJsonEncoded('"Z"'),
-          equals(TestEnumWithReflection.Z));
+        TestEnumWithReflection.x.reflection.toJsonMap(),
+        equals({'name': 'x', 'index': 0}),
+      );
 
       expect(
-          TestEnumWithReflection$reflection.staticInstance.siblingsReflection(),
-          isNotEmpty);
+        TestEnumWithReflection$reflection.staticInstance.fromJson('x'),
+        equals(TestEnumWithReflection.x),
+      );
 
       expect(
-          TestEnumWithReflection$reflection.staticInstance
-              .siblingsEnumReflection()
-              .length,
-          equals(1));
+        TestEnumWithReflection$reflection.staticInstance.fromJsonEncoded('"Z"'),
+        equals(TestEnumWithReflection.Z),
+      );
 
       expect(
-          TestEnumWithReflection$reflection.staticInstance
-              .siblingEnumReflectionFor<TestEnumWithReflection>(),
-          isNotNull);
+        TestEnumWithReflection$reflection.staticInstance.siblingsReflection(),
+        isNotEmpty,
+      );
 
       expect(
-          TestEnumWithReflection$reflection.staticInstance
-              .getIndex(TestEnumWithReflection.Z),
-          equals(3));
-
-      expect(TestEnumWithReflection$reflection().values,
-          equals(TestEnumWithReflection.values));
-
-      expect(TestEnumWithReflection$reflection().staticFieldsNames,
-          equals(['Z', 'length', 'x', 'y', 'z']));
+        TestEnumWithReflection$reflection.staticInstance
+            .siblingsEnumReflection()
+            .length,
+        equals(1),
+      );
 
       expect(
-          TestEnumWithReflection$reflection().fieldsNames, equals(['nameLC']));
-
-      expect(TestEnumWithReflection$reflection().valuesNames,
-          equals(['Z', 'x', 'y', 'z']));
-
-      expect(TestEnumWithReflection$reflection().valuesByName.keys,
-          equals(['Z', 'x', 'y', 'z']));
-
-      expect(TestEnumWithReflection$reflection(TestEnumWithReflection.x).name(),
-          equals('x'));
+        TestEnumWithReflection$reflection.staticInstance
+            .siblingEnumReflectionFor<TestEnumWithReflection>(),
+        isNotNull,
+      );
 
       expect(
-          TestEnumWithReflection$reflection(TestEnumWithReflection.x)
-              .name(TestEnumWithReflection.y),
-          equals('y'));
-
-      expect(TestEnumWithReflection$reflection.staticInstance.fromJson('x'),
-          equals(TestEnumWithReflection.x));
-
-      expect(TestEnumWithReflection$reflection.staticInstance.fromJson('y'),
-          equals(TestEnumWithReflection.y));
+        TestEnumWithReflection$reflection.staticInstance.getIndex(
+          TestEnumWithReflection.Z,
+        ),
+        equals(3),
+      );
 
       expect(
-          () => TestEnumWithReflection$reflection.staticInstance.fromJson('w'),
-          throwsA(isA<StateError>()
-              .having((e) => e.message, 'Bad JSON', contains('for JSON: w'))));
+        TestEnumWithReflection$reflection().values,
+        equals(TestEnumWithReflection.values),
+      );
 
       expect(
-          () => TestEnumWithReflection$reflection.staticInstance.fromJson(null),
-          throwsA(isA<StateError>()
-              .having((e) => e.message, 'Null JSON', contains('Null JSON'))));
+        TestEnumWithReflection$reflection().staticFieldsNames,
+        equals(['Z', 'length', 'x', 'y', 'z']),
+      );
 
       expect(
-          ReflectionFactory()
-              .getRegisterEnumReflection(TestEnumWithReflection)!
-              .enumType,
-          equals(TestEnumWithReflection));
+        TestEnumWithReflection$reflection().fieldsNames,
+        equals(['nameLC']),
+      );
 
       expect(
-          ReflectionFactory()
-              .getRegisterEnumReflectionByName('TestEnumWithReflection')!
-              .enumType,
-          equals(TestEnumWithReflection));
+        TestEnumWithReflection$reflection().valuesNames,
+        equals(['Z', 'x', 'y', 'z']),
+      );
 
       expect(
-          ReflectionFactory()
-              .getRegisterClassReflection(TestUserWithReflection)!
-              .classType,
-          equals(TestUserWithReflection));
+        TestEnumWithReflection$reflection().valuesByName.keys,
+        equals(['Z', 'x', 'y', 'z']),
+      );
 
       expect(
-          ReflectionFactory()
-              .getRegisterClassReflectionByName('TestUserWithReflection')!
-              .classType,
-          equals(TestUserWithReflection));
+        TestEnumWithReflection$reflection(TestEnumWithReflection.x).name(),
+        equals('x'),
+      );
+
+      expect(
+        TestEnumWithReflection$reflection(
+          TestEnumWithReflection.x,
+        ).name(TestEnumWithReflection.y),
+        equals('y'),
+      );
+
+      expect(
+        TestEnumWithReflection$reflection.staticInstance.fromJson('x'),
+        equals(TestEnumWithReflection.x),
+      );
+
+      expect(
+        TestEnumWithReflection$reflection.staticInstance.fromJson('y'),
+        equals(TestEnumWithReflection.y),
+      );
+
+      expect(
+        () => TestEnumWithReflection$reflection.staticInstance.fromJson('w'),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'Bad JSON',
+            contains('for JSON: w'),
+          ),
+        ),
+      );
+
+      expect(
+        () => TestEnumWithReflection$reflection.staticInstance.fromJson(null),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'Null JSON',
+            contains('Null JSON'),
+          ),
+        ),
+      );
+
+      expect(
+        ReflectionFactory()
+            .getRegisterEnumReflection(TestEnumWithReflection)!
+            .enumType,
+        equals(TestEnumWithReflection),
+      );
+
+      expect(
+        ReflectionFactory()
+            .getRegisterEnumReflectionByName('TestEnumWithReflection')!
+            .enumType,
+        equals(TestEnumWithReflection),
+      );
+
+      expect(
+        ReflectionFactory()
+            .getRegisterClassReflection(TestUserWithReflection)!
+            .classType,
+        equals(TestUserWithReflection),
+      );
+
+      expect(
+        ReflectionFactory()
+            .getRegisterClassReflectionByName('TestUserWithReflection')!
+            .classType,
+        equals(TestUserWithReflection),
+      );
 
       expect(userReflection.supperTypes, isEmpty);
 
@@ -898,9 +1147,9 @@ void main() {
       expect(userReflection.allConstructors().length, equals(2));
 
       expect(
-          (userReflection.allConstructors().toList()..sort())
-              .map((e) => e.name),
-          equals(['', 'fields']));
+        (userReflection.allConstructors().toList()..sort()).map((e) => e.name),
+        equals(['', 'fields']),
+      );
 
       {
         var constructorDefault = userReflection.constructor('');
@@ -934,8 +1183,10 @@ void main() {
         expect(constructorFields.hasNoParameters, isFalse);
         expect(constructorFields.normalParameters.length, equals(3));
         expect(constructorFields.optionalParameters, isEmpty);
-        expect(constructorFields.namedParameters.keys,
-            equals(['axis', 'enabled', 'id', 'level']));
+        expect(
+          constructorFields.namedParameters.keys,
+          equals(['axis', 'enabled', 'id', 'level']),
+        );
 
         expect(constructorFields.parametersLength, equals(7));
         expect(constructorFields.positionalParametersLength, equals(3));
@@ -948,21 +1199,33 @@ void main() {
         expect(constructorFields.getParameterByIndex(0)?.name, equals('name'));
 
         expect(constructorFields.getParameterByIndex(1)?.name, equals('email'));
-        expect(constructorFields.getParameterByIndex(1)?.jsonName,
-            equals('email'));
-        expect(constructorFields.getParameterByIndex(1)?.hasJsonNameAlias,
-            isFalse);
-
-        expect(constructorFields.getParameterByIndex(2)?.name,
-            equals('passphrase'));
-        expect(constructorFields.getParameterByIndex(2)?.jsonName,
-            equals('password'));
         expect(
-            constructorFields.getParameterByIndex(2)?.hasJsonNameAlias, isTrue);
+          constructorFields.getParameterByIndex(1)?.jsonName,
+          equals('email'),
+        );
+        expect(
+          constructorFields.getParameterByIndex(1)?.hasJsonNameAlias,
+          isFalse,
+        );
+
+        expect(
+          constructorFields.getParameterByIndex(2)?.name,
+          equals('passphrase'),
+        );
+        expect(
+          constructorFields.getParameterByIndex(2)?.jsonName,
+          equals('password'),
+        );
+        expect(
+          constructorFields.getParameterByIndex(2)?.hasJsonNameAlias,
+          isTrue,
+        );
 
         expect(constructorFields.getParameterByIndex(3)?.name, equals('axis'));
         expect(
-            constructorFields.getParameterByIndex(4)?.name, equals('enabled'));
+          constructorFields.getParameterByIndex(4)?.name,
+          equals('enabled'),
+        );
         expect(constructorFields.getParameterByIndex(5)?.name, equals('id'));
         expect(constructorFields.getParameterByIndex(6)?.name, equals('level'));
         expect(constructorFields.getParameterByIndex(7)?.name, isNull);
@@ -993,98 +1256,117 @@ void main() {
       }
 
       expect(
-          userReflection.fieldsNames,
-          equals([
-            'axis',
-            'email',
-            'enabled',
-            'hashCode',
-            'id',
-            'isEnabled',
-            'isNotEnabled',
-            'level',
-            'name',
-            'password'
-          ]));
-      expect(userReflection.allFields().map((e) => e.name),
-          equals(userReflection.fieldsNames));
+        userReflection.fieldsNames,
+        equals([
+          'axis',
+          'email',
+          'enabled',
+          'hashCode',
+          'id',
+          'isEnabled',
+          'isNotEnabled',
+          'level',
+          'name',
+          'password',
+        ]),
+      );
+      expect(
+        userReflection.allFields().map((e) => e.name),
+        equals(userReflection.fieldsNames),
+      );
 
       expect(
-          userReflection
-              .allFields()
-              .where((e) => e.hasSetter)
-              .map((e) => e.name),
-          equals(['axis', 'email', 'enabled', 'id', 'level', 'password']));
-
-      expect(userReflection.fieldsWhere((f) => f.nullable).map((f) => f.name),
-          equals(['email', 'id', 'level', 'password']));
+        userReflection.allFields().where((e) => e.hasSetter).map((e) => e.name),
+        equals(['axis', 'email', 'enabled', 'id', 'level', 'password']),
+      );
 
       expect(
-          userReflection
-              .fieldsWhere((f) => f.type.isBoolType)
-              .map((e) => e.name),
-          equals(['enabled', 'isEnabled', 'isNotEnabled']));
-
-      expect(userReflection.staticFieldsNames,
-          equals(['version', 'withReflection']));
-      expect(
-          userReflection.allStaticFields().map((e) => e.name),
-          equals(
-            userReflection.staticFieldsNames,
-          ));
+        userReflection.fieldsWhere((f) => f.nullable).map((f) => f.name),
+        equals(['email', 'id', 'level', 'password']),
+      );
 
       expect(
-          userReflection
-              .staticFieldsWhere((f) => f.type.isBoolType)
-              .map((f) => f.name),
-          equals(['withReflection']));
-
-      expect(userReflection.staticFieldsWhere((f) => f.type.isStringType),
-          isEmpty);
-
-      expect(userReflection.methodsNames,
-          equals(['checkPassword', 'getField', 'setField', 'toString']));
-      expect(userReflection.allMethods().map((e) => e.name),
-          equals(userReflection.methodsNames));
+        userReflection.fieldsWhere((f) => f.type.isBoolType).map((e) => e.name),
+        equals(['enabled', 'isEnabled', 'isNotEnabled']),
+      );
 
       expect(
-          userReflection
-              .methodsWhere((m) => m.equalsNormalParametersTypes([String]))
-              .map((e) => e.name),
-          equals(['checkPassword', 'getField']));
+        userReflection.staticFieldsNames,
+        equals(['version', 'withReflection']),
+      );
+      expect(
+        userReflection.allStaticFields().map((e) => e.name),
+        equals(userReflection.staticFieldsNames),
+      );
 
       expect(
-          userReflection
-              .methodsWhere((m) => m.equalsOptionalParametersTypes([dynamic]))
-              .map((e) => e.name),
-          equals(['getField']));
+        userReflection
+            .staticFieldsWhere((f) => f.type.isBoolType)
+            .map((f) => f.name),
+        equals(['withReflection']),
+      );
 
       expect(
-          userReflection
-              .methodsWhere((m) => m.hasNoParameters)
-              .map((e) => e.name),
-          ['toString']);
+        userReflection.staticFieldsWhere((f) => f.type.isStringType),
+        isEmpty,
+      );
+
+      expect(
+        userReflection.methodsNames,
+        equals(['checkPassword', 'getField', 'setField', 'toString']),
+      );
+      expect(
+        userReflection.allMethods().map((e) => e.name),
+        equals(userReflection.methodsNames),
+      );
+
+      expect(
+        userReflection
+            .methodsWhere((m) => m.equalsNormalParametersTypes([String]))
+            .map((e) => e.name),
+        equals(['checkPassword', 'getField']),
+      );
+
+      expect(
+        userReflection
+            .methodsWhere((m) => m.equalsOptionalParametersTypes([dynamic]))
+            .map((e) => e.name),
+        equals(['getField']),
+      );
+
+      expect(
+        userReflection
+            .methodsWhere((m) => m.hasNoParameters)
+            .map((e) => e.name),
+        ['toString'],
+      );
 
       expect(userReflection.staticMethodsNames, equals(['isVersion']));
-      expect(userReflection.allStaticMethods().map((e) => e.name),
-          equals(userReflection.staticMethodsNames));
+      expect(
+        userReflection.allStaticMethods().map((e) => e.name),
+        equals(userReflection.staticMethodsNames),
+      );
 
       expect(
-          userReflection
-              .staticMethodsWhere(
-                  (m) => m.equalsNormalParametersTypes([double]))
-              .map((e) => e.name),
-          equals(['isVersion']));
+        userReflection
+            .staticMethodsWhere((m) => m.equalsNormalParametersTypes([double]))
+            .map((e) => e.name),
+        equals(['isVersion']),
+      );
 
       expect(
-          userReflection
-              .staticMethodsWhere(
-                  (m) => m.normalParametersTypeReflection[0].isPrimitiveType)
-              .length,
-          equals(1));
+        userReflection
+            .staticMethodsWhere(
+              (m) => m.normalParametersTypeReflection[0].isPrimitiveType,
+            )
+            .length,
+        equals(1),
+      );
 
       expect(
-          userReflection.staticMethodsWhere((m) => m.hasNoParameters), isEmpty);
+        userReflection.staticMethodsWhere((m) => m.hasNoParameters),
+        isEmpty,
+      );
 
       expect(userReflection.getField('name'), equals('Joe'));
       expect(userReflection.getField('email'), equals('joe@mail.com'));
@@ -1101,9 +1383,11 @@ void main() {
       expect(field.type, equals(TypeReflection.tString));
       expect(field.isFinal, isFalse);
       expect(
-          field.toString(),
-          startsWith(
-              'FieldReflection{ class: TestUserWithReflection, name: email, type: String?, static: false,'));
+        field.toString(),
+        startsWith(
+          'FieldReflection{ class: TestUserWithReflection, name: email, type: String?, static: false,',
+        ),
+      );
 
       expect(field.get(), equals('joe@mail.com'));
       field.set('joe@mail.net');
@@ -1126,9 +1410,11 @@ void main() {
       expect(staticField.type, equals(TypeReflection.tDouble));
       expect(staticField.isFinal, isTrue);
       expect(
-          staticField.toString(),
-          startsWith(
-              'StaticFieldReflection{ class: TestUserWithReflection, name: version, type: double, static: true,'));
+        staticField.toString(),
+        startsWith(
+          'StaticFieldReflection{ class: TestUserWithReflection, name: version, type: double, static: true,',
+        ),
+      );
 
       expect(staticField.get(), equals(1.1));
 
@@ -1139,10 +1425,14 @@ void main() {
       expect(userReflection.invokeStaticMethod('isVersion', [2.0]), isFalse);
 
       var user2 = TestUserWithReflection.fields('Joe', 'smith@mail.com', 'xyz');
-      expect(userReflection.invokeMethodWith('checkPassword', user2, ['xyz']),
-          isTrue);
-      expect(userReflection.invokeMethodWith('checkPassword', user2, ['abc']),
-          isFalse);
+      expect(
+        userReflection.invokeMethodWith('checkPassword', user2, ['xyz']),
+        isTrue,
+      );
+      expect(
+        userReflection.invokeMethodWith('checkPassword', user2, ['abc']),
+        isFalse,
+      );
 
       var method = userReflection.method('checkPassword')!;
 
@@ -1152,20 +1442,33 @@ void main() {
       expect(method.hasNoParameters, isFalse);
       expect(method.normalParameters.length, equals(1));
       expect(
-          method.normalParameters[0],
-          equals(ParameterReflection(
-              TypeReflection.tString, 'password', false, true, null, null)));
+        method.normalParameters[0],
+        equals(
+          ParameterReflection(
+            TypeReflection.tString,
+            'password',
+            false,
+            true,
+            null,
+            null,
+          ),
+        ),
+      );
       expect(method.normalParametersTypes.length, equals(1));
       expect(method.normalParametersTypes[0], equals(String));
       expect(method.normalParametersNames.length, equals(1));
       expect(method.normalParametersNames[0], equals('password'));
       expect(
-          method.toString(),
-          startsWith(
-              'MethodReflection{ class: TestUserWithReflection, name: checkPassword, returnType: bool, static: false,'));
+        method.toString(),
+        startsWith(
+          'MethodReflection{ class: TestUserWithReflection, name: checkPassword, returnType: bool, static: false,',
+        ),
+      );
 
-      expect(method.normalParametersTypeReflection,
-          equals([TypeReflection.tString]));
+      expect(
+        method.normalParametersTypeReflection,
+        equals([TypeReflection.tString]),
+      );
       expect(method.normalParametersTypes, equals([String]));
       expect(method.normalParameters.length, equals(1));
 
@@ -1181,64 +1484,79 @@ void main() {
       expect(method.allParameters.whereNullable(), isEmpty);
       expect(method.allParameters.whereRequired().length, equals(1));
       expect(method.allParameters.toTypes(), equals([String]));
-      expect(method.allParameters.toTypeReflections().map((e) => e.type),
-          equals([String]));
+      expect(
+        method.allParameters.toTypeReflections().map((e) => e.type),
+        equals([String]),
+      );
 
       expect(
-          method.allParameters.map((e) => e.type).toTypes(), equals([String]));
+        method.allParameters.map((e) => e.type).toTypes(),
+        equals([String]),
+      );
 
       var allFields = userReflection.allFields();
       expect(
-          allFields.toNames(),
-          equals([
-            'axis',
-            'email',
-            'enabled',
-            'hashCode',
-            'id',
-            'isEnabled',
-            'isNotEnabled',
-            'level',
-            'name',
-            'password'
-          ]));
+        allFields.toNames(),
+        equals([
+          'axis',
+          'email',
+          'enabled',
+          'hashCode',
+          'id',
+          'isEnabled',
+          'isNotEnabled',
+          'level',
+          'name',
+          'password',
+        ]),
+      );
       expect(allFields.whereFinal().toNames(), equals(['name']));
-      expect(allFields.whereNullable().toNames(),
-          equals(['email', 'id', 'level', 'password']));
       expect(
-          allFields.toTypes(),
-          equals([
-            TestEnumWithReflection,
-            String,
-            bool,
-            int,
-            int,
-            bool,
-            bool,
-            int,
-            String,
-            String
-          ]));
+        allFields.whereNullable().toNames(),
+        equals(['email', 'id', 'level', 'password']),
+      );
+      expect(
+        allFields.toTypes(),
+        equals([
+          TestEnumWithReflection,
+          String,
+          bool,
+          int,
+          int,
+          bool,
+          bool,
+          int,
+          String,
+          String,
+        ]),
+      );
 
       var allStaticFields = userReflection.allStaticFields();
       expect(allStaticFields.toNames(), equals(['version', 'withReflection']));
-      expect(allStaticFields.whereStatic().toNames(),
-          equals(['version', 'withReflection']));
+      expect(
+        allStaticFields.whereStatic().toNames(),
+        equals(['version', 'withReflection']),
+      );
 
       var allMethods = userReflection.allMethods();
-      expect(allMethods.toNames(),
-          equals(['checkPassword', 'getField', 'setField', 'toString']));
       expect(
-          allMethods.toReturnTypeReflections(),
-          equals([
-            TypeReflection.tBool,
-            TypeReflection.tDynamic,
-            TypeReflection.tVoid,
-            TypeReflection.tString
-          ]));
+        allMethods.toNames(),
+        equals(['checkPassword', 'getField', 'setField', 'toString']),
+      );
+      expect(
+        allMethods.toReturnTypeReflections(),
+        equals([
+          TypeReflection.tBool,
+          TypeReflection.tDynamic,
+          TypeReflection.tVoid,
+          TypeReflection.tString,
+        ]),
+      );
 
-      expect(allMethods.toReturnTypes(),
-          equals([bool, dynamic, TypeInfo.tVoid.type, String]));
+      expect(
+        allMethods.toReturnTypes(),
+        equals([bool, dynamic, TypeInfo.tVoid.type, String]),
+      );
       expect(allMethods.whereStatic(), isEmpty);
 
       var allStaticMethods = userReflection.allStaticMethods();
@@ -1251,65 +1569,91 @@ void main() {
       expect(staticMethod.hasNoParameters, isFalse);
       expect(staticMethod.normalParameters.length, equals(1));
       expect(
-          staticMethod.normalParameters[0],
-          equals(ParameterReflection(
-              TypeReflection.tDouble, 'ver', false, true, null, null)));
+        staticMethod.normalParameters[0],
+        equals(
+          ParameterReflection(
+            TypeReflection.tDouble,
+            'ver',
+            false,
+            true,
+            null,
+            null,
+          ),
+        ),
+      );
       expect(staticMethod.normalParametersNames.length, equals(1));
       expect(staticMethod.normalParametersNames[0], equals('ver'));
       expect(
-          staticMethod.toString(),
-          startsWith(
-              'StaticMethodReflection{ class: TestUserWithReflection, name: isVersion, returnType: bool, static: true,'));
+        staticMethod.toString(),
+        startsWith(
+          'StaticMethodReflection{ class: TestUserWithReflection, name: isVersion, returnType: bool, static: true,',
+        ),
+      );
 
       var fieldResolver = userReflection.fieldResolver('email');
       expect(fieldResolver.isResolved, isFalse);
-      expect(fieldResolver.get()!.withObject(user2).get(),
-          equals('smith@mail.com'));
+      expect(
+        fieldResolver.get()!.withObject(user2).get(),
+        equals('smith@mail.com'),
+      );
       expect(fieldResolver.isResolved, isTrue);
       fieldResolver.reset();
       expect(fieldResolver.isResolved, isFalse);
-      expect(fieldResolver.get()!.withObject(user2).get(),
-          equals('smith@mail.com'));
+      expect(
+        fieldResolver.get()!.withObject(user2).get(),
+        equals('smith@mail.com'),
+      );
       expect(fieldResolver.isResolved, isTrue);
 
-      expect(userReflection.staticFieldResolver('version').get()!.get(),
-          equals(1.1));
+      expect(
+        userReflection.staticFieldResolver('version').get()!.get(),
+        equals(1.1),
+      );
 
       expect(
-          userReflection
-              .methodResolver('checkPassword')
-              .get()!
-              .withObject(user2)
-              .invoke(['xyz']),
-          isTrue);
+        userReflection
+            .methodResolver('checkPassword')
+            .get()!
+            .withObject(user2)
+            .invoke(['xyz']),
+        isTrue,
+      );
 
       expect(
-          userReflection.staticMethodResolver('isVersion').get()!.invoke([1.1]),
-          isTrue);
+        userReflection.staticMethodResolver('isVersion').get()!.invoke([1.1]),
+        isTrue,
+      );
 
       var domainReflection = TestDomainWithReflection$reflection.staticInstance;
 
       expect(domainReflection.supperTypes, isEmpty);
 
       expect(
-          domainReflection.fieldsNames,
-          equals([
-            'domainFunction',
-            'extraFunction',
-            'hashCode',
-            'name',
-            'suffix'
-          ]));
-      expect(domainReflection.methodsNames,
-          equals(['toJson', 'toString', 'typedFunction']));
+        domainReflection.fieldsNames,
+        equals([
+          'domainFunction',
+          'extraFunction',
+          'hashCode',
+          'name',
+          'suffix',
+        ]),
+      );
       expect(
-          domainReflection.constructorsNames, equals(['', 'named', 'parse']));
+        domainReflection.methodsNames,
+        equals(['toJson', 'toString', 'typedFunction']),
+      );
+      expect(
+        domainReflection.constructorsNames,
+        equals(['', 'named', 'parse']),
+      );
 
       {
         var constructor = domainReflection.constructor('named')!;
 
-        expect(constructor.allParametersNames,
-            equals(['domainFunction', 'extraFunction', 'name', 'suffix']));
+        expect(
+          constructor.allParametersNames,
+          equals(['domainFunction', 'extraFunction', 'name', 'suffix']),
+        );
 
         var parameterName = constructor.namedParameters['name']!;
         var parameterSuffix = constructor.namedParameters['suffix']!;
@@ -1347,25 +1691,31 @@ void main() {
 
       expect(opReflection.supperTypes, equals([WithValue]));
       expect(
-          opAReflection.supperTypes, equals([TestOpWithReflection, WithValue]));
+        opAReflection.supperTypes,
+        equals([TestOpWithReflection, WithValue]),
+      );
       expect(
-          opBReflection.supperTypes, equals([TestOpWithReflection, WithValue]));
+        opBReflection.supperTypes,
+        equals([TestOpWithReflection, WithValue]),
+      );
 
       expect(opReflection.fieldsNames, equals(['type', 'value']));
       expect(opAReflection.fieldsNames, equals(['type', 'value']));
       expect(opBReflection.fieldsNames, equals(['amount', 'type', 'value']));
 
       expect(
-          opAReflection
-              .fieldsWhere((m) => m.declaringType == TestOpWithReflection)
-              .map((e) => e.name),
-          equals(['type']));
+        opAReflection
+            .fieldsWhere((m) => m.declaringType == TestOpWithReflection)
+            .map((e) => e.name),
+        equals(['type']),
+      );
 
       expect(
-          opAReflection
-              .fieldsWhere((m) => m.declaringType == TestOpAWithReflection)
-              .map((e) => e.name),
-          equals(['value']));
+        opAReflection
+            .fieldsWhere((m) => m.declaringType == TestOpAWithReflection)
+            .map((e) => e.name),
+        equals(['value']),
+      );
 
       expect(opReflection.staticFieldsNames, equals(['staticField']));
       expect(opAReflection.staticFieldsNames, equals(['staticFieldA']));
@@ -1376,79 +1726,94 @@ void main() {
       expect(opBReflection.methodsNames, equals(['isEmptyType', 'methodB']));
 
       expect(
-          opAReflection
-              .methodsWhere((m) => m.declaringType == TestOpWithReflection)
-              .map((e) => e.name),
-          equals(['isEmptyType']));
+        opAReflection
+            .methodsWhere((m) => m.declaringType == TestOpWithReflection)
+            .map((e) => e.name),
+        equals(['isEmptyType']),
+      );
 
       expect(
-          opAReflection
-              .methodsWhere((m) => m.declaringType == TestOpAWithReflection)
-              .map((e) => e.name),
-          equals(['methodA']));
+        opAReflection
+            .methodsWhere((m) => m.declaringType == TestOpAWithReflection)
+            .map((e) => e.name),
+        equals(['methodA']),
+      );
 
       expect(opReflection.staticMethodsNames, equals(['staticMethod']));
       expect(opAReflection.staticMethodsNames, isEmpty);
       expect(opBReflection.staticMethodsNames, equals(['staticMethodB']));
 
       expect(
-          userReflection.toJson(),
-          equals({
-            'axis': 'x',
-            'email': 'joe@mail.net',
-            'enabled': true,
-            'id': 1001,
-            'isEnabled': true,
-            'theLevel': null,
-            'name': 'Joe',
-            //'password': 'abc'
-          }));
+        userReflection.toJson(),
+        equals({
+          'axis': 'x',
+          'email': 'joe@mail.net',
+          'enabled': true,
+          'id': 1001,
+          'isEnabled': true,
+          'theLevel': null,
+          'name': 'Joe',
+          //'password': 'abc'
+        }),
+      );
       expect(
-          userReflection.toJsonEncoded(),
-          equals(
-              '{"axis":"x","email":"joe@mail.net","enabled":true,"id":1001,"isEnabled":true,"theLevel":null,"name":"Joe"}'));
+        userReflection.toJsonEncoded(),
+        equals(
+          '{"axis":"x","email":"joe@mail.net","enabled":true,"id":1001,"isEnabled":true,"theLevel":null,"name":"Joe"}',
+        ),
+      );
 
       expect(
-          ReflectionFactory.toJsonEncodable(user),
-          equals({
-            'axis': 'x',
-            'email': 'joe@mail.net',
-            'enabled': true,
-            'id': 1001,
-            'isEnabled': true,
-            'theLevel': null,
-            'name': 'Joe',
-            //'password': 'abc'
-          }));
+        ReflectionFactory.toJsonEncodable(user),
+        equals({
+          'axis': 'x',
+          'email': 'joe@mail.net',
+          'enabled': true,
+          'id': 1001,
+          'isEnabled': true,
+          'theLevel': null,
+          'name': 'Joe',
+          //'password': 'abc'
+        }),
+      );
 
       var userDecoded = TestUserWithReflection$fromJsonEncoded(
-          '{"axis":"y","email":null,"enabled":false,"id":1002,"isEnabled":false,"level":123,"name":"Joe","password":"abc"}');
+        '{"axis":"y","email":null,"enabled":false,"id":1002,"isEnabled":false,"level":123,"name":"Joe","password":"abc"}',
+      );
 
       expect(
-          ReflectionFactory.toJsonEncodable(userDecoded),
-          equals({
-            'axis': 'y',
-            'email': null,
-            'enabled': false,
-            'id': 1002,
-            'isEnabled': false,
-            'theLevel': 123,
-            'name': 'Joe',
-            //'password': 'abc'
-          }));
-
-      expect(ReflectionFactory.toJsonEncodable(TestAddress('NY', 'New York')),
-          equals({'state': 'NY', 'city': 'New York'}));
+        ReflectionFactory.toJsonEncodable(userDecoded),
+        equals({
+          'axis': 'y',
+          'email': null,
+          'enabled': false,
+          'id': 1002,
+          'isEnabled': false,
+          'theLevel': 123,
+          'name': 'Joe',
+          //'password': 'abc'
+        }),
+      );
 
       expect(
-          ReflectionFactory.toJsonEncodable(TestAddress('NY', 'New York'),
-              toEncodable: (o) => 'wow'),
-          equals('wow'));
+        ReflectionFactory.toJsonEncodable(TestAddress('NY', 'New York')),
+        equals({'state': 'NY', 'city': 'New York'}),
+      );
+
+      expect(
+        ReflectionFactory.toJsonEncodable(
+          TestAddress('NY', 'New York'),
+          toEncodable: (o) => 'wow',
+        ),
+        equals('wow'),
+      );
 
       var userStaticReflection = TestUserWithReflection$reflection();
 
       expect(
-          userReflection.runtimeType, equals(userStaticReflection.runtimeType));
+        userReflection.runtimeType,
+        equals(userStaticReflection.runtimeType),
+      );
 
       expect(userStaticReflection.classType, equals(TestUserWithReflection));
 
@@ -1462,9 +1827,15 @@ void main() {
         expect(fieldName.get(), equals('Joe'));
 
         expect(
-            () => fieldName.setNullable(null),
-            throwsA(isA<StateError>()
-                .having((e) => e.message, 'message', contains("Final field"))));
+          () => fieldName.setNullable(null),
+          throwsA(
+            isA<StateError>().having(
+              (e) => e.message,
+              'message',
+              contains("Final field"),
+            ),
+          ),
+        );
 
         expect(user.name, equals('Joe'));
       }
@@ -1476,9 +1847,15 @@ void main() {
         expect(fieldEnabled.get(), isTrue);
 
         expect(
-            () => fieldEnabled.setNullable(null),
-            throwsA(isA<ArgumentError>().having((e) => e.message, 'message',
-                contains("Field can't be set to `null`"))));
+          () => fieldEnabled.setNullable(null),
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              contains("Field can't be set to `null`"),
+            ),
+          ),
+        );
 
         expect(user.enabled, isTrue);
       }
@@ -1501,8 +1878,11 @@ void main() {
         expect(user.email, equals('joe@mail.net'));
 
         var user2 = TestUserWithReflection.fields(
-            'Joe Thims', 'joetm@mail.net', '987',
-            id: 2002);
+          'Joe Thims',
+          'joetm@mail.net',
+          '987',
+          id: 2002,
+        );
 
         expect(user.email, equals('joe@mail.net'));
         expect(user2.email, equals('joetm@mail.net'));
@@ -1540,24 +1920,34 @@ void main() {
         expect(user.password, isNull);
       }
 
-      var address =
-          TestAddressWithReflection.withCity('CA', city: 'Los Angeles');
+      var address = TestAddressWithReflection.withCity(
+        'CA',
+        city: 'Los Angeles',
+      );
       var addressReflection = address.reflection;
 
       expect(addressReflection, isNotNull);
       expect(addressReflection.hasJsonNameAlias, isFalse);
       expect(addressReflection.canCreateInstanceWithoutArguments, isTrue);
-      expect(addressReflection.fieldsNames,
-          equals(['city', 'hashCode', 'id', 'state']));
+      expect(
+        addressReflection.fieldsNames,
+        equals(['city', 'hashCode', 'id', 'state']),
+      );
       expect(addressReflection.methodsNames, equals(['toJson', 'toString']));
-      expect(addressReflection.constructorsNames,
-          equals(['empty', 'simple', 'withCity']));
+      expect(
+        addressReflection.constructorsNames,
+        equals(['empty', 'simple', 'withCity']),
+      );
 
-      expect(ReflectionFactory.toJsonEncodable(address),
-          equals({'state': 'CA', 'city': 'Los Angeles'}));
+      expect(
+        ReflectionFactory.toJsonEncodable(address),
+        equals({'state': 'CA', 'city': 'Los Angeles'}),
+      );
 
-      expect(addressReflection.toJson(address),
-          equals({'state': 'CA', 'city': 'Los Angeles'}));
+      expect(
+        addressReflection.toJson(address),
+        equals({'state': 'CA', 'city': 'Los Angeles'}),
+      );
 
       {
         expect(address.id, isNull);
@@ -1587,13 +1977,19 @@ void main() {
         expect(address.id, isNull);
       }
 
-      expect(addressReflection.fromJson({'state': 'NY', 'city': 'New York'}),
-          equals(TestAddressWithReflection.withCity('NY', city: 'New York')));
+      expect(
+        addressReflection.fromJson({'state': 'NY', 'city': 'New York'}),
+        equals(TestAddressWithReflection.withCity('NY', city: 'New York')),
+      );
 
       expect(
-          addressReflection
-              .fromJson({'state': 'NY2', 'city': 'New York2', 'foo': 123}),
-          equals(TestAddressWithReflection.withCity('NY2', city: 'New York2')));
+        addressReflection.fromJson({
+          'state': 'NY2',
+          'city': 'New York2',
+          'foo': 123,
+        }),
+        equals(TestAddressWithReflection.withCity('NY2', city: 'New York2')),
+      );
 
       expect(TestEmpty$reflection().allFields(), isEmpty);
       expect(TestEmpty$reflection().field('foo'), isNull);
@@ -1616,18 +2012,25 @@ void main() {
       expect(userReflection.classType, equals(TestUserSimple));
 
       expect(
-          userReflection.classAnnotations,
-          equals([
-            TestAnnotation(['class', 'user'])
-          ]));
+        userReflection.classAnnotations,
+        equals([
+          TestAnnotation(['class', 'user']),
+        ]),
+      );
 
-      expect(userReflection.fieldsNames,
-          equals(['email', 'hashCode', 'name', 'password']));
-      expect(userReflection.staticFieldsNames,
-          equals(['version', 'withReflection']));
+      expect(
+        userReflection.fieldsNames,
+        equals(['email', 'hashCode', 'name', 'password']),
+      );
+      expect(
+        userReflection.staticFieldsNames,
+        equals(['version', 'withReflection']),
+      );
 
-      expect(userReflection.methodsNames,
-          equals(['checkThePassword', 'hasEmail', 'toString']));
+      expect(
+        userReflection.methodsNames,
+        equals(['checkThePassword', 'hasEmail', 'toString']),
+      );
       expect(userReflection.staticMethodsNames, equals(['isVersion']));
 
       expect(userReflection.getField('name'), equals('Joe'));
@@ -1645,21 +2048,30 @@ void main() {
       expect(userReflection.invokeMethod('checkThePassword', ['ABC']), isFalse);
 
       expect(
-          userReflection.invokeMethod(
-              'checkThePassword', ['ABC'], {Symbol('ignoreCase'): false}),
-          isFalse);
+        userReflection.invokeMethod(
+          'checkThePassword',
+          ['ABC'],
+          {Symbol('ignoreCase'): false},
+        ),
+        isFalse,
+      );
       expect(
-          userReflection.invokeMethod(
-              'checkThePassword', ['ABC'], {Symbol('ignoreCase'): true}),
-          isTrue);
+        userReflection.invokeMethod(
+          'checkThePassword',
+          ['ABC'],
+          {Symbol('ignoreCase'): true},
+        ),
+        isTrue,
+      );
 
       var field = userReflection.field('name')!;
 
       expect(
-          field.annotations,
-          equals([
-            TestAnnotation(['field', 'name'])
-          ]));
+        field.annotations,
+        equals([
+          TestAnnotation(['field', 'name']),
+        ]),
+      );
 
       expect(field.type, equals(TypeReflection.tString));
       expect(field.nullable, isFalse);
@@ -1668,10 +2080,11 @@ void main() {
       var method = userReflection.method('checkThePassword')!;
 
       expect(
-          method.annotations,
-          equals([
-            TestAnnotation(['method', 'password checker'])
-          ]));
+        method.annotations,
+        equals([
+          TestAnnotation(['method', 'password checker']),
+        ]),
+      );
 
       expect(method.hasNoParameters, isFalse);
       expect(method.normalParameters.length, equals(1));
@@ -1681,10 +2094,11 @@ void main() {
       expect(method.equalsNormalParametersTypes([bool]), isFalse);
 
       expect(
-          method.normalParameters[0].annotations,
-          equals([
-            TestAnnotation(['parameter', 'password'])
-          ]));
+        method.normalParameters[0].annotations,
+        equals([
+          TestAnnotation(['parameter', 'password']),
+        ]),
+      );
 
       expect(method.optionalParameters.length, equals(0));
       expect(method.optionalParametersNames, isEmpty);
@@ -1696,122 +2110,158 @@ void main() {
       expect(method.namedParametersTypes, equals({'ignoreCase': bool}));
       expect(method.equalsNamedParametersTypes({'ignoreCase': bool}), isTrue);
       expect(
-          method.equalsNamedParametersTypes({'ignoreCase': String}), isFalse);
+        method.equalsNamedParametersTypes({'ignoreCase': String}),
+        isFalse,
+      );
 
       expect(method.namedParameters.values.first.annotations, isEmpty);
 
       expect(
-          method.methodInvocationFromMap({
-            'password': '123',
-            'ignoreCase': false,
-          }).toString(),
-          equals(
-              'MethodInvocation{normalParameters: [123], optionalParameters: [], namedParameters: {ignoreCase: false}}'));
+        method.methodInvocationFromMap({
+          'password': '123',
+          'ignoreCase': false,
+        }).toString(),
+        equals(
+          'MethodInvocation{normalParameters: [123], optionalParameters: [], namedParameters: {ignoreCase: false}}',
+        ),
+      );
 
       expect(
-          method.methodInvocationFromMap({
-            'password': '123',
-            'ignoreCase': false,
-          }).invoke(method.method),
-          isFalse);
+        method
+            .methodInvocationFromMap({'password': '123', 'ignoreCase': false})
+            .invoke(method.method),
+        isFalse,
+      );
 
       expect(
-          method.methodInvocationFromMap({
-            'password': 'abc',
-            'ignoreCase': false,
-          }).invoke(method.method),
-          isTrue);
+        method
+            .methodInvocationFromMap({'password': 'abc', 'ignoreCase': false})
+            .invoke(method.method),
+        isTrue,
+      );
 
       expect(
-          method.methodInvocationFromMap({
-            'password': 'ABC',
-            'ignoreCase': false,
-          }).invoke(method.method),
-          isFalse);
+        method
+            .methodInvocationFromMap({'password': 'ABC', 'ignoreCase': false})
+            .invoke(method.method),
+        isFalse,
+      );
 
       expect(
-          method.methodInvocationFromMap({
-            'password': 'ABC',
-            'ignoreCase': true,
-          }).invoke(method.method),
-          isTrue);
+        method
+            .methodInvocationFromMap({'password': 'ABC', 'ignoreCase': true})
+            .invoke(method.method),
+        isTrue,
+      );
 
       expect(userReflection.allMethods().whereNoParameters().length, equals(2));
 
       expect(
-          userReflection.allMethods().whereParametersTypes().map((e) => e.name),
-          ['checkThePassword', 'hasEmail', 'toString']);
+        userReflection.allMethods().whereParametersTypes().map((e) => e.name),
+        ['checkThePassword', 'hasEmail', 'toString'],
+      );
 
       expect(
-          userReflection.allMethods().whereParametersTypes(
-              normalParameters: [String]).map((e) => e.name),
-          ['checkThePassword']);
+        userReflection
+            .allMethods()
+            .whereParametersTypes(normalParameters: [String])
+            .map((e) => e.name),
+        ['checkThePassword'],
+      );
 
       expect(
-          userReflection.allMethods().whereParametersTypes(
-              normalParameters: [bool]).map((e) => e.name),
-          []);
+        userReflection
+            .allMethods()
+            .whereParametersTypes(normalParameters: [bool])
+            .map((e) => e.name),
+        [],
+      );
 
       expect(
-          userReflection.allMethods().whereParametersTypes(
-              optionalParameters: [bool]).map((e) => e.name),
-          []);
+        userReflection
+            .allMethods()
+            .whereParametersTypes(optionalParameters: [bool])
+            .map((e) => e.name),
+        [],
+      );
 
       expect(
-          userReflection
-              .allMethods()
-              .whereParametersTypes(optionalParameters: []).map((e) => e.name),
-          ['checkThePassword', 'hasEmail', 'toString']);
+        userReflection
+            .allMethods()
+            .whereParametersTypes(optionalParameters: [])
+            .map((e) => e.name),
+        ['checkThePassword', 'hasEmail', 'toString'],
+      );
 
       expect(
-          userReflection.allMethods().whereParametersTypes(
-              namedParameters: {'ignoreCase': bool}).map((e) => e.name),
-          ['checkThePassword']);
+        userReflection
+            .allMethods()
+            .whereParametersTypes(namedParameters: {'ignoreCase': bool})
+            .map((e) => e.name),
+        ['checkThePassword'],
+      );
 
       expect(userReflection.allStaticMethods().whereNoParameters(), isEmpty);
       expect(
-          userReflection.allStaticMethods().whereParametersTypes(
-              normalParameters: [double]).map((e) => e.name),
-          ['isVersion']);
+        userReflection
+            .allStaticMethods()
+            .whereParametersTypes(normalParameters: [double])
+            .map((e) => e.name),
+        ['isVersion'],
+      );
 
       expect(
-          userReflection.allMethods().whereAnnotatedWith([
-            TestAnnotation(['method', 'password checker'])
-          ]).map((e) => e.name),
-          equals(['checkThePassword']));
+        userReflection
+            .allMethods()
+            .whereAnnotatedWith([
+              TestAnnotation(['method', 'password checker']),
+            ])
+            .map((e) => e.name),
+        equals(['checkThePassword']),
+      );
 
       expect(
-          userReflection.allMethods().whereAnnotatedWithAnyOf([
-            TestAnnotation(['method', 'password checker'])
-          ]).map((e) => e.name),
-          equals(['checkThePassword']));
-
-      expect(userReflection.allMethods().whereAnnotated().map((e) => e.name),
-          equals(['checkThePassword', 'toString']));
-
-      expect(
-          userReflection
-              .allMethods()
-              .whereAnnotated((as) => as.any((a) => a is TestAnnotation))
-              .map((e) => e.name),
-          equals(['checkThePassword']));
+        userReflection
+            .allMethods()
+            .whereAnnotatedWithAnyOf([
+              TestAnnotation(['method', 'password checker']),
+            ])
+            .map((e) => e.name),
+        equals(['checkThePassword']),
+      );
 
       expect(
-          userReflection
-              .allMethods()
-              .whereAnnotatedWithType<TestAnnotation>()
-              .map((e) => e.name),
-          equals(['checkThePassword']));
-
-      expect(userReflection.allMethods().whereNotAnnotated().map((e) => e.name),
-          equals(['hasEmail']));
+        userReflection.allMethods().whereAnnotated().map((e) => e.name),
+        equals(['checkThePassword', 'toString']),
+      );
 
       expect(
-          userReflection
-              .allStaticMethods()
-              .whereNotAnnotated()
-              .map((e) => e.name),
-          isEmpty);
+        userReflection
+            .allMethods()
+            .whereAnnotated((as) => as.any((a) => a is TestAnnotation))
+            .map((e) => e.name),
+        equals(['checkThePassword']),
+      );
+
+      expect(
+        userReflection
+            .allMethods()
+            .whereAnnotatedWithType<TestAnnotation>()
+            .map((e) => e.name),
+        equals(['checkThePassword']),
+      );
+
+      expect(
+        userReflection.allMethods().whereNotAnnotated().map((e) => e.name),
+        equals(['hasEmail']),
+      );
+
+      expect(
+        userReflection.allStaticMethods().whereNotAnnotated().map(
+          (e) => e.name,
+        ),
+        isEmpty,
+      );
 
       var userStaticReflection =
           TestUserReflectionBridge().reflection<TestUserSimple>();
@@ -1826,25 +2276,36 @@ void main() {
 
       expect(addressStaticReflection.hasJsonNameAlias, isFalse);
       expect(
-          addressStaticReflection.canCreateInstanceWithoutArguments, isFalse);
+        addressStaticReflection.canCreateInstanceWithoutArguments,
+        isFalse,
+      );
 
-      expect(addressStaticReflection.fieldsNames,
-          equals(['city', 'hashCode', 'state']));
+      expect(
+        addressStaticReflection.fieldsNames,
+        equals(['city', 'hashCode', 'state']),
+      );
       expect(addressStaticReflection.methodsNames, equals(['toJson']));
       expect(addressStaticReflection.constructorsNames, equals(['']));
 
-      expect(addressStaticReflection.toJson(TestAddress('NY', 'New York')),
-          equals({'state': 'NY', 'city': 'New York'}));
+      expect(
+        addressStaticReflection.toJson(TestAddress('NY', 'New York')),
+        equals({'state': 'NY', 'city': 'New York'}),
+      );
 
       expect(
-          addressStaticReflection.toJsonFromFields(
-              obj: TestAddress('NY', 'Buffalo')),
-          equals({'state': 'NY', 'city': 'Buffalo'}));
+        addressStaticReflection.toJsonFromFields(
+          obj: TestAddress('NY', 'Buffalo'),
+        ),
+        equals({'state': 'NY', 'city': 'Buffalo'}),
+      );
 
       expect(
-          addressStaticReflection.createInstanceFromMap(
-              {'state': 'NY', 'city': 'Yonkers'})?.toJson(),
-          equals({'state': 'NY', 'city': 'Yonkers'}));
+        addressStaticReflection.createInstanceFromMap({
+          'state': 'NY',
+          'city': 'Yonkers',
+        })?.toJson(),
+        equals({'state': 'NY', 'city': 'Yonkers'}),
+      );
     });
 
     test('Proxy', () {
@@ -1854,11 +2315,12 @@ void main() {
       expect(proxy.hasEmail(), isFalse);
 
       expect(
-          proxy.calls,
-          equals([
-            'TestUserSimpleProxy{calls: 0} -> checkThePassword( {password: pass123, ignoreCase: true} ) -> bool',
-            'TestUserSimpleProxy{calls: 1} -> hasEmail( {} ) -> bool',
-          ]));
+        proxy.calls,
+        equals([
+          'TestUserSimpleProxy{calls: 0} -> checkThePassword( {password: pass123, ignoreCase: true} ) -> bool',
+          'TestUserSimpleProxy{calls: 1} -> hasEmail( {} ) -> bool',
+        ]),
+      );
     });
 
     test('Proxy delegate', () {
@@ -1866,16 +2328,19 @@ void main() {
 
       var delegate = ClassProxyDelegateListener(proxy);
 
-      var ret = delegate.onCall(proxy, 'checkThePassword',
-          {'password': 'pass123', 'ignoreCase': true}, TypeReflection.tBool);
+      var ret = delegate.onCall(proxy, 'checkThePassword', {
+        'password': 'pass123',
+        'ignoreCase': true,
+      }, TypeReflection.tBool);
 
       expect(ret, isTrue);
 
       expect(
-          proxy.calls,
-          equals([
-            'TestUserSimpleProxy{calls: 0} -> checkThePassword( {password: pass123, ignoreCase: true} ) -> bool',
-          ]));
+        proxy.calls,
+        equals([
+          'TestUserSimpleProxy{calls: 0} -> checkThePassword( {password: pass123, ignoreCase: true} ) -> bool',
+        ]),
+      );
     });
 
     test('Proxy (async)', () async {
@@ -1885,11 +2350,12 @@ void main() {
       expect(await proxy.hasEmail(), isFalse);
 
       expect(
-          proxy.calls,
-          equals([
-            'TestUserSimpleProxyAsync{calls: 0} -> checkThePassword( {password: pass123, ignoreCase: true} ) -> Future<bool>',
-            'TestUserSimpleProxyAsync{calls: 1} -> hasEmail( {} ) -> Future<bool>',
-          ]));
+        proxy.calls,
+        equals([
+          'TestUserSimpleProxyAsync{calls: 0} -> checkThePassword( {password: pass123, ignoreCase: true} ) -> Future<bool>',
+          'TestUserSimpleProxyAsync{calls: 1} -> hasEmail( {} ) -> Future<bool>',
+        ]),
+      );
     });
   });
 }

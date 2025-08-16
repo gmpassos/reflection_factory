@@ -15,8 +15,12 @@ class TestUserSimpleProxy implements ClassProxyListener<TestUserSimpleProxy> {
   final List<String> calls = <String>[];
 
   @override
-  Object? onCall(TestUserSimpleProxy instance, String methodName,
-      Map<String, dynamic> parameters, TypeReflection? returnType) {
+  Object? onCall(
+    TestUserSimpleProxy instance,
+    String methodName,
+    Map<String, dynamic> parameters,
+    TypeReflection? returnType,
+  ) {
     var call = '$instance -> $methodName( $parameters ) -> $returnType';
     calls.add(call);
     print('CALL>> $call');
@@ -34,8 +38,12 @@ class TestUserSimpleProxyAsync implements ClassProxyListener {
   final List<String> calls = <String>[];
 
   @override
-  Object? onCall(instance, String methodName, Map<String, dynamic> parameters,
-      TypeReflection? returnType) {
+  Object? onCall(
+    instance,
+    String methodName,
+    Map<String, dynamic> parameters,
+    TypeReflection? returnType,
+  ) {
     var call = '$instance -> $methodName( $parameters ) -> $returnType';
     calls.add(call);
     print('CALL>> $call');

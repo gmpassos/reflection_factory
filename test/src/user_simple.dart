@@ -22,8 +22,9 @@ class TestUserSimple {
 
   @TestAnnotation(['method', 'password checker'])
   bool checkThePassword(
-      @TestAnnotation(['parameter', 'password']) String password,
-      {bool ignoreCase = false}) {
+    @TestAnnotation(['parameter', 'password']) String password, {
+    bool ignoreCase = false,
+  }) {
     if (ignoreCase) {
       return this.password.toLowerCase() == password.toLowerCase();
     } else {

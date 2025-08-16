@@ -63,13 +63,15 @@ class LibraryReader {
 
   /// All the declared classes and enums in this library
   Iterable<Element> get allClassesOrEnums => allElements.where((e) {
-        var kind = e.kind;
-        return kind == ElementKind.CLASS || kind == ElementKind.ENUM;
-      });
+    var kind = e.kind;
+    return kind == ElementKind.CLASS || kind == ElementKind.ENUM;
+  });
 
   /// [allElements] with annotations ([Element.metadata]).
-  Iterable<Element> allAnnotatedElements(
-      {bool classes = false, bool enums = false}) {
+  Iterable<Element> allAnnotatedElements({
+    bool classes = false,
+    bool enums = false,
+  }) {
     Iterable<Element> elements;
 
     if (classes) {
@@ -88,23 +90,28 @@ class LibraryReader {
   }
 
   /// All of the declarations in this library annotated with [checker].
-  Iterable<AnnotatedElement> annotatedWith(TypeChecker checker,
-          {bool throwOnUnresolved = true}) =>
+  Iterable<AnnotatedElement> annotatedWith(
+    TypeChecker checker, {
+    bool throwOnUnresolved = true,
+  }) =>
       allElements.annotatedWith(checker, throwOnUnresolved: throwOnUnresolved);
 
   /// All of the elements names in this library
   /// (classes, enums, mixins, functions, extensions, typeAliases, topLevelVariables).
-  Iterable<String> get elementsNames => element.fragments
-      .expand((cu) => <String?>[
-            ...cu.classes.map((e) => e.name),
-            ...cu.enums.map((e) => e.name),
-            ...cu.mixins.map((e) => e.name),
-            ...cu.functions.map((e) => e.name),
-            ...cu.extensions.map((e) => e.name),
-            ...cu.typeAliases.map((e) => e.name),
-            ...cu.topLevelVariables.map((e) => e.name),
-          ])
-      .nonNulls;
+  Iterable<String> get elementsNames =>
+      element.fragments
+          .expand(
+            (cu) => <String?>[
+              ...cu.classes.map((e) => e.name),
+              ...cu.enums.map((e) => e.name),
+              ...cu.mixins.map((e) => e.name),
+              ...cu.functions.map((e) => e.name),
+              ...cu.extensions.map((e) => e.name),
+              ...cu.typeAliases.map((e) => e.name),
+              ...cu.topLevelVariables.map((e) => e.name),
+            ],
+          )
+          .nonNulls;
 
   /// All of the elements representing classes in this library.
   Iterable<ClassElement> get classes =>
@@ -126,8 +133,10 @@ extension ElementExtension on Element {
 }
 
 extension IterableElementExtension on Iterable<Element> {
-  Iterable<AnnotatedElement> annotatedWith(TypeChecker checker,
-      {bool throwOnUnresolved = true}) sync* {
+  Iterable<AnnotatedElement> annotatedWith(
+    TypeChecker checker, {
+    bool throwOnUnresolved = true,
+  }) sync* {
     for (final element in this) {
       final annotation = checker.firstAnnotationOf(
         element,
@@ -139,10 +148,12 @@ extension IterableElementExtension on Iterable<Element> {
     }
   }
 
-  Iterable<Element> withAnnotation(TypeChecker checker,
-          {bool throwOnUnresolved = true}) =>
-      where((e) =>
-          e.isAnnotatedWith(checker, throwOnUnresolved: throwOnUnresolved));
+  Iterable<Element> withAnnotation(
+    TypeChecker checker, {
+    bool throwOnUnresolved = true,
+  }) => where(
+    (e) => e.isAnnotatedWith(checker, throwOnUnresolved: throwOnUnresolved),
+  );
 }
 
 extension ConstructorElementExtension on ConstructorElement {
