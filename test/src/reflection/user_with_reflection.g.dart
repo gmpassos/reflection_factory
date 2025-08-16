@@ -198,7 +198,7 @@ class TestAddressWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.6.0');
+  Version get languageVersion => Version.parse('3.7.0');
 
   @override
   TestAddressWithReflection$reflection withObject([
@@ -621,7 +621,7 @@ class TestCompanyWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.6.0');
+  Version get languageVersion => Version.parse('3.7.0');
 
   @override
   TestCompanyWithReflection$reflection withObject([
@@ -1135,7 +1135,7 @@ class TestDataWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.6.0');
+  Version get languageVersion => Version.parse('3.7.0');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -1458,7 +1458,7 @@ class TestDomainWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.6.0');
+  Version get languageVersion => Version.parse('3.7.0');
 
   @override
   TestDomainWithReflection$reflection withObject([
@@ -1928,7 +1928,7 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
   }
 
   @override
-  Version get languageVersion => Version.parse('3.6.0');
+  Version get languageVersion => Version.parse('3.7.0');
 
   @override
   TestEmpty$reflection withObject([TestEmpty? obj]) =>
@@ -2091,7 +2091,7 @@ class TestEnumWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.6.0');
+  Version get languageVersion => Version.parse('3.7.0');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -2185,7 +2185,7 @@ class TestFranchiseWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.6.0');
+  Version get languageVersion => Version.parse('3.7.0');
 
   @override
   TestFranchiseWithReflection$reflection withObject([
@@ -2559,7 +2559,7 @@ class TestName$reflection extends ClassReflection<TestName>
   }
 
   @override
-  Version get languageVersion => Version.parse('3.6.0');
+  Version get languageVersion => Version.parse('3.7.0');
 
   @override
   TestName$reflection withObject([TestName? obj]) =>
@@ -2887,7 +2887,7 @@ class TestOpAWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.6.0');
+  Version get languageVersion => Version.parse('3.7.0');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -3281,7 +3281,7 @@ class TestOpBWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.6.0');
+  Version get languageVersion => Version.parse('3.7.0');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -3694,7 +3694,7 @@ class TestOpWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.6.0');
+  Version get languageVersion => Version.parse('3.7.0');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -4127,7 +4127,7 @@ class TestTransactionWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.6.0');
+  Version get languageVersion => Version.parse('3.7.0');
 
   @override
   TestTransactionWithReflection$reflection withObject([
@@ -4433,7 +4433,7 @@ class TestUserWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.6.0');
+  Version get languageVersion => Version.parse('3.7.0');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
