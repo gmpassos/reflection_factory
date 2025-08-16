@@ -251,14 +251,21 @@ class InputAnalyzerResolved {
 
       if (result is LibraryElementResult) {
         var libraryElement = result.element;
+        if (libraryElement.classes.isEmpty) {
+          libraryElement = await _resolveLibraryElement(libraryElement);
+        }
+
         mainLibraries.add(libraryElement);
       }
     }
 
     if (libraryName.isNotEmpty) {
-      var library = await resolver.findLibraryByName(libraryName);
-      if (library != null) {
-        mainLibraries.add(library);
+      var libraryElement = await resolver.findLibraryByName(libraryName);
+      if (libraryElement != null) {
+        if (libraryElement.classes.isEmpty) {
+          libraryElement = await _resolveLibraryElement(libraryElement);
+        }
+        mainLibraries.add(libraryElement);
       }
     }
 
@@ -285,6 +292,16 @@ class InputAnalyzerResolved {
     }
 
     return candidateClasses;
+  }
+
+  // Attempt to load a `LibraryElement` with sub-elements resolved:
+  Future<LibraryElement> _resolveLibraryElement(
+      LibraryElement libraryElement) async {
+    var libraryAssetId = await resolver.assetIdForElement(libraryElement);
+    var libraryElementResolved = await resolver.libraryFor(
+      libraryAssetId,
+    );
+    return libraryElementResolved;
   }
 
   Future<bool> hasCodeToGenerate() async {
@@ -353,13 +370,13 @@ class InputAnalyzerResolved {
 
       throw StateError(
           "Code generated but NO reflection part directive was found for input file: $inputId\n"
-          "  > Can't generate ONE of the output files:\n"
+          "  » Can't generate ONE of the output files:\n"
           "    -- $genSiblingId\n"
           "    -- $genSubId\n"
-          "  > Please ADD one of the directives below to the input file:\n"
+          "  » Please ADD one of the directives below to the input file:\n"
           "       part '${outputsPaths.siblingPath}';\n"
           "       part '${outputsPaths.subPath}';\n"
-          "  > Found part directives:\n"
+          "  » Found part directives:\n"
           "${gParts.map((e) => '    -- $e').join('\n')}\n");
     }
 
@@ -440,16 +457,13 @@ extension _LibraryElementExtension on LibraryElement {
 
   List<ClassElement> get exportedClasses =>
       _exportedClasses[this] ??= UnmodifiableListView(
-          topLevelElements.whereType<ClassElement>().toList(growable: false));
+          fragments.expand((e) => e.classes.map((c) => c.element)));
 
   static final Expando<List<LibraryElement>> _allExports =
       Expando<List<LibraryElement>>();
 
   List<LibraryElement> get allExports => _allExports[this] ??=
-      UnmodifiableListView(definingCompilationUnit.libraryExports
-          .map((e) => e.exportedLibrary)
-          .nonNulls
-          .toList(growable: false));
+      UnmodifiableListView(exportedLibraries.nonNulls.toList(growable: false));
 
   static final Expando<Set<ClassElement>> _allExportedClasses =
       Expando<Set<ClassElement>>();
@@ -461,9 +475,8 @@ extension _LibraryElementExtension on LibraryElement {
       Expando<Set<ClassElement>>();
 
   Set<ClassElement> get allImportedClasses =>
-      _allImportedClasses[this] ??= UnmodifiableSetView(units
-          .expand((e) =>
-              e.library.importedLibraries.expand((e) => e.exportedClasses))
+      _allImportedClasses[this] ??= UnmodifiableSetView(fragments
+          .expand((e) => e.importedLibraries.expand((e) => e.exportedClasses))
           .toSet());
 
   static final Expando<Set<ClassElement>> _allUnitsClasses =
@@ -471,7 +484,7 @@ extension _LibraryElementExtension on LibraryElement {
 
   Set<ClassElement> get allUnitsClasses =>
       _allUnitsClasses[this] ??= UnmodifiableSetView(
-          units.expand((e) => e.library.exportedClasses).toSet());
+          fragments.expand((e) => e.classes.map((c) => c.element)).toSet());
 
   static final Expando<Set<ClassElement>> _allClassesFromExportedClassesUnits =
       Expando<Set<ClassElement>>();

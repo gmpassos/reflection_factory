@@ -2,11 +2,24 @@
 @Tags(['build', 'slow'])
 library;
 
+import 'dart:io' as io;
+
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
+import 'package:logging/logging.dart' show LogRecord, Level;
 import 'package:reflection_factory/builder.dart';
 import 'package:reflection_factory/src/reflection_factory_builder.dart';
 import 'package:test/test.dart';
+
+void _printToConsole(Object? o) {
+  if (o == null) return;
+
+  if (o is LogRecord && o.level >= Level.SEVERE) {
+    io.stderr.write('$o\n');
+  } else {
+    io.stdout.write('$o\n');
+  }
+}
 
 void main() {
   tearDown(() {
@@ -31,14 +44,17 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {},
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -60,10 +76,13 @@ void main() {
         '''
       };
 
-      await testBuilder(
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
+      var res = await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -84,9 +103,11 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
+
+      expect(res.buildResult.status.name, equals('success'));
     });
 
     test('EnableReflection: TestEmpty', () async {
@@ -105,10 +126,13 @@ void main() {
         '''
       };
 
-      await testBuilder(
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
+      var res = await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -127,9 +151,11 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
+
+      expect(res.buildResult.status.name, equals('success'));
     });
 
     test('EnableReflection: User', () async {
@@ -215,10 +241,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -258,7 +287,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -306,10 +335,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/reflection/foo.g.dart': decodedMatches(allOf(
@@ -352,7 +384,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -378,20 +410,24 @@ void main() {
         '''
       };
 
-      var packageAssetReader = await PackageAssetReader.currentIsolate();
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
-      expectLater(
-          () => testBuilder(
-                builder,
-                sourceAssets,
-                reader: packageAssetReader,
-                generateFor: {'$_pkgName|lib/foo.dart'},
-                onLog: (msg) {
-                  print(msg);
-                },
-              ),
-          throwsA(isA<StateError>().having((e) => e.message,
-              'NO part directive', contains('NO reflection part directive '))));
+      var logs = <LogRecord>[];
+
+      var res = await testBuilder(builder, sourceAssets,
+          readerWriter: readerWriter,
+          generateFor: {'$_pkgName|lib/foo.dart'}, onLog: (msg) {
+        _printToConsole(msg);
+        logs.add(msg);
+      });
+
+      expect(res.buildResult.status.name, equals('failure'));
+
+      var logsSevere = logs.where((r) => r.level == Level.SEVERE).toList();
+
+      expect(logsSevere, isNotEmpty);
+      expect(logsSevere.join('\n'), contains('NO reflection part directive '));
     });
 
     test('EnableReflection[super class]', () async {
@@ -431,10 +467,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -471,7 +510,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -505,10 +544,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -536,7 +578,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -585,10 +627,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -617,7 +662,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -642,10 +687,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -665,7 +713,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -704,10 +752,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -722,7 +773,7 @@ void main() {
           ))
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
         //packageConfig: packageConfig,
       );
@@ -762,10 +813,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart', '$_pkgName|lib/foo_extra.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -776,7 +830,7 @@ void main() {
           ))
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -804,10 +858,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -832,7 +889,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -860,10 +917,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -889,7 +949,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -925,10 +985,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/status.dart', '$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/status.reflection.g.dart': decodedMatches(allOf(
@@ -974,7 +1037,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -1016,10 +1079,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/status.dart', '$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/status.reflection.g.dart': decodedMatches(allOf(
@@ -1065,7 +1131,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -1103,10 +1169,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/status.dart', '$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/status.reflection.g.dart': decodedMatches(allOf(
@@ -1152,7 +1221,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -1207,10 +1276,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/status.dart', '$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/status.reflection.g.dart': decodedMatches(allOf(
@@ -1256,7 +1328,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -1290,10 +1362,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -1305,7 +1380,7 @@ void main() {
           ))
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
         //packageConfig: packageConfig,
       );
@@ -1345,10 +1420,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -1360,12 +1438,12 @@ void main() {
           ))
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
 
-    void testClassProxyLlibraryPath(bool sequential) async {
+    void testClassProxyLibraryPath(bool sequential) async {
       var builder = reflectionFactory(BuilderOptions({
         'verbose': true,
         'sequential': sequential,
@@ -1377,7 +1455,7 @@ void main() {
       expect(builder.buildStepTimeout, equals(Duration(seconds: 45)));
 
       expect(
-          builder.toString(),
+          builder.toString(verbose: true),
           allOf(
             contains('verbose: true'),
             contains('sequential: $sequential'),
@@ -1457,10 +1535,13 @@ void main() {
         ''',
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {
           '$_pkgName|lib/simple_api.dart',
           '$_pkgName|lib/foo.dart',
@@ -1515,16 +1596,16 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     }
 
     test('ClassProxy: SimpleAPI (through libraryPath) +sequential',
-        () => testClassProxyLlibraryPath(true));
+        () => testClassProxyLibraryPath(true));
 
     test('ClassProxy: SimpleAPI (through libraryPath) -sequential',
-        () => testClassProxyLlibraryPath(false));
+        () => testClassProxyLibraryPath(false));
 
     test('ClassProxy: SimpleAPI', () async {
       var builder = ReflectionBuilder(verbose: true);
@@ -1569,10 +1650,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -1603,7 +1687,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -1644,10 +1728,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -1668,7 +1755,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -1712,19 +1799,21 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
-            ),
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                    'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+                contains("part of 'foo.dart'")),
             allOf(
               contains('SimpleAPIProxy\$reflectionProxy'),
               contains('void nothing() {'),
@@ -1735,7 +1824,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -1780,19 +1869,21 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
             allOf(
-              contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
-              contains(
-                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
-              contains("part of 'foo.dart'"),
-            ),
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                    'BUILDER: reflection_factory/${ReflectionFactory.VERSION}'),
+                contains("part of 'foo.dart'")),
             allOf(
               contains('SimpleAPIProxy\$reflectionProxy'),
               contains('Future<void> nothing() {'),
@@ -1803,7 +1894,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });
@@ -1827,10 +1918,13 @@ void main() {
         '''
       };
 
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
       await testBuilder(
         builder,
         sourceAssets,
-        reader: await PackageAssetReader.currentIsolate(),
+        readerWriter: readerWriter,
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(allOf(
@@ -1850,7 +1944,7 @@ void main() {
           )),
         },
         onLog: (msg) {
-          print(msg);
+          _printToConsole(msg);
         },
       );
     });

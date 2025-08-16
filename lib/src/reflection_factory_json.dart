@@ -644,7 +644,8 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
     }
   }
 
-  Object? _valueToJson(o, String? fieldName, bool duplicatedEntitiesAsID) {
+  Object? _valueToJson(
+      Object? o, String? fieldName, bool duplicatedEntitiesAsID) {
     if (o == null) {
       return null;
     } else if (o is String || o is num || o is bool) {
@@ -833,7 +834,7 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
     return _entityToJson(o, oType, duplicatedEntitiesAsID);
   }
 
-  Object? _entityToJson(o, Type oType, bool duplicatedEntitiesAsID) {
+  Object? _entityToJson(Object? o, Type oType, bool duplicatedEntitiesAsID) {
     var classReflection = ReflectionFactory().getRegisterClassReflection(oType);
 
     if (classReflection != null) {

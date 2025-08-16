@@ -6,11 +6,12 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
-import 'package:analyzer/dart/element/visitor.dart';
+import 'package:analyzer/dart/element/visitor2.dart';
 import 'package:build/build.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:reflection_factory/reflection_factory.dart';
+import 'package:logging/logging.dart' show Logger;
 
 import 'analyzer/input_analyzer.dart';
 import 'analyzer/library.dart';
@@ -18,6 +19,9 @@ import 'analyzer/type_checker.dart';
 
 /// The reflection builder.
 class ReflectionBuilder implements Builder {
+  /// The [ReflectionBuilder] global [Logger].
+  static Logger get logger => log;
+
   /// If `true` builds the reflection code in verbose mode.
   final bool verbose;
 
@@ -37,12 +41,37 @@ class ReflectionBuilder implements Builder {
   String get version => ReflectionFactory.VERSION;
 
   @override
-  String toString({String indent = ''}) {
-    return '${indent}ReflectionBuilder[$version]:\n'
-        '$indent  -- Dart: ${Platform.version}\n'
-        '$indent  -- verbose: $verbose\n'
-        '$indent  -- sequential: $sequential\n'
-        '$indent  -- buildStepTimeout: ${buildStepTimeout.toHumanReadable()}\n';
+  String toString({
+    bool verbose = false,
+    bool multiline = false,
+    String indent = '',
+  }) {
+    if (!verbose) {
+      return 'ReflectionBuilder[$version]';
+    }
+
+    var dartVersion = Platform.version;
+
+    if (!multiline) {
+      var parts = dartVersion.split(RegExp(r'\s+'));
+      if (parts.length > 2) {
+        parts = parts.sublist(0, 2);
+      }
+      dartVersion = parts.join(' ');
+    }
+
+    var infos = [
+      'Dart: $dartVersion',
+      'verbose: $verbose',
+      'sequential: $sequential',
+      'buildStepTimeout: ${buildStepTimeout.toHumanReadable()}',
+    ].join(multiline ? '\n$indent» ' : ', ');
+
+    if (multiline) {
+      infos = '\n$indent» $infos\n$indent';
+    }
+
+    return '${indent}ReflectionBuilder[$version]{$infos}';
   }
 
   @override
@@ -116,7 +145,7 @@ class ReflectionBuilder implements Builder {
 
   void _onBuildTimeout(BuildStep buildStep) {
     log.warning(
-        'Build timeout (${buildStepTimeout.toHumanReadable()}): ${buildStep.inputId} >> Will continue with the next `BuildStep`...');
+        'Build timeout (${buildStepTimeout.toHumanReadable()}): ${buildStep.inputId} » Will continue with the next `BuildStep`...');
   }
 
   Future<void> _buildImpl(BuildStep buildStep) async {
@@ -162,9 +191,12 @@ class ReflectionBuilder implements Builder {
       final libraryReader = await inputAnalyzer.libraryReader;
 
       final inputLib = libraryReader.element;
-      if (inputLib.name == 'reflection_factory' ||
-          inputLib.name.startsWith('reflection_factory.') ||
-          inputLib.name.startsWith('reflection_factory_')) {
+      var inputLibName = inputLib.libraryName;
+
+      if (inputLibName == 'reflection_factory' ||
+          inputLibName.startsWith('reflection_factory.') ||
+          inputLibName.startsWith('reflection_factory_') ||
+          inputLibName.startsWith('package:reflection_factory/')) {
         return;
       }
 
@@ -264,14 +296,18 @@ class ReflectionBuilder implements Builder {
     final elapsedTime = DateTime.now().difference(initTime);
 
     if (codeKeys != null) {
-      log.info(' >> GENERATED:\n'
-          '  -- Elements: $codeKeys\n'
-          '  -- File: $genId\n'
-          '  -- Time: ${elapsedTime.inMilliseconds} ms\n\n');
+      log.info(
+        ' » GENERATED:\n'
+        '  -- Elements: $codeKeys\n'
+        '  -- File: $genId\n'
+        '  -- Time: ${elapsedTime.inMilliseconds} ms\n\n',
+      );
     } else {
-      log.info(' >> CACHED:\n'
-          '  -- File: $genId\n'
-          '  -- Time: ${elapsedTime.inMilliseconds} ms\n\n');
+      log.info(
+        ' » CACHED:\n'
+        '  -- File: $genId\n'
+        '  -- Time: ${elapsedTime.inMilliseconds} ms\n\n',
+      );
     }
 
     if (verbose) {
@@ -434,7 +470,9 @@ class ReflectionBuilder implements Builder {
     var ignoreMethods = {...ignoreMethods1, ...ignoreMethods2};
 
     if (reflectionProxyName.isEmpty) {
-      reflectionProxyName = annotatedClass.name;
+      reflectionProxyName = annotatedClass.name ??
+          (throw StateError(
+              "Can't determine `reflectionProxyName`: $annotatedClass"));
     }
 
     log.info(' <ClassProxy>\n'
@@ -584,7 +622,8 @@ class ReflectionBuilder implements Builder {
       List<DartType> classesTypes,
       String reflectionBridgeExtensionName,
       Map<DartType, String> reflectionClassNames) {
-    var bridgeClassName = annotatedClass.name;
+    var bridgeClassName = annotatedClass.name ??
+        (throw StateError("Can't define `bridgeClassName`: $annotatedClass"));
 
     var bridgeExtensionName = _buildReflectionExtensionName(
         bridgeClassName, reflectionBridgeExtensionName);
@@ -1035,7 +1074,7 @@ String _buildReflectionExtensionName(
   return '$className\$reflectionExtension';
 }
 
-class _EnumTree<T> extends RecursiveElementVisitor<T> {
+class _EnumTree<T> extends RecursiveElementVisitor2<T> {
   final Element _enumElement;
 
   final String reflectionClassName;
@@ -1099,9 +1138,9 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
   }
 
   List<String> get staticFieldsNames =>
-      staticFields.map((e) => e.name).toList();
+      staticFields.map((e) => e.name).nonNulls.toList();
 
-  List<String> get fieldsNames => fields.map((e) => e.name).toList();
+  List<String> get fieldsNames => fields.map((e) => e.name).nonNulls.toList();
 
   bool hasStaticField(String filedName) =>
       staticFields.where((m) => m.name == filedName).isNotEmpty;
@@ -1266,7 +1305,7 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
   }
 
   Map<String, _Field> _toFieldEntries(Set<FieldElement> fields) {
-    return Map.fromEntries(fields.map((e) => MapEntry(e.name, _Field(e))));
+    return Map.fromEntries(fields.map((e) => MapEntry(e.name!, _Field(e))));
   }
 
   String buildReflectionExtension() {
@@ -1330,7 +1369,7 @@ class _EnumTree<T> extends RecursiveElementVisitor<T> {
   }
 }
 
-class _ClassTree<T> extends RecursiveElementVisitor<T> {
+class _ClassTree<T> extends RecursiveElementVisitor2<T> {
   final _TypeAliasTable typeAliasTable;
 
   final ClassElement _classElement;
@@ -1356,7 +1395,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       this.optimizeReflectionInstances,
       this.languageVersion,
       {this.verbose = false})
-      : className = _classElement.name {
+      : className = _classElement.name! {
     scan(_classElement);
   }
 
@@ -1426,7 +1465,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   ConstructorElement? get emptyConstructor {
     var noArgsConstructors = constructors
-        .where((e) => e.name.isNotEmpty && e.parameters.isEmpty)
+        .where((e) => e.codeName.isNotEmpty && e.formalParameters.isEmpty)
         .toList();
 
     if (noArgsConstructors.isEmpty) {
@@ -1435,7 +1474,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       return noArgsConstructors[0];
     } else {
       var found = noArgsConstructors.firstWhereOrNull((e) {
-        var name = e.name.toLowerCase();
+        var name = e.codeName.toLowerCase();
         return name == 'empty' || name == 'create' || name == 'def';
       });
 
@@ -1450,7 +1489,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
   ConstructorElement? get noRequiredArgsConstructor {
     var noArgsConstructors = constructors
         .where((e) =>
-            e.name.isNotEmpty &&
+            e.codeName.isNotEmpty &&
             e.normalParameters.isEmpty &&
             e.optionalParameters.where((p) => p.required).isEmpty &&
             e.namedParameters.values.where((p) => p.required).isEmpty)
@@ -1462,7 +1501,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       return noArgsConstructors[0];
     } else {
       var found = noArgsConstructors.firstWhereOrNull((e) {
-        var name = e.name.toLowerCase();
+        var name = e.codeName.toLowerCase();
         return name == 'empty' || name == 'create' || name == 'def';
       });
 
@@ -1476,7 +1515,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   @override
   T? visitConstructorElement(ConstructorElement element) {
-    if (element.isPrivate || !isValidMethodName(element.name)) {
+    if (element.isPrivate || !isValidMethodName(element.codeName)) {
       return super.visitConstructorElement(element);
     }
 
@@ -1490,11 +1529,11 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
   final Set<MethodElement> staticMethods = <MethodElement>{};
 
   List<String> get staticMethodsNames =>
-      staticMethods.map((e) => e.name).toList();
+      staticMethods.map((e) => e.name).nonNulls.toList();
 
   final Set<MethodElement> methods = <MethodElement>{};
 
-  List<String> get methodsNames => methods.map((e) => e.name).toList();
+  List<String> get methodsNames => methods.map((e) => e.name).nonNulls.toList();
 
   bool hasMethod(String methodName) =>
       methods.where((m) => m.name == methodName).isNotEmpty;
@@ -1525,7 +1564,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
 
   @override
   T? visitMethodElement(MethodElement element) {
-    if (element.isPrivate || !isValidMethodName(element.name)) {
+    if (element.isPrivate || !isValidMethodName(element.name ?? '')) {
       return super.visitMethodElement(element);
     }
 
@@ -1543,11 +1582,11 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
   final Set<FieldElement> staticFields = <FieldElement>{};
 
   List<String> get staticFieldsNames =>
-      staticFields.map((e) => e.name).toList();
+      staticFields.map((e) => e.name).nonNulls.toList();
 
   final Set<FieldElement> fields = <FieldElement>{};
 
-  List<String> get fieldsNames => fields.map((e) => e.name).toList();
+  List<String> get fieldsNames => fields.map((e) => e.name).nonNulls.toList();
 
   bool hasField(String filedName) =>
       fields.where((m) => m.name == filedName).isNotEmpty;
@@ -2067,7 +2106,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
   }
 
   Map<String, _Field> _toFieldEntries(Set<FieldElement> fields) {
-    return Map.fromEntries(fields.map((e) => MapEntry(e.name, _Field(e))));
+    return Map.fromEntries(fields.map((e) => MapEntry(e.name!, _Field(e))));
   }
 
   void _buildCallMethodToJson(StringBuffer str) {
@@ -2252,13 +2291,13 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
   Map<String, _Constructor> _toConstructorEntries(
       _ClassTree<T> classTree, Set<ConstructorElement> elements) {
     return Map.fromEntries(elements.map((c) {
-      return MapEntry(c.name, _Constructor(classTree, c));
+      return MapEntry(c.codeName, _Constructor(classTree, c));
     }));
   }
 
   Map<String, _Method> _toMethodsEntries(Set<MethodElement> elements) {
     return Map.fromEntries(elements.map((m) {
-      return MapEntry(m.name, _Method(this, m));
+      return MapEntry(m.name!, _Method(this, m));
     }));
   }
 
@@ -2487,7 +2526,7 @@ class _ClassTree<T> extends RecursiveElementVisitor<T> {
       var call = StringBuffer();
 
       call.write("onCall( this, '${proxyMethod.name}', <String,dynamic>{\n");
-      for (var p in method.parameters) {
+      for (var p in method.formalParameters) {
         if (ignoreParametersTypes.containsType(p.type)) continue;
         var name = p.name;
         call.write("  '${p.name}': $name,\n");
@@ -2566,28 +2605,28 @@ class _ProxyMethod {
   final String name;
 
   final DartType returnType;
-  final List<ParameterElement> parameters;
+  final List<FormalParameterElement> parameters;
   final List<TypeParameterElement> typeParameters;
 
   _ProxyMethod(
       this.name, this.returnType, this.parameters, this.typeParameters);
 
   factory _ProxyMethod.fromMethodElement(MethodElement method) {
-    return _ProxyMethod(method.name, method.returnType,
-        method.parameters.toList(), method.typeParameters.toList());
+    return _ProxyMethod(method.name!, method.returnType,
+        method.formalParameters.toList(), method.typeParameters.toList());
   }
 
   List<String> get typeParametersNames =>
-      typeParameters.map((e) => e.name).toList();
+      typeParameters.map((e) => e.name).nonNulls.toList();
 
-  List<ParameterElement> get positionalParameters => parameters
+  List<FormalParameterElement> get positionalParameters => parameters
       .where((p) => p.isPositional && !p.isOptionalPositional)
       .toList();
 
-  List<ParameterElement> get positionalOptionalParameters =>
+  List<FormalParameterElement> get positionalOptionalParameters =>
       parameters.where((p) => p.isOptionalPositional).toList();
 
-  List<ParameterElement> get namedParameters =>
+  List<FormalParameterElement> get namedParameters =>
       parameters.where((p) => p.isNamed).toList();
 
   bool get returnAcceptsNull => returnType.isNullable;
@@ -2626,7 +2665,7 @@ class _ProxyMethod {
     var parametersStr = StringBuffer();
 
     for (var p in typeParameters) {
-      var pStr = p.getDisplayString();
+      var pStr = p.displayString();
       if (pStr.startsWith('{') || pStr.startsWith('[')) {
         pStr = pStr.substring(1, pStr.length - 1).trim();
       }
@@ -2676,15 +2715,17 @@ class _ProxyMethod {
     return parametersStr.toString();
   }
 
-  void _writeParameters(StringBuffer parametersStr,
-      List<ParameterElement> parameters, Set<DartType> ignoreParametersTypes) {
+  void _writeParameters(
+      StringBuffer parametersStr,
+      List<FormalParameterElement> parameters,
+      Set<DartType> ignoreParametersTypes) {
     for (int i = 0; i < parameters.length; i++) {
       var e = parameters[i];
 
       if (ignoreParametersTypes.containsType(e.type)) continue;
 
       if (i > 0) parametersStr.write(', ');
-      var pStr = e.getDisplayString();
+      var pStr = e.displayString();
       if (pStr.startsWith('{') || pStr.startsWith('[')) {
         pStr = pStr.substring(1, pStr.length - 1).trim();
       }
@@ -2741,7 +2782,7 @@ class _Element {
       return null;
     }
 
-    var enclosingElement = element.enclosingElement3;
+    var enclosingElement = element.enclosingElement;
 
     if (enclosingElement is InterfaceElement) {
       return enclosingElement.thisType;
@@ -2757,17 +2798,17 @@ class _Element {
 
   List<ElementAnnotation> _annotationsImpl() {
     var element = _element;
-    var metadata = List<ElementAnnotation>.from(element.metadata);
+    var metadata = List<ElementAnnotation>.from(element.metadata.annotations);
 
     if (element is FieldElement) {
       var getter = element.getter;
       if (getter != null) {
-        metadata.addAll(getter.metadata);
+        metadata.addAll(getter.metadata.annotations);
       }
 
       var setter = element.setter;
       if (setter != null) {
-        metadata.addAll(setter.metadata);
+        metadata.addAll(setter.metadata.annotations);
       }
     }
 
@@ -2795,7 +2836,7 @@ class _Element {
 }
 
 class _Parameter extends _Element {
-  final ParameterElement parameterElement;
+  final FormalParameterElement parameterElement;
   final int parameterIndex;
 
   final DartType type;
@@ -2834,7 +2875,7 @@ class _Constructor<T> extends _Element {
 
   _TypeAliasTable get typeAliasTable => classTree.typeAliasTable;
 
-  String get name => constructorElement.name;
+  String get name => constructorElement.codeName;
 
   bool get returnNullable => constructorElement.returnType.isNullable;
 
@@ -3001,7 +3042,7 @@ class _Method extends _Element {
 
   _TypeAliasTable get typeAliasTable => classTree.typeAliasTable;
 
-  String get name => methodElement.name;
+  String get name => methodElement.name!;
 
   bool get returnNullable => methodElement.returnType.isNullable;
 
@@ -3058,7 +3099,7 @@ class _Field extends _Element {
 
   _Field(this.fieldElement) : super(fieldElement);
 
-  String get name => fieldElement.name;
+  String get name => fieldElement.name!;
 
   bool get isDartCore => fieldElement.type.isDartCore;
 
@@ -3410,7 +3451,9 @@ extension _DartTypeExtension on DartType {
     if (self is FunctionType) {
       var alias = self.alias;
       if (alias != null && alias.typeArguments.isEmpty) {
-        var name = alias.element.name;
+        var name = alias.element.name ??
+            (throw StateError(
+                "Can't resolve `FunctionType` alias name: $alias"));
         return name;
       } else {
         var functionType = self.getDisplayStringNoNullability();
@@ -3605,13 +3648,14 @@ extension _DartTypeExtension on DartType {
 }
 
 extension _ConstructorElementExtension on ConstructorElement {
-  List<_Parameter> parametersWhere(bool Function(ParameterElement p) filter) {
+  List<_Parameter> parametersWhere(
+      bool Function(FormalParameterElement p) filter) {
     var list = <_Parameter>[];
     var i = 0;
-    for (var p in parameters) {
+    for (var p in formalParameters) {
       if (filter(p)) {
         var param = _Parameter(
-            p, i, p.type, p.name, p.type.isNullable, p.isRequiredNamed);
+            p, i, p.type, p.name!, p.type.isNullable, p.isRequiredNamed);
         list.add(param);
       }
       i++;
@@ -3630,35 +3674,55 @@ extension _ConstructorElementExtension on ConstructorElement {
           parametersWhere((p) => p.isNamed).map((e) => MapEntry(e.name, e)));
 }
 
+extension _FormalParameterElementExtension on FormalParameterElement {
+  bool get isNormal => isRequiredPositional;
+}
+
 extension _FunctionTypeExtension on FunctionType {
+  List<String> get normalParameterNames => formalParameters
+      .where((p) => p.isNormal)
+      .map((p) => p.name)
+      .nonNulls
+      .toList();
+
   List<_Parameter> get normalParameters {
+    final normalParameterNames = this.normalParameterNames;
+    final normalParameterTypes = this.normalParameterTypes;
     return List<_Parameter>.generate(normalParameterNames.length, (i) {
       var n = normalParameterNames[i];
       var t = normalParameterTypes[i];
-      var p = parameters[i];
+      var p = formalParameters[i];
       return _Parameter(p, i, t, n, t.isNullable, true);
     });
   }
 
+  List<String> get optionalParameterNames => formalParameters
+      .where((p) => p.isOptionalPositional)
+      .map((p) => p.name)
+      .nonNulls
+      .toList();
+
   List<_Parameter> get optionalParameters {
+    final optionalParameterNames = this.optionalParameterNames;
+    final optionalParameterTypes = this.optionalParameterTypes;
     return List<_Parameter>.generate(optionalParameterNames.length, (i) {
       var n = optionalParameterNames[i];
       var t = optionalParameterTypes[i];
       var idx = normalParameterNames.length + i;
-      var p = parameters[idx];
+      var p = formalParameters[idx];
       return _Parameter(p, idx, t, n, t.isNullable, false);
     });
   }
 
   Map<String, _Parameter> get namedParameters {
     var map = <String, _Parameter>{};
-    var normalParametersLength = normalParameterNames.length;
-    var namedParametersLength = namedParameterTypes.length;
+    final normalParametersLength = normalParameterNames.length;
+    final namedParametersLength = namedParameterTypes.length;
 
     for (var i = 0; i < namedParametersLength; ++i) {
       var idx = normalParametersLength + i;
-      var p = parameters[idx];
-      var key = p.name;
+      var p = formalParameters[idx];
+      var key = p.name!;
       var type = p.type;
       var required = p.isRequiredNamed;
       var parameter = _Parameter(p, idx, type, key, type.isNullable, required);

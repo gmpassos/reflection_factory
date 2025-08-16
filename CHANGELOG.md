@@ -1,3 +1,22 @@
+## 2.6.0
+
+- Migrate to `analyzer: ^8.1.1` and `build: ^3.0.2`.
+
+- build: ^3.0.2
+- analyzer: ^8.1.1
+- dart_style: ^3.1.2
+- mime: ^2.0.0
+- collection: ^1.19.1
+- logging: ^1.3.0
+
+- build_runner: ^2.7.0
+- build_test: ^3.3.2
+- lints: ^6.0.0
+  
+- Comment `#dependency_validator: ^5.0.2` (incompatible with `analyzer: ^8.1.1`).
+
+- Dart CI: `DART_VERSION: "3.8.3"`
+
 ## 2.5.3
 
 - `ReflectionBuilder`: improve use of `const` for generated code.

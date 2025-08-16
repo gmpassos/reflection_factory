@@ -48,7 +48,7 @@ abstract class TypeChecker {
     Element element, {
     bool throwOnUnresolved = true,
   }) {
-    if (element.metadata.isEmpty) {
+    if (element.metadata.annotations.isEmpty) {
       return null;
     }
     final results =
@@ -70,7 +70,7 @@ abstract class TypeChecker {
     Element element, {
     bool throwOnUnresolved = true,
   }) {
-    if (element.metadata.isEmpty) {
+    if (element.metadata.annotations.isEmpty) {
       return null;
     }
     final results =
@@ -91,7 +91,7 @@ abstract class TypeChecker {
     int annotationIndex, {
     bool throwOnUnresolved = true,
   }) {
-    final annotation = element.metadata[annotationIndex];
+    final annotation = element.metadata.annotations[annotationIndex];
     final result = annotation.computeConstantValue();
 
     if (result == null && throwOnUnresolved) {
@@ -119,7 +119,8 @@ abstract class TypeChecker {
     bool Function(DartType) predicate, {
     bool throwOnUnresolved = true,
   }) sync* {
-    for (var i = 0; i < element.metadata.length; i++) {
+    final annotations = element.metadata.annotations;
+    for (var i = 0; i < annotations.length; i++) {
       final value = _computeConstantValue(
         element,
         i,
@@ -274,7 +275,8 @@ class UnresolvedAnnotationException implements Exception {
       final parsedLibrary = annotatedElement.session!
               .getParsedLibraryByElement(annotatedElement.library!)
           as ParsedLibraryResult;
-      final declaration = parsedLibrary.getElementDeclaration(annotatedElement);
+      final declaration =
+          parsedLibrary.getFragmentDeclaration(annotatedElement.firstFragment);
       if (declaration == null) {
         return null;
       }
