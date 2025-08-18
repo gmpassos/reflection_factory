@@ -1,4 +1,4 @@
-## 2.6.0-beta.1
+## 2.6.0
 
 - Migrate to `analyzer: ^8.1.1` and `build: ^3.0.2`.
 
@@ -15,7 +15,7 @@
   
 - Comment `#dependency_validator: ^5.0.2` (incompatible with `analyzer: ^8.1.1`).
 
-- Dart CI: `DART_VERSION: "3.8.3"`
+- Dart CI: `DART_VERSION: "latest"`
 
 - sdk: '>=3.7.0 <4.0.0'
 
