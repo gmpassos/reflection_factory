@@ -1460,14 +1460,14 @@ class TypeInfo<T> {
     }
 
     if (hasArguments) {
-      if (this.isIterable) {
+      if (isIterable) {
         var arg = _arguments[0];
         var valid = arg.isValidGenericType;
         if (valid) {
           TypeInfo<Iterable> iterableTypeInfo;
-          if (this.isSet) {
+          if (isSet) {
             iterableTypeInfo = arg.toSetType();
-          } else if (this.isList) {
+          } else if (isList) {
             iterableTypeInfo = arg.toListType();
           } else {
             iterableTypeInfo = arg.toIterableType();
@@ -1478,16 +1478,14 @@ class TypeInfo<T> {
             return true;
           }
         }
-      } else if (this.isMap || this.isMapEntry) {
+      } else if (isMap || isMapEntry) {
         var arg0 = _arguments[0];
         var arg1 = _arguments[1];
 
         var valid = arg0.isValidGenericType && arg1.isValidGenericType;
         if (valid) {
           var typeInfo =
-              this.isMapEntry
-                  ? arg0.toMapEntryType(arg1)
-                  : arg0.toMapType(arg1);
+              isMapEntry ? arg0.toMapEntryType(arg1) : arg0.toMapType(arg1);
           var genericType2 = typeInfo.genericType;
           if (genericType2 == genericType) {
             return true;
@@ -1711,21 +1709,25 @@ class TypeInfo<T> {
   }
 
   /// Calls [f] casting [T].
-  R callCasted<R>(R Function<T>() f) {
+  R callCasted<R>(R Function<E>() f) {
     return f<T>();
   }
 
   /// Calls [f] casting [A] as [arguments0] `T`.
+  // ignore: avoid_types_as_parameter_names
   R callCastedArgumentA<R, A>(R Function<A>() f) {
     var arg0 = _arguments[0];
     return arg0.callCasted(f);
   }
 
   /// Calls [f] casting [A] as [arguments0] `T` and [B] as [arguments1] `T`.
+  // ignore: avoid_types_as_parameter_names
   R callCastedArgumentsAB<R, A, B>(R Function<A, B>() f) {
     var arg0 = _arguments[0];
     var arg1 = _arguments[1];
+    // ignore: avoid_types_as_parameter_names
     return arg0.callCasted(<A>() {
+      // ignore: avoid_types_as_parameter_names
       return arg1.callCasted(<B>() => f<A, B>());
     });
   }

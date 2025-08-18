@@ -476,7 +476,7 @@ abstract class Reflection<O> {
   }
 
   /// Calls [function] with correct casting for this [Reflection].
-  R callCasted<R>(R Function<O>(Reflection<O> reflection) function);
+  R callCasted<R>(R Function<E>(Reflection<E> reflection) function);
 
   /// Returns a [List] of siblings [Reflection] (declared in the same code unit).
   List<Reflection> siblingsReflection();
@@ -572,7 +572,7 @@ abstract class EnumReflection<O> extends Reflection<O>
 
   /// Calls [function] with correct casting for [EnumReflection].
   @override
-  R callCasted<R>(R Function<O>(EnumReflection<O> enumReflection) function) {
+  R callCasted<R>(R Function<E>(EnumReflection<E> enumReflection) function) {
     return function<O>(this);
   }
 
@@ -866,7 +866,7 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   /// Calls [function] with correct casting for [ClassReflection].
   @override
-  R callCasted<R>(R Function<O>(ClassReflection<O> classReflection) function) {
+  R callCasted<R>(R Function<E>(ClassReflection<E> classReflection) function) {
     return function<O>(this);
   }
 

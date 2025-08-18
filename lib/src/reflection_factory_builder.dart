@@ -1387,7 +1387,7 @@ class _EnumTree<T> extends RecursiveElementVisitor2<T> {
       '  static const Map<String,$enumName> _valuesByName = const <String,$enumName>{\n',
     );
 
-    final enumType = this.thisType;
+    final enumType = thisType;
 
     var enumsEntries =
         entries.entries
