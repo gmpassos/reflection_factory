@@ -1,3 +1,9 @@
+## 2.6.1
+
+- build: ^4.0.1
+- build_runner: ^2.9.0
+- build_test: ^3.4.1
+
 ## 2.6.0
 
 - Migrate to `analyzer: ^8.1.1` and `build: ^3.0.2`.
