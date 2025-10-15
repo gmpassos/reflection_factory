@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.6.1
+// BUILDER: reflection_factory/2.7.0
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -22,7 +22,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.6.1');
+  static final Version _version = Version.parse('2.7.0');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -198,7 +198,7 @@ class TestAddressWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.7.0');
+  Version get languageVersion => Version.parse('3.9.0');
 
   @override
   TestAddressWithReflection$reflection withObject([
@@ -408,8 +408,10 @@ class TestAddressWithReflection$reflection
           __TR.tInt,
           'id',
           true,
-          (o) => () => o!.id,
-          (o) => (v) => o!.id = v,
+          (o) =>
+              () => o!.id,
+          (o) =>
+              (v) => o!.id = v,
           obj,
           false,
         );
@@ -420,7 +422,8 @@ class TestAddressWithReflection$reflection
           __TR.tString,
           'state',
           false,
-          (o) => () => o!.state,
+          (o) =>
+              () => o!.state,
           null,
           obj,
           true,
@@ -432,7 +435,8 @@ class TestAddressWithReflection$reflection
           __TR.tString,
           'city',
           false,
-          (o) => () => o!.city,
+          (o) =>
+              () => o!.city,
           null,
           obj,
           true,
@@ -444,7 +448,8 @@ class TestAddressWithReflection$reflection
           __TR.tInt,
           'hashCode',
           false,
-          (o) => () => o!.hashCode,
+          (o) =>
+              () => o!.hashCode,
           null,
           obj,
           false,
@@ -621,7 +626,7 @@ class TestCompanyWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.7.0');
+  Version get languageVersion => Version.parse('3.9.0');
 
   @override
   TestCompanyWithReflection$reflection withObject([
@@ -874,7 +879,8 @@ class TestCompanyWithReflection$reflection
           __TR.tString,
           'name',
           false,
-          (o) => () => o!.name,
+          (o) =>
+              () => o!.name,
           null,
           obj,
           true,
@@ -889,8 +895,10 @@ class TestCompanyWithReflection$reflection
           const __TR<TestAddressWithReflection>(TestAddressWithReflection),
           'mainAddress',
           true,
-          (o) => () => o!.mainAddress,
-          (o) => (v) => o!.mainAddress = v,
+          (o) =>
+              () => o!.mainAddress,
+          (o) =>
+              (v) => o!.mainAddress = v,
           obj,
           false,
         );
@@ -901,7 +909,8 @@ class TestCompanyWithReflection$reflection
           __TR.tListString,
           'extraNames',
           false,
-          (o) => () => o!.extraNames,
+          (o) =>
+              () => o!.extraNames,
           null,
           obj,
           true,
@@ -918,8 +927,10 @@ class TestCompanyWithReflection$reflection
           ]),
           'branchesAddresses',
           false,
-          (o) => () => o!.branchesAddresses,
-          (o) => (v) => o!.branchesAddresses = v,
+          (o) =>
+              () => o!.branchesAddresses,
+          (o) =>
+              (v) => o!.branchesAddresses = v,
           obj,
           false,
         );
@@ -935,8 +946,10 @@ class TestCompanyWithReflection$reflection
           ]),
           'extraAddresses',
           false,
-          (o) => () => o!.extraAddresses,
-          (o) => (v) => o!.extraAddresses = v,
+          (o) =>
+              () => o!.extraAddresses,
+          (o) =>
+              (v) => o!.extraAddresses = v,
           obj,
           false,
         );
@@ -947,8 +960,10 @@ class TestCompanyWithReflection$reflection
           __TR.tBool,
           'local',
           false,
-          (o) => () => o!.local,
-          (o) => (v) => o!.local = v,
+          (o) =>
+              () => o!.local,
+          (o) =>
+              (v) => o!.local = v,
           obj,
           false,
           const [JsonField.hidden()],
@@ -960,7 +975,8 @@ class TestCompanyWithReflection$reflection
           __TR.tInt,
           'hashCode',
           false,
-          (o) => () => o!.hashCode,
+          (o) =>
+              () => o!.hashCode,
           null,
           obj,
           false,
@@ -1135,7 +1151,7 @@ class TestDataWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.7.0');
+  Version get languageVersion => Version.parse('3.9.0');
 
   @override
   TestDataWithReflection$reflection withObject([TestDataWithReflection? obj]) =>
@@ -1321,7 +1337,8 @@ class TestDataWithReflection$reflection
           __TR.tString,
           'name',
           false,
-          (o) => () => o!.name,
+          (o) =>
+              () => o!.name,
           null,
           obj,
           true,
@@ -1333,8 +1350,10 @@ class TestDataWithReflection$reflection
           __TR.tBigInt,
           'id',
           false,
-          (o) => () => o!.id,
-          (o) => (v) => o!.id = v,
+          (o) =>
+              () => o!.id,
+          (o) =>
+              (v) => o!.id = v,
           obj,
           false,
         );
@@ -1345,8 +1364,10 @@ class TestDataWithReflection$reflection
           const __TR<Uint8List>(Uint8List),
           'bytes',
           false,
-          (o) => () => o!.bytes,
-          (o) => (v) => o!.bytes = v,
+          (o) =>
+              () => o!.bytes,
+          (o) =>
+              (v) => o!.bytes = v,
           obj,
           false,
         );
@@ -1360,8 +1381,10 @@ class TestDataWithReflection$reflection
           const __TR<TestDomainWithReflection>(TestDomainWithReflection),
           'domain',
           true,
-          (o) => () => o!.domain,
-          (o) => (v) => o!.domain = v,
+          (o) =>
+              () => o!.domain,
+          (o) =>
+              (v) => o!.domain = v,
           obj,
           false,
         );
@@ -1372,7 +1395,8 @@ class TestDataWithReflection$reflection
           __TR.tInt,
           'hashCode',
           false,
-          (o) => () => o!.hashCode,
+          (o) =>
+              () => o!.hashCode,
           null,
           obj,
           false,
@@ -1458,7 +1482,7 @@ class TestDomainWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.7.0');
+  Version get languageVersion => Version.parse('3.9.0');
 
   @override
   TestDomainWithReflection$reflection withObject([
@@ -1685,7 +1709,8 @@ class TestDomainWithReflection$reflection
           __TR.tString,
           'name',
           false,
-          (o) => () => o!.name,
+          (o) =>
+              () => o!.name,
           null,
           obj,
           true,
@@ -1697,7 +1722,8 @@ class TestDomainWithReflection$reflection
           __TR.tString,
           'suffix',
           false,
-          (o) => () => o!.suffix,
+          (o) =>
+              () => o!.suffix,
           null,
           obj,
           true,
@@ -1709,7 +1735,8 @@ class TestDomainWithReflection$reflection
           const __TR<DomainFunction>(DomainFunction),
           'domainFunction',
           true,
-          (o) => () => o!.domainFunction,
+          (o) =>
+              () => o!.domainFunction,
           null,
           obj,
           true,
@@ -1721,7 +1748,8 @@ class TestDomainWithReflection$reflection
           __TR.tFunction,
           'extraFunction',
           true,
-          (o) => () => o!.extraFunction,
+          (o) =>
+              () => o!.extraFunction,
           null,
           obj,
           true,
@@ -1733,7 +1761,8 @@ class TestDomainWithReflection$reflection
           __TR.tInt,
           'hashCode',
           false,
-          (o) => () => o!.hashCode,
+          (o) =>
+              () => o!.hashCode,
           null,
           obj,
           false,
@@ -1928,7 +1957,7 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
   }
 
   @override
-  Version get languageVersion => Version.parse('3.7.0');
+  Version get languageVersion => Version.parse('3.9.0');
 
   @override
   TestEmpty$reflection withObject([TestEmpty? obj]) =>
@@ -2091,7 +2120,7 @@ class TestEnumWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.7.0');
+  Version get languageVersion => Version.parse('3.9.0');
 
   @override
   TestEnumWithReflection$reflection withObject([TestEnumWithReflection? obj]) =>
@@ -2185,7 +2214,7 @@ class TestFranchiseWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.7.0');
+  Version get languageVersion => Version.parse('3.9.0');
 
   @override
   TestFranchiseWithReflection$reflection withObject([
@@ -2375,7 +2404,8 @@ class TestFranchiseWithReflection$reflection
           __TR.tString,
           'name',
           false,
-          (o) => () => o!.name,
+          (o) =>
+              () => o!.name,
           null,
           obj,
           true,
@@ -2393,8 +2423,10 @@ class TestFranchiseWithReflection$reflection
           ]),
           'addresses',
           false,
-          (o) => () => o!.addresses,
-          (o) => (v) => o!.addresses = v,
+          (o) =>
+              () => o!.addresses,
+          (o) =>
+              (v) => o!.addresses = v,
           obj,
           false,
         );
@@ -2405,7 +2437,8 @@ class TestFranchiseWithReflection$reflection
           __TR.tInt,
           'hashCode',
           false,
-          (o) => () => o!.hashCode,
+          (o) =>
+              () => o!.hashCode,
           null,
           obj,
           false,
@@ -2559,7 +2592,7 @@ class TestName$reflection extends ClassReflection<TestName>
   }
 
   @override
-  Version get languageVersion => Version.parse('3.7.0');
+  Version get languageVersion => Version.parse('3.9.0');
 
   @override
   TestName$reflection withObject([TestName? obj]) =>
@@ -2715,8 +2748,10 @@ class TestName$reflection extends ClassReflection<TestName>
           __TR.tString,
           'name',
           true,
-          (o) => () => o!.name,
-          (o) => (v) => o!.name = v,
+          (o) =>
+              () => o!.name,
+          (o) =>
+              (v) => o!.name = v,
           obj,
           false,
         );
@@ -2727,7 +2762,8 @@ class TestName$reflection extends ClassReflection<TestName>
           __TR.tBool,
           'isEmpty',
           false,
-          (o) => () => o!.isEmpty,
+          (o) =>
+              () => o!.isEmpty,
           null,
           obj,
           false,
@@ -2887,7 +2923,7 @@ class TestOpAWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.7.0');
+  Version get languageVersion => Version.parse('3.9.0');
 
   @override
   TestOpAWithReflection$reflection withObject([TestOpAWithReflection? obj]) =>
@@ -3059,8 +3095,10 @@ class TestOpAWithReflection$reflection
           __TR.tInt,
           'value',
           false,
-          (o) => () => o!.value,
-          (o) => (v) => o!.value = v,
+          (o) =>
+              () => o!.value,
+          (o) =>
+              (v) => o!.value = v,
           obj,
           false,
           const [override, override],
@@ -3072,7 +3110,8 @@ class TestOpAWithReflection$reflection
           __TR.tString,
           'type',
           false,
-          (o) => () => o!.type,
+          (o) =>
+              () => o!.type,
           null,
           obj,
           true,
@@ -3133,8 +3172,10 @@ class TestOpAWithReflection$reflection
           __TR.tInt,
           'staticFieldA',
           false,
-          () => () => TestOpAWithReflection.staticFieldA,
-          () => (v) => TestOpAWithReflection.staticFieldA = v,
+          () =>
+              () => TestOpAWithReflection.staticFieldA,
+          () =>
+              (v) => TestOpAWithReflection.staticFieldA = v,
           false,
           null,
         );
@@ -3281,7 +3322,7 @@ class TestOpBWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.7.0');
+  Version get languageVersion => Version.parse('3.9.0');
 
   @override
   TestOpBWithReflection$reflection withObject([TestOpBWithReflection? obj]) =>
@@ -3457,8 +3498,10 @@ class TestOpBWithReflection$reflection
           __TR.tDouble,
           'amount',
           false,
-          (o) => () => o!.amount,
-          (o) => (v) => o!.amount = v,
+          (o) =>
+              () => o!.amount,
+          (o) =>
+              (v) => o!.amount = v,
           obj,
           false,
         );
@@ -3469,7 +3512,8 @@ class TestOpBWithReflection$reflection
           __TR.tString,
           'type',
           false,
-          (o) => () => o!.type,
+          (o) =>
+              () => o!.type,
           null,
           obj,
           true,
@@ -3481,8 +3525,10 @@ class TestOpBWithReflection$reflection
           __TR.tDynamic,
           'value',
           true,
-          (o) => () => o!.value,
-          (o) => (v) => o!.value = v,
+          (o) =>
+              () => o!.value,
+          (o) =>
+              (v) => o!.value = v,
           obj,
           false,
         );
@@ -3694,7 +3740,7 @@ class TestOpWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.7.0');
+  Version get languageVersion => Version.parse('3.9.0');
 
   @override
   TestOpWithReflection$reflection withObject([TestOpWithReflection? obj]) =>
@@ -3879,7 +3925,8 @@ class TestOpWithReflection$reflection
           __TR.tString,
           'type',
           false,
-          (o) => () => o!.type,
+          (o) =>
+              () => o!.type,
           null,
           obj,
           true,
@@ -3891,8 +3938,10 @@ class TestOpWithReflection$reflection
           __TR.tDynamic,
           'value',
           true,
-          (o) => () => o!.value,
-          (o) => (v) => o!.value = v,
+          (o) =>
+              () => o!.value,
+          (o) =>
+              (v) => o!.value = v,
           obj,
           false,
         );
@@ -3949,8 +3998,10 @@ class TestOpWithReflection$reflection
           __TR.tInt,
           'staticField',
           false,
-          () => () => TestOpWithReflection.staticField,
-          () => (v) => TestOpWithReflection.staticField = v,
+          () =>
+              () => TestOpWithReflection.staticField,
+          () =>
+              (v) => TestOpWithReflection.staticField = v,
           false,
           null,
         );
@@ -4127,7 +4178,7 @@ class TestTransactionWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.7.0');
+  Version get languageVersion => Version.parse('3.9.0');
 
   @override
   TestTransactionWithReflection$reflection withObject([
@@ -4324,7 +4375,8 @@ class TestTransactionWithReflection$reflection
           const __TR<TestUserWithReflection>(TestUserWithReflection),
           'fromUser',
           false,
-          (o) => () => o!.fromUser,
+          (o) =>
+              () => o!.fromUser,
           null,
           obj,
           true,
@@ -4339,7 +4391,8 @@ class TestTransactionWithReflection$reflection
           const __TR<TestUserWithReflection>(TestUserWithReflection),
           'toUser',
           false,
-          (o) => () => o!.toUser,
+          (o) =>
+              () => o!.toUser,
           null,
           obj,
           true,
@@ -4351,7 +4404,8 @@ class TestTransactionWithReflection$reflection
           __TR.tInt,
           'amount',
           false,
-          (o) => () => o!.amount,
+          (o) =>
+              () => o!.amount,
           null,
           obj,
           true,
@@ -4433,7 +4487,7 @@ class TestUserWithReflection$reflection
   }
 
   @override
-  Version get languageVersion => Version.parse('3.7.0');
+  Version get languageVersion => Version.parse('3.9.0');
 
   @override
   TestUserWithReflection$reflection withObject([TestUserWithReflection? obj]) =>
@@ -4642,8 +4696,10 @@ class TestUserWithReflection$reflection
           __TR.tInt,
           'id',
           true,
-          (o) => () => o!.id,
-          (o) => (v) => o!.id = v,
+          (o) =>
+              () => o!.id,
+          (o) =>
+              (v) => o!.id = v,
           obj,
           false,
         );
@@ -4654,7 +4710,8 @@ class TestUserWithReflection$reflection
           __TR.tString,
           'name',
           false,
-          (o) => () => o!.name,
+          (o) =>
+              () => o!.name,
           null,
           obj,
           true,
@@ -4666,8 +4723,10 @@ class TestUserWithReflection$reflection
           __TR.tString,
           'email',
           true,
-          (o) => () => o!.email,
-          (o) => (v) => o!.email = v,
+          (o) =>
+              () => o!.email,
+          (o) =>
+              (v) => o!.email = v,
           obj,
           false,
           const [JsonField.visible()],
@@ -4679,8 +4738,10 @@ class TestUserWithReflection$reflection
           __TR.tString,
           'password',
           true,
-          (o) => () => o!.password,
-          (o) => (v) => o!.password = v,
+          (o) =>
+              () => o!.password,
+          (o) =>
+              (v) => o!.password = v,
           obj,
           false,
           const [JsonField.hidden()],
@@ -4692,8 +4753,10 @@ class TestUserWithReflection$reflection
           __TR.tBool,
           'enabled',
           false,
-          (o) => () => o!.enabled,
-          (o) => (v) => o!.enabled = v,
+          (o) =>
+              () => o!.enabled,
+          (o) =>
+              (v) => o!.enabled = v,
           obj,
           false,
         );
@@ -4704,8 +4767,10 @@ class TestUserWithReflection$reflection
           const __TR<TestEnumWithReflection>(TestEnumWithReflection),
           'axis',
           false,
-          (o) => () => o!.axis,
-          (o) => (v) => o!.axis = v,
+          (o) =>
+              () => o!.axis,
+          (o) =>
+              (v) => o!.axis = v,
           obj,
           false,
         );
@@ -4716,8 +4781,10 @@ class TestUserWithReflection$reflection
           __TR.tInt,
           'level',
           true,
-          (o) => () => o!.level,
-          (o) => (v) => o!.level = v,
+          (o) =>
+              () => o!.level,
+          (o) =>
+              (v) => o!.level = v,
           obj,
           false,
           const [JsonFieldAlias('theLevel')],
@@ -4729,7 +4796,8 @@ class TestUserWithReflection$reflection
           __TR.tBool,
           'isEnabled',
           false,
-          (o) => () => o!.isEnabled,
+          (o) =>
+              () => o!.isEnabled,
           null,
           obj,
           false,
@@ -4742,7 +4810,8 @@ class TestUserWithReflection$reflection
           __TR.tBool,
           'isNotEnabled',
           false,
-          (o) => () => o!.isNotEnabled,
+          (o) =>
+              () => o!.isNotEnabled,
           null,
           obj,
           false,
@@ -4755,7 +4824,8 @@ class TestUserWithReflection$reflection
           __TR.tInt,
           'hashCode',
           false,
-          (o) => () => o!.hashCode,
+          (o) =>
+              () => o!.hashCode,
           null,
           obj,
           false,
@@ -4845,7 +4915,8 @@ class TestUserWithReflection$reflection
           __TR.tDouble,
           'version',
           false,
-          () => () => TestUserWithReflection.version,
+          () =>
+              () => TestUserWithReflection.version,
           null,
           true,
           null,
@@ -4857,7 +4928,8 @@ class TestUserWithReflection$reflection
           __TR.tBool,
           'withReflection',
           false,
-          () => () => TestUserWithReflection.withReflection,
+          () =>
+              () => TestUserWithReflection.withReflection,
           null,
           true,
           null,
@@ -5405,10 +5477,8 @@ List<Reflection> _listSiblingsReflection() => <Reflection>[
 ];
 
 List<Reflection>? _siblingsReflectionList;
-List<Reflection> _siblingsReflection() =>
-    _siblingsReflectionList ??= List<Reflection>.unmodifiable(
-      _listSiblingsReflection(),
-    );
+List<Reflection> _siblingsReflection() => _siblingsReflectionList ??=
+    List<Reflection>.unmodifiable(_listSiblingsReflection());
 
 bool _registerSiblingsReflectionCalled = false;
 void _registerSiblingsReflection() {

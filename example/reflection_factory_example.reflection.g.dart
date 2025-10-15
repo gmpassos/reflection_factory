@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.6.1
+// BUILDER: reflection_factory/2.7.0
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -22,7 +22,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.6.1');
+  static final Version _version = Version.parse('2.7.0');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -58,7 +58,7 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
   }
 
   @override
-  Version get languageVersion => Version.parse('3.7.0');
+  Version get languageVersion => Version.parse('3.9.0');
 
   @override
   User$reflection withObject([User? obj]) =>
@@ -228,8 +228,10 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
           __TR.tString,
           'email',
           true,
-          (o) => () => o!.email,
-          (o) => (v) => o!.email = v,
+          (o) =>
+              () => o!.email,
+          (o) =>
+              (v) => o!.email = v,
           obj,
           false,
         );
@@ -240,8 +242,10 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
           __TR.tString,
           'pass',
           false,
-          (o) => () => o!.pass,
-          (o) => (v) => o!.pass = v,
+          (o) =>
+              () => o!.pass,
+          (o) =>
+              (v) => o!.pass = v,
           obj,
           false,
         );
@@ -252,7 +256,8 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
           __TR.tBool,
           'hasEmail',
           false,
-          (o) => () => o!.hasEmail,
+          (o) =>
+              () => o!.hasEmail,
           null,
           obj,
           false,
@@ -391,10 +396,8 @@ extension User$reflectionExtension on User {
 List<Reflection> _listSiblingsReflection() => <Reflection>[User$reflection()];
 
 List<Reflection>? _siblingsReflectionList;
-List<Reflection> _siblingsReflection() =>
-    _siblingsReflectionList ??= List<Reflection>.unmodifiable(
-      _listSiblingsReflection(),
-    );
+List<Reflection> _siblingsReflection() => _siblingsReflectionList ??=
+    List<Reflection>.unmodifiable(_listSiblingsReflection());
 
 bool _registerSiblingsReflectionCalled = false;
 void _registerSiblingsReflection() {
