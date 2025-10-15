@@ -1387,16 +1387,14 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     }
 
     if (o is Map) {
-      var map =
-          o is Map<String, Object>
-              ? o
-              : o.map((k, v) => MapEntry(k.toString(), v));
+      var map = o is Map<String, Object>
+          ? o
+          : o.map((k, v) => MapEntry(k.toString(), v));
       return _fromJsonMapImpl(map, typeInfo, duplicatedEntitiesAsID);
     } else if (o is Iterable) {
-      var listType =
-          typeInfo.isIterable && typeInfo.hasArguments
-              ? typeInfo.arguments[0]
-              : typeInfo;
+      var listType = typeInfo.isIterable && typeInfo.hasArguments
+          ? typeInfo.arguments[0]
+          : typeInfo;
       return _fromJsonListImpl(o, listType, duplicatedEntitiesAsID) as O?;
     } else if (o is String) {
       return _entityFromJsonString(typeInfo, o, duplicatedEntitiesAsID);
@@ -1453,10 +1451,9 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     } else if (type == BigInt) {
       return _parseBigInt(o) as O?;
     } else if (o is Map) {
-      var map =
-          o is Map<String, Object>
-              ? o
-              : o.map((k, v) => MapEntry(k.toString(), v));
+      var map = o is Map<String, Object>
+          ? o
+          : o.map((k, v) => MapEntry(k.toString(), v));
       return fromJsonMapAsync<O>(map, typeInfo: typeInfo);
     } else if (o is Iterable) {
       return _fromJsonListAsyncImpl(
@@ -1589,10 +1586,9 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     TypeInfo typeInfo,
     bool duplicatedEntitiesAsID,
   ) {
-    var list =
-        o
-            .map((e) => _fromJsonImpl<O>(e, typeInfo, duplicatedEntitiesAsID))
-            .toList();
+    var list = o
+        .map((e) => _fromJsonImpl<O>(e, typeInfo, duplicatedEntitiesAsID))
+        .toList();
 
     return _castList(list, typeInfo);
   }
@@ -1652,17 +1648,16 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     bool duplicatedEntitiesAsID,
     bool? autoResetEntityCache,
   ) {
-    var listAsync =
-        o
-            .map(
-              (e) => _fromJsonAsyncImpl(
-                e,
-                typeInfo,
-                duplicatedEntitiesAsID,
-                autoResetEntityCache,
-              ),
-            )
-            .toList();
+    var listAsync = o
+        .map(
+          (e) => _fromJsonAsyncImpl(
+            e,
+            typeInfo,
+            duplicatedEntitiesAsID,
+            autoResetEntityCache,
+          ),
+        )
+        .toList();
 
     return _resolveListAsync<O>(listAsync, typeInfo, autoResetEntityCache);
   }
@@ -1723,10 +1718,9 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
         return Future.value(MapEntry(k, v));
       }).toList();
 
-  bool _mapHasFuture(Map map) =>
-      map.entries
-          .where((e) => _valueHasFuture(e.key) || _valueHasFuture(e.value))
-          .isNotEmpty;
+  bool _mapHasFuture(Map map) => map.entries
+      .where((e) => _valueHasFuture(e.key) || _valueHasFuture(e.value))
+      .isNotEmpty;
 
   @override
   O fromJsonMap<O>(
@@ -1910,8 +1904,8 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
     var entity = classReflection.createInstanceFromMap(
       map,
-      fieldValueResolver:
-          (f, v, t) => _fieldValueResolver(f, v, t, duplicatedEntitiesAsID),
+      fieldValueResolver: (f, v, t) =>
+          _fieldValueResolver(f, v, t, duplicatedEntitiesAsID),
     );
 
     _cacheEntity(entity);
@@ -1966,14 +1960,13 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     var classReflection = ReflectionFactory().getRegisterClassReflection(type);
 
     if (classReflection != null) {
-      var constructors =
-          classReflection
-              .allConstructors()
-              .where((c) => c.parametersLength > 0)
-              .where(
-                (c) => c.parametersWhere((p) => p.type.isStringType).isNotEmpty,
-              )
-              .toList();
+      var constructors = classReflection
+          .allConstructors()
+          .where((c) => c.parametersLength > 0)
+          .where(
+            (c) => c.parametersWhere((p) => p.type.isStringType).isNotEmpty,
+          )
+          .toList();
 
       var constructorsParamString =
           constructors
@@ -2066,37 +2059,30 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     if (classReflection != null) {
       var valueType = value.runtimeType;
 
-      var constructorsWithParameters =
-          classReflection
-              .allConstructors()
-              .where((c) => c.parametersLength > 0)
-              .toList();
+      var constructorsWithParameters = classReflection
+          .allConstructors()
+          .where((c) => c.parametersLength > 0)
+          .toList();
 
-      var constructorsWithParamType =
-          constructorsWithParameters
-              .where(
-                (c) =>
-                    c
-                        .parametersWhere((p) => p.type.type == valueType)
-                        .isNotEmpty,
-              )
-              .toList();
+      var constructorsWithParamType = constructorsWithParameters
+          .where(
+            (c) =>
+                c.parametersWhere((p) => p.type.type == valueType).isNotEmpty,
+          )
+          .toList();
 
-      var constructors =
-          constructorsWithParamType
-              .where((c) => c.parametersLength == 1)
-              .toList();
+      var constructors = constructorsWithParamType
+          .where((c) => c.parametersLength == 1)
+          .toList();
 
       if (constructors.isEmpty) {
-        var constructorsWithParamObject =
-            constructorsWithParameters
-                .where(
-                  (c) =>
-                      c
-                          .parametersWhere((p) => p.type.isObjectOrDynamicType)
-                          .isNotEmpty,
-                )
-                .toList();
+        var constructorsWithParamObject = constructorsWithParameters
+            .where(
+              (c) => c
+                  .parametersWhere((p) => p.type.isObjectOrDynamicType)
+                  .isNotEmpty,
+            )
+            .toList();
 
         constructors =
             constructorsWithParamObject
@@ -2220,8 +2206,8 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       return mapResolved.then((mapResolved2) {
         var entity = classReflection.createInstanceFromMap(
           mapResolved2,
-          fieldValueResolver:
-              (f, v, t) => _fieldValueResolver(f, v, t, duplicatedEntitiesAsID),
+          fieldValueResolver: (f, v, t) =>
+              _fieldValueResolver(f, v, t, duplicatedEntitiesAsID),
         );
         _cacheEntity(entity);
         return entity;
@@ -2229,8 +2215,8 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     } else {
       var entity = classReflection.createInstanceFromMap(
         map,
-        fieldValueResolver:
-            (f, v, t) => _fieldValueResolver(f, v, t, duplicatedEntitiesAsID),
+        fieldValueResolver: (f, v, t) =>
+            _fieldValueResolver(f, v, t, duplicatedEntitiesAsID),
       );
       _cacheEntity(entity);
       return entity;
@@ -2358,14 +2344,12 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     var castKeyType = castKeyTypeRefl?.type;
     var castValueType = castValueTypeRefl?.type;
 
-    var classReflectionKey =
-        castKeyType != null
-            ? ReflectionFactory().getRegisterClassReflection(castKeyType)
-            : null;
-    var classReflectionValue =
-        castValueType != null
-            ? ReflectionFactory().getRegisterClassReflection(castValueType)
-            : null;
+    var classReflectionKey = castKeyType != null
+        ? ReflectionFactory().getRegisterClassReflection(castKeyType)
+        : null;
+    var classReflectionValue = castValueType != null
+        ? ReflectionFactory().getRegisterClassReflection(castValueType)
+        : null;
 
     if (classReflectionKey != null) {
       var nullableKey = val.entries.any((e) => e.key == null);
@@ -2729,12 +2713,12 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     var classReflection = ReflectionFactory().getRegisterClassReflection(type);
 
     if (classReflection != null) {
-      var fieldID =
-          classReflection
-              .fieldsWhere((f) => f.name.toLowerCase() == 'id')
-              .firstOrNull;
-      fieldID ??=
-          classReflection.fieldsWhere((f) => f.type.isIntType).firstOrNull;
+      var fieldID = classReflection
+          .fieldsWhere((f) => f.name.toLowerCase() == 'id')
+          .firstOrNull;
+      fieldID ??= classReflection
+          .fieldsWhere((f) => f.type.isIntType)
+          .firstOrNull;
 
       return fieldID?.withObject(object).get();
     }
@@ -3116,8 +3100,8 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
     var entitiesInstantiators = _entitiesInstantiators ??= {};
 
-    var typeEntitiesInstantiators =
-        entitiesInstantiators[type] ??= <Object, Object Function()>{};
+    var typeEntitiesInstantiators = entitiesInstantiators[type] ??=
+        <Object, Object Function()>{};
 
     var prev = typeEntitiesInstantiators[id];
     if (prev != null && !overwrite) return false;

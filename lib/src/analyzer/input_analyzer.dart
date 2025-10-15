@@ -108,8 +108,9 @@ class InputAnalyzerResolved {
   }
 
   PartOfDirective? getCompilationUnitPartOf(CompilationUnit compilationUnit) {
-    var partOf =
-        compilationUnit.directives.whereType<PartOfDirective>().firstOrNull;
+    var partOf = compilationUnit.directives
+        .whereType<PartOfDirective>()
+        .firstOrNull;
     return partOf;
   }
 
@@ -129,14 +130,13 @@ class InputAnalyzerResolved {
   List<String> _allGPartsImpl() {
     var allParts = inputCompilationUnitParts();
 
-    var allPartsPaths =
-        allParts
-            .map((e) {
-              var uri = e.uri;
-              return uri.stringValue;
-            })
-            .nonNulls
-            .toList();
+    var allPartsPaths = allParts
+        .map((e) {
+          var uri = e.uri;
+          return uri.stringValue;
+        })
+        .nonNulls
+        .toList();
 
     return allPartsPaths.where((e) => e.endsWith('.g.dart')).toList();
   }
@@ -162,10 +162,9 @@ class InputAnalyzerResolved {
     AssetId compilationUnitId,
     bool deep,
   ) async {
-    var declaredAnnotations =
-        compilationUnit.declarations
-            .expand((e) => e.sortedCommentAndAnnotations)
-            .whereType<Annotation>();
+    var declaredAnnotations = compilationUnit.declarations
+        .expand((e) => e.sortedCommentAndAnnotations)
+        .whereType<Annotation>();
 
     annotations.addAll(declaredAnnotations);
 
@@ -235,13 +234,12 @@ class InputAnalyzerResolved {
       deep: deep,
     );
 
-    var reflectionAnnotations =
-        annotations.where((e) {
-          var name = e.name.name;
-          return name == 'EnableReflection' ||
-              name == 'ReflectionBridge' ||
-              name == 'ClassProxy';
-        }).toList();
+    var reflectionAnnotations = annotations.where((e) {
+      var name = e.name.name;
+      return name == 'EnableReflection' ||
+          name == 'ReflectionBridge' ||
+          name == 'ClassProxy';
+    }).toList();
 
     return reflectionAnnotations;
   }
@@ -279,8 +277,9 @@ class InputAnalyzerResolved {
     var resolverLibraries = await resolver.libraries.toList();
 
     if (libraryPath.isNotEmpty) {
-      libraryPath =
-          libraryPath.replaceAll(RegExp(r'^(?:package:)?/*'), '').trim();
+      libraryPath = libraryPath
+          .replaceAll(RegExp(r'^(?:package:)?/*'), '')
+          .trim();
       var result = await inputLibrary.session.getLibraryByUri(
         'package:$libraryPath',
       );
@@ -305,18 +304,19 @@ class InputAnalyzerResolved {
       }
     }
 
-    var mainLibrariesExported =
-        mainLibraries.expand((e) => e.exportedLibraries).toList();
+    var mainLibrariesExported = mainLibraries
+        .expand((e) => e.exportedLibraries)
+        .toList();
 
-    var allLibraries =
-        <LibraryElement>{
-          ...mainLibraries,
-          ...resolverLibraries,
-          ...mainLibrariesExported,
-        }.toList();
+    var allLibraries = <LibraryElement>{
+      ...mainLibraries,
+      ...resolverLibraries,
+      ...mainLibrariesExported,
+    }.toList();
 
-    var candidateClasses =
-        allLibraries.allUsedClasses.where((c) => c.name == className).toList();
+    var candidateClasses = allLibraries.allUsedClasses
+        .where((c) => c.name == className)
+        .toList();
 
     if (candidateClasses.length > 1) {
       if (libraryName.isNotEmpty) {
@@ -361,17 +361,15 @@ class InputAnalyzerResolved {
       }
     }
 
-    var hasReflectionBridge =
-        allAnnotatedClasses
-            .withAnnotation(InputAnalyzer.typeReflectionBridge)
-            .isNotEmpty;
+    var hasReflectionBridge = allAnnotatedClasses
+        .withAnnotation(InputAnalyzer.typeReflectionBridge)
+        .isNotEmpty;
 
     if (hasReflectionBridge) return true;
 
-    var hasClassProxy =
-        allAnnotatedClasses
-            .withAnnotation(InputAnalyzer.typeClassProxy)
-            .isNotEmpty;
+    var hasClassProxy = allAnnotatedClasses
+        .withAnnotation(InputAnalyzer.typeClassProxy)
+        .isNotEmpty;
 
     if (hasClassProxy) return true;
 
@@ -438,18 +436,15 @@ class InputAnalyzerResolved {
 
     var allGParts = this.allGParts();
 
-    var siblingParts =
-        allGParts
-            .where(
-              (p) =>
-                  p == outputFileSibling || p.endsWith('/$outputFileSibling'),
-            )
-            .toList();
+    var siblingParts = allGParts
+        .where(
+          (p) => p == outputFileSibling || p.endsWith('/$outputFileSibling'),
+        )
+        .toList();
 
-    var subParts =
-        allGParts
-            .where((p) => p == outputFileSub || p.endsWith('/$outputFileSub'))
-            .toList();
+    var subParts = allGParts
+        .where((p) => p == outputFileSub || p.endsWith('/$outputFileSub'))
+        .toList();
 
     return (
       siblingPart: siblingParts.firstOrNull,
@@ -514,18 +509,14 @@ extension _LibraryElementExtension on LibraryElement {
   static final Expando<List<LibraryElement>> _allExports =
       Expando<List<LibraryElement>>();
 
-  List<LibraryElement> get allExports =>
-      _allExports[this] ??= UnmodifiableListView(
-        exportedLibraries.nonNulls.toList(growable: false),
-      );
+  List<LibraryElement> get allExports => _allExports[this] ??=
+      UnmodifiableListView(exportedLibraries.nonNulls.toList(growable: false));
 
   static final Expando<Set<ClassElement>> _allExportedClasses =
       Expando<Set<ClassElement>>();
 
-  Set<ClassElement> get allExportedClasses =>
-      _allExportedClasses[this] ??= UnmodifiableSetView(
-        allExports.expand((e) => e.exportedClasses).toSet(),
-      );
+  Set<ClassElement> get allExportedClasses => _allExportedClasses[this] ??=
+      UnmodifiableSetView(allExports.expand((e) => e.exportedClasses).toSet());
 
   static final Expando<Set<ClassElement>> _allImportedClasses =
       Expando<Set<ClassElement>>();

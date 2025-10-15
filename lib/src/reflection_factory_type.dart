@@ -1484,8 +1484,9 @@ class TypeInfo<T> {
 
         var valid = arg0.isValidGenericType && arg1.isValidGenericType;
         if (valid) {
-          var typeInfo =
-              isMapEntry ? arg0.toMapEntryType(arg1) : arg0.toMapType(arg1);
+          var typeInfo = isMapEntry
+              ? arg0.toMapEntryType(arg1)
+              : arg0.toMapType(arg1);
           var genericType2 = typeInfo.genericType;
           if (genericType2 == genericType) {
             return true;
@@ -1527,10 +1528,9 @@ class TypeInfo<T> {
   /// The [type] arguments (generics).
   final List<TypeInfo> _arguments;
 
-  List<TypeInfo> get arguments =>
-      _arguments is UnmodifiableListView<TypeInfo>
-          ? _arguments
-          : UnmodifiableListView<TypeInfo>(_arguments);
+  List<TypeInfo> get arguments => _arguments is UnmodifiableListView<TypeInfo>
+      ? _arguments
+      : UnmodifiableListView<TypeInfo>(_arguments);
 
   static const _emptyArguments = <TypeInfo>[];
 
@@ -1549,12 +1549,11 @@ class TypeInfo<T> {
              object: object,
              hasArguments: arguments != null && arguments.isNotEmpty,
            ),
-       _arguments =
-           arguments == null || arguments.isEmpty
-               ? _emptyArguments
-               : List<TypeInfo>.unmodifiable(
-                 arguments.map((o) => TypeInfo.from(o)),
-               );
+       _arguments = arguments == null || arguments.isEmpty
+           ? _emptyArguments
+           : List<TypeInfo>.unmodifiable(
+               arguments.map((o) => TypeInfo.from(o)),
+             );
 
   const TypeInfo._wrapper(this._typeWrapper) : _arguments = _emptyArguments;
 
@@ -1836,10 +1835,9 @@ class TypeInfo<T> {
   TypeElementParser<T>? get parser => TypeParser.parserForTypeInfo<T>(this);
 
   /// Returns the parser of the argument at [index].
-  TypeElementParser<A>? argumentParser<A>(int index) =>
-      index < argumentsLength
-          ? _arguments[index].parser as TypeElementParser<A>?
-          : null;
+  TypeElementParser<A>? argumentParser<A>(int index) => index < argumentsLength
+      ? _arguments[index].parser as TypeElementParser<A>?
+      : null;
 
   /// Parse [value] or return [def].
   ///
@@ -2241,14 +2239,12 @@ class TypeInfo<T> {
   /// `K` and `V` if there's a [ClassReflection] or [EnumReflection]
   /// for them registered at [ReflectionFactory].
   Map castMap(Map map, {bool nullable = false}) {
-    var keyType =
-        isCollection
-            ? (argumentType(0) ?? TypeInfo.tDynamic)
-            : TypeInfo.tDynamic;
-    var valueType =
-        isCollection
-            ? (argumentType(1) ?? TypeInfo.tDynamic)
-            : TypeInfo.tDynamic;
+    var keyType = isCollection
+        ? (argumentType(0) ?? TypeInfo.tDynamic)
+        : TypeInfo.tDynamic;
+    var valueType = isCollection
+        ? (argumentType(1) ?? TypeInfo.tDynamic)
+        : TypeInfo.tDynamic;
 
     var reflectionFactory = ReflectionFactory();
 

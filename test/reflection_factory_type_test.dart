@@ -904,8 +904,10 @@ void main() {
           ],
         );
 
-        var fieldExtraAddressesTypeInfo =
-            company.reflection.field('extraAddresses')!.type.typeInfo;
+        var fieldExtraAddressesTypeInfo = company.reflection
+            .field('extraAddresses')!
+            .type
+            .typeInfo;
 
         expect(fieldExtraAddressesTypeInfo.type, equals(t1.type));
 
@@ -1482,12 +1484,11 @@ void main() {
           ]),
         );
 
-        var usersJson2 =
-            usersJson
-                .mapIndexed(
-                  (i, e) => {...e, 'password': i == 0 ? 'j123456' : 's123456'},
-                )
-                .toList();
+        var usersJson2 = usersJson
+            .mapIndexed(
+              (i, e) => {...e, 'password': i == 0 ? 'j123456' : 's123456'},
+            )
+            .toList();
 
         var usersDecoded =
             typeListOfUser.fromJson(usersJson2) as List<TestUserWithReflection>;

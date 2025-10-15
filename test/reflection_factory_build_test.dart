@@ -1687,7 +1687,8 @@ void main() {
             void nothing2() {}
           }
         ''',
-        '$_pkgName|lib/foo.dart': '''
+        '$_pkgName|lib/foo.dart':
+            '''
         
           import 'package:reflection_factory/reflection_factory.dart';
         

@@ -137,12 +137,11 @@ void main() {
       );
 
       expect(
-        () =>
-            [
-              JsonFieldAlias('abc'),
-              JsonFieldAlias('123'),
-              JsonFieldAlias('def'),
-            ].alias,
+        () => [
+          JsonFieldAlias('abc'),
+          JsonFieldAlias('123'),
+          JsonFieldAlias('def'),
+        ].alias,
         throwsA(isA<StateError>()),
       );
     });
@@ -1508,8 +1507,8 @@ void main() {
       expect(
         JsonCodec(
           jsomMapDecoderAsyncProvider: (type, map, j) {
-            var classReflection =
-                ReflectionFactory().getRegisterClassReflection(type)!;
+            var classReflection = ReflectionFactory()
+                .getRegisterClassReflection(type)!;
             return (m, j) {
               // Ensure that instance Map comes from here (force values uppercase):
               m = m.map(
@@ -1528,8 +1527,8 @@ void main() {
       expect(
         JsonCodec(
           jsomMapDecoderAsyncProvider: (type, map, j) {
-            var classReflection =
-                ReflectionFactory().getRegisterClassReflection(type)!;
+            var classReflection = ReflectionFactory()
+                .getRegisterClassReflection(type)!;
             return (m, j) {
               // Ensure that instance Map comes from here (force values uppercase):
               m = m.map(
@@ -2315,21 +2314,19 @@ void main() {
       var decoded1 =
           JsonCodec().decode(encode1, duplicatedEntitiesAsID: true) as List;
 
-      var company1 = JsonCodec(
-        entityCache: jsonEntityCache1,
-      ).fromJson<TestCompanyWithReflection>(
-        decoded1[0],
-        type: TestCompanyWithReflection,
-        duplicatedEntitiesAsID: false,
-      );
+      var company1 = JsonCodec(entityCache: jsonEntityCache1)
+          .fromJson<TestCompanyWithReflection>(
+            decoded1[0],
+            type: TestCompanyWithReflection,
+            duplicatedEntitiesAsID: false,
+          );
 
-      var mainAddress1 = JsonCodec(
-        entityCache: jsonEntityCache1,
-      ).fromJson<TestAddressWithReflection>(
-        decoded1[1],
-        type: TestAddressWithReflection,
-        duplicatedEntitiesAsID: false,
-      );
+      var mainAddress1 = JsonCodec(entityCache: jsonEntityCache1)
+          .fromJson<TestAddressWithReflection>(
+            decoded1[1],
+            type: TestAddressWithReflection,
+            duplicatedEntitiesAsID: false,
+          );
 
       expect(company1, equals(company));
       expect(mainAddress1, equals(mainAddress));
@@ -2357,23 +2354,21 @@ void main() {
       var decoded2 =
           JsonCodec().decode(encode2, duplicatedEntitiesAsID: true) as List;
 
-      var company2 = JsonCodec(
-        entityCache: jsonEntityCache2,
-      ).fromJson<TestCompanyWithReflection>(
-        decoded2[0],
-        type: TestCompanyWithReflection,
-        duplicatedEntitiesAsID: true,
-        autoResetEntityCache: false,
-      );
+      var company2 = JsonCodec(entityCache: jsonEntityCache2)
+          .fromJson<TestCompanyWithReflection>(
+            decoded2[0],
+            type: TestCompanyWithReflection,
+            duplicatedEntitiesAsID: true,
+            autoResetEntityCache: false,
+          );
 
-      var mainAddress2 = JsonCodec(
-        entityCache: jsonEntityCache2,
-      ).fromJson<TestAddressWithReflection>(
-        decoded2[1],
-        type: TestAddressWithReflection,
-        duplicatedEntitiesAsID: true,
-        autoResetEntityCache: false,
-      );
+      var mainAddress2 = JsonCodec(entityCache: jsonEntityCache2)
+          .fromJson<TestAddressWithReflection>(
+            decoded2[1],
+            type: TestAddressWithReflection,
+            duplicatedEntitiesAsID: true,
+            autoResetEntityCache: false,
+          );
 
       expect(company2, equals(company));
       expect(mainAddress2, equals(mainAddress));
@@ -2398,23 +2393,21 @@ void main() {
         ),
       );
 
-      var company3 = JsonCodec(
-        entityCache: jsonEntityCache3,
-      ).fromJson<TestCompanyWithReflection>(
-        decoded2[0],
-        type: TestCompanyWithReflection,
-        duplicatedEntitiesAsID: true,
-        autoResetEntityCache: false,
-      );
+      var company3 = JsonCodec(entityCache: jsonEntityCache3)
+          .fromJson<TestCompanyWithReflection>(
+            decoded2[0],
+            type: TestCompanyWithReflection,
+            duplicatedEntitiesAsID: true,
+            autoResetEntityCache: false,
+          );
 
-      var mainAddress3 = JsonCodec(
-        entityCache: jsonEntityCache3,
-      ).fromJson<TestAddressWithReflection>(
-        decoded2[1],
-        type: TestAddressWithReflection,
-        duplicatedEntitiesAsID: true,
-        autoResetEntityCache: false,
-      );
+      var mainAddress3 = JsonCodec(entityCache: jsonEntityCache3)
+          .fromJson<TestAddressWithReflection>(
+            decoded2[1],
+            type: TestAddressWithReflection,
+            duplicatedEntitiesAsID: true,
+            autoResetEntityCache: false,
+          );
 
       expect(company3, equals(company));
       expect(mainAddress3, equals(mainAddress));
@@ -2428,14 +2421,13 @@ void main() {
 
       expect(jsonEntityCache3.cachedEntitiesLength, equals(1));
 
-      var mainAddress4 = JsonCodec(
-        entityCache: jsonEntityCache3,
-      ).fromJson<TestAddressWithReflection>(
-        decoded2[1],
-        type: TestAddressWithReflection,
-        duplicatedEntitiesAsID: true,
-        autoResetEntityCache: false,
-      );
+      var mainAddress4 = JsonCodec(entityCache: jsonEntityCache3)
+          .fromJson<TestAddressWithReflection>(
+            decoded2[1],
+            type: TestAddressWithReflection,
+            duplicatedEntitiesAsID: true,
+            autoResetEntityCache: false,
+          );
 
       expect(mainAddress4, isNull);
     });

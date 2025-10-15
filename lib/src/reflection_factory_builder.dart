@@ -175,8 +175,8 @@ class ReflectionBuilder implements Builder {
 
       final inputParts = inputAnalyzer.inputCompilationUnitParts();
       if (inputParts.isEmpty) {
-        var reflectionAnnotations =
-            await inputAnalyzer.inputReflectionAnnotations();
+        var reflectionAnnotations = await inputAnalyzer
+            .inputReflectionAnnotations();
 
         if (reflectionAnnotations.isEmpty) {
           final elapsedTime = DateTime.now().difference(initTime);
@@ -398,12 +398,15 @@ class ReflectionBuilder implements Builder {
 
     for (var annotated in annotatedEnableReflection) {
       var annotation = annotated.annotation;
-      var reflectionClassName =
-          annotation.peek('reflectionClassName')!.stringValue;
-      var reflectionExtensionName =
-          annotated.annotation.peek('reflectionExtensionName')!.stringValue;
-      var optimizeReflectionInstances =
-          annotated.annotation.peek('optimizeReflectionInstances')!.boolValue;
+      var reflectionClassName = annotation
+          .peek('reflectionClassName')!
+          .stringValue;
+      var reflectionExtensionName = annotated.annotation
+          .peek('reflectionExtensionName')!
+          .stringValue;
+      var optimizeReflectionInstances = annotated.annotation
+          .peek('optimizeReflectionInstances')!
+          .boolValue;
 
       if (annotated.element.kind == ElementKind.CLASS) {
         var classElement = annotated.element as ClassElement;
@@ -506,12 +509,14 @@ class ReflectionBuilder implements Builder {
     var className = annotation.peek('className')!.stringValue;
     var libraryName = annotation.peek('libraryName')!.stringValue;
     var libraryPath = annotation.peek('libraryPath')!.stringValue;
-    var reflectionProxyName =
-        annotation.peek('reflectionProxyName')!.stringValue;
+    var reflectionProxyName = annotation
+        .peek('reflectionProxyName')!
+        .stringValue;
     var alwaysReturnFuture = annotation.peek('alwaysReturnFuture')!.boolValue;
     var traverseReturnTypes = annotation.peek('traverseReturnTypes')!.setValue;
-    var ignoreParametersTypes =
-        annotation.peek('ignoreParametersTypes')!.setValue;
+    var ignoreParametersTypes = annotation
+        .peek('ignoreParametersTypes')!
+        .setValue;
 
     var ignoreMethods1 = annotation.peek('ignoreMethods')!.setValue;
     var ignoreMethods2 = annotation.peek('ignoreMethods2')!.setValue;
@@ -606,15 +611,15 @@ class ReflectionBuilder implements Builder {
     var annotation = annotated.annotation;
     var annotatedClass = annotated.element as ClassElement;
 
-    var classesTypes =
-        annotation
-            .peek('classesTypes')!
-            .listValue
-            .map((e) => e.toTypeValue()!)
-            .toList();
+    var classesTypes = annotation
+        .peek('classesTypes')!
+        .listValue
+        .map((e) => e.toTypeValue()!)
+        .toList();
 
-    var bridgeExtensionName =
-        annotation.peek('bridgeExtensionName')!.stringValue;
+    var bridgeExtensionName = annotation
+        .peek('bridgeExtensionName')!
+        .stringValue;
     var reflectionClassNames = annotation
         .peek('reflectionClassNames')!
         .mapValue
@@ -623,8 +628,9 @@ class ReflectionBuilder implements Builder {
         .peek('reflectionExtensionNames')!
         .mapValue
         .map((k, v) => MapEntry(k!.toTypeValue()!, v!.toStringValue()!));
-    var optimizeReflectionInstances =
-        annotated.annotation.peek('optimizeReflectionInstances')!.boolValue;
+    var optimizeReflectionInstances = annotated.annotation
+        .peek('optimizeReflectionInstances')!
+        .boolValue;
 
     log.info(
       ' <ReflectionBridge>\n'
@@ -866,10 +872,9 @@ class ReflectionBuilder implements Builder {
     str.write('List<Reflection> _listSiblingsReflection() => ');
     str.write('<Reflection>[');
 
-    var classesReflections =
-        codeTable.reflectionClassesKeys
-            .where((e) => e.endsWith(r'$reflection'))
-            .toList();
+    var classesReflections = codeTable.reflectionClassesKeys
+        .where((e) => e.endsWith(r'$reflection'))
+        .toList();
 
     classesReflections.sort();
 
@@ -885,12 +890,11 @@ class ReflectionBuilder implements Builder {
         codeTable.staticFieldsTypesWithReflection,
       ]);
 
-      var extraReflections =
-          allFieldsTypesWithReflection
-              .map((t) => '${t.typeName}\$reflection')
-              .toSet()
-              .where((c) => !classesReflections.contains(c))
-              .toList();
+      var extraReflections = allFieldsTypesWithReflection
+          .map((t) => '${t.typeName}\$reflection')
+          .toSet()
+          .where((c) => !classesReflections.contains(c))
+          .toList();
 
       if (extraReflections.isNotEmpty) {
         extraReflections.sort();
@@ -976,8 +980,9 @@ class _TypeAliasTable {
   int fReturnFutureOrUseCount = 0;
 
   factory _TypeAliasTable.fromLibraryReader(LibraryReader libraryReader) {
-    var privateNames =
-        libraryReader.elementsNames.where((e) => e.startsWith('_')).toList();
+    var privateNames = libraryReader.elementsNames
+        .where((e) => e.startsWith('_'))
+        .toList();
     return _TypeAliasTable(privateNames);
   }
 
@@ -1389,11 +1394,10 @@ class _EnumTree<T> extends RecursiveElementVisitor2<T> {
 
     final enumType = thisType;
 
-    var enumsEntries =
-        entries.entries
-            .where((e) => e.value.thisType == enumType)
-            .sortedBy((e) => e.key)
-            .toList();
+    var enumsEntries = entries.entries
+        .where((e) => e.value.thisType == enumType)
+        .sortedBy((e) => e.key)
+        .toList();
 
     for (var e in enumsEntries) {
       var name = e.key;
@@ -1587,10 +1591,9 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
       constructors.firstWhereOrNull((e) => e.isDefaultConstructor);
 
   ConstructorElement? get emptyConstructor {
-    var noArgsConstructors =
-        constructors
-            .where((e) => e.codeName.isNotEmpty && e.formalParameters.isEmpty)
-            .toList();
+    var noArgsConstructors = constructors
+        .where((e) => e.codeName.isNotEmpty && e.formalParameters.isEmpty)
+        .toList();
 
     if (noArgsConstructors.isEmpty) {
       return null;
@@ -1611,16 +1614,15 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
   }
 
   ConstructorElement? get noRequiredArgsConstructor {
-    var noArgsConstructors =
-        constructors
-            .where(
-              (e) =>
-                  e.codeName.isNotEmpty &&
-                  e.normalParameters.isEmpty &&
-                  e.optionalParameters.where((p) => p.required).isEmpty &&
-                  e.namedParameters.values.where((p) => p.required).isEmpty,
-            )
-            .toList();
+    var noArgsConstructors = constructors
+        .where(
+          (e) =>
+              e.codeName.isNotEmpty &&
+              e.normalParameters.isEmpty &&
+              e.optionalParameters.where((p) => p.required).isEmpty &&
+              e.namedParameters.values.where((p) => p.required).isEmpty,
+        )
+        .toList();
 
     if (noArgsConstructors.isEmpty) {
       return null;
@@ -2162,29 +2164,29 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
     str.write('    };\n');
     str.write('  }\n\n');
 
-    var entriesWithJsonFieldHidden =
-        entries.entries
-            .where(
-              (e) =>
-                  e.key != 'hashCode' &&
-                  e.value.annotations.any((a) {
-                    var o = a.computeConstantValue();
-                    if (o == null) return false;
+    var entriesWithJsonFieldHidden = entries.entries
+        .where(
+          (e) =>
+              e.key != 'hashCode' &&
+              e.value.annotations.any((a) {
+                var o = a.computeConstantValue();
+                if (o == null) return false;
 
-                    var isJsonField =
-                        o.type?.getDisplayStringNoNullability() == 'JsonField';
-                    if (!isJsonField) return false;
+                var isJsonField =
+                    o.type?.getDisplayStringNoNullability() == 'JsonField';
+                if (!isJsonField) return false;
 
-                    var hidden = o.getField('_hidden')?.toBoolValue() ?? false;
-                    return hidden;
-                  }),
-            )
-            .toList();
+                var hidden = o.getField('_hidden')?.toBoolValue() ?? false;
+                return hidden;
+              }),
+        )
+        .toList();
 
     if (entriesWithJsonFieldHidden.isNotEmpty) {
       var hiddenKeys = entriesWithJsonFieldHidden.map((e) => e.key).toSet();
-      var visibleKeys =
-          entries.keys.where((k) => !hiddenKeys.contains(k)).toList();
+      var visibleKeys = entries.keys
+          .where((k) => !hiddenKeys.contains(k))
+          .toList();
 
       str.write('  @override\n');
       str.write(
@@ -2272,8 +2274,9 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
       var nullable = field.nullable ? 'true' : 'false';
       var isFinal = field.isFinal ? 'true' : 'false';
       var getter = '() => () => $className.$name';
-      var setter =
-          !field.allowSetter ? 'null' : '() => (v) => $className.$name = v';
+      var setter = !field.allowSetter
+          ? 'null'
+          : '() => (v) => $className.$name = v';
 
       return "StaticFieldReflection<$className,$fullType>(this, $declaringType, "
           "$typeCode, '$name', $nullable, "
@@ -2292,10 +2295,9 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
   void _buildCallMethodToJson(StringBuffer str) {
     var entries = _toMethodsEntries(methods);
 
-    var toJsonMethod =
-        entries.values
-            .where((m) => m.name.toLowerCase() == 'tojson')
-            .firstOrNull;
+    var toJsonMethod = entries.values
+        .where((m) => m.name.toLowerCase() == 'tojson')
+        .firstOrNull;
 
     if (toJsonMethod != null &&
         toJsonMethod.normalParameters.isEmpty &&
@@ -2683,8 +2685,10 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
 
     var str = StringBuffer();
 
-    var traverseReturnInterfaceTypes =
-        traverseReturnTypes.map((e) => e.interfaceType).nonNulls.toSet();
+    var traverseReturnInterfaceTypes = traverseReturnTypes
+        .map((e) => e.interfaceType)
+        .nonNulls
+        .toSet();
 
     var entriesCount = 0;
 
@@ -2768,10 +2772,9 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
         if (proxyMethod.isReturningFuture || proxyMethod.isReturningFutureOr) {
           var futureType = proxyMethod.returnTypeArgument;
 
-          var futureTypeStr =
-              futureType != null && futureType is VoidType
-                  ? 'dynamic'
-                  : (futureType?.fullTypeNameResolvable() ?? 'dynamic');
+          var futureTypeStr = futureType != null && futureType is VoidType
+              ? 'dynamic'
+              : (futureType?.fullTypeNameResolvable() ?? 'dynamic');
 
           if (acceptsNull) {
             str.write('  if (ret == null) return null;\n');
@@ -2854,10 +2857,9 @@ class _ProxyMethod {
   List<String> get typeParametersNames =>
       typeParameters.map((e) => e.name).nonNulls.toList();
 
-  List<FormalParameterElement> get positionalParameters =>
-      parameters
-          .where((p) => p.isPositional && !p.isOptionalPositional)
-          .toList();
+  List<FormalParameterElement> get positionalParameters => parameters
+      .where((p) => p.isPositional && !p.isOptionalPositional)
+      .toList();
 
   List<FormalParameterElement> get positionalOptionalParameters =>
       parameters.where((p) => p.isOptionalPositional).toList();
@@ -3324,10 +3326,9 @@ class _Method extends _Element {
   Map<String, _Parameter> get namedParameters =>
       methodElement.type.namedParameters;
 
-  bool get hasRequiredNamedParameter =>
-      namedParameters.values
-          .where((m) => m.required || (!m.isNullable && !m.hasDefaultValue))
-          .isNotEmpty;
+  bool get hasRequiredNamedParameter => namedParameters.values
+      .where((m) => m.required || (!m.isNullable && !m.hasDefaultValue))
+      .isNotEmpty;
 
   String get normalParametersAsCode => _buildParameterReflectionList(
     typeAliasTable,
@@ -3603,13 +3604,12 @@ extension _DartTypeExtension on DartType {
       return withNullability && isNullable ? '$name?' : name;
     }
 
-    var argsList =
-        resolvedTypeArguments.map((e) {
-          return e.fullTypeNameResolvable(
-            withNullability: withNullability,
-            typeParameters: typeParameters,
-          );
-        }).toList();
+    var argsList = resolvedTypeArguments.map((e) {
+      return e.fullTypeNameResolvable(
+        withNullability: withNullability,
+        typeParameters: typeParameters,
+      );
+    }).toList();
 
     if (argsList.isEmpty || argsList.every((a) => a == 'dynamic')) {
       return name;
@@ -3627,15 +3627,13 @@ extension _DartTypeExtension on DartType {
 
     var recordType = this as RecordType;
 
-    var recordTypesNamesPos =
-        recordType.positionalFields.map((t) {
-          return t.type.fullTypeNameResolvable(typeParameters: typeParameters);
-        }).toList();
+    var recordTypesNamesPos = recordType.positionalFields.map((t) {
+      return t.type.fullTypeNameResolvable(typeParameters: typeParameters);
+    }).toList();
 
-    var recordTypesNamesNamed =
-        recordType.namedFields.map((t) {
-          return '${t.type.fullTypeNameResolvable(typeParameters: typeParameters)} ${t.name}';
-        }).toList();
+    var recordTypesNamesNamed = recordType.namedFields.map((t) {
+      return '${t.type.fullTypeNameResolvable(typeParameters: typeParameters)} ${t.name}';
+    }).toList();
 
     var list = [
       '(',
@@ -3760,8 +3758,8 @@ extension _DartTypeExtension on DartType {
 
   String get typeNameAsNullableCode =>
       isNullable && this is! DynamicType && isResolvableType
-          ? '$typeNameAsCode?'
-          : typeNameAsCode;
+      ? '$typeNameAsCode?'
+      : typeNameAsCode;
 
   String? asConstTypeReflectionCode(_TypeAliasTable typeAliasTable) {
     var self = this;
@@ -3980,12 +3978,11 @@ extension _FormalParameterElementExtension on FormalParameterElement {
 }
 
 extension _FunctionTypeExtension on FunctionType {
-  List<String> get normalParameterNames =>
-      formalParameters
-          .where((p) => p.isNormal)
-          .map((p) => p.name)
-          .nonNulls
-          .toList();
+  List<String> get normalParameterNames => formalParameters
+      .where((p) => p.isNormal)
+      .map((p) => p.name)
+      .nonNulls
+      .toList();
 
   List<_Parameter> get normalParameters {
     final normalParameterNames = this.normalParameterNames;
@@ -3998,12 +3995,11 @@ extension _FunctionTypeExtension on FunctionType {
     });
   }
 
-  List<String> get optionalParameterNames =>
-      formalParameters
-          .where((p) => p.isOptionalPositional)
-          .map((p) => p.name)
-          .nonNulls
-          .toList();
+  List<String> get optionalParameterNames => formalParameters
+      .where((p) => p.isOptionalPositional)
+      .map((p) => p.name)
+      .nonNulls
+      .toList();
 
   List<_Parameter> get optionalParameters {
     final optionalParameterNames = this.optionalParameterNames;

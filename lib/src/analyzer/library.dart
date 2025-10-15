@@ -98,20 +98,19 @@ class LibraryReader {
 
   /// All of the elements names in this library
   /// (classes, enums, mixins, functions, extensions, typeAliases, topLevelVariables).
-  Iterable<String> get elementsNames =>
-      element.fragments
-          .expand(
-            (cu) => <String?>[
-              ...cu.classes.map((e) => e.name),
-              ...cu.enums.map((e) => e.name),
-              ...cu.mixins.map((e) => e.name),
-              ...cu.functions.map((e) => e.name),
-              ...cu.extensions.map((e) => e.name),
-              ...cu.typeAliases.map((e) => e.name),
-              ...cu.topLevelVariables.map((e) => e.name),
-            ],
-          )
-          .nonNulls;
+  Iterable<String> get elementsNames => element.fragments
+      .expand(
+        (cu) => <String?>[
+          ...cu.classes.map((e) => e.name),
+          ...cu.enums.map((e) => e.name),
+          ...cu.mixins.map((e) => e.name),
+          ...cu.functions.map((e) => e.name),
+          ...cu.extensions.map((e) => e.name),
+          ...cu.typeAliases.map((e) => e.name),
+          ...cu.topLevelVariables.map((e) => e.name),
+        ],
+      )
+      .nonNulls;
 
   /// All of the elements representing classes in this library.
   Iterable<ClassElement> get classes =>

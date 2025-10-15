@@ -26,12 +26,13 @@ class ReflectionInspector {
   void _listFiles() {
     var files = _listDartFiles();
 
-    var generatedFiles =
-        files.where((f) => f.path.endsWith('.g.dart')).where((f) {
-          var ps = pack_path.split(f.path);
-          return ps.last.endsWith('.reflection.g.dart') ||
-              (ps.length > 1 && ps[ps.length - 2] == 'reflection');
-        }).toList();
+    var generatedFiles = files.where((f) => f.path.endsWith('.g.dart')).where((
+      f,
+    ) {
+      var ps = pack_path.split(f.path);
+      return ps.last.endsWith('.reflection.g.dart') ||
+          (ps.length > 1 && ps[ps.length - 2] == 'reflection');
+    }).toList();
 
     files.removeWhere((f) => generatedFiles.contains(f));
 
@@ -42,30 +43,28 @@ class ReflectionInspector {
   List<FileSystemEntity> _listDartFiles() {
     var list = rootDirectory.listSync(recursive: true, followLinks: false);
 
-    var files =
-        list.where((f) {
-          var fPath = f.path;
-          if (!fPath.endsWith('.dart')) return false;
+    var files = list.where((f) {
+      var fPath = f.path;
+      if (!fPath.endsWith('.dart')) return false;
 
-          var fParts = pack_path.split(fPath);
-          if (fParts.contains('.dart_tool')) return false;
+      var fParts = pack_path.split(fPath);
+      if (fParts.contains('.dart_tool')) return false;
 
-          fParts.removeLast();
-          if (fParts.where((d) => d.startsWith('.')).isNotEmpty) return false;
+      fParts.removeLast();
+      if (fParts.where((d) => d.startsWith('.')).isNotEmpty) return false;
 
-          if (!includeTestFiles) {
-            var rootIdx = fParts.lastIndexOf(rootDirectoryName);
-            var dir =
-                rootIdx >= 0 && rootIdx + 1 < fParts.length
-                    ? fParts[rootIdx + 1]
-                    : '';
-            if (dir == 'test') {
-              return false;
-            }
-          }
+      if (!includeTestFiles) {
+        var rootIdx = fParts.lastIndexOf(rootDirectoryName);
+        var dir = rootIdx >= 0 && rootIdx + 1 < fParts.length
+            ? fParts[rootIdx + 1]
+            : '';
+        if (dir == 'test') {
+          return false;
+        }
+      }
 
-          return true;
-        }).toList();
+      return true;
+    }).toList();
 
     return files;
   }
@@ -75,17 +74,13 @@ class ReflectionInspector {
 
   List<String>? _dartFilesPaths;
 
-  List<String> get dartFilesPaths =>
-      _dartFilesPaths ??= List<String>.unmodifiable(
-        dartFiles.map((f) => f.path).toList(),
-      );
+  List<String> get dartFilesPaths => _dartFilesPaths ??=
+      List<String>.unmodifiable(dartFiles.map((f) => f.path).toList());
 
   List<String>? _generatedDartFilesPaths;
 
-  List<String> get generatedDartFilesPaths =>
-      _generatedDartFilesPaths ??= List<String>.unmodifiable(
-        generatedDartFiles.map((f) => f.path).toList(),
-      );
+  List<String> get generatedDartFilesPaths => _generatedDartFilesPaths ??=
+      List<String>.unmodifiable(generatedDartFiles.map((f) => f.path).toList());
 
   List<File>? _dartFilesUsingReflection;
 
@@ -121,10 +116,9 @@ class ReflectionInspector {
       _dartFilesMissingGeneratedReflection ??= List<File>.unmodifiable(
         dartFilesUsingReflection
             .where(
-              (f) =>
-                  !generatedDartFilesPaths.contains(
-                    f.toReflectionDartFile()?.path,
-                  ),
+              (f) => !generatedDartFilesPaths.contains(
+                f.toReflectionDartFile()?.path,
+              ),
             )
             .toList(),
       );
@@ -132,14 +126,13 @@ class ReflectionInspector {
   List<File>? _dartFilesWithExpiredReflection;
 
   List<File> get dartFilesWithExpiredReflection =>
-      _dartFilesWithExpiredReflection ??=
-          dartFilesUsingReflection.where((f) {
-            var fGen = f.toReflectionDartFile()!;
-            if (generatedDartFilesPaths.contains(fGen.path)) {
-              return _isExpiredByTime(f, fGen) || _isExpiredByVersion(fGen);
-            }
-            return false;
-          }).toList();
+      _dartFilesWithExpiredReflection ??= dartFilesUsingReflection.where((f) {
+        var fGen = f.toReflectionDartFile()!;
+        if (generatedDartFilesPaths.contains(fGen.path)) {
+          return _isExpiredByTime(f, fGen) || _isExpiredByVersion(fGen);
+        }
+        return false;
+      }).toList();
 
   bool _isExpiredByTime(File f, File fGen) {
     var fTime = f.lastModifiedSync();
