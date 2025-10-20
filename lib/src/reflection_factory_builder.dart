@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 
@@ -10,12 +11,15 @@ import 'package:analyzer/dart/element/visitor2.dart';
 import 'package:build/build.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
-import 'package:reflection_factory/reflection_factory.dart';
 import 'package:logging/logging.dart' show Logger;
+import 'package:pub_semver/pub_semver.dart';
 
 import 'analyzer/input_analyzer.dart';
 import 'analyzer/library.dart';
 import 'analyzer/type_checker.dart';
+import 'reflection_factory_base.dart';
+import 'reflection_factory_extension.dart';
+import 'reflection_factory_type.dart';
 
 /// The reflection builder.
 class ReflectionBuilder implements Builder {
@@ -82,15 +86,20 @@ class ReflectionBuilder implements Builder {
     ],
   };
 
-  static const TypeChecker typeReflectionBridge = TypeChecker.fromRuntime(
-    ReflectionBridge,
+  static const TypeChecker typeReflectionBridge = TypeChecker.fromPackage(
+    'package:reflection_factory/src/reflection_factory_annotation.dart',
+    'ReflectionBridge',
   );
 
-  static const TypeChecker typeEnableReflection = TypeChecker.fromRuntime(
-    EnableReflection,
+  static const TypeChecker typeEnableReflection = TypeChecker.fromPackage(
+    'package:reflection_factory/src/reflection_factory_annotation.dart',
+    'EnableReflection',
   );
 
-  static const TypeChecker typeClassProxy = TypeChecker.fromRuntime(ClassProxy);
+  static const TypeChecker typeClassProxy = TypeChecker.fromPackage(
+    'package:reflection_factory/src/reflection_factory_annotation.dart',
+    'ClassProxy',
+  );
 
   Future<void> _buildChain = Future<void>.value();
 
@@ -2666,8 +2675,9 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
     return str.toString();
   }
 
-  static const TypeChecker typeIgnoreClassProxyMethod = TypeChecker.fromRuntime(
-    IgnoreClassProxyMethod,
+  static const TypeChecker typeIgnoreClassProxyMethod = TypeChecker.fromPackage(
+    'package:reflection_factory/src/reflection_factory_annotation.dart',
+    'IgnoreClassProxyMethod',
   );
 
   void _buildClassProxyMethods(

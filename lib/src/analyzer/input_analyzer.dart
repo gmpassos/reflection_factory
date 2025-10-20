@@ -8,20 +8,24 @@ import 'package:build/build.dart';
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as pack_path;
 
-import '../reflection_factory_annotation.dart';
 import 'library.dart';
 import 'type_checker.dart';
 
 class InputAnalyzer {
-  static const TypeChecker typeReflectionBridge = TypeChecker.fromRuntime(
-    ReflectionBridge,
+  static const TypeChecker typeReflectionBridge = TypeChecker.fromPackage(
+    'package:reflection_factory/src/reflection_factory_annotation.dart',
+    'ReflectionBridge',
   );
 
-  static const TypeChecker typeEnableReflection = TypeChecker.fromRuntime(
-    EnableReflection,
+  static const TypeChecker typeEnableReflection = TypeChecker.fromPackage(
+    'package:reflection_factory/src/reflection_factory_annotation.dart',
+    'EnableReflection',
   );
 
-  static const TypeChecker typeClassProxy = TypeChecker.fromRuntime(ClassProxy);
+  static const TypeChecker typeClassProxy = TypeChecker.fromPackage(
+    'package:reflection_factory/src/reflection_factory_annotation.dart',
+    'ClassProxy',
+  );
 
   final BuildStep buildStep;
   final AssetId inputId;
