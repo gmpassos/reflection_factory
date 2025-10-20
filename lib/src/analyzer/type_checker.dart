@@ -2,7 +2,7 @@
 // Original package: https://pub.dev/packages/source_gen
 // Original source: https://github.com/dart-lang/source_gen
 
-import 'dart:mirrors' hide SourceLocation;
+// import 'dart:mirrors' hide SourceLocation;
 
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
@@ -18,10 +18,18 @@ import 'utils.dart';
 abstract class TypeChecker {
   const TypeChecker._();
 
+  /*
   /// Create a new [TypeChecker] backed by a runtime [type].
   ///
   /// This implementation uses `dart:mirrors` (runtime reflection).
   const factory TypeChecker.fromRuntime(Type type) = _MirrorTypeChecker;
+   */
+
+  /// Create a new [TypeChecker] backed by a package path and type name.
+  ///
+  /// Useful when checking for types by package import location.
+  const factory TypeChecker.fromPackage(String packagePath, String typeName) =
+      _PackageTypeChecker;
 
   /// Create a new [TypeChecker] backed by a library [url].
   ///
@@ -196,11 +204,50 @@ abstract class TypeChecker {
       isSuperOf(staticType.elementDeclaration!);
 }
 
+class _PackageTypeChecker extends TypeChecker {
+  static Uri _uriOf(String packagePath, String typeName) {
+    if (!packagePath.startsWith('package:')) {
+      throw ArgumentError(
+        'Parameter `packagePath` should start with "package:": $packagePath',
+      );
+    }
+
+    var packageUri = Uri.tryParse(packagePath);
+    if (packageUri == null) {
+      throw StateError("Can't parse `packagePath` as `Uri`: $packagePath");
+    }
+
+    var uri = normalizeUrl(packageUri).replace(fragment: typeName);
+    return uri;
+  }
+
+  // Precomputed type checker for types that already have been used.
+  static final _cache = Expando<TypeChecker>();
+
+  final String packagePath;
+  final String typeName;
+
+  const _PackageTypeChecker(this.packagePath, this.typeName) : super._();
+
+  TypeChecker get _computed =>
+      _cache[this] ??= TypeChecker.fromUrl(_uriOf(packagePath, typeName));
+
+  @override
+  bool isExactly(Element? element) => _computed.isExactly(element);
+
+  @override
+  String toString() => _computed.toString();
+}
+
+/*
 // Checks a runtime type against a static type.
 class _MirrorTypeChecker extends TypeChecker {
-  static Uri _uriOf(ClassMirror mirror) => normalizeUrl(
-    (mirror.owner as LibraryMirror).uri,
-  ).replace(fragment: MirrorSystem.getName(mirror.simpleName));
+  static Uri _uriOf(ClassMirror mirror) {
+    var mirrorUri = (mirror.owner as LibraryMirror).uri;
+    var typeName = MirrorSystem.getName(mirror.simpleName);
+    var uri = normalizeUrl(mirrorUri).replace(fragment: typeName);
+    return uri;
+  }
 
   // Precomputed type checker for types that already have been used.
   static final _cache = Expando<TypeChecker>();
@@ -218,6 +265,7 @@ class _MirrorTypeChecker extends TypeChecker {
   @override
   String toString() => _computed.toString();
 }
+ */
 
 // Checks a runtime type against an Uri and Symbol.
 class _UriTypeChecker extends TypeChecker {
