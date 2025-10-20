@@ -112,7 +112,7 @@ void main() {
         },
       );
 
-      expect(res.buildResult.status.name, equals('success'));
+      expect(res.succeeded, isTrue);
     });
 
     test('EnableReflection: TestEmpty', () async {
@@ -164,7 +164,7 @@ void main() {
         },
       );
 
-      expect(res.buildResult.status.name, equals('success'));
+      expect(res.succeeded, isTrue);
     });
 
     test('EnableReflection: User', () async {
@@ -477,7 +477,7 @@ void main() {
         },
       );
 
-      expect(res.buildResult.status.name, equals('failure'));
+      expect(res.succeeded, isFalse);
 
       var logsSevere = logs.where((r) => r.level == Level.SEVERE).toList();
 
