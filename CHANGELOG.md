@@ -1,5 +1,14 @@
 ## 2.7.1
 
+- Allow `build_runner build --force-aot` flag, removing `dart:mirrors` dependency.
+
+- `TypeChecker`:
+  - Added `TypeChecker.fromPackage`:
+    - Implementation `_PackageTypeChecker`.
+  - Removed `TypeChecker.fromRuntime`:
+    - Remove import of `dart:mirrors`.
+    - Remove implementation `_MirrorTypeChecker`.
+
 - build: ^4.0.2
 - build_runner: ^2.10.0
 - build_test: ^3.5.0
