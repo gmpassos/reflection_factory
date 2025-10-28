@@ -645,6 +645,7 @@ enum BasicDartType {
   mapEntry,
   future,
   futureOr,
+  function,
   voidType,
 }
 
@@ -748,6 +749,9 @@ class _TypeWrapper {
       case BasicDartType.futureOr:
         return _TypeWrapper.twFutureOr;
 
+      case BasicDartType.function:
+        return _TypeWrapper.twFunction;
+
       case BasicDartType.voidType:
         return _TypeWrapper.twVoid;
 
@@ -777,6 +781,7 @@ class _TypeWrapper {
   static const _TypeWrapper twIterable = _TypeWrapperIterable._const();
   static const _TypeWrapper twFuture = _TypeWrapperFuture._const();
   static const _TypeWrapper twFutureOr = _TypeWrapperFutureOr._const();
+  static const _TypeWrapper twFunction = _TypeWrapperFunction._const();
   static const _TypeWrapper twObject = _TypeWrapperObject._const();
   static const _TypeWrapper twDynamic = _TypeWrapperDynamic._const();
   static final _TypeWrapper twVoid = _TypeWrapperVoid._const();
@@ -797,6 +802,7 @@ class _TypeWrapper {
   static const Type tIterable = Iterable;
   static const Type tFuture = Future;
   static const Type tFutureOr = FutureOr;
+  static const Type tFunction = Function;
   static const Type tObject = Object;
   static const Type tDynamic = dynamic;
   static final Type tVoid = <void>[].listType; // Is there a better way?
@@ -824,6 +830,8 @@ class _TypeWrapper {
 
     if (type == tFuture || object is Future) return tFuture;
     if (type == tFutureOr) return tFutureOr;
+
+    if (type == Function) return tFunction;
 
     return type;
   }
@@ -905,6 +913,9 @@ class _TypeWrapper {
   /// Returns `true` if [type] is a [FutureOr].
   bool get isFutureOr => false;
 
+  /// Returns `true` if [type] is a [Function].
+  bool get isFunction => false;
+
   /// Parses [value].
   V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
     if (value == null) return def;
@@ -931,9 +942,15 @@ class _TypeWrapper {
       basicDartType.hashCode;
 
   @override
-  String toString() {
-    return '_TypeWrapper{type: $type, basicDartType: $basicDartType}';
-  }
+  String toString() => '_TypeWrapper[${basicDartType.name}]@$type';
+}
+
+class _TypeWrapperFunction extends _TypeWrapper {
+  const _TypeWrapperFunction._const()
+    : super._const(_TypeWrapper.tFunction, BasicDartType.function);
+
+  @override
+  bool get isFunction => true;
 }
 
 class _TypeWrapperObject extends _TypeWrapper {
@@ -1432,6 +1449,10 @@ class TypeInfo<T> {
   );
   static const TypeInfo<FutureOr> tFutureOr = TypeInfo._const(
     _TypeWrapper.twFutureOr,
+  );
+
+  static const TypeInfo<Function> tFunction = TypeInfo._const(
+    _TypeWrapper.twFunction,
   );
 
   static const TypeInfo<Object> tObject = TypeInfo._const(

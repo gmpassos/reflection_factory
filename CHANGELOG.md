@@ -1,3 +1,12 @@
+## 2.7.2
+
+- `BasicDartType`: added `function`.
+
+- `TypeInfo`: added `tFunction`.
+
+- build_runner: ^2.10.1
+- build_test: ^3.5.1
+
 ## 2.7.1
 
 - Allow `build_runner build --force-aot` flag, removing `dart:mirrors` dependency.
