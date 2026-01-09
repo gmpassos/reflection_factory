@@ -1490,6 +1490,81 @@ void main() {
       },
     );
 
+    test('EnableReflection + advanced enum', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/status.dart': '''
+        
+          import 'package:reflection_factory/reflection_factory.dart';
+        
+          part 'status.reflection.g.dart';
+          
+          @EnableReflection()
+          enum Status {
+            a(10),
+            b(20);
+            
+            static final defaultStatus = Status.a;
+            
+            final int id;
+            
+            const Status(this.id);
+            
+            bool get isFoo => true;
+            
+            int calc(int m) => 10 * m;
+          }
+
+        ''',
+      };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        readerWriter: readerWriter,
+        generateFor: {'$_pkgName|lib/status.dart'},
+        outputs: {
+          '$_pkgName|lib/status.reflection.g.dart': decodedMatches(
+            allOf(
+              allOf(
+                contains('GENERATED CODE - DO NOT MODIFY BY HAND'),
+                contains(
+                  'BUILDER: reflection_factory/${ReflectionFactory.VERSION}',
+                ),
+                contains("part of 'status.dart'"),
+              ),
+              allOf([
+                contains('Status\$reflection extends EnumReflection<Status>'),
+                contains('Status\$reflectionExtension'),
+                isNot(contains('Foo\$reflection extends')),
+                isNot(contains('Foo\$reflectionExtension')),
+              ]),
+              allOf([
+                contains(
+                  'final Expando<Status\$reflection> _objectReflections',
+                ),
+                contains('factory Status\$reflection([Status? object]) {'),
+                contains(
+                  ' _valuesByName = const <String, Status>{\n'
+                  '    \'a\': Status.a,\n'
+                  '    \'b\': Status.b,\n'
+                  '  };\n',
+                ),
+                contains('_fieldsNames = const <String>[\'id\', \'isFoo\'];'),
+              ]),
+            ),
+          ),
+        },
+        onLog: (msg) {
+          _printToConsole(msg);
+        },
+      );
+    });
+
     test('ReflectionBridge', () async {
       var builder = ReflectionBuilder(verbose: true);
 

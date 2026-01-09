@@ -1,3 +1,18 @@
+## 2.7.3
+
+- `lib/src/reflection_factory_builder.dart`:
+  - `_EnumTree<T>`: Filtered enum entries to include only those marked as `const` when generating `_valuesByName` map.
+
+- `pubspec.yaml`:
+  - Updated dependencies:
+    - `build`: ^4.0.3
+    - `analyzer`: ^8.4.1
+    - `dart_style`: ^3.1.3
+  - Updated dev_dependencies:
+    - `build_runner`: ^2.10.4
+    - `build_test`: ^3.5.4
+    - `test`: ^1.29.0
+
 ## 2.7.2
 
 - `BasicDartType`: added `function`.
