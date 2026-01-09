@@ -1405,6 +1405,7 @@ class _EnumTree<T> extends RecursiveElementVisitor2<T> {
 
     var enumsEntries = entries.entries
         .where((e) => e.value.thisType == enumType)
+        .where((e) => e.value.isConst)
         .sortedBy((e) => e.key)
         .toList();
 
