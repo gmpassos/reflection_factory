@@ -246,7 +246,7 @@ class TypeParser {
         keyParser: keyParser,
         valueParser: valueParser,
       );
-      return Map<K, V>.fromEntries([if (e != null) e]);
+      return Map<K, V>.fromEntries([?e]);
     } else {
       var s = '$value'.trim();
       if (s.isEmpty) return def;

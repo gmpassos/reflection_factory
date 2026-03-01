@@ -1,3 +1,24 @@
+## 2.7.4
+
+- `JsonEntityCacheSimple`:
+  - Updated `toString` method to use null-aware spread operator for combining maps.
+
+- `TypeParser`:
+  - Updated map entry parsing to use null-aware list element in `Map.fromEntries`.
+
+- `pubspec.yaml`:
+  - Updated SDK constraint to `>=3.10.0 <4.0.0`.
+  - Updated dependencies:
+    - `build` to `^4.0.4`
+    - `analyzer` to `^9.0.0`
+    - `meta` to `^1.18.1`
+    - `source_span` to `^1.10.2`
+  - Updated dev_dependencies:
+    - `build_runner` to `^2.11.1`
+    - `build_test` to `^3.5.7`
+    - `lints` to `^6.1.0`
+    - `test` to `^1.30.0`
+
 ## 2.7.3
 
 - `lib/src/reflection_factory_builder.dart`:

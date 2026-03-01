@@ -3125,9 +3125,12 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     final entities = _entities;
     final entitiesInstantiators = _entitiesInstantiators;
 
-    return total == 0
-        ? s
-        : '$s${CombinedMapView([if (entities != null) entities, if (entitiesInstantiators != null) entitiesInstantiators]).map((key, value) => MapEntry(key, value.length))}';
+    var map = CombinedMapView([
+      ?entities,
+      ?entitiesInstantiators,
+    ]).map((key, value) => MapEntry(key, value.length));
+
+    return total == 0 ? s : '$s$map';
   }
 }
 
