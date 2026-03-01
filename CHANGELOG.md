@@ -1,3 +1,9 @@
+## 2.7.5
+
+- Dependency updates:
+  - `analyzer`: ^10.2.0
+  - `dart_style`: ^3.1.6
+
 ## 2.7.4
 
 - `JsonEntityCacheSimple`:
