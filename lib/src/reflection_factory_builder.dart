@@ -1401,11 +1401,12 @@ class _EnumTree<T> extends RecursiveElementVisitor2<T> {
       '  static const Map<String,$enumName> _valuesByName = const <String,$enumName>{\n',
     );
 
-    final enumType = thisType;
-
+    // Only actual `enum` constants: a `static const` field of the `enum`'s own
+    // type (like `static const Color def = Color.red;`) is NOT a value of the
+    // `enum` and must not enter `_valuesByName`, otherwise it can shadow the
+    // real name in `EnumReflection.getName`.
     var enumsEntries = entries.entries
-        .where((e) => e.value.thisType == enumType)
-        .where((e) => e.value.isConst)
+        .where((e) => e.value.isEnumConstant)
         .sortedBy((e) => e.key)
         .toList();
 
@@ -3393,6 +3394,10 @@ class _Field extends _Element {
   bool get isFinal => fieldElement.isFinal;
 
   bool get isConst => fieldElement.isConst;
+
+  /// `true` if this is a declared `enum` constant (an actual `enum` value),
+  /// and not just a `static const` field of the `enum` type.
+  bool get isEnumConstant => fieldElement.isEnumConstant;
 
   bool get allowSetter => !isFinal && !isConst && fieldElement.setter != null;
 

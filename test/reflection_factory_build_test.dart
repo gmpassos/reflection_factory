@@ -1490,6 +1490,66 @@ void main() {
       },
     );
 
+    test(
+      'EnableReflection + enum with a static const of its own type',
+      () async {
+        // Regression: `_valuesByName` was built from every `static const` field
+        // of the enum's own type, so an alias like `static const Color def =
+        // Color.red;` was emitted as if it were a real enum value. Because the
+        // map is sorted and `EnumReflection.getName` returns the first matching
+        // entry, `def` shadowed `red` and `Color.red` serialized as `"def"`.
+        var builder = ReflectionBuilder(verbose: true);
+
+        var sourceAssets = {
+          '$_pkgName|lib/color.dart': '''
+
+          import 'package:reflection_factory/reflection_factory.dart';
+
+          part 'color.reflection.g.dart';
+
+          @EnableReflection()
+          enum Color {
+            red,
+            green,
+            blue;
+
+            static const Color def = Color.red;
+
+            static final Color fallback = Color.blue;
+          }
+
+        ''',
+        };
+
+        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+        await readerWriter.testing.loadIsolateSources();
+
+        await testBuilder(
+          builder,
+          sourceAssets,
+          readerWriter: readerWriter,
+          generateFor: {'$_pkgName|lib/color.dart'},
+          outputs: {
+            '$_pkgName|lib/color.reflection.g.dart': decodedMatches(
+              allOf(
+                contains('Color\$reflection extends EnumReflection<Color>'),
+                // Only the real enum constants:
+                contains("'blue': Color.blue"),
+                contains("'green': Color.green"),
+                contains("'red': Color.red"),
+                // The `static const`/`static final` aliases must NOT be values:
+                isNot(contains("'def': Color.def")),
+                isNot(contains("'fallback': Color.fallback")),
+              ),
+            ),
+          },
+          onLog: (msg) {
+            _printToConsole(msg);
+          },
+        );
+      },
+    );
+
     test('EnableReflection + advanced enum', () async {
       var builder = ReflectionBuilder(verbose: true);
 

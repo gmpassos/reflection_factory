@@ -314,6 +314,81 @@ void main() {
     });
   });
 
+  group('JsonEncoder field filters', () {
+    final map = {'name': 'joe', 'pass': 'secret', 'nil': null};
+
+    test('removeField only', () {
+      expect(
+        JsonEncoder(removeField: (k) => k == 'pass').toJson(map),
+        equals({'name': 'joe', 'nil': null}),
+      );
+    });
+
+    test('removeNullFields only', () {
+      expect(
+        JsonEncoder(removeNullFields: true).toJson(map),
+        equals({'name': 'joe', 'pass': 'secret'}),
+      );
+    });
+
+    test('removeField + removeNullFields apply together', () {
+      // Regression: these were combined with `||`, so enabling both disabled
+      // both -- a field explicitly marked for removal (typically a secret)
+      // was emitted, and nulls were kept.
+      expect(
+        JsonEncoder(
+          removeField: (k) => k == 'pass',
+          removeNullFields: true,
+        ).toJson(map),
+        equals({'name': 'joe'}),
+      );
+    });
+
+    test('removeField + removeNullFields with a null removed field', () {
+      expect(
+        JsonEncoder(
+          removeField: (k) => k == 'nil',
+          removeNullFields: true,
+        ).toJson(map),
+        equals({'name': 'joe', 'pass': 'secret'}),
+      );
+    });
+  });
+
+  group('JsonCodec Duration', () {
+    // Regression: a negative `Duration` was encoded with a minus sign on every
+    // component (`-1:-30:0:0:-5`), and `-` is a field separator for the
+    // parser, so it decoded back as a *positive* `Duration`.
+    final durations = <Duration>[
+      Duration.zero,
+      Duration(milliseconds: 250),
+      Duration(milliseconds: -250),
+      Duration(hours: 1, minutes: 30, microseconds: 5),
+      Duration(hours: -1, minutes: -30, microseconds: -5),
+      Duration(microseconds: 1500001),
+      Duration(microseconds: -1500001),
+      Duration(microseconds: -1),
+    ];
+
+    for (var d in durations) {
+      test('round trip: ${d.inMicroseconds}us', () {
+        var encoded = JsonEncoder.defaultEncoder.toJson(d);
+        var decoded = JsonDecoder.defaultDecoder.fromJson<Duration>(encoded);
+        expect(decoded, equals(d), reason: 'encoded as: $encoded');
+      });
+    }
+
+    test('negative sub-millisecond duration keeps its sign', () {
+      var d = Duration(microseconds: -1500001);
+      expect(JsonEncoder.defaultEncoder.toJson(d), equals('-0:0:1:500:1'));
+    });
+
+    test('positive encoding is unchanged', () {
+      var d = Duration(hours: 1, minutes: 30, microseconds: 5);
+      expect(JsonEncoder.defaultEncoder.toJson(d), equals('1:30:0:0:5'));
+    });
+  });
+
   group('JsonCodec', () {
     setUp(() {});
 
@@ -349,9 +424,18 @@ void main() {
         equals('4:10:3:101:13'),
       );
 
+      // A negative `Duration` carries a single leading `-`, not a minus sign
+      // on every component (which the parser reads as a field separator).
       expect(
         JsonCodec().toJson(Duration(hours: -4, microseconds: -13)),
-        equals('-4:0:0:0:-13'),
+        equals('-4:0:0:0:13'),
+      );
+
+      expect(
+        JsonCodec().fromJson<Duration>(
+          JsonCodec().toJson(Duration(hours: -4, microseconds: -13)),
+        ),
+        equals(Duration(hours: -4, microseconds: -13)),
       );
 
       expect(

@@ -836,7 +836,7 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
     if (removeField != null) {
       if (removeNullFields) {
         oEntries = oEntries.where(
-          (e) => e.value != null || !removeField(e.key),
+          (e) => e.value != null && !removeField(e.key),
         );
       } else {
         oEntries = oEntries.where((e) => !removeField(e.key));
@@ -860,14 +860,20 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
   }
 
   Object _durationToJson(Duration o) {
-    var h = o.inHours;
-    var m = o.inMinutes - Duration(hours: h).inMinutes;
-    var s = o.inSeconds - Duration(hours: h, minutes: m).inSeconds;
+    // Decompose the absolute value, so a negative [Duration] is encoded with a
+    // single leading `-` instead of a minus sign on every component (which the
+    // parser would read as a field separator).
+    var negative = o.isNegative;
+    var d = negative ? -o : o;
+
+    var h = d.inHours;
+    var m = d.inMinutes - Duration(hours: h).inMinutes;
+    var s = d.inSeconds - Duration(hours: h, minutes: m).inSeconds;
     var ms =
-        o.inMilliseconds -
+        d.inMilliseconds -
         Duration(hours: h, minutes: m, seconds: s).inMilliseconds;
     var mic =
-        o.inMicroseconds -
+        d.inMicroseconds -
         Duration(
           hours: h,
           minutes: m,
@@ -876,10 +882,11 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
         ).inMicroseconds;
 
     if (mic == 0) {
+      // Signed: an `int` round-trips through `parseDuration` as milliseconds.
       return o.inMilliseconds;
     }
 
-    return '$h:$m:$s:$ms:$mic';
+    return '${negative ? '-' : ''}$h:$m:$s:$ms:$mic';
   }
 
   Object _bigIntToJson(BigInt o) {
