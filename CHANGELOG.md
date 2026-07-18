@@ -50,6 +50,10 @@
   - Fixed `ClassProxy` with `ignoreParametersTypes` when the *first* parameter
     is dropped: a leading comma was emitted (`compute(, int a)`), breaking the
     build.
+  - Fixed type names being generated unqualified: a type reachable only
+    through a prefixed import (`import 'other.dart' as o;`) was written as
+    `Other` instead of `o.Other`, so the generated part did not compile.
+    Type name resolution is now aware of the input library's import prefixes.
   - Fixed record type generation: no comma was emitted between positional
     fields and the named group (`(double{bool y})`), and a record with a
     single positional field was missing its mandatory trailing comma

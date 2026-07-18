@@ -1925,6 +1925,83 @@ void main() {
       () => testClassProxyLibraryPath(false),
     );
 
+    test('EnableReflection: prefixed import type names', () async {
+      // Regression: type names were emitted unqualified, so a type reachable
+      // only through a prefixed import produced a generated part that
+      // referenced an undefined name. Verified separately against a real
+      // package: `dart analyze` on the generated part went from 10 errors
+      // to none.
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/other.dart': '''
+
+          class Other {
+            int v;
+            Other(this.v);
+          }
+
+          class Plain {
+            int p;
+            Plain(this.p);
+          }
+
+        ''',
+        '$_pkgName|lib/foo.dart': '''
+
+          import 'package:reflection_factory/reflection_factory.dart';
+          import 'other.dart' as o;
+          import 'other.dart' show Plain;
+
+          part 'foo.reflection.g.dart';
+
+          @EnableReflection()
+          class Holder {
+            o.Other? other;
+
+            Plain? plain;
+
+            List<o.Other>? many;
+
+            int count;
+
+            Holder(this.count);
+          }
+
+        ''',
+      };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        readerWriter: readerWriter,
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+            allOf(
+              // Reachable only via the `o` prefix: must stay qualified,
+              // including nested inside type arguments.
+              contains('FieldReflection<Holder, o.Other?>'),
+              contains('__TR<o.Other>(o.Other)'),
+              contains('__TR<List<o.Other>>'),
+              // Imported unprefixed via `show`: must NOT be qualified.
+              contains('FieldReflection<Holder, Plain?>'),
+              contains('__TR<Plain>(Plain)'),
+              isNot(contains('o.Plain')),
+              // `dart:core` types are never qualified.
+              isNot(contains('o.int')),
+            ),
+          ),
+        },
+        onLog: (msg) {
+          _printToConsole(msg);
+        },
+      );
+    });
+
     test(
       'ClassProxy: ignoreParametersTypes drops the first parameter',
       () async {
