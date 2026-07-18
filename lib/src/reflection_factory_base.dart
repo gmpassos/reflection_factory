@@ -470,7 +470,9 @@ abstract class Reflection<O> {
     var reflectionForType = siblingsReflection()
         .where((c) => c.reflectedType == type)
         .firstOrNull;
-    return reflectionForType as Reflection<T>;
+    // Nullable cast: `firstOrNull` returns `null` when there is no sibling
+    // for [type], and the declared return type is nullable.
+    return reflectionForType as Reflection<T>?;
   }
 
   /// Returns a `const` [List] of class annotations.

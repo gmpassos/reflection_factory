@@ -30,6 +30,11 @@
   - Fixed `castMapKeys` with `nullable: true`: it made the *values* nullable
     instead of the keys, throwing a `TypeError` on a `Map` with a `null` key.
 
+- `Reflection`:
+  - Fixed `siblingReflectionFor` throwing a `TypeError` instead of returning
+    `null` when no sibling matched the requested type: it cast with
+    `as Reflection<T>` while declaring a nullable return.
+
 - `FunctionReflection`:
   - Fixed `getParameterByIndex` for named parameters: the offset did not
     include `optionalParameters`, so for a function with optional positional

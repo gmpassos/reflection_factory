@@ -2397,6 +2397,45 @@ void main() {
     });
   });
 
+  group('siblingReflectionFor', () {
+    // Regression: it cast with `as Reflection<T>` while declaring a nullable
+    // return, so "no sibling found" threw a `TypeError` instead of returning
+    // `null`. The `siblingClassReflectionFor` and `siblingEnumReflectionFor`
+    // variants already used a nullable cast.
+    test('returns null when there is no sibling for the type', () {
+      var reflection = TestUserWithReflection$reflection();
+
+      expect(reflection.siblingReflectionFor<Duration>(type: Duration), isNull);
+    });
+
+    test('agrees with the class and enum variants', () {
+      var reflection = TestUserWithReflection$reflection();
+
+      expect(reflection.siblingReflectionFor<Duration>(type: Duration), isNull);
+      expect(
+        reflection.siblingClassReflectionFor<Duration>(type: Duration),
+        isNull,
+      );
+      expect(
+        TestEnumWithReflection$reflection().siblingEnumReflectionFor<Duration>(
+          type: Duration,
+        ),
+        isNull,
+      );
+    });
+
+    test('still resolves an existing sibling', () {
+      var reflection = TestUserWithReflection$reflection();
+
+      var sibling = reflection.siblingReflectionFor<TestAddressWithReflection>(
+        type: TestAddressWithReflection,
+      );
+
+      expect(sibling, isNotNull);
+      expect(sibling!.reflectedType, equals(TestAddressWithReflection));
+    });
+  });
+
   group('FunctionReflection.getParameterByIndex', () {
     // Regression: the named-parameter branch reused the normal-parameters
     // offset instead of `positionalParametersLength`, so as soon as a
