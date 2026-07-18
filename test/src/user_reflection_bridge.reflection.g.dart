@@ -80,7 +80,7 @@ class TestAddress$reflection extends ClassReflection<TestAddress>
   }
 
   @override
-  Version get languageVersion => Version.parse('3.11.0');
+  Version get languageVersion => Version.parse('3.10.0');
 
   @override
   TestAddress$reflection withObject([TestAddress? obj]) =>
@@ -422,7 +422,7 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple>
   }
 
   @override
-  Version get languageVersion => Version.parse('3.11.0');
+  Version get languageVersion => Version.parse('3.10.0');
 
   @override
   TestUserSimple$reflection withObject([TestUserSimple? obj]) =>
