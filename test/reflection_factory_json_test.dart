@@ -314,6 +314,112 @@ void main() {
     });
   });
 
+  group('JsonDecoder async/sync parity', () {
+    // Regression: `_fromJsonAsyncImpl` handed the *collection* `TypeInfo` to
+    // `_fromJsonListAsyncImpl`, which applies it to each element. Every
+    // element was therefore decoded as `List<E>` -- not a valid entity type --
+    // and came back as a raw `Map`, with no exception raised.
+    final listTypeInfo = TypeInfo.fromType(List, [
+      TypeInfo.fromType(TestUserWithReflection),
+    ]);
+
+    final jsonList = [
+      {'name': 'a', 'email': 'a@mail.com', 'passphrase': 'p1'},
+      {'name': 'b', 'email': 'b@mail.com', 'passphrase': 'p2'},
+    ];
+
+    setUp(() {
+      TestUserWithReflection$reflection.boot();
+    });
+
+    test('fromJsonAsync decodes a List of entities like fromJson', () async {
+      var decoder = JsonDecoder.defaultDecoder;
+
+      var sync = decoder.fromJson(jsonList, typeInfo: listTypeInfo) as List;
+      var async =
+          await decoder.fromJsonAsync(jsonList, typeInfo: listTypeInfo) as List;
+
+      expect(sync, everyElement(isA<TestUserWithReflection>()));
+      expect(async, everyElement(isA<TestUserWithReflection>()));
+      expect(async.length, equals(sync.length));
+
+      expect(
+        async.map((e) => (e as TestUserWithReflection).email).toList(),
+        equals(['a@mail.com', 'b@mail.com']),
+      );
+    });
+
+    test('decodeAsync decodes a List of entities like decode', () async {
+      var decoder = JsonDecoder.defaultDecoder;
+      var encoded = JsonEncoder.defaultEncoder.encode(jsonList);
+
+      var sync = decoder.decode(encoded, typeInfo: listTypeInfo) as List;
+      var async =
+          await decoder.decodeAsync(encoded, typeInfo: listTypeInfo) as List;
+
+      expect(sync, everyElement(isA<TestUserWithReflection>()));
+      expect(async, everyElement(isA<TestUserWithReflection>()));
+      expect(async.length, equals(sync.length));
+    });
+
+    test('fromJsonAsync honors duplicatedEntitiesAsID', () async {
+      // Regression: the async Map branch called the *public*
+      // `fromJsonMapAsync`, which defaults `duplicatedEntitiesAsID` to `false`,
+      // so an already-cached entity was rebuilt instead of being reused.
+      TestAddressWithReflection$reflection.boot();
+
+      var map = {'id': 1, 'state': 'NY', 'city': 'NYC'};
+
+      JsonDecoder primed() {
+        var d = JsonDecoder.defaultDecoder;
+        d.resetEntityCache();
+        d.entityCache.cacheEntity(
+          TestAddressWithReflection.withCity('CACHED', city: 'CACHED', id: 1),
+        );
+        return d;
+      }
+
+      var sync = primed().fromJson<TestAddressWithReflection>(
+        map,
+        duplicatedEntitiesAsID: true,
+        autoResetEntityCache: false,
+      );
+
+      var async = await primed().fromJsonAsync<TestAddressWithReflection>(
+        map,
+        duplicatedEntitiesAsID: true,
+        autoResetEntityCache: false,
+      );
+
+      expect(sync?.city, equals('CACHED'));
+      expect(async?.city, equals(sync?.city));
+    });
+
+    test('fromJsonAsync honors autoResetEntityCache: false', () async {
+      // Regression: the public `fromJsonMapAsync` resets the entity cache on
+      // entry and exit, which wiped the cache in the middle of an
+      // in-progress object tree.
+      TestAddressWithReflection$reflection.boot();
+
+      var decoder = JsonDecoder.defaultDecoder;
+      decoder.resetEntityCache();
+      decoder.entityCache.cacheEntity(
+        TestAddressWithReflection.withCity('CACHED', city: 'CACHED', id: 1),
+      );
+
+      var before = decoder.entityCache.cachedEntitiesLength;
+      expect(before, equals(1));
+
+      await decoder.fromJsonAsync<TestAddressWithReflection>(
+        {'id': 1, 'state': 'NY', 'city': 'NYC'},
+        duplicatedEntitiesAsID: true,
+        autoResetEntityCache: false,
+      );
+
+      expect(decoder.entityCache.cachedEntitiesLength, equals(before));
+    });
+  });
+
   group('JsonEncoder field filters', () {
     final map = {'name': 'joe', 'pass': 'secret', 'nil': null};
 

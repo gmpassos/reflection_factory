@@ -1461,11 +1461,22 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       var map = o is Map<String, Object>
           ? o
           : o.map((k, v) => MapEntry(k.toString(), v));
-      return fromJsonMapAsync<O>(map, typeInfo: typeInfo);
+      // Call the internal implementation (like `_fromJsonImpl` does), NOT the
+      // public `fromJsonMapAsync`: the public entry point defaults
+      // `duplicatedEntitiesAsID` to `false` and resets the entity cache, which
+      // must not happen in the middle of an in-progress object tree.
+      return _fromJsonMapAsyncImpl<O>(map, typeInfo, duplicatedEntitiesAsID);
     } else if (o is Iterable) {
+      // `_fromJsonListAsyncImpl` applies [typeInfo] to each *element*, so the
+      // collection type has to be narrowed to its argument first (same as
+      // `_fromJsonImpl`). Otherwise every element is decoded as `List<E>`,
+      // which is not a valid entity type, and comes back as a raw `Map`.
+      var listType = typeInfo.isIterable && typeInfo.hasArguments
+          ? typeInfo.arguments[0]
+          : typeInfo;
       return _fromJsonListAsyncImpl(
             o,
-            typeInfo,
+            listType,
             duplicatedEntitiesAsID,
             autoResetEntityCache,
           )
