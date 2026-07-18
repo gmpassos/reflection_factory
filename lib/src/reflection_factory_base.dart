@@ -3820,19 +3820,26 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
       .toList();
 
   /// Returns a [ParameterReflection] by [index].
+  ///
+  /// Indexes follow [allParameters]: [normalParameters], then
+  /// [optionalParameters], then [namedParameters].
   ParameterReflection? getParameterByIndex(int index) {
     if (index < normalParameters.length) {
       return normalParameters[index];
     }
 
-    var offset = normalParameters.length;
+    var offsetOptional = normalParameters.length;
 
-    if (index < offset + optionalParameters.length) {
-      return optionalParameters[index - offset];
+    if (index < offsetOptional + optionalParameters.length) {
+      return optionalParameters[index - offsetOptional];
     }
 
-    if (index < offset + namedParameters.length) {
-      return namedParameters.values.elementAt(index - offset);
+    // Named parameters start after the positional ones, so the offset here
+    // has to include `optionalParameters` too.
+    var offsetNamed = positionalParametersLength;
+
+    if (index < offsetNamed + namedParameters.length) {
+      return namedParameters.values.elementAt(index - offsetNamed);
     }
 
     return null;

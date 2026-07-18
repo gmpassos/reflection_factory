@@ -30,6 +30,12 @@
   - Fixed `castMapKeys` with `nullable: true`: it made the *values* nullable
     instead of the keys, throwing a `TypeError` on a `Map` with a `null` key.
 
+- `FunctionReflection`:
+  - Fixed `getParameterByIndex` for named parameters: the offset did not
+    include `optionalParameters`, so for a function with optional positional
+    parameters the named indexes were shifted, returning the wrong parameter
+    and making the last one unreachable. Indexes now follow `allParameters`.
+
 - `ReflectionBuilder`:
   - Fixed `enum` reflection: a `static const` field of the `enum`'s own type
     (like `static const Color def = Color.red;`) was generated as an `enum`

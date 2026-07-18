@@ -2397,6 +2397,91 @@ void main() {
     });
   });
 
+  group('FunctionReflection.getParameterByIndex', () {
+    // Regression: the named-parameter branch reused the normal-parameters
+    // offset instead of `positionalParametersLength`, so as soon as a
+    // function had at least one optional positional parameter the named
+    // indexes were shifted -- returning the wrong parameter and making the
+    // last one unreachable.
+    //
+    // No test source declares a function with BOTH optional positional and
+    // named parameters, which is why this went unnoticed; the reflection is
+    // built directly here instead of adding one to the generated fixtures.
+    //
+    // Built inside each test, not in the group body: a group body runs at
+    // collection time and building a reflection registers it globally.
+    ConstructorReflection<TestUserWithReflection> buildConstructor() {
+      ParameterReflection param(String name) =>
+          ParameterReflection(TypeReflection.tString, name, true, false);
+
+      return ConstructorReflection<TestUserWithReflection>(
+        TestUserWithReflection$reflection(),
+        TestUserWithReflection,
+        'testCtor',
+        () => TestUserWithReflection.new,
+        [param('n0')],
+        [param('o0')],
+        {'k0': param('k0'), 'k1': param('k1')},
+        null,
+      );
+    }
+
+    test('indexes follow allParameters', () {
+      var constructor = buildConstructor();
+
+      expect(constructor.parametersLength, equals(4));
+      expect(constructor.allParametersNames, equals(['n0', 'o0', 'k0', 'k1']));
+
+      // The contract, stated directly:
+      for (var i = 0; i < constructor.parametersLength; ++i) {
+        expect(
+          constructor.getParameterByIndex(i),
+          same(constructor.allParameters[i]),
+          reason: 'index $i',
+        );
+      }
+    });
+
+    test('named parameters are offset past the optional ones', () {
+      var constructor = buildConstructor();
+
+      expect(constructor.getParameterByIndex(0)?.name, equals('n0'));
+      expect(constructor.getParameterByIndex(1)?.name, equals('o0'));
+      // Used to return 'k1': the offset skipped `optionalParameters`.
+      expect(constructor.getParameterByIndex(2)?.name, equals('k0'));
+      // Used to return `null`: the last named parameter was unreachable.
+      expect(constructor.getParameterByIndex(3)?.name, equals('k1'));
+    });
+
+    test('out of range returns null', () {
+      var constructor = buildConstructor();
+
+      expect(constructor.getParameterByIndex(4), isNull);
+      expect(constructor.getParameterByIndex(100), isNull);
+    });
+
+    test('still correct without optional positional parameters', () {
+      // The case the existing tests already covered.
+      ParameterReflection param(String name) =>
+          ParameterReflection(TypeReflection.tString, name, true, false);
+
+      var constructor = ConstructorReflection<TestUserWithReflection>(
+        TestUserWithReflection$reflection(),
+        TestUserWithReflection,
+        'testCtor2',
+        () => TestUserWithReflection.new,
+        [param('n0')],
+        [],
+        {'k0': param('k0')},
+        null,
+      );
+
+      expect(constructor.getParameterByIndex(0)?.name, equals('n0'));
+      expect(constructor.getParameterByIndex(1)?.name, equals('k0'));
+      expect(constructor.getParameterByIndex(2), isNull);
+    });
+  });
+
   group('Reflection nullable casts', () {
     // Regression: `castIterable`'s nullable and non-nullable closures were
     // byte-identical (`itr.cast<E>()` twice), so `nullable: true` was a no-op;
