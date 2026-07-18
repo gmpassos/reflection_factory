@@ -58,7 +58,7 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
   }
 
   @override
-  Version get languageVersion => Version.parse('3.10.0');
+  Version get languageVersion => Version.parse('3.11.0');
 
   @override
   User$reflection withObject([User? obj]) =>
