@@ -2112,7 +2112,11 @@ abstract class ClassReflection<O> extends Reflection<O>
       presentParameters = presentFields.toList();
     }
 
-    var key = _KeyParametersNames(presentParameters, allowEmptyConstructors);
+    var key = _KeyParametersNames(
+      presentParameters,
+      allowEmptyConstructors,
+      allowOptionalOnlyConstructors,
+    );
 
     var cache = getStaticInstance()._getBestConstructorForMapCache ??=
         <_KeyParametersNames, List<ConstructorReflection<O>>>{};
@@ -2358,8 +2362,13 @@ abstract class ClassReflection<O> extends Reflection<O>
 class _KeyParametersNames {
   final List<String> _fields;
   final bool _allowEmptyConstructors;
+  final bool _allowOptionalOnlyConstructors;
 
-  _KeyParametersNames(this._fields, this._allowEmptyConstructors);
+  _KeyParametersNames(
+    this._fields,
+    this._allowEmptyConstructors,
+    this._allowOptionalOnlyConstructors,
+  );
 
   bool _sorted = false;
 
@@ -2419,10 +2428,19 @@ class _KeyParametersNames {
       other is _KeyParametersNames &&
           runtimeType == other.runtimeType &&
           _allowEmptyConstructors == other._allowEmptyConstructors &&
+          _allowOptionalOnlyConstructors ==
+              other._allowOptionalOnlyConstructors &&
           equalsFields(other);
 
+  // Uses `_fields.length` and not the field contents, since the fields can be
+  // sorted after the key is built (see [sort]): the hash has to stay stable
+  // and order independent.
   @override
-  int get hashCode => _allowEmptyConstructors.hashCode ^ _fields.length;
+  int get hashCode => Object.hash(
+    _allowEmptyConstructors,
+    _allowOptionalOnlyConstructors,
+    _fields.length,
+  );
 }
 
 /// A simple element of type [T] [resolver].

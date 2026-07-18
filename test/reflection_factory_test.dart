@@ -2342,4 +2342,58 @@ void main() {
       );
     });
   });
+
+  group('getBestConstructorsForMap cache', () {
+    // Regression: the cache key (`_KeyParametersNames`) held the present
+    // parameter names and `allowEmptyConstructors`, but NOT
+    // `allowOptionalOnlyConstructors`. Both flag values therefore shared one
+    // cache entry and the result depended on which was requested first.
+    //
+    // Written so it detects the bug regardless of what the shared per-class
+    // static cache already holds: each flag value is asserted against its own
+    // correct answer, and the calls are interleaved.
+    final map = {'name': 'joe', 'email': 'joe@mail.com', 'passphrase': 'pass'};
+
+    List<String> constructorsFor({required bool allowOptionalOnly}) =>
+        TestUserWithReflection$reflection()
+            .getBestConstructorsForMap(
+              map,
+              allowOptionalOnlyConstructors: allowOptionalOnly,
+            )
+            .map((c) => c.name)
+            .toList();
+
+    test('allowOptionalOnlyConstructors is part of the cache key', () {
+      // `true` accepts the no-arg constructor; `false` excludes it and must
+      // pick the `fields` constructor, which actually consumes the map.
+      expect(constructorsFor(allowOptionalOnly: true), equals(['']));
+      expect(constructorsFor(allowOptionalOnly: false), equals(['fields']));
+
+      // Interleaved again: a cached entry for one flag must never be served
+      // for the other.
+      expect(constructorsFor(allowOptionalOnly: true), equals(['']));
+      expect(constructorsFor(allowOptionalOnly: false), equals(['fields']));
+    });
+
+    test('reverse order gives the same answers', () {
+      expect(constructorsFor(allowOptionalOnly: false), equals(['fields']));
+      expect(constructorsFor(allowOptionalOnly: true), equals(['']));
+    });
+
+    test('getBestConstructorForMap picks a map-consuming constructor', () {
+      // The practical damage: with the shared entry, this returned the no-arg
+      // constructor and every map value was silently discarded.
+      var constructor = TestUserWithReflection$reflection()
+          .getBestConstructorForMap(map, allowOptionalOnlyConstructors: false);
+
+      expect(constructor, isNotNull);
+      expect(constructor!.name, equals('fields'));
+
+      var user = TestUserWithReflection$reflection()
+          .createInstanceWithConstructor(constructor, map);
+
+      expect(user, isNotNull);
+      expect(user!.email, equals('joe@mail.com'));
+    });
+  });
 }
