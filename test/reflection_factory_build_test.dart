@@ -1925,6 +1925,174 @@ void main() {
       () => testClassProxyLibraryPath(false),
     );
 
+    test('ClassProxy: method with multiple type parameters', () async {
+      // Regression: `typeParametersSignature` wrote each type parameter with
+      // no separator, so `pair<A, B>` was generated as `pair<AB>`. That is
+      // still valid Dart, so `dart_style` accepted it and the file was
+      // written -- the breakage only surfaced later as "Undefined class 'A'".
+      // The pre-existing tests only used a single type parameter.
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+
+          import 'package:reflection_factory/reflection_factory.dart';
+
+          part 'foo.reflection.g.dart';
+
+          @ClassProxy('MultiAPI')
+          class MultiAPIProxy implements ClassProxyListener {
+          }
+
+          @EnableReflection()
+          class MultiAPI {
+            A pair<A, B>(A a, B b) => a;
+
+            C triple<A, B, C>(A a, B b, C c) => c;
+
+            R single<R>(R r) => r;
+          }
+
+        ''',
+      };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        readerWriter: readerWriter,
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+            allOf(
+              contains('A pair<A, B>(A a, B b)'),
+              contains('C triple<A, B, C>(A a, B b, C c)'),
+              // A single type parameter was already correct:
+              contains('R single<R>(R r)'),
+              isNot(contains('pair<AB>')),
+              isNot(contains('triple<ABC>')),
+            ),
+          ),
+        },
+        onLog: (msg) {
+          _printToConsole(msg);
+        },
+      );
+    });
+
+    test('EnableReflection: operator >>>', () async {
+      // Regression: `>>>` (Dart 2.14) was missing from the operator blocklist
+      // in `isValidMethodName`, so the generator emitted `o!.>>>` and the
+      // whole build failed with "Expected an identifier".
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+
+          import 'package:reflection_factory/reflection_factory.dart';
+
+          part 'foo.reflection.g.dart';
+
+          @EnableReflection()
+          class Vec {
+            final int x;
+
+            Vec(this.x);
+
+            Vec operator >>>(int n) => Vec(x >>> n);
+
+            Vec operator >>(int n) => Vec(x >> n);
+
+            int get value => x;
+          }
+
+        ''',
+      };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        readerWriter: readerWriter,
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+            allOf(
+              contains('Vec\$reflection extends ClassReflection<Vec>'),
+              // Operators are not reflected as methods:
+              isNot(contains("'>>>'")),
+              isNot(contains("'>>'")),
+              // Regular members still are:
+              contains("'value'"),
+            ),
+          ),
+        },
+        onLog: (msg) {
+          _printToConsole(msg);
+        },
+      );
+    });
+
+    test(
+      'EnableReflection: alias name collision',
+      () async {
+        // Regression: `_buildAliasName` never incremented its counter, so a
+        // library declaring names colliding with both the base alias and its
+        // `0` suffix hung the builder in an infinite loop.
+        var builder = ReflectionBuilder(verbose: true);
+
+        var sourceAssets = {
+          '$_pkgName|lib/foo.dart': '''
+
+          import 'package:reflection_factory/reflection_factory.dart';
+
+          part 'foo.reflection.g.dart';
+
+          class __TR {}
+          class __TR0 {}
+          class __TI {}
+          class __TI0 {}
+
+          @EnableReflection()
+          class Simple {
+            final int x;
+
+            Simple(this.x);
+          }
+
+        ''',
+        };
+
+        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+        await readerWriter.testing.loadIsolateSources();
+
+        await testBuilder(
+          builder,
+          sourceAssets,
+          readerWriter: readerWriter,
+          generateFor: {'$_pkgName|lib/foo.dart'},
+          outputs: {
+            '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+              allOf(
+                contains('Simple\$reflection extends ClassReflection<Simple>'),
+                // The alias skipped past both taken names:
+                contains('__TR1'),
+                contains('__TI1'),
+              ),
+            ),
+          },
+          onLog: (msg) {
+            _printToConsole(msg);
+          },
+        );
+      },
+      timeout: Timeout(Duration(seconds: 60)),
+    );
+
     test('ClassProxy: SimpleAPI', () async {
       var builder = ReflectionBuilder(verbose: true);
 

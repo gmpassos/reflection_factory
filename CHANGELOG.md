@@ -42,6 +42,13 @@
     and making the last one unreachable. Indexes now follow `allParameters`.
 
 - `ReflectionBuilder`:
+  - Fixed `ClassProxy` generation for a method with more than one type
+    parameter: they were written with no separator, so `pair<A, B>` was
+    generated as `pair<AB>`.
+  - Fixed `operator >>>` (Dart 2.14) not being in the operator blocklist: it
+    was generated as a method name and broke the build.
+  - Fixed an infinite loop in the generated alias naming when a library
+    declares names colliding with both an internal alias and its `0` suffix.
   - Fixed `enum` reflection: a `static const` field of the `enum`'s own type
     (like `static const Color def = Color.red;`) was generated as an `enum`
     value in `_valuesByName`, shadowing the real name in

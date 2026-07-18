@@ -1037,6 +1037,7 @@ class _TypeAliasTable {
     while (true) {
       var name = '$prefix$i';
       if (!usedNames.contains(name)) return name;
+      ++i;
     }
   }
 
@@ -1699,6 +1700,8 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
       name != '^' &&
       name != '<<' &&
       name != '>>' &&
+      // Unsigned right shift, added in Dart 2.14:
+      name != '>>>' &&
       name != '~' &&
       name != '%';
 
@@ -2919,6 +2922,11 @@ class _ProxyMethod {
       var pStr = p.displayString();
       if (pStr.startsWith('{') || pStr.startsWith('[')) {
         pStr = pStr.substring(1, pStr.length - 1).trim();
+      }
+      // Separator driven by what was already written, so it stays correct
+      // regardless of which entries are emitted.
+      if (parametersStr.isNotEmpty) {
+        parametersStr.write(', ');
       }
       parametersStr.write(pStr);
     }
