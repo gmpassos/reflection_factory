@@ -2396,4 +2396,91 @@ void main() {
       expect(user!.email, equals('joe@mail.com'));
     });
   });
+
+  group('Reflection nullable casts', () {
+    // Regression: `castIterable`'s nullable and non-nullable closures were
+    // byte-identical (`itr.cast<E>()` twice), so `nullable: true` was a no-op;
+    // and `castMapKeys` built a `Map<K, V?>` -- nullable *values* -- a
+    // copy-paste of `castMapValues`. Both threw a `TypeError` on the very
+    // input they were meant to allow.
+    //
+    // Instantiated inside each test, not in the group body: a group body runs
+    // at collection time, and building the reflection registers it globally,
+    // which breaks tests asserting it is not yet registered.
+    TestUserWithReflection$reflection reflection() =>
+        TestUserWithReflection$reflection();
+
+    final mapTypeInfo = TypeInfo.fromType(Map, [
+      TypeInfo.fromType(String),
+      TypeInfo.fromType(int),
+    ]);
+
+    test('castIterable with nullable: true keeps nulls', () {
+      var out = reflection().castIterable(
+        <Object?>[1, null, 3],
+        int,
+        nullable: true,
+      );
+
+      expect(out, isNotNull);
+      expect(out, isA<Iterable<int?>>());
+      expect(out!.toList(), equals([1, null, 3]));
+    });
+
+    test('castIterable with nullable: false casts to the plain type', () {
+      var out = reflection().castIterable(
+        <Object?>[1, 2],
+        int,
+        nullable: false,
+      );
+
+      expect(out, isA<Iterable<int>>());
+      expect(out!.toList(), equals([1, 2]));
+    });
+
+    test('castIterable agrees with castList and castSet', () {
+      // The three are meant to behave alike; only `castIterable` was broken.
+      expect(
+        reflection()
+            .castList(<Object?>[1, null], int, nullable: true)
+            ?.toList(),
+        equals([1, null]),
+      );
+      expect(
+        reflection().castSet(<Object?>{1, null}, int, nullable: true)?.toList(),
+        equals([1, null]),
+      );
+      expect(
+        reflection()
+            .castIterable(<Object?>[1, null], int, nullable: true)
+            ?.toList(),
+        equals([1, null]),
+      );
+    });
+
+    test('castMapKeys with nullable: true allows a null key', () {
+      var out = reflection().castMapKeys(
+        <Object?, Object?>{null: 1, 'a': 2},
+        mapTypeInfo,
+        nullable: true,
+      );
+
+      expect(out, isNotNull);
+      expect(out!.keys.toList(), equals([null, 'a']));
+      // The values must stay as they are: only the keys become nullable.
+      expect(out.values.toList(), equals([1, 2]));
+    });
+
+    test('castMapValues with nullable: true allows a null value', () {
+      var out = reflection().castMapValues(
+        <Object?, Object?>{'a': null, 'b': 2},
+        mapTypeInfo,
+        nullable: true,
+      );
+
+      expect(out, isNotNull);
+      expect(out!.values.toList(), equals([null, 2]));
+      expect(out.keys.toList(), equals(['a', 'b']));
+    });
+  });
 }

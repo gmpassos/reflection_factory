@@ -274,7 +274,7 @@ abstract class Reflection<O> {
     var typeInfo = TypeInfo.fromType(type);
 
     Iterable? callCast<E>() => itr.cast<E>();
-    Iterable? callCastNullable<E>() => itr.cast<E>();
+    Iterable? callCastNullable<E>() => itr.cast<E?>();
 
     var l = nullable
         ? typeInfo.callCasted(callCastNullable)
@@ -375,10 +375,11 @@ abstract class Reflection<O> {
             : map.map<K, V>((key, value) => MapEntry<K, V>(key, value));
       });
 
+      // Nullable *keys* (`K?`), not values: this is `castMapKeys`.
       Map? callKeyNullable<K>() => valueType.callCasted(<V>() {
-        return map is Map<K, V?>
+        return map is Map<K?, V>
             ? map
-            : map.map<K, V?>((key, value) => MapEntry<K, V?>(key, value));
+            : map.map<K?, V>((key, value) => MapEntry<K?, V>(key, value));
       });
 
       var m = nullable

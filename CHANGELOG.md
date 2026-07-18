@@ -24,6 +24,11 @@
   - Fixed `getBestConstructorsForMap` cache key: it ignored
     `allowOptionalOnlyConstructors`, so both values of the flag shared one
     cache entry and the result depended on which was requested first.
+  - Fixed `castIterable` with `nullable: true`: it cast to `E` instead of `E?`,
+    making the parameter a no-op and throwing a `TypeError` on a collection
+    containing `null` (`castList` and `castSet` were already correct).
+  - Fixed `castMapKeys` with `nullable: true`: it made the *values* nullable
+    instead of the keys, throwing a `TypeError` on a `Map` with a `null` key.
 
 - `ReflectionBuilder`:
   - Fixed `enum` reflection: a `static const` field of the `enum`'s own type
