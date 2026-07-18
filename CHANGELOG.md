@@ -47,6 +47,13 @@
     generated as `pair<AB>`.
   - Fixed `operator >>>` (Dart 2.14) not being in the operator blocklist: it
     was generated as a method name and broke the build.
+  - Fixed `ClassProxy` with `ignoreParametersTypes` when the *first* parameter
+    is dropped: a leading comma was emitted (`compute(, int a)`), breaking the
+    build.
+  - Fixed record type generation: no comma was emitted between positional
+    fields and the named group (`(double{bool y})`), and a record with a
+    single positional field was missing its mandatory trailing comma
+    (`(int)` instead of `(int,)`). Both aborted the build.
   - Fixed an infinite loop in the generated alias naming when a library
     declares names colliding with both an internal alias and its `0` suffix.
   - Fixed `enum` reflection: a `static const` field of the `enum`'s own type

@@ -2985,12 +2985,17 @@ class _ProxyMethod {
     List<FormalParameterElement> parameters,
     Set<DartType> ignoreParametersTypes,
   ) {
-    for (int i = 0; i < parameters.length; i++) {
-      var e = parameters[i];
+    // Tracks what THIS call wrote. The loop index can't be used (skipping the
+    // first parameter would emit a leading comma), and neither can the
+    // buffer, since the caller may already have written `[ ` or `{ ` into it.
+    var wrote = false;
 
+    for (var e in parameters) {
       if (ignoreParametersTypes.containsType(e.type)) continue;
 
-      if (i > 0) parametersStr.write(', ');
+      if (wrote) parametersStr.write(', ');
+      wrote = true;
+
       var pStr = e.displayString();
       if (pStr.startsWith('{') || pStr.startsWith('[')) {
         pStr = pStr.substring(1, pStr.length - 1).trim();
@@ -3659,10 +3664,19 @@ extension _DartTypeExtension on DartType {
       return '${t.type.fullTypeNameResolvable(typeParameters: typeParameters)} ${t.name}';
     }).toList();
 
+    var hasPositional = recordTypesNamesPos.isNotEmpty;
+    var hasNamed = recordTypesNamesNamed.isNotEmpty;
+
     var list = [
       '(',
-      if (recordTypesNamesPos.isNotEmpty) recordTypesNamesPos.join(', '),
-      if (recordTypesNamesNamed.isNotEmpty) ...[
+      if (hasPositional) recordTypesNamesPos.join(', '),
+      // A record type with exactly one positional field and no named fields
+      // requires a trailing comma, to tell `(int,)` from a parenthesized
+      // `(int)`.
+      if (hasPositional && !hasNamed && recordTypesNamesPos.length == 1) ',',
+      if (hasNamed) ...[
+        // The named group has to be separated from the positional fields.
+        if (hasPositional) ', ',
         '{',
         recordTypesNamesNamed.join(', '),
         '}',

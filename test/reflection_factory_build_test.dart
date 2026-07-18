@@ -1925,6 +1925,120 @@ void main() {
       () => testClassProxyLibraryPath(false),
     );
 
+    test(
+      'ClassProxy: ignoreParametersTypes drops the first parameter',
+      () async {
+        // Regression: `_writeParameters` wrote its separator based on the
+        // unfiltered loop index, so dropping parameter 0 left the comma on the
+        // next one -- `int compute(, int a)` -- and the build failed to parse.
+        // The pre-existing test only ignored a trailing parameter.
+        var builder = ReflectionBuilder(verbose: true);
+
+        var sourceAssets = {
+          '$_pkgName|lib/foo.dart': '''
+
+          import 'package:reflection_factory/reflection_factory.dart';
+
+          part 'foo.reflection.g.dart';
+
+          @ClassProxy('FilterAPI', ignoreParametersTypes: {Future})
+          class FilterAPIProxy implements ClassProxyListener {
+          }
+
+          @EnableReflection()
+          class FilterAPI {
+            int computeFirst(Future f, int a) => a;
+
+            int computeMiddle(int a, Future f, int b) => a;
+
+            int computeLast(int a, Future f) => a;
+          }
+
+        ''',
+        };
+
+        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+        await readerWriter.testing.loadIsolateSources();
+
+        await testBuilder(
+          builder,
+          sourceAssets,
+          readerWriter: readerWriter,
+          generateFor: {'$_pkgName|lib/foo.dart'},
+          outputs: {
+            '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+              allOf(
+                contains('int computeFirst(int a)'),
+                contains('int computeMiddle(int a, int b)'),
+                contains('int computeLast(int a)'),
+                isNot(contains('(, ')),
+              ),
+            ),
+          },
+          onLog: (msg) {
+            _printToConsole(msg);
+          },
+        );
+      },
+    );
+
+    test('EnableReflection: record types', () async {
+      // Regression: `recordDeclaration` emitted no comma between the
+      // positional fields and the named group -- `(double{bool y})` -- and no
+      // trailing comma for a single positional field -- `(int)` -- both of
+      // which are parse errors that aborted the build.
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+
+          import 'package:reflection_factory/reflection_factory.dart';
+
+          part 'foo.reflection.g.dart';
+
+          @EnableReflection()
+          class Rec {
+            (int,) one;
+
+            (double x, {bool y}) mixed;
+
+            (int, String) plain;
+
+            ({int a, int b}) namedOnly;
+
+            Rec(this.one, this.mixed, this.plain, this.namedOnly);
+          }
+
+        ''',
+      };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        readerWriter: readerWriter,
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+            allOf(
+              // Single positional field: mandatory trailing comma.
+              contains('= (int,);'),
+              // Positional + named: separated by a comma.
+              contains('= (double, {bool y});'),
+              // Unaffected shapes:
+              contains('= (int, String);'),
+              contains('= ({int a, int b});'),
+            ),
+          ),
+        },
+        onLog: (msg) {
+          _printToConsole(msg);
+        },
+      );
+    });
+
     test('ClassProxy: method with multiple type parameters', () async {
       // Regression: `typeParametersSignature` wrote each type parameter with
       // no separator, so `pair<A, B>` was generated as `pair<AB>`. That is
