@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 
 /// An [UnmodifiableListView] that counts usage of elements and can return
 /// a sorted list by usage.
@@ -18,7 +19,7 @@ class ListSortedByUsage<E> extends UnmodifiableListView<E> {
 
     // Avoid count overflow for long lived instances:
     if (count > _countOverflowLimit) {
-      _clampCount(usageCounter);
+      clampCount(usageCounter);
     }
 
     var sortedByUsage = _sortedByUsage;
@@ -36,7 +37,13 @@ class ListSortedByUsage<E> extends UnmodifiableListView<E> {
   static const _countOverflowLimit = 1999999999;
   static const _countClampLimit = 9999;
 
-  void _clampCount(List<int> usageCounter) {
+  /// Re-scales [usageCounter] to avoid count overflow, preserving the
+  /// relative order of the counts.
+  ///
+  /// Only reachable after [_countOverflowLimit] usages, so it's exposed
+  /// for testing.
+  @visibleForTesting
+  void clampCount(List<int> usageCounter) {
     final length = usageCounter.length;
 
     final min = usageCounter.min;
