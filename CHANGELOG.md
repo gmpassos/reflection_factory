@@ -1,3 +1,60 @@
+## 2.8.0
+
+- `JsonEncoder`:
+  - Fixed `removeField` when combined with `removeNullFields`: the filters were
+    joined with `||`, so enabling both disabled both, and a field marked for
+    removal was still emitted.
+  - Fixed the encoding of a negative `Duration`: it was written with a minus
+    sign on every component (`-1:-30:0:0:-5`), and since `-` is also a field
+    separator the value decoded back positive. Now written with a single
+    leading `-` (`-1:30:0:0:5`).
+    - **Note:** this changes the wire format of negative `Duration` values.
+      The previous format is still decoded correctly, so already persisted
+      data is recovered. Positive values are unchanged.
+
+- `JsonDecoder`:
+  - Fixed `fromJsonAsync`/`decodeAsync` for a `List` of entities: the
+    collection `TypeInfo` was applied to each element instead of its argument,
+    so elements were returned as raw `Map`s instead of entities, without any
+    error.
+  - Fixed the async `Map` path dropping `duplicatedEntitiesAsID` and resetting
+    the entity cache in the middle of an in-progress object tree.
+
+- `ClassReflection`:
+  - Fixed `getBestConstructorsForMap` cache key: it ignored
+    `allowOptionalOnlyConstructors`, so both values of the flag shared one
+    cache entry and the result depended on which was requested first.
+
+- `ReflectionBuilder`:
+  - Fixed `enum` reflection: a `static const` field of the `enum`'s own type
+    (like `static const Color def = Color.red;`) was generated as an `enum`
+    value in `_valuesByName`, shadowing the real name in
+    `EnumReflection.getName`. Now only actual `enum` constants are generated.
+
+- `TypeParser`:
+  - `parseDuration`: a leading `-` now negates the whole `Duration` instead of
+    being consumed as a field separator.
+
+- `ListSortedByUsage`:
+  - Exposed `clampCount` as `@visibleForTesting`.
+
+- Tests:
+  - Added coverage for `lib/src/analyzer/` (`ConstantReader`, `TypeChecker`,
+    `LibraryReader`, `UnresolvedAnnotationException` and the url helpers),
+    for the annotations and for the `ClassProxy` return helpers.
+  - Total tests: 96 -> 250. Line coverage: 86.0% -> 89.1%.
+
+- `pubspec.yaml`:
+  - Updated dependencies:
+    - `analyzer` to `^13.0.0`
+    - `build` to `^4.0.6`
+    - `dart_style` to `^3.1.9`
+  - The previous `build` and `dart_style` lower bounds were not satisfiable
+    with `analyzer` 13.x, so `pub` silently resolved above them.
+  - SDK constraint unchanged (`>=3.10.0 <4.0.0`): `analyzer` 13.0.0 still
+    supports `^3.9.0`, but `dart_style` 3.1.9 (the only release compatible
+    with `analyzer` 13) requires `^3.10.0`.
+
 ## 2.7.5
 
 - Dependency updates:
