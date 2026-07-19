@@ -836,7 +836,7 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
     if (removeField != null) {
       if (removeNullFields) {
         oEntries = oEntries.where(
-          (e) => e.value != null || !removeField(e.key),
+          (e) => e.value != null && !removeField(e.key),
         );
       } else {
         oEntries = oEntries.where((e) => !removeField(e.key));
@@ -860,14 +860,20 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
   }
 
   Object _durationToJson(Duration o) {
-    var h = o.inHours;
-    var m = o.inMinutes - Duration(hours: h).inMinutes;
-    var s = o.inSeconds - Duration(hours: h, minutes: m).inSeconds;
+    // Decompose the absolute value, so a negative [Duration] is encoded with a
+    // single leading `-` instead of a minus sign on every component (which the
+    // parser would read as a field separator).
+    var negative = o.isNegative;
+    var d = negative ? -o : o;
+
+    var h = d.inHours;
+    var m = d.inMinutes - Duration(hours: h).inMinutes;
+    var s = d.inSeconds - Duration(hours: h, minutes: m).inSeconds;
     var ms =
-        o.inMilliseconds -
+        d.inMilliseconds -
         Duration(hours: h, minutes: m, seconds: s).inMilliseconds;
     var mic =
-        o.inMicroseconds -
+        d.inMicroseconds -
         Duration(
           hours: h,
           minutes: m,
@@ -876,10 +882,11 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
         ).inMicroseconds;
 
     if (mic == 0) {
+      // Signed: an `int` round-trips through `parseDuration` as milliseconds.
       return o.inMilliseconds;
     }
 
-    return '$h:$m:$s:$ms:$mic';
+    return '${negative ? '-' : ''}$h:$m:$s:$ms:$mic';
   }
 
   Object _bigIntToJson(BigInt o) {
@@ -1454,11 +1461,22 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       var map = o is Map<String, Object>
           ? o
           : o.map((k, v) => MapEntry(k.toString(), v));
-      return fromJsonMapAsync<O>(map, typeInfo: typeInfo);
+      // Call the internal implementation (like `_fromJsonImpl` does), NOT the
+      // public `fromJsonMapAsync`: the public entry point defaults
+      // `duplicatedEntitiesAsID` to `false` and resets the entity cache, which
+      // must not happen in the middle of an in-progress object tree.
+      return _fromJsonMapAsyncImpl<O>(map, typeInfo, duplicatedEntitiesAsID);
     } else if (o is Iterable) {
+      // `_fromJsonListAsyncImpl` applies [typeInfo] to each *element*, so the
+      // collection type has to be narrowed to its argument first (same as
+      // `_fromJsonImpl`). Otherwise every element is decoded as `List<E>`,
+      // which is not a valid entity type, and comes back as a raw `Map`.
+      var listType = typeInfo.isIterable && typeInfo.hasArguments
+          ? typeInfo.arguments[0]
+          : typeInfo;
       return _fromJsonListAsyncImpl(
             o,
-            typeInfo,
+            listType,
             duplicatedEntitiesAsID,
             autoResetEntityCache,
           )

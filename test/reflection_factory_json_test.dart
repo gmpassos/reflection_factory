@@ -314,6 +314,187 @@ void main() {
     });
   });
 
+  group('JsonDecoder async/sync parity', () {
+    // Regression: `_fromJsonAsyncImpl` handed the *collection* `TypeInfo` to
+    // `_fromJsonListAsyncImpl`, which applies it to each element. Every
+    // element was therefore decoded as `List<E>` -- not a valid entity type --
+    // and came back as a raw `Map`, with no exception raised.
+    final listTypeInfo = TypeInfo.fromType(List, [
+      TypeInfo.fromType(TestUserWithReflection),
+    ]);
+
+    final jsonList = [
+      {'name': 'a', 'email': 'a@mail.com', 'passphrase': 'p1'},
+      {'name': 'b', 'email': 'b@mail.com', 'passphrase': 'p2'},
+    ];
+
+    setUp(() {
+      TestUserWithReflection$reflection.boot();
+    });
+
+    test('fromJsonAsync decodes a List of entities like fromJson', () async {
+      var decoder = JsonDecoder.defaultDecoder;
+
+      var sync = decoder.fromJson(jsonList, typeInfo: listTypeInfo) as List;
+      var async =
+          await decoder.fromJsonAsync(jsonList, typeInfo: listTypeInfo) as List;
+
+      expect(sync, everyElement(isA<TestUserWithReflection>()));
+      expect(async, everyElement(isA<TestUserWithReflection>()));
+      expect(async.length, equals(sync.length));
+
+      expect(
+        async.map((e) => (e as TestUserWithReflection).email).toList(),
+        equals(['a@mail.com', 'b@mail.com']),
+      );
+    });
+
+    test('decodeAsync decodes a List of entities like decode', () async {
+      var decoder = JsonDecoder.defaultDecoder;
+      var encoded = JsonEncoder.defaultEncoder.encode(jsonList);
+
+      var sync = decoder.decode(encoded, typeInfo: listTypeInfo) as List;
+      var async =
+          await decoder.decodeAsync(encoded, typeInfo: listTypeInfo) as List;
+
+      expect(sync, everyElement(isA<TestUserWithReflection>()));
+      expect(async, everyElement(isA<TestUserWithReflection>()));
+      expect(async.length, equals(sync.length));
+    });
+
+    test('fromJsonAsync honors duplicatedEntitiesAsID', () async {
+      // Regression: the async Map branch called the *public*
+      // `fromJsonMapAsync`, which defaults `duplicatedEntitiesAsID` to `false`,
+      // so an already-cached entity was rebuilt instead of being reused.
+      TestAddressWithReflection$reflection.boot();
+
+      var map = {'id': 1, 'state': 'NY', 'city': 'NYC'};
+
+      JsonDecoder primed() {
+        var d = JsonDecoder.defaultDecoder;
+        d.resetEntityCache();
+        d.entityCache.cacheEntity(
+          TestAddressWithReflection.withCity('CACHED', city: 'CACHED', id: 1),
+        );
+        return d;
+      }
+
+      var sync = primed().fromJson<TestAddressWithReflection>(
+        map,
+        duplicatedEntitiesAsID: true,
+        autoResetEntityCache: false,
+      );
+
+      var async = await primed().fromJsonAsync<TestAddressWithReflection>(
+        map,
+        duplicatedEntitiesAsID: true,
+        autoResetEntityCache: false,
+      );
+
+      expect(sync?.city, equals('CACHED'));
+      expect(async?.city, equals(sync?.city));
+    });
+
+    test('fromJsonAsync honors autoResetEntityCache: false', () async {
+      // Regression: the public `fromJsonMapAsync` resets the entity cache on
+      // entry and exit, which wiped the cache in the middle of an
+      // in-progress object tree.
+      TestAddressWithReflection$reflection.boot();
+
+      var decoder = JsonDecoder.defaultDecoder;
+      decoder.resetEntityCache();
+      decoder.entityCache.cacheEntity(
+        TestAddressWithReflection.withCity('CACHED', city: 'CACHED', id: 1),
+      );
+
+      var before = decoder.entityCache.cachedEntitiesLength;
+      expect(before, equals(1));
+
+      await decoder.fromJsonAsync<TestAddressWithReflection>(
+        {'id': 1, 'state': 'NY', 'city': 'NYC'},
+        duplicatedEntitiesAsID: true,
+        autoResetEntityCache: false,
+      );
+
+      expect(decoder.entityCache.cachedEntitiesLength, equals(before));
+    });
+  });
+
+  group('JsonEncoder field filters', () {
+    final map = {'name': 'joe', 'pass': 'secret', 'nil': null};
+
+    test('removeField only', () {
+      expect(
+        JsonEncoder(removeField: (k) => k == 'pass').toJson(map),
+        equals({'name': 'joe', 'nil': null}),
+      );
+    });
+
+    test('removeNullFields only', () {
+      expect(
+        JsonEncoder(removeNullFields: true).toJson(map),
+        equals({'name': 'joe', 'pass': 'secret'}),
+      );
+    });
+
+    test('removeField + removeNullFields apply together', () {
+      // Regression: these were combined with `||`, so enabling both disabled
+      // both -- a field explicitly marked for removal (typically a secret)
+      // was emitted, and nulls were kept.
+      expect(
+        JsonEncoder(
+          removeField: (k) => k == 'pass',
+          removeNullFields: true,
+        ).toJson(map),
+        equals({'name': 'joe'}),
+      );
+    });
+
+    test('removeField + removeNullFields with a null removed field', () {
+      expect(
+        JsonEncoder(
+          removeField: (k) => k == 'nil',
+          removeNullFields: true,
+        ).toJson(map),
+        equals({'name': 'joe', 'pass': 'secret'}),
+      );
+    });
+  });
+
+  group('JsonCodec Duration', () {
+    // Regression: a negative `Duration` was encoded with a minus sign on every
+    // component (`-1:-30:0:0:-5`), and `-` is a field separator for the
+    // parser, so it decoded back as a *positive* `Duration`.
+    final durations = <Duration>[
+      Duration.zero,
+      Duration(milliseconds: 250),
+      Duration(milliseconds: -250),
+      Duration(hours: 1, minutes: 30, microseconds: 5),
+      Duration(hours: -1, minutes: -30, microseconds: -5),
+      Duration(microseconds: 1500001),
+      Duration(microseconds: -1500001),
+      Duration(microseconds: -1),
+    ];
+
+    for (var d in durations) {
+      test('round trip: ${d.inMicroseconds}us', () {
+        var encoded = JsonEncoder.defaultEncoder.toJson(d);
+        var decoded = JsonDecoder.defaultDecoder.fromJson<Duration>(encoded);
+        expect(decoded, equals(d), reason: 'encoded as: $encoded');
+      });
+    }
+
+    test('negative sub-millisecond duration keeps its sign', () {
+      var d = Duration(microseconds: -1500001);
+      expect(JsonEncoder.defaultEncoder.toJson(d), equals('-0:0:1:500:1'));
+    });
+
+    test('positive encoding is unchanged', () {
+      var d = Duration(hours: 1, minutes: 30, microseconds: 5);
+      expect(JsonEncoder.defaultEncoder.toJson(d), equals('1:30:0:0:5'));
+    });
+  });
+
   group('JsonCodec', () {
     setUp(() {});
 
@@ -349,9 +530,18 @@ void main() {
         equals('4:10:3:101:13'),
       );
 
+      // A negative `Duration` carries a single leading `-`, not a minus sign
+      // on every component (which the parser reads as a field separator).
       expect(
         JsonCodec().toJson(Duration(hours: -4, microseconds: -13)),
-        equals('-4:0:0:0:-13'),
+        equals('-4:0:0:0:13'),
+      );
+
+      expect(
+        JsonCodec().fromJson<Duration>(
+          JsonCodec().toJson(Duration(hours: -4, microseconds: -13)),
+        ),
+        equals(Duration(hours: -4, microseconds: -13)),
       );
 
       expect(

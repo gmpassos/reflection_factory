@@ -2568,6 +2568,45 @@ void main() {
       );
     });
 
+    test('TypeParser.parseDuration: negative (signed) strings', () async {
+      // A leading `-` negates the whole `Duration`. Regression: `-` is also a
+      // field separator, so the sign used to be swallowed by `split` and every
+      // negative value decoded as positive.
+      expect(
+        TypeParser.parseDuration('-1:30:0:0:5'),
+        equals(Duration(hours: -1, minutes: -30, microseconds: -5)),
+      );
+
+      expect(
+        TypeParser.parseDuration('-0:0:1:500:1'),
+        equals(Duration(microseconds: -1500001)),
+      );
+
+      expect(
+        TypeParser.parseDuration('-4:10:20'),
+        equals(Duration(hours: -4, minutes: -10, seconds: -20)),
+      );
+
+      // The positive counterparts must be unaffected.
+      expect(
+        TypeParser.parseDuration('1:30:0:0:5'),
+        equals(Duration(hours: 1, minutes: 30, microseconds: 5)),
+      );
+
+      expect(
+        TypeParser.parseDuration('4:10:20'),
+        equals(Duration(hours: 4, minutes: 10, seconds: 20)),
+      );
+
+      // Legacy wire format: older versions wrote a minus sign on *every*
+      // component. Those values must still decode to the correct negative
+      // `Duration` so previously persisted data isn't lost.
+      expect(
+        TypeParser.parseDuration('-1:-30:0:0:-5'),
+        equals(Duration(hours: -1, minutes: -30, microseconds: -5)),
+      );
+    });
+
     test('TypeParser.parseUInt8List', () async {
       expect(
         TypeParser.parseUInt8List([1, 2, 3, 4, 5]),

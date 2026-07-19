@@ -2342,4 +2342,269 @@ void main() {
       );
     });
   });
+
+  group('getBestConstructorsForMap cache', () {
+    // Regression: the cache key (`_KeyParametersNames`) held the present
+    // parameter names and `allowEmptyConstructors`, but NOT
+    // `allowOptionalOnlyConstructors`. Both flag values therefore shared one
+    // cache entry and the result depended on which was requested first.
+    //
+    // Written so it detects the bug regardless of what the shared per-class
+    // static cache already holds: each flag value is asserted against its own
+    // correct answer, and the calls are interleaved.
+    final map = {'name': 'joe', 'email': 'joe@mail.com', 'passphrase': 'pass'};
+
+    List<String> constructorsFor({required bool allowOptionalOnly}) =>
+        TestUserWithReflection$reflection()
+            .getBestConstructorsForMap(
+              map,
+              allowOptionalOnlyConstructors: allowOptionalOnly,
+            )
+            .map((c) => c.name)
+            .toList();
+
+    test('allowOptionalOnlyConstructors is part of the cache key', () {
+      // `true` accepts the no-arg constructor; `false` excludes it and must
+      // pick the `fields` constructor, which actually consumes the map.
+      expect(constructorsFor(allowOptionalOnly: true), equals(['']));
+      expect(constructorsFor(allowOptionalOnly: false), equals(['fields']));
+
+      // Interleaved again: a cached entry for one flag must never be served
+      // for the other.
+      expect(constructorsFor(allowOptionalOnly: true), equals(['']));
+      expect(constructorsFor(allowOptionalOnly: false), equals(['fields']));
+    });
+
+    test('reverse order gives the same answers', () {
+      expect(constructorsFor(allowOptionalOnly: false), equals(['fields']));
+      expect(constructorsFor(allowOptionalOnly: true), equals(['']));
+    });
+
+    test('getBestConstructorForMap picks a map-consuming constructor', () {
+      // The practical damage: with the shared entry, this returned the no-arg
+      // constructor and every map value was silently discarded.
+      var constructor = TestUserWithReflection$reflection()
+          .getBestConstructorForMap(map, allowOptionalOnlyConstructors: false);
+
+      expect(constructor, isNotNull);
+      expect(constructor!.name, equals('fields'));
+
+      var user = TestUserWithReflection$reflection()
+          .createInstanceWithConstructor(constructor, map);
+
+      expect(user, isNotNull);
+      expect(user!.email, equals('joe@mail.com'));
+    });
+  });
+
+  group('siblingReflectionFor', () {
+    // Regression: it cast with `as Reflection<T>` while declaring a nullable
+    // return, so "no sibling found" threw a `TypeError` instead of returning
+    // `null`. The `siblingClassReflectionFor` and `siblingEnumReflectionFor`
+    // variants already used a nullable cast.
+    test('returns null when there is no sibling for the type', () {
+      var reflection = TestUserWithReflection$reflection();
+
+      expect(reflection.siblingReflectionFor<Duration>(type: Duration), isNull);
+    });
+
+    test('agrees with the class and enum variants', () {
+      var reflection = TestUserWithReflection$reflection();
+
+      expect(reflection.siblingReflectionFor<Duration>(type: Duration), isNull);
+      expect(
+        reflection.siblingClassReflectionFor<Duration>(type: Duration),
+        isNull,
+      );
+      expect(
+        TestEnumWithReflection$reflection().siblingEnumReflectionFor<Duration>(
+          type: Duration,
+        ),
+        isNull,
+      );
+    });
+
+    test('still resolves an existing sibling', () {
+      var reflection = TestUserWithReflection$reflection();
+
+      var sibling = reflection.siblingReflectionFor<TestAddressWithReflection>(
+        type: TestAddressWithReflection,
+      );
+
+      expect(sibling, isNotNull);
+      expect(sibling!.reflectedType, equals(TestAddressWithReflection));
+    });
+  });
+
+  group('FunctionReflection.getParameterByIndex', () {
+    // Regression: the named-parameter branch reused the normal-parameters
+    // offset instead of `positionalParametersLength`, so as soon as a
+    // function had at least one optional positional parameter the named
+    // indexes were shifted -- returning the wrong parameter and making the
+    // last one unreachable.
+    //
+    // No test source declares a function with BOTH optional positional and
+    // named parameters, which is why this went unnoticed; the reflection is
+    // built directly here instead of adding one to the generated fixtures.
+    //
+    // Built inside each test, not in the group body: a group body runs at
+    // collection time and building a reflection registers it globally.
+    ConstructorReflection<TestUserWithReflection> buildConstructor() {
+      ParameterReflection param(String name) =>
+          ParameterReflection(TypeReflection.tString, name, true, false);
+
+      return ConstructorReflection<TestUserWithReflection>(
+        TestUserWithReflection$reflection(),
+        TestUserWithReflection,
+        'testCtor',
+        () => TestUserWithReflection.new,
+        [param('n0')],
+        [param('o0')],
+        {'k0': param('k0'), 'k1': param('k1')},
+        null,
+      );
+    }
+
+    test('indexes follow allParameters', () {
+      var constructor = buildConstructor();
+
+      expect(constructor.parametersLength, equals(4));
+      expect(constructor.allParametersNames, equals(['n0', 'o0', 'k0', 'k1']));
+
+      // The contract, stated directly:
+      for (var i = 0; i < constructor.parametersLength; ++i) {
+        expect(
+          constructor.getParameterByIndex(i),
+          same(constructor.allParameters[i]),
+          reason: 'index $i',
+        );
+      }
+    });
+
+    test('named parameters are offset past the optional ones', () {
+      var constructor = buildConstructor();
+
+      expect(constructor.getParameterByIndex(0)?.name, equals('n0'));
+      expect(constructor.getParameterByIndex(1)?.name, equals('o0'));
+      // Used to return 'k1': the offset skipped `optionalParameters`.
+      expect(constructor.getParameterByIndex(2)?.name, equals('k0'));
+      // Used to return `null`: the last named parameter was unreachable.
+      expect(constructor.getParameterByIndex(3)?.name, equals('k1'));
+    });
+
+    test('out of range returns null', () {
+      var constructor = buildConstructor();
+
+      expect(constructor.getParameterByIndex(4), isNull);
+      expect(constructor.getParameterByIndex(100), isNull);
+    });
+
+    test('still correct without optional positional parameters', () {
+      // The case the existing tests already covered.
+      ParameterReflection param(String name) =>
+          ParameterReflection(TypeReflection.tString, name, true, false);
+
+      var constructor = ConstructorReflection<TestUserWithReflection>(
+        TestUserWithReflection$reflection(),
+        TestUserWithReflection,
+        'testCtor2',
+        () => TestUserWithReflection.new,
+        [param('n0')],
+        [],
+        {'k0': param('k0')},
+        null,
+      );
+
+      expect(constructor.getParameterByIndex(0)?.name, equals('n0'));
+      expect(constructor.getParameterByIndex(1)?.name, equals('k0'));
+      expect(constructor.getParameterByIndex(2), isNull);
+    });
+  });
+
+  group('Reflection nullable casts', () {
+    // Regression: `castIterable`'s nullable and non-nullable closures were
+    // byte-identical (`itr.cast<E>()` twice), so `nullable: true` was a no-op;
+    // and `castMapKeys` built a `Map<K, V?>` -- nullable *values* -- a
+    // copy-paste of `castMapValues`. Both threw a `TypeError` on the very
+    // input they were meant to allow.
+    //
+    // Instantiated inside each test, not in the group body: a group body runs
+    // at collection time, and building the reflection registers it globally,
+    // which breaks tests asserting it is not yet registered.
+    TestUserWithReflection$reflection reflection() =>
+        TestUserWithReflection$reflection();
+
+    final mapTypeInfo = TypeInfo.fromType(Map, [
+      TypeInfo.fromType(String),
+      TypeInfo.fromType(int),
+    ]);
+
+    test('castIterable with nullable: true keeps nulls', () {
+      var out = reflection().castIterable(
+        <Object?>[1, null, 3],
+        int,
+        nullable: true,
+      );
+
+      expect(out, isNotNull);
+      expect(out, isA<Iterable<int?>>());
+      expect(out!.toList(), equals([1, null, 3]));
+    });
+
+    test('castIterable with nullable: false casts to the plain type', () {
+      var out = reflection().castIterable(
+        <Object?>[1, 2],
+        int,
+        nullable: false,
+      );
+
+      expect(out, isA<Iterable<int>>());
+      expect(out!.toList(), equals([1, 2]));
+    });
+
+    test('castIterable agrees with castList and castSet', () {
+      // The three are meant to behave alike; only `castIterable` was broken.
+      expect(
+        reflection()
+            .castList(<Object?>[1, null], int, nullable: true)
+            ?.toList(),
+        equals([1, null]),
+      );
+      expect(
+        reflection().castSet(<Object?>{1, null}, int, nullable: true)?.toList(),
+        equals([1, null]),
+      );
+      expect(
+        reflection()
+            .castIterable(<Object?>[1, null], int, nullable: true)
+            ?.toList(),
+        equals([1, null]),
+      );
+    });
+
+    test('castMapKeys with nullable: true allows a null key', () {
+      var out = reflection().castMapKeys(
+        <Object?, Object?>{null: 1, 'a': 2},
+        mapTypeInfo,
+        nullable: true,
+      );
+
+      expect(out, isNotNull);
+      expect(out!.keys.toList(), equals([null, 'a']));
+      // The values must stay as they are: only the keys become nullable.
+      expect(out.values.toList(), equals([1, 2]));
+    });
+
+    test('castMapValues with nullable: true allows a null value', () {
+      var out = reflection().castMapValues(
+        <Object?, Object?>{'a': null, 'b': 2},
+        mapTypeInfo,
+        nullable: true,
+      );
+
+      expect(out, isNotNull);
+      expect(out!.values.toList(), equals([null, 2]));
+      expect(out.keys.toList(), equals(['a', 'b']));
+    });
+  });
 }

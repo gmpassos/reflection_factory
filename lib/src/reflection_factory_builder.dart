@@ -900,7 +900,7 @@ class ReflectionBuilder implements Builder {
       ]);
 
       var extraReflections = allFieldsTypesWithReflection
-          .map((t) => '${t.typeName}\$reflection')
+          .map((t) => '${t.typeName(codeTable.typeAliasTable)}\$reflection')
           .toSet()
           .where((c) => !classesReflections.contains(c))
           .toList();
@@ -972,6 +972,42 @@ class ReflectionBuilder implements Builder {
   }
 }
 
+/// Builds a name lookup for [libraryImport].
+///
+/// `LibraryImport.namespace` only covers what the import adds to the
+/// *unprefixed* scope, so it is empty for a prefixed import. The imported
+/// library's export namespace is used instead, with the import's `show` /
+/// `hide` combinators applied.
+_NamespaceLookup _importLookup(LibraryImport libraryImport) {
+  var exportNamespace = libraryImport.importedLibrary?.exportNamespace;
+  if (exportNamespace == null) return (_) => null;
+
+  var combinators = libraryImport.combinators;
+
+  return (String name) {
+    for (var combinator in combinators) {
+      if (combinator is ShowElementCombinator) {
+        if (!combinator.shownNames.contains(name)) return null;
+      } else if (combinator is HideElementCombinator) {
+        if (combinator.hiddenNames.contains(name)) return null;
+      }
+    }
+    return exportNamespace.get2(name);
+  };
+}
+
+/// Looks a name up in an import's namespace, returning the [Element] it binds
+/// to, or `null`.
+typedef _NamespaceLookup = Element? Function(String name);
+
+/// An import declared with a prefix, and the names it makes visible.
+class _PrefixedImport {
+  final String prefix;
+  final _NamespaceLookup lookup;
+
+  _PrefixedImport(this.prefix, this.lookup);
+}
+
 class _TypeAliasTable {
   late final String trName;
   late final String tiName;
@@ -992,12 +1028,95 @@ class _TypeAliasTable {
     var privateNames = libraryReader.elementsNames
         .where((e) => e.startsWith('_'))
         .toList();
-    return _TypeAliasTable(privateNames);
+
+    var library = libraryReader.element;
+
+    // The generated code is a `part of` the input library, so it sees exactly
+    // the input library's imports -- including their prefixes. A type reached
+    // only through a prefixed import has to be written with that prefix.
+    var unprefixed = <_NamespaceLookup>[];
+    var prefixed = <_PrefixedImport>[];
+
+    for (var fragment in library.fragments) {
+      for (var libraryImport in fragment.libraryImports) {
+        var lookup = _importLookup(libraryImport);
+        var prefix = libraryImport.prefix?.element.name;
+
+        if (prefix == null || prefix.isEmpty) {
+          unprefixed.add(lookup);
+        } else {
+          prefixed.add(_PrefixedImport(prefix, lookup));
+        }
+      }
+    }
+
+    return _TypeAliasTable(
+      privateNames,
+      library: library,
+      unprefixedImports: unprefixed,
+      prefixedImports: prefixed,
+    );
   }
 
   final List<String> privateNames;
 
-  _TypeAliasTable(this.privateNames) {
+  /// The library being generated for, or `null` when there is no library
+  /// context (only used by tests that build a table directly).
+  final LibraryElement? library;
+
+  final List<_NamespaceLookup> unprefixedImports;
+
+  final List<_PrefixedImport> prefixedImports;
+
+  /// Returns the import prefix required to reference [element] from
+  /// [library], or `null` when it can be referenced unprefixed.
+  ///
+  /// Defaults to `null` (no prefix) whenever the answer is uncertain, so an
+  /// unresolved case degrades to the previous behaviour rather than emitting
+  /// a wrong prefix.
+  String? importPrefixFor(Element? element) {
+    if (element == null || prefixedImports.isEmpty) return null;
+
+    var name = element.name;
+    if (name == null || name.isEmpty) return null;
+
+    var elementLibrary = element.library;
+    if (elementLibrary == null) return null;
+
+    // Declared in the library being generated: never prefixed.
+    if (identical(elementLibrary, library)) return null;
+
+    // Visible through an unprefixed import (`dart:core` included, since it is
+    // an implicit unprefixed import): no prefix needed.
+    for (var lookup in unprefixedImports) {
+      if (identical(lookup(name), element)) return null;
+    }
+
+    for (var import in prefixedImports) {
+      if (identical(import.lookup(name), element)) return import.prefix;
+    }
+
+    return null;
+  }
+
+  /// Prepends the import prefix of [element] to [name], when one is needed.
+  String qualifyTypeName(String name, Element? element) {
+    var prefix = importPrefixFor(element);
+    return prefix == null ? name : '$prefix.$name';
+  }
+
+  /// Per-library caches: type names depend on this library's import prefixes,
+  /// so they must not be shared between build steps.
+  final Map<DartType, String> typeNameCache = {};
+  final Map<DartType, String> typeNameResolvableCache = {};
+  final Map<DartType, String> typeNameAsCodeCache = {};
+
+  _TypeAliasTable(
+    this.privateNames, {
+    this.library,
+    this.unprefixedImports = const [],
+    this.prefixedImports = const [],
+  }) {
     trName = _buildAliasName('__TR', privateNames);
     tiName = _buildAliasName('__TI', privateNames);
     prName = _buildAliasName('__PR', privateNames);
@@ -1037,6 +1156,7 @@ class _TypeAliasTable {
     while (true) {
       var name = '$prefix$i';
       if (!usedNames.contains(name)) return name;
+      ++i;
     }
   }
 
@@ -1401,11 +1521,12 @@ class _EnumTree<T> extends RecursiveElementVisitor2<T> {
       '  static const Map<String,$enumName> _valuesByName = const <String,$enumName>{\n',
     );
 
-    final enumType = thisType;
-
+    // Only actual `enum` constants: a `static const` field of the `enum`'s own
+    // type (like `static const Color def = Color.red;`) is NOT a value of the
+    // `enum` and must not enter `_valuesByName`, otherwise it can shadow the
+    // real name in `EnumReflection.getName`.
     var enumsEntries = entries.entries
-        .where((e) => e.value.thisType == enumType)
-        .where((e) => e.value.isConst)
+        .where((e) => e.value.isEnumConstant)
         .sortedBy((e) => e.key)
         .toList();
 
@@ -1698,6 +1819,8 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
       name != '^' &&
       name != '<<' &&
       name != '>>' &&
+      // Unsigned right shift, added in Dart 2.14:
+      name != '>>>' &&
       name != '~' &&
       name != '%';
 
@@ -1945,7 +2068,9 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
 
       typeAliasTable.addAllNamedParameters(constructor.namedParameters.keys);
 
-      var declaringType = constructor.declaringType!.typeNameResolvable;
+      var declaringType = constructor.declaringType!.typeNameResolvable(
+        typeAliasTable,
+      );
       var fullName = constructor.fullName;
 
       return "ConstructorReflection<$className>("
@@ -2140,9 +2265,9 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
         fieldsTypesWithEnableReflection.addAll(field.getTypesWithReflection());
       }
 
-      var declaringType = fieldDeclaringType.typeNameResolvable;
+      var declaringType = fieldDeclaringType.typeNameResolvable(typeAliasTable);
       var typeCode = field.typeAsCode(typeAliasTable);
-      var fullType = field.typeNameAsNullableCode;
+      var fullType = field.typeNameAsNullableCode(typeAliasTable);
       var nullable = field.nullable ? 'true' : 'false';
       var isFinal = field.isFinal ? 'true' : 'false';
       var getter = '(o) => () => o!.$name';
@@ -2278,9 +2403,9 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
         );
       }
 
-      var declaringType = fieldDeclaringType.typeNameResolvable;
+      var declaringType = fieldDeclaringType.typeNameResolvable(typeAliasTable);
       var typeCode = field.typeAsCode(typeAliasTable);
-      var fullType = field.typeNameAsNullableCode;
+      var fullType = field.typeNameAsNullableCode(typeAliasTable);
       var nullable = field.nullable ? 'true' : 'false';
       var isFinal = field.isFinal ? 'true' : 'false';
       var getter = '() => () => $className.$name';
@@ -2413,8 +2538,10 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
 
       typeAliasTable.addAllNamedParameters(method.namedParameters.keys);
 
-      var declaringType = method.declaringType!.typeNameResolvable;
-      var returnType = method.returnTypeNameAsCode;
+      var declaringType = method.declaringType!.typeNameResolvable(
+        typeAliasTable,
+      );
+      var returnType = method.returnTypeNameAsCode(typeAliasTable);
 
       var returnTypeAsCode = method.returnTypeAsCode;
 
@@ -2481,8 +2608,10 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
         log.info('[METHOD] $method');
       }
 
-      var declaringType = method.declaringType!.typeNameResolvable;
-      var returnType = method.returnTypeNameAsCode;
+      var declaringType = method.declaringType!.typeNameResolvable(
+        typeAliasTable,
+      );
+      var returnType = method.returnTypeNameAsCode(typeAliasTable);
       var returnTypeAsCode = method.returnTypeAsCode;
       var nullable = method.returnNullable ? 'true' : 'false';
 
@@ -2756,7 +2885,7 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
         }
       }
 
-      str.write(proxyMethod.signature(ignoreParametersTypes));
+      str.write(proxyMethod.signature(typeAliasTable, ignoreParametersTypes));
 
       str.write(' {\n');
 
@@ -2785,7 +2914,8 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
 
           var futureTypeStr = futureType != null && futureType is VoidType
               ? 'dynamic'
-              : (futureType?.fullTypeNameResolvable() ?? 'dynamic');
+              : (futureType?.fullTypeNameResolvable(typeAliasTable) ??
+                    'dynamic');
 
           if (acceptsNull) {
             str.write('  if (ret == null) return null;\n');
@@ -2800,7 +2930,7 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
           }
         } else {
           var valueType = proxyMethod.returnType;
-          var valueTypeStr = valueType.fullTypeNameResolvable();
+          var valueTypeStr = valueType.fullTypeNameResolvable(typeAliasTable);
 
           if (acceptsNull) {
             str.write('  if (ret == null) return null;\n');
@@ -2836,7 +2966,10 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
 
     if (supertypes.isEmpty) return false;
 
-    if (supertypes.any((e) => e.typeName == typeName)) return true;
+    // Compared against an internal, unprefixed name (e.g.
+    // 'ClassProxyListener'), so the bare name is used rather than the
+    // import-qualified one produced for generated code.
+    if (supertypes.any((e) => e.bareTypeName == typeName)) return true;
 
     return supertypes.any((e) => _implementsType(e, typeName));
   }
@@ -2888,11 +3021,14 @@ class _ProxyMethod {
 
   String get returnTypeAsString => returnType.getDisplayString();
 
-  String returnTypeNameResolvable({bool withNullability = true}) =>
-      returnType.fullTypeNameResolvable(
-        withNullability: withNullability,
-        typeParameters: typeParametersNames,
-      );
+  String returnTypeNameResolvable(
+    _TypeAliasTable typeAliasTable, {
+    bool withNullability = true,
+  }) => returnType.fullTypeNameResolvable(
+    typeAliasTable,
+    withNullability: withNullability,
+    typeParameters: typeParametersNames,
+  );
 
   DartType? get returnTypeArgument {
     if (!returnType.hasTypeArguments) return null;
@@ -2903,10 +3039,13 @@ class _ProxyMethod {
     return args[0];
   }
 
-  String signature(Set<DartType> ignoreParametersTypes) {
+  String signature(
+    _TypeAliasTable typeAliasTable,
+    Set<DartType> ignoreParametersTypes,
+  ) {
     var typeParametersStr = typeParametersSignature();
     var parametersStr = parametersSignature(ignoreParametersTypes);
-    var returnTypeStr = returnTypeNameResolvable();
+    var returnTypeStr = returnTypeNameResolvable(typeAliasTable);
     var methodStr = '$returnTypeStr $name$typeParametersStr($parametersStr)';
     return methodStr;
   }
@@ -2918,6 +3057,11 @@ class _ProxyMethod {
       var pStr = p.displayString();
       if (pStr.startsWith('{') || pStr.startsWith('[')) {
         pStr = pStr.substring(1, pStr.length - 1).trim();
+      }
+      // Separator driven by what was already written, so it stays correct
+      // regardless of which entries are emitted.
+      if (parametersStr.isNotEmpty) {
+        parametersStr.write(', ');
       }
       parametersStr.write(pStr);
     }
@@ -2976,12 +3120,17 @@ class _ProxyMethod {
     List<FormalParameterElement> parameters,
     Set<DartType> ignoreParametersTypes,
   ) {
-    for (int i = 0; i < parameters.length; i++) {
-      var e = parameters[i];
+    // Tracks what THIS call wrote. The loop index can't be used (skipping the
+    // first parameter would emit a leading comma), and neither can the
+    // buffer, since the caller may already have written `[ ` or `{ ` into it.
+    var wrote = false;
 
+    for (var e in parameters) {
       if (ignoreParametersTypes.containsType(e.type)) continue;
 
-      if (i > 0) parametersStr.write(', ');
+      if (wrote) parametersStr.write(', ');
+      wrote = true;
+
       var pStr = e.displayString();
       if (pStr.startsWith('{') || pStr.startsWith('[')) {
         pStr = pStr.substring(1, pStr.length - 1).trim();
@@ -3146,8 +3295,8 @@ class _Constructor<T> extends _Element {
 
   bool get isStatic => constructorElement.isStatic;
 
-  String get returnTypeNameAsCode =>
-      constructorElement.returnType.typeNameAsNullableCode;
+  String returnTypeNameAsCode(_TypeAliasTable typeAliasTable) =>
+      constructorElement.returnType.typeNameAsNullableCode(typeAliasTable);
 
   String get returnTypeAsCode =>
       constructorElement.returnType.asTypeReflectionCode(typeAliasTable);
@@ -3187,7 +3336,9 @@ class _Constructor<T> extends _Element {
     return '$className.$constructorName';
   }
 
-  String get asCallerCode {
+  // Currently unused, but kept in sync with the prefixed type naming so it
+  // can't reintroduce unqualified names if it is used again.
+  String asCallerCode(_TypeAliasTable typeAliasTable) {
     var s = StringBuffer();
 
     var normalParameters = constructorElement.normalParameters;
@@ -3200,7 +3351,7 @@ class _Constructor<T> extends _Element {
       var p = normalParameters[i];
       if (i > 0) s.write(', ');
 
-      s.write(p.type.typeNameAsNullableCode);
+      s.write(p.type.typeNameAsNullableCode(typeAliasTable));
       s.write(' ');
       s.write(p.name);
     }
@@ -3213,7 +3364,7 @@ class _Constructor<T> extends _Element {
       for (var i = 0; i < optionalParameters.length; ++i) {
         var p = optionalParameters[i];
         if (i > 0) s.write(',');
-        s.write(p.type.typeNameAsNullableCode);
+        s.write(p.type.typeNameAsNullableCode(typeAliasTable));
         s.write(' ');
         s.write(p.name);
         var defVal = p.defaultValue;
@@ -3236,7 +3387,7 @@ class _Constructor<T> extends _Element {
           s.write('required ');
         }
 
-        s.write(p.type.typeNameAsNullableCode);
+        s.write(p.type.typeNameAsNullableCode(typeAliasTable));
         s.write(' ');
         s.write(p.name);
         var defVal = p.defaultValue;
@@ -3298,7 +3449,7 @@ class _Constructor<T> extends _Element {
     return '_Constructor{ '
         'name: $name, '
         'static: $isStatic, '
-        'return: $returnTypeNameAsCode '
+        'return: ${constructorElement.returnType.getDisplayString()} '
         '}( '
         'normal: $normalParameters, '
         'optional: $optionalParameters, '
@@ -3323,8 +3474,8 @@ class _Method extends _Element {
 
   DartType get returnType => methodElement.returnType;
 
-  String get returnTypeNameAsCode =>
-      methodElement.returnType.typeNameAsNullableCode;
+  String returnTypeNameAsCode(_TypeAliasTable typeAliasTable) =>
+      methodElement.returnType.typeNameAsNullableCode(typeAliasTable);
 
   String get returnTypeAsCode =>
       methodElement.returnType.asTypeReflectionCode(typeAliasTable);
@@ -3366,7 +3517,7 @@ class _Method extends _Element {
     return '_Method{ '
         'name: $name, '
         'static: $isStatic, '
-        'return: $returnTypeNameAsCode '
+        'return: ${returnType.getDisplayString()} '
         '}( '
         'normal: $normalParameters, '
         'optional: $optionalParameters, '
@@ -3394,11 +3545,17 @@ class _Field extends _Element {
 
   bool get isConst => fieldElement.isConst;
 
+  /// `true` if this is a declared `enum` constant (an actual `enum` value),
+  /// and not just a `static const` field of the `enum` type.
+  bool get isEnumConstant => fieldElement.isEnumConstant;
+
   bool get allowSetter => !isFinal && !isConst && fieldElement.setter != null;
 
-  String get typeNameAsCode => fieldElement.type.typeNameAsCode;
+  String typeNameAsCode(_TypeAliasTable typeAliasTable) =>
+      fieldElement.type.typeNameAsCode(typeAliasTable);
 
-  String get typeNameAsNullableCode => fieldElement.type.typeNameAsNullableCode;
+  String typeNameAsNullableCode(_TypeAliasTable typeAliasTable) =>
+      fieldElement.type.typeNameAsNullableCode(typeAliasTable);
 
   bool get isTypeWithReflection => fieldElement.type.isTypeWithReflection;
 
@@ -3422,12 +3579,13 @@ class _Field extends _Element {
 
 extension _IterableExtension on Iterable<DartType> {
   bool containsType(DartType dartType) {
-    var dartTypeName = dartType.typeName;
+    // Internal comparison: bare names, never import qualified.
+    var dartTypeName = dartType.bareTypeName;
 
     for (var t in this) {
       if (!t.isResolvableType) continue;
 
-      if (t.typeName == dartTypeName) {
+      if (t.bareTypeName == dartTypeName) {
         return true;
       }
     }
@@ -3437,8 +3595,8 @@ extension _IterableExtension on Iterable<DartType> {
 }
 
 extension _ListDartTypeExtension on List<DartType> {
-  List<String> get typesNamesResolvable =>
-      map((a) => a.typeNameResolvable).toList();
+  List<String> typesNamesResolvable(_TypeAliasTable typeAliasTable) =>
+      map((a) => a.typeNameResolvable(typeAliasTable)).toList();
 
   String toListOfConstTypeCode(
     _TypeAliasTable typeAliasTable, {
@@ -3470,8 +3628,9 @@ extension _ListDartTypeExtension on List<DartType> {
     return '<$tr>[${listTypeReflection.join(',')}]';
   }
 
-  String get typesNames =>
-      map((e) => e.fullTypeNameResolvable(withNullability: true)).join(', ');
+  String typesNames(_TypeAliasTable typeAliasTable) => map(
+    (e) => e.fullTypeNameResolvable(typeAliasTable, withNullability: true),
+  ).join(', ');
 }
 
 extension _DartTypeExtension on DartType {
@@ -3481,10 +3640,10 @@ extension _DartTypeExtension on DartType {
 
   bool get isResolvableType => !isParameterType;
 
-  static final Map<DartType, String> _typeNameResolvableCache = {};
-
-  String get typeNameResolvable =>
-      _typeNameResolvableCache[this] ??= resolveTypeName();
+  String typeNameResolvable(_TypeAliasTable typeAliasTable) =>
+      typeAliasTable.typeNameResolvableCache[this] ??= resolveTypeName(
+        typeAliasTable,
+      );
 
   static final Map<DartType, bool> _isDartCoreCache = {};
 
@@ -3584,24 +3743,29 @@ extension _DartTypeExtension on DartType {
     return type;
   }
 
-  String resolveTypeName({Iterable<String>? typeParameters}) {
+  String resolveTypeName(
+    _TypeAliasTable typeAliasTable, {
+    Iterable<String>? typeParameters,
+  }) {
     if (isRecordType) {
-      return recordDeclaration(typeParameters: typeParameters)!;
+      return recordDeclaration(typeAliasTable, typeParameters: typeParameters)!;
     }
 
     if (typeParameters != null &&
         isParameterType &&
         typeParameters.isNotEmpty) {
-      var name = typeName;
+      // A type parameter (`T`) is never import prefixed.
+      var name = typeName(typeAliasTable);
       var nameResolved = typeParameters.contains(name) ? name : 'dynamic';
       return nameResolved;
     }
 
-    var name = !isResolvableType ? 'dynamic' : typeName;
+    var name = !isResolvableType ? 'dynamic' : typeName(typeAliasTable);
     return name;
   }
 
-  String fullTypeNameResolvable({
+  String fullTypeNameResolvable(
+    _TypeAliasTable typeAliasTable, {
     bool withNullability = true,
     Iterable<String>? typeParameters,
   }) {
@@ -3609,7 +3773,7 @@ extension _DartTypeExtension on DartType {
       return 'dynamic';
     }
 
-    var name = resolveTypeName(typeParameters: typeParameters);
+    var name = resolveTypeName(typeAliasTable, typeParameters: typeParameters);
 
     if (!hasTypeArguments) {
       return withNullability && isNullable ? '$name?' : name;
@@ -3617,6 +3781,7 @@ extension _DartTypeExtension on DartType {
 
     var argsList = resolvedTypeArguments.map((e) {
       return e.fullTypeNameResolvable(
+        typeAliasTable,
         withNullability: withNullability,
         typeParameters: typeParameters,
       );
@@ -3633,23 +3798,42 @@ extension _DartTypeExtension on DartType {
 
   bool get isRecordType => this is RecordType;
 
-  String? recordDeclaration({Iterable<String>? typeParameters}) {
+  String? recordDeclaration(
+    _TypeAliasTable typeAliasTable, {
+    Iterable<String>? typeParameters,
+  }) {
     if (!isRecordType) return null;
 
     var recordType = this as RecordType;
 
     var recordTypesNamesPos = recordType.positionalFields.map((t) {
-      return t.type.fullTypeNameResolvable(typeParameters: typeParameters);
+      return t.type.fullTypeNameResolvable(
+        typeAliasTable,
+        typeParameters: typeParameters,
+      );
     }).toList();
 
     var recordTypesNamesNamed = recordType.namedFields.map((t) {
-      return '${t.type.fullTypeNameResolvable(typeParameters: typeParameters)} ${t.name}';
+      var name = t.type.fullTypeNameResolvable(
+        typeAliasTable,
+        typeParameters: typeParameters,
+      );
+      return '$name ${t.name}';
     }).toList();
+
+    var hasPositional = recordTypesNamesPos.isNotEmpty;
+    var hasNamed = recordTypesNamesNamed.isNotEmpty;
 
     var list = [
       '(',
-      if (recordTypesNamesPos.isNotEmpty) recordTypesNamesPos.join(', '),
-      if (recordTypesNamesNamed.isNotEmpty) ...[
+      if (hasPositional) recordTypesNamesPos.join(', '),
+      // A record type with exactly one positional field and no named fields
+      // requires a trailing comma, to tell `(int,)` from a parenthesized
+      // `(int)`.
+      if (hasPositional && !hasNamed && recordTypesNamesPos.length == 1) ',',
+      if (hasNamed) ...[
+        // The named group has to be separated from the positional fields.
+        if (hasPositional) ', ',
         '{',
         recordTypesNamesNamed.join(', '),
         '}',
@@ -3662,31 +3846,42 @@ extension _DartTypeExtension on DartType {
     return recordDeclaration;
   }
 
-  static final Map<DartType, String> _typeNameCache = {};
+  static final Map<DartType, String> _bareTypeNameCache = {};
 
-  String get typeName => _typeNameCache[this] ??= _typeNameImpl();
+  /// The type name as declared, WITHOUT any import prefix.
+  ///
+  /// Use this for internal comparisons (it is library independent, so it can
+  /// stay globally cached). Generated code must use [typeName] instead, which
+  /// applies the import prefix of the library being generated.
+  String get bareTypeName => _bareTypeNameCache[this] ??= _bareTypeNameImpl();
 
-  String _typeNameImpl() {
-    if (isRecordType) {
-      return recordDeclaration()!;
-    }
-
+  String _bareTypeNameImpl() {
     var name = elementDeclaration?.name;
+    if (name != null) return name;
 
-    if (name == null) {
-      name = getDisplayStringNoNullability();
+    name = getDisplayStringNoNullability();
 
-      var idx = name.indexOf('Function(');
+    var idx = name.indexOf('Function(');
 
-      if (idx == 0 ||
-          (idx > 0 && name.substring(idx - 1, idx).trim().isEmpty)) {
-        name = 'Function';
-      } else {
-        name = TypeInfo.removeTypeGenerics(name);
-      }
+    if (idx == 0 || (idx > 0 && name.substring(idx - 1, idx).trim().isEmpty)) {
+      return 'Function';
     }
 
-    return name;
+    return TypeInfo.removeTypeGenerics(name);
+  }
+
+  String typeName(_TypeAliasTable typeAliasTable) =>
+      typeAliasTable.typeNameCache[this] ??= _typeNameImpl(typeAliasTable);
+
+  String _typeNameImpl(_TypeAliasTable typeAliasTable) {
+    if (isRecordType) {
+      return recordDeclaration(typeAliasTable)!;
+    }
+
+    // The generated code is a `part of` the input library: a type reached only
+    // through a prefixed import has to keep that prefix, or the generated
+    // reference does not resolve.
+    return typeAliasTable.qualifyTypeName(bareTypeName, elementDeclaration);
   }
 
   InterfaceType? get interfaceType {
@@ -3731,12 +3926,12 @@ extension _DartTypeExtension on DartType {
     }
   }
 
-  static final Map<DartType, String> _typeNameAsCodeCache = {};
+  String typeNameAsCode(_TypeAliasTable typeAliasTable) =>
+      typeAliasTable.typeNameAsCodeCache[this] ??= _typeNameAsCodeImpl(
+        typeAliasTable,
+      );
 
-  String get typeNameAsCode =>
-      _typeNameAsCodeCache[this] ??= _typeNameAsCodeImpl();
-
-  String _typeNameAsCodeImpl() {
+  String _typeNameAsCodeImpl(_TypeAliasTable typeAliasTable) {
     var self = this;
     if (self is VoidType) {
       return 'void';
@@ -3745,32 +3940,36 @@ extension _DartTypeExtension on DartType {
     if (self is FunctionType) {
       var alias = self.alias;
       if (alias != null && alias.typeArguments.isEmpty) {
+        var aliasElement = alias.element;
         var name =
-            alias.element.name ??
+            aliasElement.name ??
             (throw StateError(
               "Can't resolve `FunctionType` alias name: $alias",
             ));
-        return name;
+        return typeAliasTable.qualifyTypeName(name, aliasElement);
       } else {
         var functionType = self.getDisplayStringNoNullability();
         return functionType;
       }
     }
 
-    var name = typeNameResolvable;
+    var name = typeNameResolvable(typeAliasTable);
     var arguments = resolvedTypeArguments;
 
     if (arguments.isNotEmpty) {
-      return '$name<${arguments.map((e) => e.typeNameAsNullableCode).join(', ')}>';
+      var args = arguments
+          .map((e) => e.typeNameAsNullableCode(typeAliasTable))
+          .join(', ');
+      return '$name<$args>';
     } else {
       return name;
     }
   }
 
-  String get typeNameAsNullableCode =>
+  String typeNameAsNullableCode(_TypeAliasTable typeAliasTable) =>
       isNullable && this is! DynamicType && isResolvableType
-      ? '$typeNameAsCode?'
-      : typeNameAsCode;
+      ? '${typeNameAsCode(typeAliasTable)}?'
+      : typeNameAsCode(typeAliasTable);
 
   String? asConstTypeReflectionCode(_TypeAliasTable typeAliasTable) {
     var self = this;
@@ -3790,7 +3989,7 @@ extension _DartTypeExtension on DartType {
       }
     }
 
-    var name = typeNameResolvable;
+    var name = typeNameResolvable(typeAliasTable);
     var arguments = resolvedTypeArguments;
 
     if (arguments.isNotEmpty) {
@@ -3809,7 +4008,7 @@ extension _DartTypeExtension on DartType {
       }
 
       if (hasSimpleTypeArguments) {
-        var typeArgs = arguments.typesNamesResolvable;
+        var typeArgs = arguments.typesNamesResolvable(typeAliasTable);
 
         var constName = TypeReflection.getConstantName(name, typeArgs);
         if (constName != null) {
@@ -3819,7 +4018,7 @@ extension _DartTypeExtension on DartType {
 
       return null;
     } else {
-      var constName = _getTypeReflectionConstantName(name);
+      var constName = _getTypeReflectionConstantName(typeAliasTable, name);
       if (constName != null) {
         return '$tr.$constName';
       } else if (this is TypeParameterType) {
@@ -3857,14 +4056,15 @@ extension _DartTypeExtension on DartType {
           );
           var allowConst = allowConstPrefix && !argsCode.contains('.tVoid');
           var constPrefix = allowConst ? 'const ' : '';
-          return '$constPrefix$tr<$name<${arguments.typesNames}>>($name, $argsCode)';
+          var argsNames = arguments.typesNames(typeAliasTable);
+          return '$constPrefix$tr<$name<$argsNames>>($name, $argsCode)';
         }
       } else {
         return '$tr.tFunction';
       }
     }
 
-    var name = typeNameResolvable;
+    var name = typeNameResolvable(typeAliasTable);
     var arguments = resolvedTypeArguments;
 
     if (self.isDartAsyncFuture) {
@@ -3883,7 +4083,7 @@ extension _DartTypeExtension on DartType {
 
     if (arguments.isNotEmpty) {
       if (hasSimpleTypeArguments) {
-        var typeArgs = arguments.typesNamesResolvable;
+        var typeArgs = arguments.typesNamesResolvable(typeAliasTable);
 
         var constName = TypeReflection.getConstantName(name, typeArgs);
         if (constName != null) {
@@ -3891,7 +4091,7 @@ extension _DartTypeExtension on DartType {
         }
       }
 
-      var argsT = arguments.typesNames;
+      var argsT = arguments.typesNames(typeAliasTable);
       var argsCode = arguments.toListOfConstTypeCode(
         typeAliasTable,
         allowConstPrefix: false,
@@ -3900,14 +4100,14 @@ extension _DartTypeExtension on DartType {
       var constPrefix = allowConst ? 'const ' : '';
       return '$constPrefix$tr<$name<$argsT>>($name, $argsCode)';
     } else {
-      var constName = _getTypeReflectionConstantName(name);
+      var constName = _getTypeReflectionConstantName(typeAliasTable, name);
       if (constName != null) {
         return '$tr.$constName';
       } else {
         var constPrefix = allowConstPrefix ? 'const ' : '';
 
         if (isRecordType) {
-          typeNameResolvable;
+          typeNameResolvable(typeAliasTable);
 
           var typeAlias = typeAliasTable.aliasForRecordType(name);
           return '$constPrefix$tr<$typeAlias>($typeAlias)';
@@ -3920,7 +4120,11 @@ extension _DartTypeExtension on DartType {
     }
   }
 
-  String? _getTypeReflectionConstantName([String? name, List<String>? args]) {
+  String? _getTypeReflectionConstantName(
+    _TypeAliasTable typeAliasTable, [
+    String? name,
+    List<String>? args,
+  ]) {
     if (isDartCoreObject) {
       return 'tObject';
     } else if (isDartCoreString) {
@@ -3937,14 +4141,14 @@ extension _DartTypeExtension on DartType {
       return 'tVoid';
     }
 
-    name ??= typeNameResolvable;
-    args ??= resolvedTypeArguments.typesNamesResolvable;
+    name ??= typeNameResolvable(typeAliasTable);
+    args ??= resolvedTypeArguments.typesNamesResolvable(typeAliasTable);
     return TypeReflection.getConstantName(name, args);
   }
 
   String? asConstTypeInfoCode(_TypeAliasTable typeAliasTable) {
     final ti = typeAliasTable.tiName;
-    var constName = _getTypeReflectionConstantName();
+    var constName = _getTypeReflectionConstantName(typeAliasTable);
     return constName == null ? null : '$ti.$constName';
   }
 }

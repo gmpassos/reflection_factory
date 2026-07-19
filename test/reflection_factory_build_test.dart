@@ -1490,6 +1490,66 @@ void main() {
       },
     );
 
+    test(
+      'EnableReflection + enum with a static const of its own type',
+      () async {
+        // Regression: `_valuesByName` was built from every `static const` field
+        // of the enum's own type, so an alias like `static const Color def =
+        // Color.red;` was emitted as if it were a real enum value. Because the
+        // map is sorted and `EnumReflection.getName` returns the first matching
+        // entry, `def` shadowed `red` and `Color.red` serialized as `"def"`.
+        var builder = ReflectionBuilder(verbose: true);
+
+        var sourceAssets = {
+          '$_pkgName|lib/color.dart': '''
+
+          import 'package:reflection_factory/reflection_factory.dart';
+
+          part 'color.reflection.g.dart';
+
+          @EnableReflection()
+          enum Color {
+            red,
+            green,
+            blue;
+
+            static const Color def = Color.red;
+
+            static final Color fallback = Color.blue;
+          }
+
+        ''',
+        };
+
+        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+        await readerWriter.testing.loadIsolateSources();
+
+        await testBuilder(
+          builder,
+          sourceAssets,
+          readerWriter: readerWriter,
+          generateFor: {'$_pkgName|lib/color.dart'},
+          outputs: {
+            '$_pkgName|lib/color.reflection.g.dart': decodedMatches(
+              allOf(
+                contains('Color\$reflection extends EnumReflection<Color>'),
+                // Only the real enum constants:
+                contains("'blue': Color.blue"),
+                contains("'green': Color.green"),
+                contains("'red': Color.red"),
+                // The `static const`/`static final` aliases must NOT be values:
+                isNot(contains("'def': Color.def")),
+                isNot(contains("'fallback': Color.fallback")),
+              ),
+            ),
+          },
+          onLog: (msg) {
+            _printToConsole(msg);
+          },
+        );
+      },
+    );
+
     test('EnableReflection + advanced enum', () async {
       var builder = ReflectionBuilder(verbose: true);
 
@@ -1863,6 +1923,461 @@ void main() {
     test(
       'ClassProxy: SimpleAPI (through libraryPath) -sequential',
       () => testClassProxyLibraryPath(false),
+    );
+
+    test('EnableReflection: import-qualified type names', () async {
+      // Regression: type names were emitted unqualified, so a type reachable
+      // only through a prefixed import produced a generated part that
+      // referenced an undefined name.
+      //
+      // Covers every way a type can be reached from the input library, since
+      // the rule is "qualify only what needs it": over-qualifying is just as
+      // broken as under-qualifying.
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/plain.dart': '''
+
+          class PlainA {
+            int a;
+            PlainA(this.a);
+          }
+
+          class PlainB {
+            int b;
+            PlainB(this.b);
+          }
+
+        ''',
+        '$_pkgName|lib/shown.dart': '''
+
+          class ShownOnly {
+            int s;
+            ShownOnly(this.s);
+          }
+
+          class NotShown {
+            int n;
+            NotShown(this.n);
+          }
+
+        ''',
+        '$_pkgName|lib/deep.dart': '''
+
+          class Deep {
+            int d;
+            Deep(this.d);
+          }
+
+        ''',
+        '$_pkgName|lib/facade.dart': '''
+
+          export 'deep.dart';
+
+          class Facade {
+            int f;
+            Facade(this.f);
+          }
+
+        ''',
+        '$_pkgName|lib/other.dart': '''
+
+          class Other {
+            int v;
+            Other(this.v);
+          }
+
+          class Hidden {
+            int h;
+            Hidden(this.h);
+          }
+
+          enum Flavor { sweet, salty }
+
+        ''',
+        '$_pkgName|lib/foo.dart': '''
+
+          import 'package:reflection_factory/reflection_factory.dart';
+          import 'package:mime/mime.dart' as mime;
+
+          import 'plain.dart';
+          import 'shown.dart' show ShownOnly;
+          import 'facade.dart' as f;
+          import 'other.dart' as o;
+          import 'other.dart' hide Other, Flavor;
+
+          part 'foo.reflection.g.dart';
+
+          class Local {
+            int l;
+            Local(this.l);
+          }
+
+          @EnableReflection()
+          class Holder<T extends o.Other> {
+            int count;
+            String label;
+            PlainA? plainA;
+            PlainB? plainB;
+            ShownOnly? shown;
+            Local? local;
+            Hidden? hidden;
+
+            o.Other? other;
+            o.Flavor? flavor;
+            f.Deep? deep;
+            f.Facade? facade;
+            mime.MimeTypeResolver? resolver;
+
+            List<o.Other>? many;
+            Map<String, o.Other>? byName;
+            Map<PlainA, List<f.Deep>>? nested;
+            T? bounded;
+
+            Holder(this.count, this.label);
+
+            o.Other? echo(o.Other? v, PlainA? p) => v;
+          }
+
+        ''',
+      };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        readerWriter: readerWriter,
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+            allOf([
+              // --- must be qualified ---
+              // Reached only through the `o` prefix (the unprefixed import of
+              // the same library hides `Other` and `Flavor`).
+              contains('__TR<o.Other>(o.Other)'),
+              contains('o.Flavor'),
+              // Declared in a library imported with a prefix.
+              contains('__TR<f.Facade>(f.Facade)'),
+              // Re-exported by the prefixed library, so it is NOT declared in
+              // the library named by the import directive.
+              contains('__TR<f.Deep>(f.Deep)'),
+              // A prefixed `package:` import.
+              contains('mime.MimeTypeResolver'),
+              // Nested inside type arguments, not just at the top level.
+              contains('__TR<List<o.Other>>'),
+              contains('Map<String, o.Other>'),
+              contains('Map<PlainA, List<f.Deep>>'),
+
+              // --- must NOT be qualified ---
+              // Normal unprefixed import.
+              contains('__TR<PlainA>(PlainA)'),
+              contains('__TR<PlainB>(PlainB)'),
+              // Unprefixed import with `show`.
+              contains('__TR<ShownOnly>(ShownOnly)'),
+              // Declared in the library being generated for.
+              contains('__TR<Local>(Local)'),
+              // Visible through the unprefixed import that hides only `Other`.
+              contains('__TR<Hidden>(Hidden)'),
+
+              // Nothing reachable unprefixed may pick up a prefix, and
+              // `dart:core` is never qualified.
+              isNot(contains('o.PlainA')),
+              isNot(contains('o.Hidden')),
+              isNot(contains('f.PlainA')),
+              isNot(contains('o.int')),
+              isNot(contains('o.String')),
+              isNot(contains('mime.int')),
+            ]),
+          ),
+        },
+        onLog: (msg) {
+          _printToConsole(msg);
+        },
+      );
+    });
+
+    test(
+      'ClassProxy: ignoreParametersTypes drops the first parameter',
+      () async {
+        // Regression: `_writeParameters` wrote its separator based on the
+        // unfiltered loop index, so dropping parameter 0 left the comma on the
+        // next one -- `int compute(, int a)` -- and the build failed to parse.
+        // The pre-existing test only ignored a trailing parameter.
+        var builder = ReflectionBuilder(verbose: true);
+
+        var sourceAssets = {
+          '$_pkgName|lib/foo.dart': '''
+
+          import 'package:reflection_factory/reflection_factory.dart';
+
+          part 'foo.reflection.g.dart';
+
+          @ClassProxy('FilterAPI', ignoreParametersTypes: {Future})
+          class FilterAPIProxy implements ClassProxyListener {
+          }
+
+          @EnableReflection()
+          class FilterAPI {
+            int computeFirst(Future f, int a) => a;
+
+            int computeMiddle(int a, Future f, int b) => a;
+
+            int computeLast(int a, Future f) => a;
+          }
+
+        ''',
+        };
+
+        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+        await readerWriter.testing.loadIsolateSources();
+
+        await testBuilder(
+          builder,
+          sourceAssets,
+          readerWriter: readerWriter,
+          generateFor: {'$_pkgName|lib/foo.dart'},
+          outputs: {
+            '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+              allOf(
+                contains('int computeFirst(int a)'),
+                contains('int computeMiddle(int a, int b)'),
+                contains('int computeLast(int a)'),
+                isNot(contains('(, ')),
+              ),
+            ),
+          },
+          onLog: (msg) {
+            _printToConsole(msg);
+          },
+        );
+      },
+    );
+
+    test('EnableReflection: record types', () async {
+      // Regression: `recordDeclaration` emitted no comma between the
+      // positional fields and the named group -- `(double{bool y})` -- and no
+      // trailing comma for a single positional field -- `(int)` -- both of
+      // which are parse errors that aborted the build.
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+
+          import 'package:reflection_factory/reflection_factory.dart';
+
+          part 'foo.reflection.g.dart';
+
+          @EnableReflection()
+          class Rec {
+            (int,) one;
+
+            (double x, {bool y}) mixed;
+
+            (int, String) plain;
+
+            ({int a, int b}) namedOnly;
+
+            Rec(this.one, this.mixed, this.plain, this.namedOnly);
+          }
+
+        ''',
+      };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        readerWriter: readerWriter,
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+            allOf(
+              // Single positional field: mandatory trailing comma.
+              contains('= (int,);'),
+              // Positional + named: separated by a comma.
+              contains('= (double, {bool y});'),
+              // Unaffected shapes:
+              contains('= (int, String);'),
+              contains('= ({int a, int b});'),
+            ),
+          ),
+        },
+        onLog: (msg) {
+          _printToConsole(msg);
+        },
+      );
+    });
+
+    test('ClassProxy: method with multiple type parameters', () async {
+      // Regression: `typeParametersSignature` wrote each type parameter with
+      // no separator, so `pair<A, B>` was generated as `pair<AB>`. That is
+      // still valid Dart, so `dart_style` accepted it and the file was
+      // written -- the breakage only surfaced later as "Undefined class 'A'".
+      // The pre-existing tests only used a single type parameter.
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+
+          import 'package:reflection_factory/reflection_factory.dart';
+
+          part 'foo.reflection.g.dart';
+
+          @ClassProxy('MultiAPI')
+          class MultiAPIProxy implements ClassProxyListener {
+          }
+
+          @EnableReflection()
+          class MultiAPI {
+            A pair<A, B>(A a, B b) => a;
+
+            C triple<A, B, C>(A a, B b, C c) => c;
+
+            R single<R>(R r) => r;
+          }
+
+        ''',
+      };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        readerWriter: readerWriter,
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+            allOf(
+              contains('A pair<A, B>(A a, B b)'),
+              contains('C triple<A, B, C>(A a, B b, C c)'),
+              // A single type parameter was already correct:
+              contains('R single<R>(R r)'),
+              isNot(contains('pair<AB>')),
+              isNot(contains('triple<ABC>')),
+            ),
+          ),
+        },
+        onLog: (msg) {
+          _printToConsole(msg);
+        },
+      );
+    });
+
+    test('EnableReflection: operator >>>', () async {
+      // Regression: `>>>` (Dart 2.14) was missing from the operator blocklist
+      // in `isValidMethodName`, so the generator emitted `o!.>>>` and the
+      // whole build failed with "Expected an identifier".
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+
+          import 'package:reflection_factory/reflection_factory.dart';
+
+          part 'foo.reflection.g.dart';
+
+          @EnableReflection()
+          class Vec {
+            final int x;
+
+            Vec(this.x);
+
+            Vec operator >>>(int n) => Vec(x >>> n);
+
+            Vec operator >>(int n) => Vec(x >> n);
+
+            int get value => x;
+          }
+
+        ''',
+      };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        readerWriter: readerWriter,
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+            allOf(
+              contains('Vec\$reflection extends ClassReflection<Vec>'),
+              // Operators are not reflected as methods:
+              isNot(contains("'>>>'")),
+              isNot(contains("'>>'")),
+              // Regular members still are:
+              contains("'value'"),
+            ),
+          ),
+        },
+        onLog: (msg) {
+          _printToConsole(msg);
+        },
+      );
+    });
+
+    test(
+      'EnableReflection: alias name collision',
+      () async {
+        // Regression: `_buildAliasName` never incremented its counter, so a
+        // library declaring names colliding with both the base alias and its
+        // `0` suffix hung the builder in an infinite loop.
+        var builder = ReflectionBuilder(verbose: true);
+
+        var sourceAssets = {
+          '$_pkgName|lib/foo.dart': '''
+
+          import 'package:reflection_factory/reflection_factory.dart';
+
+          part 'foo.reflection.g.dart';
+
+          class __TR {}
+          class __TR0 {}
+          class __TI {}
+          class __TI0 {}
+
+          @EnableReflection()
+          class Simple {
+            final int x;
+
+            Simple(this.x);
+          }
+
+        ''',
+        };
+
+        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+        await readerWriter.testing.loadIsolateSources();
+
+        await testBuilder(
+          builder,
+          sourceAssets,
+          readerWriter: readerWriter,
+          generateFor: {'$_pkgName|lib/foo.dart'},
+          outputs: {
+            '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+              allOf(
+                contains('Simple\$reflection extends ClassReflection<Simple>'),
+                // The alias skipped past both taken names:
+                contains('__TR1'),
+                contains('__TI1'),
+              ),
+            ),
+          },
+          onLog: (msg) {
+            _printToConsole(msg);
+          },
+        );
+      },
+      timeout: Timeout(Duration(seconds: 60)),
     );
 
     test('ClassProxy: SimpleAPI', () async {

@@ -1,3 +1,94 @@
+## 2.8.0
+
+- `JsonEncoder`:
+  - Fixed `removeField` when combined with `removeNullFields`: the filters were
+    joined with `||`, so enabling both disabled both, and a field marked for
+    removal was still emitted.
+  - Fixed the encoding of a negative `Duration`: it was written with a minus
+    sign on every component (`-1:-30:0:0:-5`), and since `-` is also a field
+    separator the value decoded back positive. Now written with a single
+    leading `-` (`-1:30:0:0:5`).
+    - **Note:** this changes the wire format of negative `Duration` values.
+      The previous format is still decoded correctly, so already persisted
+      data is recovered. Positive values are unchanged.
+
+- `JsonDecoder`:
+  - Fixed `fromJsonAsync`/`decodeAsync` for a `List` of entities: the
+    collection `TypeInfo` was applied to each element instead of its argument,
+    so elements were returned as raw `Map`s instead of entities, without any
+    error.
+  - Fixed the async `Map` path dropping `duplicatedEntitiesAsID` and resetting
+    the entity cache in the middle of an in-progress object tree.
+
+- `ClassReflection`:
+  - Fixed `getBestConstructorsForMap` cache key: it ignored
+    `allowOptionalOnlyConstructors`, so both values of the flag shared one
+    cache entry and the result depended on which was requested first.
+  - Fixed `castIterable` with `nullable: true`: it cast to `E` instead of `E?`,
+    making the parameter a no-op and throwing a `TypeError` on a collection
+    containing `null` (`castList` and `castSet` were already correct).
+  - Fixed `castMapKeys` with `nullable: true`: it made the *values* nullable
+    instead of the keys, throwing a `TypeError` on a `Map` with a `null` key.
+
+- `Reflection`:
+  - Fixed `siblingReflectionFor` throwing a `TypeError` instead of returning
+    `null` when no sibling matched the requested type: it cast with
+    `as Reflection<T>` while declaring a nullable return.
+
+- `FunctionReflection`:
+  - Fixed `getParameterByIndex` for named parameters: the offset did not
+    include `optionalParameters`, so for a function with optional positional
+    parameters the named indexes were shifted, returning the wrong parameter
+    and making the last one unreachable. Indexes now follow `allParameters`.
+
+- `ReflectionBuilder`:
+  - Fixed `ClassProxy` generation for a method with more than one type
+    parameter: they were written with no separator, so `pair<A, B>` was
+    generated as `pair<AB>`.
+  - Fixed `operator >>>` (Dart 2.14) not being in the operator blocklist: it
+    was generated as a method name and broke the build.
+  - Fixed `ClassProxy` with `ignoreParametersTypes` when the *first* parameter
+    is dropped: a leading comma was emitted (`compute(, int a)`), breaking the
+    build.
+  - Fixed type names being generated unqualified: a type reachable only
+    through a prefixed import (`import 'other.dart' as o;`) was written as
+    `Other` instead of `o.Other`, so the generated part did not compile.
+    Type name resolution is now aware of the input library's import prefixes.
+  - Fixed record type generation: no comma was emitted between positional
+    fields and the named group (`(double{bool y})`), and a record with a
+    single positional field was missing its mandatory trailing comma
+    (`(int)` instead of `(int,)`). Both aborted the build.
+  - Fixed an infinite loop in the generated alias naming when a library
+    declares names colliding with both an internal alias and its `0` suffix.
+  - Fixed `enum` reflection: a `static const` field of the `enum`'s own type
+    (like `static const Color def = Color.red;`) was generated as an `enum`
+    value in `_valuesByName`, shadowing the real name in
+    `EnumReflection.getName`. Now only actual `enum` constants are generated.
+
+- `TypeParser`:
+  - `parseDuration`: a leading `-` now negates the whole `Duration` instead of
+    being consumed as a field separator.
+
+- `ListSortedByUsage`:
+  - Exposed `clampCount` as `@visibleForTesting`.
+
+- Tests:
+  - Added coverage for `lib/src/analyzer/` (`ConstantReader`, `TypeChecker`,
+    `LibraryReader`, `UnresolvedAnnotationException` and the url helpers),
+    for the annotations and for the `ClassProxy` return helpers.
+  - Total tests: 96 -> 250. Line coverage: 86.0% -> 89.1%.
+
+- `pubspec.yaml`:
+  - Updated dependencies:
+    - `analyzer` to `^13.0.0`
+    - `build` to `^4.0.6`
+    - `dart_style` to `^3.1.9`
+  - The previous `build` and `dart_style` lower bounds were not satisfiable
+    with `analyzer` 13.x, so `pub` silently resolved above them.
+  - SDK constraint unchanged (`>=3.10.0 <4.0.0`): `analyzer` 13.0.0 still
+    supports `^3.9.0`, but `dart_style` 3.1.9 (the only release compatible
+    with `analyzer` 13) requires `^3.10.0`.
+
 ## 2.7.5
 
 - Dependency updates:

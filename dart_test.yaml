@@ -12,3 +12,7 @@ tags:
   # Tests that depends on `build` framework:
   build:
     timeout: 60s
+  # End-to-end tests: generate into a throwaway package and compile it.
+  # Runs `dart pub get` + `build_runner` + `dart analyze` in a sub process.
+  e2e:
+    timeout: 300s

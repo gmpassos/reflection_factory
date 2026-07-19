@@ -529,6 +529,14 @@ class TypeParser {
     } else {
       var s = '$value'.trim().replaceAll(_regexpSpaces, ':');
 
+      // A leading `-` negates the whole [Duration]. It can't be left to
+      // `split`, since `-` is also a field separator (see
+      // [_regexpTimeSeparators]) and the sign would be silently dropped.
+      var negative = s.startsWith('-');
+      if (negative) {
+        s = s.substring(1);
+      }
+
       var parts = s.split(_regexpTimeSeparators);
 
       var ns = parts.map((e) => int.tryParse(e) ?? 0).toList();
@@ -539,13 +547,15 @@ class TypeParser {
       var ms = ns.length > 3 ? ns[3] : 0;
       var mc = ns.length > 4 ? ns[4] : 0;
 
-      return Duration(
+      var duration = Duration(
         hours: hour,
         minutes: min,
         seconds: sec,
         milliseconds: ms,
         microseconds: mc,
       );
+
+      return negative ? -duration : duration;
     }
   }
 
