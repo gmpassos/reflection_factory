@@ -32,7 +32,7 @@ void main() {
       }
     });
 
-    test('with prefixed imports', () async {
+    test('with every kind of import', () async {
       var packageRoot = _getPackageRootDirectory().path;
 
       _write(tempDir, 'pubspec.yaml', '''
@@ -42,8 +42,49 @@ environment:
 dependencies:
   reflection_factory:
     path: $packageRoot
+  mime: ^2.0.0
 dev_dependencies:
   build_runner: ^2.15.0
+''');
+
+      _write(tempDir, 'lib/plain.dart', '''
+class PlainA {
+  int a;
+  PlainA(this.a);
+}
+
+class PlainB {
+  int b;
+  PlainB(this.b);
+}
+''');
+
+      _write(tempDir, 'lib/shown.dart', '''
+class ShownOnly {
+  int s;
+  ShownOnly(this.s);
+}
+
+class NotShown {
+  int n;
+  NotShown(this.n);
+}
+''');
+
+      _write(tempDir, 'lib/deep.dart', '''
+class Deep {
+  int d;
+  Deep(this.d);
+}
+''');
+
+      _write(tempDir, 'lib/facade.dart', '''
+export 'deep.dart';
+
+class Facade {
+  int f;
+  Facade(this.f);
+}
 ''');
 
       _write(tempDir, 'lib/other.dart', '''
@@ -52,40 +93,60 @@ class Other {
   Other(this.v);
 }
 
-class Plain {
-  int p;
-  Plain(this.p);
+class Hidden {
+  int h;
+  Hidden(this.h);
 }
 
 enum Flavor { sweet, salty }
 ''');
 
-      // `Other` and `Flavor` are reachable ONLY through the `o` prefix.
-      // `Plain` is also imported unprefixed, so it must NOT be qualified.
+      // Every way a type can be reached from the input library:
+      //   unprefixed  -> `plain.dart`, `shown.dart` (show), `other.dart` (hide)
+      //   declared    -> `Local`
+      //   prefixed    -> `other.dart` (o), `facade.dart` (f), `package:mime`
+      //   re-exported -> `Deep`, reached through the prefixed `facade.dart`
       _write(tempDir, 'lib/foo.dart', '''
 import 'package:reflection_factory/reflection_factory.dart';
+import 'package:mime/mime.dart' as mime;
+
+import 'plain.dart';
+import 'shown.dart' show ShownOnly;
+import 'facade.dart' as f;
 import 'other.dart' as o;
-import 'other.dart' show Plain;
+import 'other.dart' hide Other, Flavor;
 
 part 'foo.reflection.g.dart';
 
-@EnableReflection()
-class Holder {
-  o.Other? other;
+class Local {
+  int l;
+  Local(this.l);
+}
 
-  Plain? plain;
+@EnableReflection()
+class Holder<T extends o.Other> {
+  int count;
+  String label;
+  PlainA? plainA;
+  PlainB? plainB;
+  ShownOnly? shown;
+  Local? local;
+  Hidden? hidden;
+
+  o.Other? other;
+  o.Flavor? flavor;
+  f.Deep? deep;
+  f.Facade? facade;
+  mime.MimeTypeResolver? resolver;
 
   List<o.Other>? many;
-
   Map<String, o.Other>? byName;
+  Map<PlainA, List<f.Deep>>? nested;
+  T? bounded;
 
-  o.Flavor? flavor;
+  Holder(this.count, this.label);
 
-  int count;
-
-  Holder(this.count);
-
-  o.Other? echo(o.Other? v) => v;
+  o.Other? echo(o.Other? v, PlainA? p) => v;
 }
 ''');
 
@@ -102,12 +163,38 @@ class Holder {
 
       // Asserted explicitly as well as compiled, so a failure says *what* went
       // wrong instead of only that analysis failed.
-      expect(code, contains('o.Other'));
-      expect(code, contains('o.Flavor'));
-      expect(code, contains('Plain'));
-      expect(code, isNot(contains('o.Plain')));
-      expect(code, isNot(contains('o.int')));
-      expect(code, isNot(contains('o.String')));
+      for (var qualified in [
+        'o.Other',
+        'o.Flavor',
+        'f.Deep',
+        'f.Facade',
+        'mime.MimeTypeResolver',
+      ]) {
+        expect(code, contains(qualified), reason: 'missing $qualified');
+      }
+
+      for (var unqualified in [
+        'PlainA',
+        'PlainB',
+        'ShownOnly',
+        'Local',
+        'Hidden',
+      ]) {
+        expect(code, contains(unqualified), reason: 'missing $unqualified');
+      }
+
+      // Nothing reachable unprefixed may pick up a prefix.
+      for (var wrong in [
+        'o.PlainA',
+        'o.Hidden',
+        'o.Local',
+        'f.PlainA',
+        'o.int',
+        'o.String',
+        'mime.int',
+      ]) {
+        expect(code, isNot(contains(wrong)), reason: 'wrongly emitted $wrong');
+      }
 
       var analyze = await _run(
         'dart',

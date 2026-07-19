@@ -1925,15 +1925,61 @@ void main() {
       () => testClassProxyLibraryPath(false),
     );
 
-    test('EnableReflection: prefixed import type names', () async {
+    test('EnableReflection: import-qualified type names', () async {
       // Regression: type names were emitted unqualified, so a type reachable
       // only through a prefixed import produced a generated part that
-      // referenced an undefined name. Verified separately against a real
-      // package: `dart analyze` on the generated part went from 10 errors
-      // to none.
+      // referenced an undefined name.
+      //
+      // Covers every way a type can be reached from the input library, since
+      // the rule is "qualify only what needs it": over-qualifying is just as
+      // broken as under-qualifying.
       var builder = ReflectionBuilder(verbose: true);
 
       var sourceAssets = {
+        '$_pkgName|lib/plain.dart': '''
+
+          class PlainA {
+            int a;
+            PlainA(this.a);
+          }
+
+          class PlainB {
+            int b;
+            PlainB(this.b);
+          }
+
+        ''',
+        '$_pkgName|lib/shown.dart': '''
+
+          class ShownOnly {
+            int s;
+            ShownOnly(this.s);
+          }
+
+          class NotShown {
+            int n;
+            NotShown(this.n);
+          }
+
+        ''',
+        '$_pkgName|lib/deep.dart': '''
+
+          class Deep {
+            int d;
+            Deep(this.d);
+          }
+
+        ''',
+        '$_pkgName|lib/facade.dart': '''
+
+          export 'deep.dart';
+
+          class Facade {
+            int f;
+            Facade(this.f);
+          }
+
+        ''',
         '$_pkgName|lib/other.dart': '''
 
           class Other {
@@ -1941,31 +1987,56 @@ void main() {
             Other(this.v);
           }
 
-          class Plain {
-            int p;
-            Plain(this.p);
+          class Hidden {
+            int h;
+            Hidden(this.h);
           }
+
+          enum Flavor { sweet, salty }
 
         ''',
         '$_pkgName|lib/foo.dart': '''
 
           import 'package:reflection_factory/reflection_factory.dart';
+          import 'package:mime/mime.dart' as mime;
+
+          import 'plain.dart';
+          import 'shown.dart' show ShownOnly;
+          import 'facade.dart' as f;
           import 'other.dart' as o;
-          import 'other.dart' show Plain;
+          import 'other.dart' hide Other, Flavor;
 
           part 'foo.reflection.g.dart';
 
-          @EnableReflection()
-          class Holder {
-            o.Other? other;
+          class Local {
+            int l;
+            Local(this.l);
+          }
 
-            Plain? plain;
+          @EnableReflection()
+          class Holder<T extends o.Other> {
+            int count;
+            String label;
+            PlainA? plainA;
+            PlainB? plainB;
+            ShownOnly? shown;
+            Local? local;
+            Hidden? hidden;
+
+            o.Other? other;
+            o.Flavor? flavor;
+            f.Deep? deep;
+            f.Facade? facade;
+            mime.MimeTypeResolver? resolver;
 
             List<o.Other>? many;
+            Map<String, o.Other>? byName;
+            Map<PlainA, List<f.Deep>>? nested;
+            T? bounded;
 
-            int count;
+            Holder(this.count, this.label);
 
-            Holder(this.count);
+            o.Other? echo(o.Other? v, PlainA? p) => v;
           }
 
         ''',
@@ -1981,19 +2052,44 @@ void main() {
         generateFor: {'$_pkgName|lib/foo.dart'},
         outputs: {
           '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
-            allOf(
-              // Reachable only via the `o` prefix: must stay qualified,
-              // including nested inside type arguments.
-              contains('FieldReflection<Holder, o.Other?>'),
+            allOf([
+              // --- must be qualified ---
+              // Reached only through the `o` prefix (the unprefixed import of
+              // the same library hides `Other` and `Flavor`).
               contains('__TR<o.Other>(o.Other)'),
+              contains('o.Flavor'),
+              // Declared in a library imported with a prefix.
+              contains('__TR<f.Facade>(f.Facade)'),
+              // Re-exported by the prefixed library, so it is NOT declared in
+              // the library named by the import directive.
+              contains('__TR<f.Deep>(f.Deep)'),
+              // A prefixed `package:` import.
+              contains('mime.MimeTypeResolver'),
+              // Nested inside type arguments, not just at the top level.
               contains('__TR<List<o.Other>>'),
-              // Imported unprefixed via `show`: must NOT be qualified.
-              contains('FieldReflection<Holder, Plain?>'),
-              contains('__TR<Plain>(Plain)'),
-              isNot(contains('o.Plain')),
-              // `dart:core` types are never qualified.
+              contains('Map<String, o.Other>'),
+              contains('Map<PlainA, List<f.Deep>>'),
+
+              // --- must NOT be qualified ---
+              // Normal unprefixed import.
+              contains('__TR<PlainA>(PlainA)'),
+              contains('__TR<PlainB>(PlainB)'),
+              // Unprefixed import with `show`.
+              contains('__TR<ShownOnly>(ShownOnly)'),
+              // Declared in the library being generated for.
+              contains('__TR<Local>(Local)'),
+              // Visible through the unprefixed import that hides only `Other`.
+              contains('__TR<Hidden>(Hidden)'),
+
+              // Nothing reachable unprefixed may pick up a prefix, and
+              // `dart:core` is never qualified.
+              isNot(contains('o.PlainA')),
+              isNot(contains('o.Hidden')),
+              isNot(contains('f.PlainA')),
               isNot(contains('o.int')),
-            ),
+              isNot(contains('o.String')),
+              isNot(contains('mime.int')),
+            ]),
           ),
         },
         onLog: (msg) {
