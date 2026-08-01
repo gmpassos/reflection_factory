@@ -1,3 +1,36 @@
+## 2.8.1
+
+- `dart_style`: `^3.1.9` → `>=3.1.9 <3.1.10`.
+  - The generated `*.reflection.g.dart` is formatted by `DartFormatter`, using
+    the `dart_style` resolved by `pub` for **this** package, while consumers
+    check that code with the `dart format` bundled in **their** Dart SDK.
+  - `dart_style` 3.1.10 changed the splitting of an argument list containing a
+    collection literal — which is exactly the shape of the generated proxy code
+    (`onCall(this, '<method>', <String, dynamic>{...}, const __TR<...>(...))`).
+    The Dart SDK 3.12.2 still bundles `dart_style` 3.1.6 (`dart format
+    --version`), so a package generating with 3.1.10+ ends up with generated
+    code its own `dart format` wants to reformat.
+  - That makes 2 common CI checks mutually exclusive for the consumer:
+    committing the generator output fails
+    `dart format --set-exit-if-changed`, and committing the formatted output
+    fails a `build_verify` "the build is up to date" check, because
+    `build_runner` rewrites the file back.
+  - The upper bound is the lowest version that still satisfies
+    `analyzer: ^13.0.0` (3.1.9 is the first `dart_style` accepting analyzer 13),
+    so this does not roll back any other dependency.
+  - **Not** a language-version issue: the builder already resolves and passes
+    the correct language version to `DartFormatter`. Verified that the
+    divergence reproduces identically at language versions 3.7, 3.10, 3.11 and
+    3.12. Lift this bound once the Dart SDK bundles `dart_style` >= 3.1.10.
+
+- Tests:
+  - New `reflection_factory_format_test.dart`, guarding the above:
+    - the committed `*.g.dart` are left untouched by the SDK's `dart format`;
+    - `DartFormatter` and the SDK's `dart format` agree on an argument list
+      containing a collection literal (the generated-proxy shape). This second
+      test is the one that actually catches the regression — the repository's
+      own generated code does not happen to contain a diverging shape.
+
 ## 2.8.0
 
 - `JsonEncoder`:
