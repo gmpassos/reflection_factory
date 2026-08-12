@@ -801,11 +801,13 @@ void main() {
           TypeInfo.tDynamic,
         );
 
-        var mapK2 = TestUserWithReflection$reflection.staticInstance
-            .castMap(<Object, Object>{
-              TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
-                  TestAddressWithReflection.withCity('NY', city: 'New York'),
-            }, tMapK2);
+        var mapK2 = TestUserWithReflection$reflection.staticInstance.castMap(
+          <Object, Object>{
+            TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'):
+                TestAddressWithReflection.withCity('NY', city: 'New York'),
+          },
+          tMapK2,
+        );
 
         expect(
           mapK2,
@@ -823,11 +825,13 @@ void main() {
           TestUserWithReflection,
         );
 
-        var mapV2 = TestUserWithReflection$reflection.staticInstance
-            .castMap(<Object, Object>{
-              TestAddressWithReflection.withCity('NY', city: 'New York'):
-                  TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'),
-            }, tMapV2);
+        var mapV2 = TestUserWithReflection$reflection.staticInstance.castMap(
+          <Object, Object>{
+            TestAddressWithReflection.withCity('NY', city: 'New York'):
+                TestUserWithReflection.fields('Joe', 'joe@mail.com', '123'),
+          },
+          tMapV2,
+        );
 
         expect(
           mapV2,
@@ -1058,9 +1062,8 @@ void main() {
       );
 
       expect(
-        TestEnumWithReflection$reflection(
-          TestEnumWithReflection.x,
-        ).name(TestEnumWithReflection.y),
+        TestEnumWithReflection$reflection(TestEnumWithReflection.x)
+            .name(TestEnumWithReflection.y),
         equals('y'),
       );
 

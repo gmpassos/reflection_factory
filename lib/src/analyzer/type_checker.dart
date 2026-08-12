@@ -317,11 +317,9 @@ class UnresolvedAnnotationException implements Exception {
 
   static SourceSpan? _findSpan(Element annotatedElement, int annotationIndex) {
     try {
-      final parsedLibrary =
-          annotatedElement.session!.getParsedLibraryByElement(
-                annotatedElement.library!,
-              )
-              as ParsedLibraryResult;
+      final parsedLibrary = annotatedElement.session!.getParsedLibraryByElement(
+        annotatedElement.library!,
+      ) as ParsedLibraryResult;
       final declaration = parsedLibrary.getFragmentDeclaration(
         annotatedElement.firstFragment,
       );

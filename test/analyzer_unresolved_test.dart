@@ -32,14 +32,13 @@ void main() {
           AssetId(_pkg, 'lib/foo.dart'),
           allowSyntaxErrors: true,
         );
-        var broken = LibraryReader(
-          lib,
-        ).allClasses.firstWhere((e) => e.name == 'Broken');
+        var broken = LibraryReader(lib).allClasses
+            .firstWhere((e) => e.name == 'Broken');
 
         expect(
-          () => const TypeChecker.fromUrl(
-            '$_asset#Ann',
-          ).firstAnnotationOf(broken),
+          () =>
+              const TypeChecker.fromUrl('$_asset#Ann')
+                  .firstAnnotationOf(broken),
           throwsA(isA<UnresolvedAnnotationException>()),
         );
       });
@@ -51,20 +50,17 @@ void main() {
           AssetId(_pkg, 'lib/foo.dart'),
           allowSyntaxErrors: true,
         );
-        var broken = LibraryReader(
-          lib,
-        ).allClasses.firstWhere((e) => e.name == 'Broken');
+        var broken = LibraryReader(lib).allClasses
+            .firstWhere((e) => e.name == 'Broken');
 
         expect(
-          const TypeChecker.fromUrl(
-            '$_asset#Ann',
-          ).firstAnnotationOf(broken, throwOnUnresolved: false),
+          const TypeChecker.fromUrl('$_asset#Ann')
+              .firstAnnotationOf(broken, throwOnUnresolved: false),
           isNull,
         );
         expect(
-          const TypeChecker.fromUrl(
-            '$_asset#Ann',
-          ).hasAnnotationOf(broken, throwOnUnresolved: false),
+          const TypeChecker.fromUrl('$_asset#Ann')
+              .hasAnnotationOf(broken, throwOnUnresolved: false),
           isFalse,
         );
       });
@@ -76,9 +72,8 @@ void main() {
           AssetId(_pkg, 'lib/foo.dart'),
           allowSyntaxErrors: true,
         );
-        var broken = LibraryReader(
-          lib,
-        ).allClasses.firstWhere((e) => e.name == 'Broken');
+        var broken = LibraryReader(lib).allClasses
+            .firstWhere((e) => e.name == 'Broken');
 
         UnresolvedAnnotationException? error;
         try {
@@ -106,9 +101,8 @@ void main() {
           AssetId(_pkg, 'lib/foo.dart'),
           allowSyntaxErrors: true,
         );
-        var ok = LibraryReader(
-          lib,
-        ).allClasses.firstWhere((e) => e.name == 'Ok');
+        var ok = LibraryReader(lib).allClasses
+            .firstWhere((e) => e.name == 'Ok');
 
         expect(
           const TypeChecker.fromUrl('$_asset#Ann').firstAnnotationOf(ok),

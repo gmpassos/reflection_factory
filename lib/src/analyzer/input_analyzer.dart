@@ -68,7 +68,11 @@ class InputAnalyzerResolved {
     this.resolver,
     this.compilationUnit, {
     LibraryReader? libraryReader,
-  }) : _libraryReader = libraryReader;
+    // An initializing formal would rename the parameter to `_libraryReader`,
+    // making a private name part of this constructor's signature.
+  })
+    // ignore: prefer_initializing_formals
+    : _libraryReader = libraryReader;
 
   String get inputFileName => inputId.pathSegments.last;
 

@@ -945,12 +945,14 @@ void main() {
       }
 
       {
-        var typeReflection =
-            TypeReflection<Future<TestOpAWithReflection>>(Future, [
-              TypeInfo<TestOpAWithReflection>.fromObject(
-                TestOpAWithReflection(123),
-              ),
-            ]);
+        var typeReflection = TypeReflection<Future<TestOpAWithReflection>>(
+          Future,
+          [
+            TypeInfo<TestOpAWithReflection>.fromObject(
+              TestOpAWithReflection(123),
+            ),
+          ],
+        );
 
         var typeInfo = typeReflection.typeInfo;
 
@@ -1450,13 +1452,10 @@ void main() {
           ),
         ];
 
-        var usersJson =
-            (JsonEncoder.defaultEncoder.toJson(
-                      users,
-                      duplicatedEntitiesAsID: true,
-                    )
-                    as List)
-                .cast<Map>();
+        var usersJson = (JsonEncoder.defaultEncoder.toJson(
+          users,
+          duplicatedEntitiesAsID: true,
+        ) as List).cast<Map>();
 
         expect(
           usersJson,
@@ -1637,12 +1636,10 @@ void main() {
 
         var users = [user1, user2, user1];
 
-        var usersJson =
-            JsonEncoder.defaultEncoder.toJson(
-                  users,
-                  duplicatedEntitiesAsID: true,
-                )
-                as List;
+        var usersJson = JsonEncoder.defaultEncoder.toJson(
+          users,
+          duplicatedEntitiesAsID: true,
+        ) as List;
 
         expect(
           usersJson,
@@ -1747,12 +1744,10 @@ void main() {
           'b': TestUserWithReflection.fields('smith', 's@mail', 'abc'),
         };
 
-        var usersJson =
-            JsonEncoder.defaultEncoder.toJson(
-                  users,
-                  duplicatedEntitiesAsID: true,
-                )
-                as Map;
+        var usersJson = JsonEncoder.defaultEncoder.toJson(
+          users,
+          duplicatedEntitiesAsID: true,
+        ) as Map;
 
         expect(
           usersJson,

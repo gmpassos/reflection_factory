@@ -101,9 +101,8 @@ void f() {
       printOnFailure('Package language version: $languageVersion');
 
       // What the generator would write:
-      var byDartFormatter = DartFormatter(
-        languageVersion: languageVersion,
-      ).format(probeCode);
+      var byDartFormatter = DartFormatter(languageVersion: languageVersion)
+          .format(probeCode);
 
       // What `dart format` of the SDK would write. The probe file is created
       // inside this package, so `dart format` resolves the same language
@@ -196,9 +195,8 @@ String? _resolvedDartStyleVersion() {
   var lock = File('pubspec.lock');
   if (!lock.existsSync()) return null;
 
-  var match = RegExp(
-    r'\n  dart_style:\n(?:.*\n)*?    version: "([^"]+)"',
-  ).firstMatch(lock.readAsStringSync());
+  var match = RegExp(r'\n  dart_style:\n(?:.*\n)*?    version: "([^"]+)"')
+      .firstMatch(lock.readAsStringSync());
 
   return match?.group(1);
 }

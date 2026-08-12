@@ -1,3 +1,24 @@
+## 2.9.0
+
+- `dart_style`: `>=3.1.9 <3.1.10` → `>=3.1.10 <3.1.11`.
+  - 2.8.1 capped `dart_style` below 3.1.10 because the Dart SDK still bundled
+    an older formatter, and generated code has to match the `dart format` of
+    the consumer's SDK. Dart **3.13.0 bundles `dart_style` 3.1.10**
+    (`dart format --version`), so the cap now selects the *wrong* formatter and
+    reintroduces the very mismatch it was added to prevent — the two CI checks
+    (`dart format --set-exit-if-changed` and a `build_verify` "build is up to
+    date" test) became mutually exclusive again, this time on Dart 3.13. Hit in
+    `bones_api`.
+  - The bound moves with the SDK rather than being lifted: pinning to the exact
+    formatter version the SDK ships is what keeps the two checks satisfiable.
+
+- `environment.sdk`: `>=3.10.0 <4.0.0` → `>=3.13.0 <4.0.0`.
+  - The `dart_style` pin is only correct for the SDK that bundles that same
+    version. Raising the floor makes `pub` resolve 2.8.1 for Dart 3.10–3.12
+    users (whose SDKs bundle `dart_style` 3.1.6) instead of handing them
+    generated code their own `dart format` would rewrite.
+  - This narrows compatibility, hence the minor bump rather than a patch.
+
 ## 2.8.1
 
 - `dart_style`: `^3.1.9` → `>=3.1.9 <3.1.10`.

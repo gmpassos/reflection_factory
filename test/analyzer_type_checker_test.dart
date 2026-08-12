@@ -150,9 +150,8 @@ void main() {
           isFalse,
         );
         expect(
-          const TypeChecker.fromUrl(
-            '$_asset#Walker',
-          ).isAssignableFromType(dogType),
+          const TypeChecker.fromUrl('$_asset#Walker')
+              .isAssignableFromType(dogType),
           isTrue,
         );
         expect(
@@ -227,9 +226,8 @@ void main() {
 
         // Has an annotation, but not of this type:
         expect(
-          const TypeChecker.fromUrl(
-            '$_asset#Other',
-          ).firstAnnotationOf(_class(reader, 'WithAnn')),
+          const TypeChecker.fromUrl('$_asset#Other')
+              .firstAnnotationOf(_class(reader, 'WithAnn')),
           isNull,
         );
       });
@@ -254,9 +252,8 @@ void main() {
     test('firstAnnotationOfExact returns null without annotations', () async {
       await _withLib((lib, reader) async {
         expect(
-          const TypeChecker.fromUrl(
-            '$_asset#Ann',
-          ).firstAnnotationOfExact(_class(reader, 'NoAnn')),
+          const TypeChecker.fromUrl('$_asset#Ann')
+              .firstAnnotationOfExact(_class(reader, 'NoAnn')),
           isNull,
         );
       });
@@ -271,15 +268,13 @@ void main() {
           hasLength(1),
         );
         expect(
-          const TypeChecker.fromUrl(
-            '$_asset#Other',
-          ).annotationsOfExact(withBoth),
+          const TypeChecker.fromUrl('$_asset#Other')
+              .annotationsOfExact(withBoth),
           hasLength(1),
         );
         expect(
-          const TypeChecker.fromUrl(
-            'dart:core#Deprecated',
-          ).annotationsOf(withBoth),
+          const TypeChecker.fromUrl('dart:core#Deprecated')
+              .annotationsOf(withBoth),
           isEmpty,
         );
       });
@@ -289,9 +284,9 @@ void main() {
   group('DartTypeExtension.elementDeclaration', () {
     test('returns null for a non-interface type', () async {
       await _withLib((lib, reader) async {
-        var fn =
-            reader.allElements.firstWhere((e) => e.name == 'topLevelFn')
-                as TopLevelFunctionElement;
+        var fn = reader.allElements.firstWhere(
+          (e) => e.name == 'topLevelFn',
+        ) as TopLevelFunctionElement;
         // A function type is not an `InterfaceType`.
         expect(fn.type.elementDeclaration, isNull);
       });

@@ -62,9 +62,8 @@ void main() {
   group('packageToAssetUrl', () {
     test('converts package: to asset:', () {
       expect(
-        packageToAssetUrl(
-          Uri.parse('package:source_gen/source_gen.dart'),
-        ).toString(),
+        packageToAssetUrl(Uri.parse('package:source_gen/source_gen.dart'))
+            .toString(),
         equals('asset:source_gen/lib/source_gen.dart'),
       );
     });

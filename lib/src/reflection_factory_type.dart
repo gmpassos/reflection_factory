@@ -1092,12 +1092,10 @@ class _TypeWrapperList extends _TypeWrapperCollection {
   V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
     if (typeInfo != null && typeInfo.argumentsLength >= 1) {
       return typeInfo.callCastedArgumentA(
-        <A>() =>
-            TypeParser.parseList<A>(
-                  value,
-                  elementParser: typeInfo.argumentParser<A>(0),
-                )
-                as V?,
+        <A>() => TypeParser.parseList<A>(
+          value,
+          elementParser: typeInfo.argumentParser<A>(0),
+        ) as V?,
       );
     } else {
       return TypeParser.parseList(value) as V?;
@@ -1127,10 +1125,9 @@ class _TypeWrapperIterable extends _TypeWrapperCollection {
           }
         } else {
           return TypeParser.parseList<A>(
-                value,
-                elementParser: typeInfo.argumentParser<A>(0),
-              )
-              as V?;
+            value,
+            elementParser: typeInfo.argumentParser<A>(0),
+          ) as V?;
         }
       });
     } else {
@@ -1155,21 +1152,18 @@ class _TypeWrapperMap extends _TypeWrapperCollection {
     if (typeInfo != null) {
       if (typeInfo.argumentsLength >= 2) {
         return typeInfo.callCastedArgumentsAB(
-          <A, B>() =>
-              TypeParser.parseMap<A, B>(
-                    value,
-                    keyParser: typeInfo.argumentParser<A>(0),
-                    valueParser: typeInfo.argumentParser<B>(1),
-                  )
-                  as V?,
+          <A, B>() => TypeParser.parseMap<A, B>(
+            value,
+            keyParser: typeInfo.argumentParser<A>(0),
+            valueParser: typeInfo.argumentParser<B>(1),
+          ) as V?,
         );
       } else {
         return TypeParser.parseMap(
-              value,
-              keyParser: typeInfo.argumentParser(0),
-              valueParser: typeInfo.argumentParser(1),
-            )
-            as V?;
+          value,
+          keyParser: typeInfo.argumentParser(0),
+          valueParser: typeInfo.argumentParser(1),
+        ) as V?;
       }
     } else {
       return TypeParser.parseMap(value) as V?;
@@ -1188,12 +1182,10 @@ class _TypeWrapperSet extends _TypeWrapperCollection {
   V? parse<V>(Object? value, {V? def, TypeInfo? typeInfo}) {
     if (typeInfo != null && typeInfo.argumentsLength >= 1) {
       return typeInfo.callCastedArgumentA(
-        <A>() =>
-            TypeParser.parseSet<A>(
-                  value,
-                  elementParser: typeInfo.argumentParser<A>(0),
-                )
-                as V?,
+        <A>() => TypeParser.parseSet<A>(
+          value,
+          elementParser: typeInfo.argumentParser<A>(0),
+        ) as V?,
       );
     } else {
       return TypeParser.parseSet(value) as V?;
@@ -1246,21 +1238,18 @@ class _TypeWrapperMapEntry extends _TypeWrapper {
     if (typeInfo != null) {
       if (typeInfo.argumentsLength >= 2) {
         return typeInfo.callCastedArgumentsAB(
-          <A, B>() =>
-              TypeParser.parseMapEntry<A, B>(
-                    value,
-                    keyParser: typeInfo.argumentParser<A>(0),
-                    valueParser: typeInfo.argumentParser<B>(1),
-                  )
-                  as V?,
+          <A, B>() => TypeParser.parseMapEntry<A, B>(
+            value,
+            keyParser: typeInfo.argumentParser<A>(0),
+            valueParser: typeInfo.argumentParser<B>(1),
+          ) as V?,
         );
       } else {
         return TypeParser.parseMapEntry(
-              value,
-              keyParser: typeInfo.argumentParser(0),
-              valueParser: typeInfo.argumentParser(1),
-            )
-            as V?;
+          value,
+          keyParser: typeInfo.argumentParser(0),
+          valueParser: typeInfo.argumentParser(1),
+        ) as V?;
       }
     } else {
       return TypeParser.parseMapEntry(value) as V?;
@@ -1744,20 +1733,22 @@ class TypeInfo<T> {
   }
 
   /// Calls [f] casting [A] as [arguments0] `T`.
-  // ignore: avoid_types_as_parameter_names
+  // The shadowing is the point: [f] is instantiated with the argument's type,
+  // and naming both `A` is what makes the signature read as that binding.
+  // ignore: avoid_types_as_parameter_names, avoid_shadowing_type_parameters
   R callCastedArgumentA<R, A>(R Function<A>() f) {
     var arg0 = _arguments[0];
     return arg0.callCasted(f);
   }
 
   /// Calls [f] casting [A] as [arguments0] `T` and [B] as [arguments1] `T`.
-  // ignore: avoid_types_as_parameter_names
+  // ignore: avoid_types_as_parameter_names, avoid_shadowing_type_parameters
   R callCastedArgumentsAB<R, A, B>(R Function<A, B>() f) {
     var arg0 = _arguments[0];
     var arg1 = _arguments[1];
-    // ignore: avoid_types_as_parameter_names
+    // ignore: avoid_types_as_parameter_names, avoid_shadowing_type_parameters
     return arg0.callCasted(<A>() {
-      // ignore: avoid_types_as_parameter_names
+      // ignore: avoid_types_as_parameter_names, avoid_shadowing_type_parameters
       return arg1.callCasted(<B>() => f<A, B>());
     });
   }
