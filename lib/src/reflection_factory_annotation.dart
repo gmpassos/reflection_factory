@@ -206,6 +206,9 @@ abstract class JsonAnnotation {
 class JsonField extends JsonAnnotation {
   final bool _hidden;
 
+  // An initializing formal would rename the parameter to `_hidden`, making a
+  // private name part of the annotation's public API.
+  // ignore: prefer_initializing_formals
   const JsonField({bool hidden = false}) : _hidden = hidden;
 
   const JsonField.visible() : this(hidden: false);

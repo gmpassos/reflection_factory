@@ -3612,9 +3612,8 @@ extension _ListDartTypeExtension on List<DartType> {
       return '<$tr>[${listConstTypeReflection.join(',')}]';
     }
 
-    var listConstTypeInfo = map(
-      (e) => e.asConstTypeInfoCode(typeAliasTable),
-    ).toList(growable: false);
+    var listConstTypeInfo = map((e) => e.asConstTypeInfoCode(typeAliasTable))
+        .toList(growable: false);
     if (listConstTypeInfo.every((e) => e != null)) {
       return '<$ti>[${listConstTypeInfo.join(',')}]';
     }

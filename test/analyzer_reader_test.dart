@@ -56,13 +56,11 @@ Future<void> _withAnnotation(
 ) async {
   await resolveSources({'$_pkg|lib/foo.dart': _source}, (resolver) async {
     var lib = await resolver.libraryFor(AssetId(_pkg, 'lib/foo.dart'));
-    var target = LibraryReader(
-      lib,
-    ).allClasses.firstWhere((e) => e.name == 'Target');
+    var target = LibraryReader(lib).allClasses
+        .firstWhere((e) => e.name == 'Target');
 
-    var annotation = const TypeChecker.fromUrl(
-      '$_asset#Ann',
-    ).firstAnnotationOf(target)!;
+    var annotation = const TypeChecker.fromUrl('$_asset#Ann')
+        .firstAnnotationOf(target)!;
 
     await body(ConstantReader(annotation), lib);
   });
@@ -302,9 +300,8 @@ void main() {
   group('urlOfElement', () {
     test('resolves a class element url', () async {
       await _withAnnotation((_, lib) async {
-        var target = LibraryReader(
-          lib,
-        ).allClasses.firstWhere((e) => e.name == 'Target');
+        var target = LibraryReader(lib).allClasses
+            .firstWhere((e) => e.name == 'Target');
         expect(urlOfElement(target), equals('$_asset#Target'));
       });
     });

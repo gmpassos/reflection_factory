@@ -106,50 +106,58 @@ extension MimeTypeResolverExtension on MimeTypeResolver {
 
 typedef JsonFieldMatcher = bool Function(String key);
 
-typedef ToEncodableJson =
-    Object? Function(Object? object, JsonEncoder jsonEncoder);
+typedef ToEncodableJson = Object? Function(
+  Object? object,
+  JsonEncoder jsonEncoder,
+);
 
 typedef ToEncodableJsonProvider = ToEncodableJson? Function(Object object);
 
-typedef JsonValueDecoder<O> =
-    O? Function(Object? o, Type type, JsonDecoder jsonDecoder);
+typedef JsonValueDecoder<O> = O? Function(
+  Object? o,
+  Type type,
+  JsonDecoder jsonDecoder,
+);
 
-typedef JsonValueDecoderProvider<O> =
-    JsonValueDecoder<O>? Function(
-      Type type,
-      Object? value,
-      JsonDecoder jsonDecoder,
-    );
+typedef JsonValueDecoderProvider<O> = JsonValueDecoder<O>? Function(
+  Type type,
+  Object? value,
+  JsonDecoder jsonDecoder,
+);
 
-typedef JsomMapDecoder<O> =
-    O? Function(Map<String, Object?> map, JsonDecoder jsonDecoder);
+typedef JsomMapDecoder<O> = O? Function(
+  Map<String, Object?> map,
+  JsonDecoder jsonDecoder,
+);
 
-typedef JsomMapDecoderProvider =
-    JsomMapDecoder? Function(
-      Type type,
-      Map<String, Object?> map,
-      JsonDecoder jsonDecoder,
-    );
+typedef JsomMapDecoderProvider = JsomMapDecoder? Function(
+  Type type,
+  Map<String, Object?> map,
+  JsonDecoder jsonDecoder,
+);
 
-typedef JsomMapDecoderAsync<O> =
-    FutureOr<O?> Function(Map<String, Object?> map, JsonDecoder jsonDecoder);
+typedef JsomMapDecoderAsync<O> = FutureOr<O?> Function(
+  Map<String, Object?> map,
+  JsonDecoder jsonDecoder,
+);
 
-typedef JsomMapDecoderAsyncProvider =
-    JsomMapDecoderAsync? Function(
-      Type type,
-      Map<String, Object?> map,
-      JsonDecoder jsonDecoder,
-    );
+typedef JsomMapDecoderAsyncProvider = JsomMapDecoderAsync? Function(
+  Type type,
+  Map<String, Object?> map,
+  JsonDecoder jsonDecoder,
+);
 
-typedef IterableCaster =
-    Object? Function(
-      Iterable value,
-      TypeReflection type,
-      JsonDecoder jsonDecoder,
-    );
+typedef IterableCaster = Object? Function(
+  Iterable value,
+  TypeReflection type,
+  JsonDecoder jsonDecoder,
+);
 
-typedef MapCaster =
-    Object? Function(Map value, TypeReflection type, JsonDecoder jsonDecoder);
+typedef MapCaster = Object? Function(
+  Map value,
+  TypeReflection type,
+  JsonDecoder jsonDecoder,
+);
 
 /// JSON codec integrated with [ReflectionFactory].
 class JsonCodec {
@@ -1047,9 +1055,9 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
       autoResetEntityCache: autoResetEntityCache,
     );
 
-    return dart_convert.JsonUtf8Encoder(
-      pretty ? '  ' : null,
-    ).convert(json).toUint8List();
+    return dart_convert.JsonUtf8Encoder(pretty ? '  ' : null)
+        .convert(json)
+        .toUint8List();
   }
 
   @override
@@ -1066,17 +1074,19 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
       autoResetEntityCache: autoResetEntityCache,
     );
 
-    var jsonSink = dart_convert.JsonUtf8Encoder(
-      pretty ? '  ' : null,
-    ).startChunkedConversion(sink);
+    var jsonSink = dart_convert.JsonUtf8Encoder(pretty ? '  ' : null)
+        .startChunkedConversion(sink);
 
     jsonSink.add(json);
     jsonSink.close();
   }
 }
 
-typedef JsonTypeDecoder<T> =
-    T? Function(Object? json, JsonDecoder? jsonDecoder, TypeInfo typeInfo);
+typedef JsonTypeDecoder<T> = T? Function(
+  Object? json,
+  JsonDecoder? jsonDecoder,
+  TypeInfo typeInfo,
+);
 
 /// A JSON decoder.
 abstract class JsonDecoder extends JsonConverter<String, Object?> {
@@ -1475,12 +1485,11 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
           ? typeInfo.arguments[0]
           : typeInfo;
       return _fromJsonListAsyncImpl(
-            o,
-            listType,
-            duplicatedEntitiesAsID,
-            autoResetEntityCache,
-          )
-          as O?;
+        o,
+        listType,
+        duplicatedEntitiesAsID,
+        autoResetEntityCache,
+      ) as O?;
     } else if (o is String) {
       return _entityFromJsonString(typeInfo, o, duplicatedEntitiesAsID);
     } else {
@@ -1721,9 +1730,8 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     var hasFuture = _mapHasFuture(map);
     if (hasFuture) {
       var mapEntriesFutures = _mapEntriesToFuture(map);
-      return Future.wait(
-        mapEntriesFutures,
-      ).then((entries) => Map.fromEntries(entries).cast<K, V>());
+      return Future.wait(mapEntriesFutures)
+          .then((entries) => Map.fromEntries(entries).cast<K, V>());
     } else {
       return map.cast<K, V>();
     }
@@ -2417,12 +2425,11 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     }
 
     return fromJson<T>(
-          json,
-          typeInfo: typeInfo,
-          duplicatedEntitiesAsID: duplicatedEntitiesAsID,
-          autoResetEntityCache: autoResetEntityCache,
-        )
-        as T;
+      json,
+      typeInfo: typeInfo,
+      duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+      autoResetEntityCache: autoResetEntityCache,
+    ) as T;
   }
 
   /// Sames as [decode] but from a [Uint8List].
@@ -2475,12 +2482,11 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     }
 
     return fromJsonAsync<T>(
-          json,
-          typeInfo: typeInfo,
-          duplicatedEntitiesAsID: duplicatedEntitiesAsID,
-          autoResetEntityCache: autoResetEntityCache,
-        )
-        as T;
+      json,
+      typeInfo: typeInfo,
+      duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+      autoResetEntityCache: autoResetEntityCache,
+    ) as T;
   }
 
   /// Sames as [decodeAsync] but from a [Uint8List].
@@ -3143,10 +3149,8 @@ class JsonEntityCacheSimple implements JsonEntityCache {
     final entities = _entities;
     final entitiesInstantiators = _entitiesInstantiators;
 
-    var map = CombinedMapView([
-      ?entities,
-      ?entitiesInstantiators,
-    ]).map((key, value) => MapEntry(key, value.length));
+    var map = CombinedMapView([?entities, ?entitiesInstantiators])
+        .map((key, value) => MapEntry(key, value.length));
 
     return total == 0 ? s : '$s$map';
   }

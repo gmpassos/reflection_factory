@@ -20,7 +20,7 @@ import 'reflection_factory_utils.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.8.1';
+  static const String VERSION = '2.9.0';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -43,9 +43,8 @@ class ReflectionFactory {
   /// Returns the registered [EnumReflection] that matches [enumName].
   EnumReflection<O>? getRegisterEnumReflectionByName<O>(String enumName) =>
       _registeredEnumReflection.values.firstWhereOrNull(
-            (e) => e.enumName == enumName,
-          )
-          as EnumReflection<O>?;
+        (e) => e.enumName == enumName,
+      ) as EnumReflection<O>?;
 
   /// Called by [EnumReflection] when instantiated for the 1st time.
   void registerEnumReflection<O>(EnumReflection<O> enumReflection) {
@@ -71,9 +70,8 @@ class ReflectionFactory {
   /// Returns the registered [ClassReflection] that matches [className].
   ClassReflection<O>? getRegisterClassReflectionByName<O>(String className) =>
       _registeredClassReflection.values.firstWhereOrNull(
-            (e) => e.className == className,
-          )
-          as ClassReflection<O>?;
+        (e) => e.className == className,
+      ) as ClassReflection<O>?;
 
   /// Called by [ClassReflection] when instantiated for the 1st time.
   void registerClassReflection<O>(ClassReflection<O> classReflection) {
@@ -752,13 +750,12 @@ abstract class EnumReflection<O> extends Reflection<O>
   }
 }
 
-typedef OnConstructorInvocationError =
-    void Function(
-      ConstructorReflection constructor,
-      MethodInvocation methodInvocation,
-      Map<String, dynamic> map,
-      Object? error,
-    );
+typedef OnConstructorInvocationError = void Function(
+  ConstructorReflection constructor,
+  MethodInvocation methodInvocation,
+  Map<String, dynamic> map,
+  Object? error,
+);
 
 /// Base for Class reflection.
 abstract class ClassReflection<O> extends Reflection<O>
@@ -1300,9 +1297,9 @@ abstract class ClassReflection<O> extends Reflection<O>
   bool? _hasFinalField;
 
   /// Returns `true` if some [field] is final (ignoring `hashCode`).
-  bool get hasFinalField => _hasFinalField ??= fieldsWhere(
-    (f) => f.name != 'hashCode' && f.isFinal,
-  ).isNotEmpty;
+  bool get hasFinalField =>
+      _hasFinalField ??= fieldsWhere((f) => f.name != 'hashCode' && f.isFinal)
+          .isNotEmpty;
 
   bool? _hasFieldWithoutSetter;
 
@@ -3099,11 +3096,16 @@ class TypeReflection<T> {
 typedef FieldGetter<T> = T Function();
 typedef FieldSetter<T> = void Function(T v);
 
-typedef FieldNameResolver =
-    String? Function(String field, Map<String, Object?> map);
+typedef FieldNameResolver = String? Function(
+  String field,
+  Map<String, Object?> map,
+);
 
-typedef FieldValueResolver =
-    Object? Function(String field, Object? value, TypeReflection type);
+typedef FieldValueResolver = Object? Function(
+  String field,
+  Object? value,
+  TypeReflection type,
+);
 
 /// A class field reflection.
 abstract class BasicFieldReflection<O, T> extends ElementReflection<O>
@@ -3499,7 +3501,10 @@ abstract class _ParameterValue {
   final bool required;
   final int _hashCode;
 
+  // An initializing formal would rename the parameter to `_hashCode`, which
+  // reads as the field it backs rather than as the value being supplied.
   const _ParameterValue({this.required = false, required int hashCode})
+    // ignore: prefer_initializing_formals
     : _hashCode = hashCode;
 
   String get type;
@@ -3530,8 +3535,10 @@ class _UnresolvedParameterValue extends _ParameterValue {
   String get type => 'unresolved_parameter';
 }
 
-typedef ParameterProvider =
-    Object? Function(ParameterReflection parameter, int? parameterIndex);
+typedef ParameterProvider = Object? Function(
+  ParameterReflection parameter,
+  int? parameterIndex,
+);
 
 typedef _ParameterValueEntry = MapEntry<String, Object?>;
 

@@ -2324,16 +2324,14 @@ void main() {
       );
     });
 
-    test(
-      'EnableReflection: alias name collision',
-      () async {
-        // Regression: `_buildAliasName` never incremented its counter, so a
-        // library declaring names colliding with both the base alias and its
-        // `0` suffix hung the builder in an infinite loop.
-        var builder = ReflectionBuilder(verbose: true);
+    test('EnableReflection: alias name collision', () async {
+      // Regression: `_buildAliasName` never incremented its counter, so a
+      // library declaring names colliding with both the base alias and its
+      // `0` suffix hung the builder in an infinite loop.
+      var builder = ReflectionBuilder(verbose: true);
 
-        var sourceAssets = {
-          '$_pkgName|lib/foo.dart': '''
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
 
           import 'package:reflection_factory/reflection_factory.dart';
 
@@ -2352,33 +2350,31 @@ void main() {
           }
 
         ''',
-        };
+      };
 
-        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-        await readerWriter.testing.loadIsolateSources();
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
 
-        await testBuilder(
-          builder,
-          sourceAssets,
-          readerWriter: readerWriter,
-          generateFor: {'$_pkgName|lib/foo.dart'},
-          outputs: {
-            '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
-              allOf(
-                contains('Simple\$reflection extends ClassReflection<Simple>'),
-                // The alias skipped past both taken names:
-                contains('__TR1'),
-                contains('__TI1'),
-              ),
+      await testBuilder(
+        builder,
+        sourceAssets,
+        readerWriter: readerWriter,
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+            allOf(
+              contains('Simple\$reflection extends ClassReflection<Simple>'),
+              // The alias skipped past both taken names:
+              contains('__TR1'),
+              contains('__TI1'),
             ),
-          },
-          onLog: (msg) {
-            _printToConsole(msg);
-          },
-        );
-      },
-      timeout: Timeout(Duration(seconds: 60)),
-    );
+          ),
+        },
+        onLog: (msg) {
+          _printToConsole(msg);
+        },
+      );
+    }, timeout: Timeout(Duration(seconds: 60)));
 
     test('ClassProxy: SimpleAPI', () async {
       var builder = ReflectionBuilder(verbose: true);
