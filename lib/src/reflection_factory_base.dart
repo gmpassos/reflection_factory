@@ -20,7 +20,7 @@ import 'reflection_factory_utils.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.9.0';
+  static const String VERSION = '2.9.1';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -107,6 +107,17 @@ class ReflectionFactory {
 
     if (object is Duration) {
       return object.inMilliseconds;
+    }
+
+    // `Uri` has no `toJson`, and its runtime type is a private implementation
+    // (`_SimpleUri`, `_Uri`) that no reflection can be registered for — so
+    // without this it reaches the identity fallback at the end of this method,
+    // and whoever called it re-processes the same object forever.
+    //
+    // `toString()` because `Uri.parse` is its inverse, so the value survives a
+    // round trip.
+    if (object is Uri) {
+      return object.toString();
     }
 
     var classReflection = _instance.getRegisterClassReflection(

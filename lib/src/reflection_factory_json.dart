@@ -785,6 +785,22 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
       return _iterableToJson(o, fieldName, duplicatedEntitiesAsID);
     } else {
       var objectJson = _objectToJson(o, fieldName, duplicatedEntitiesAsID);
+
+      // An encoder that cannot handle a type may hand the same object back —
+      // `ReflectionFactory.toJsonEncodable` ends in
+      // `callToJson(object, fallback: (o) => o)`, which does exactly that.
+      // Recursing on it arrives here again with the identical value and
+      // overflows the stack.
+      //
+      // Degrading to `toString()` keeps one unencodable field from taking the
+      // whole response down, and the value it produces is at least readable.
+      // The alternative — recursing and crashing — was how a `Uri` payload
+      // brought down a production route while passing every test, because the
+      // JIT happened to survive the second attempt and AOT never did.
+      if (identical(objectJson, o)) {
+        return o.toString();
+      }
+
       var json = _valueToJson(objectJson, fieldName, duplicatedEntitiesAsID);
       return json;
     }
@@ -865,6 +881,26 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
 
   String _dateTimeToJson(DateTime o) {
     return o.toUtc().toString();
+  }
+
+  /// Encodes a [Uri] as the string it round-trips through.
+  ///
+  /// Without this a [Uri] reaches [_entityToJson], where it has no registered
+  /// reflection, and [_entityToJsonDefault] hands back a value that is still
+  /// not a primitive — so [_valueToJson] calls itself on it, arrives at the
+  /// same place, and recurses until the stack overflows.
+  ///
+  /// The failure is worse than a plain crash because it is not deterministic
+  /// across compilers: under the JIT the first attempt overflows and later ones
+  /// succeed, which makes it look like a warm-up problem, while AOT fails every
+  /// time. A `Uri` payload therefore passes every test and then fails in
+  /// production, permanently.
+  ///
+  /// `toString()` rather than a structured object: [Uri.parse] is the inverse,
+  /// so the value survives a round trip, and any decomposition would have to
+  /// invent a shape no decoder expects.
+  String _uriToJson(Uri o) {
+    return o.toString();
   }
 
   Object _durationToJson(Duration o) {
@@ -979,6 +1015,8 @@ class _JsonEncoder extends dart_convert.Converter<Object?, String>
       return _bigIntToJson(o);
     } else if (o is Enum) {
       return _enumToJson(o);
+    } else if (o is Uri) {
+      return _uriToJson(o);
     }
 
     var oType = o.runtimeType;
