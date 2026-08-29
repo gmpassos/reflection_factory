@@ -1,3 +1,29 @@
+## 2.9.1
+
+- **Fixed: encoding a `Uri` overflowed the stack.**
+
+  `Uri` has no `toJson` and its runtime type is a private implementation
+  (`_SimpleUri`, `_Uri`) no reflection can be registered for, so it fell through
+  to `ReflectionFactory.toJsonEncodable`'s last line —
+  `callToJson(object, fallback: (o) => o)` — which returns the object unchanged.
+  `_JsonEncoder._valueToJson` then re-processed the identical value and recursed
+  until the stack overflowed.
+
+  It was not deterministic across compilers, which is what made it dangerous:
+  under the JIT the *first* attempt overflowed and later ones succeeded, so it
+  read as a warm-up problem, while AOT failed every time. Code encoding a `Uri`
+  could pass a full test suite and then fail permanently once compiled.
+
+  `Uri` now encodes as `toString()`, which `Uri.parse` reverses, so the value
+  round trips. Handled in both `ReflectionFactory.toJsonEncodable` and
+  `_JsonEncoder._objectToJson` — the latter consults a supplied `toEncodable`
+  *before* its own scalar cases, so fixing one alone leaves the other broken.
+
+- **Also fixed the class of bug**, not just this instance: `_valueToJson` no
+  longer recurses when the encoder hands back the object it was given. Any type
+  that reaches the identity fallback now degrades to `toString()` instead of
+  taking the process down.
+
 ## 2.9.0
 
 - `dart_style`: `>=3.1.9 <3.1.10` → `>=3.1.10 <3.1.11`.

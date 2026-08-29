@@ -8,6 +8,12 @@ import 'package:test/test.dart';
 
 import 'src/user_with_reflection.dart';
 
+/// A type with no reflection and no `toJson`, so every encoder falls back on it.
+class _Unencodable {
+  @override
+  String toString() => 'unencodable!';
+}
+
 class Foo {
   int id;
 
@@ -492,6 +498,91 @@ void main() {
     test('positive encoding is unchanged', () {
       var d = Duration(hours: 1, minutes: 30, microseconds: 5);
       expect(JsonEncoder.defaultEncoder.toJson(d), equals('1:30:0:0:5'));
+    });
+  });
+
+  group('JsonCodec Uri', () {
+    // Regression: a `Uri` matched no scalar case in `_objectToJson`, had no
+    // registered reflection, and `_entityToJsonDefault` handed back a value
+    // that was still not a primitive — so `_valueToJson` called itself on it,
+    // arrived at the same place, and recursed until the stack overflowed.
+    //
+    // Worse than a plain crash, because it was not deterministic across
+    // compilers: under the JIT the first attempt overflowed and later ones
+    // succeeded, so it looked like a warm-up problem; AOT failed every time.
+    // A `Uri` payload passed every test and then failed in production.
+    final uris = <Uri>[
+      Uri.parse('https://example.com'),
+      Uri.parse('https://example.com/'),
+      Uri.parse('https://example.com/a/b?c=d'),
+      Uri.parse('https://example.com/#page?p=someone'),
+      Uri.parse('http://localhost:8092/#page?p=someone'),
+      Uri.parse('/relative/path'),
+      Uri.parse('mailto:someone@example.com'),
+      Uri(),
+    ];
+
+    for (var u in uris) {
+      test('encodes without recursing: "$u"', () {
+        expect(
+          JsonEncoder.defaultEncoder.toJson(u),
+          equals(u.toString()),
+          reason: 'runtimeType: ${u.runtimeType}',
+        );
+      });
+    }
+
+    // The path that actually broke. `_objectToJson` consults a supplied
+    // `toEncodable` *before* its own scalar cases, so handling `Uri` there is
+    // not enough — and this is the encoder every `bones_api` response uses.
+    for (var u in uris) {
+      test('encodes under ReflectionFactory.toJsonEncodable: "$u"', () {
+        expect(
+          JsonEncoder(
+            toEncodable: (o, j) => ReflectionFactory.toJsonEncodable(o),
+          ).toJson(u),
+          equals(u.toString()),
+          reason: 'runtimeType: ${u.runtimeType}',
+        );
+      });
+    }
+
+    test('an encoder returning the object unchanged does not recurse', () {
+      // The class of bug, not just this instance: `toJsonEncodable` ends in
+      // `callToJson(object, fallback: (o) => o)`, so any type it cannot handle
+      // comes back identical and used to be re-processed forever. The next
+      // unencodable type should degrade, not take the process down.
+      var encoder = JsonEncoder(toEncodable: (o, j) => o);
+
+      expect(encoder.toJson(_Unencodable()), equals('unencodable!'));
+    });
+
+    test('round trips through Uri.parse', () {
+      for (var u in uris) {
+        var encoded = JsonEncoder.defaultEncoder.toJson(u) as String;
+        expect(Uri.parse(encoded), equals(u), reason: 'encoded as: $encoded');
+      }
+    });
+
+    test('inside a Map and a List, where a payload usually sits', () {
+      expect(
+        JsonEncoder.defaultEncoder.toJson({
+          'url': Uri.parse('https://example.com/x'),
+        }),
+        equals({'url': 'https://example.com/x'}),
+      );
+
+      expect(
+        JsonEncoder.defaultEncoder.toJson([Uri.parse('https://example.com/y')]),
+        equals(['https://example.com/y']),
+      );
+    });
+
+    test('encodes to valid JSON, not just to a Dart value', () {
+      var json = JsonEncoder.defaultEncoder.encode({
+        'url': Uri.parse('https://example.com/z'),
+      });
+      expect(json, equals('{"url":"https://example.com/z"}'));
     });
   });
 
