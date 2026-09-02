@@ -20,7 +20,7 @@ import 'reflection_factory_utils.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.9.1';
+  static const String VERSION = '2.10.0';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -615,6 +615,9 @@ abstract class EnumReflection<O> extends Reflection<O>
   }
 
   /// Returns an Enum instance by [o].
+  ///
+  /// Accepts an enum value name (E.g.: `a`) or a [String] derived from
+  /// [Enum.toString], prefixed with the enum type name (E.g.: `EFoo.a`).
   O? from(Object? o) {
     if (o == null) {
       return null;
@@ -632,14 +635,32 @@ abstract class EnumReflection<O> extends Reflection<O>
       s = s.substring(0, s.length - 1).trim();
     }
 
-    var obj = valuesByName[s];
+    // A `String` derived from `Enum.toString` (E.g.: `EFoo.a`).
+    // Checked before any lookup, since an enum value name can't contain a `.`:
+    var idx = s.indexOf('.');
+    if (idx >= 0) {
+      var typeName = s.substring(0, idx).trim();
+      var name = s.substring(idx + 1).trim();
+
+      if (name.isEmpty || !equalsIgnoreAsciiCase(typeName, enumName)) {
+        return null;
+      }
+
+      s = name;
+    }
+
+    return _fromName(s);
+  }
+
+  /// Returns an Enum instance by its [name] (case-insensitive fallback).
+  O? _fromName(String name) {
+    var obj = valuesByName[name];
     if (obj != null) {
       return obj;
     }
 
     for (var e in valuesByName.entries) {
-      var name = e.key;
-      if (equalsIgnoreAsciiCase(name, s)) {
+      if (equalsIgnoreAsciiCase(e.key, name)) {
         return e.value;
       }
     }

@@ -1,3 +1,25 @@
+## 2.10.0
+
+- **`EnumReflection.from` now accepts a `String` derived from `Enum.toString`.**
+
+  `Enum.toString` returns the value prefixed with the enum type name
+  (`EFoo.a`), but `from` only resolved a bare value name (`a`), so the most
+  natural way to turn an enum into a `String` produced something `from` could
+  not read back:
+
+  ```dart
+  @EnableReflection()
+  enum EFoo { a, b }
+
+  var s = EFoo.a.toString(); // "EFoo.a"
+  var e = EFoo$reflection.from(s); // was `null`, now `EFoo.a`
+  ```
+
+  The prefix must match the reflected `enumName` (case-insensitively), so a
+  `String` from a *different* enum still resolves to `null` instead of
+  silently matching by value name. Bare names keep working exactly as before,
+  including the case-insensitive fallback, which is now shared by both forms.
+
 ## 2.9.1
 
 - **Fixed: encoding a `Uri` overflowed the stack.**
