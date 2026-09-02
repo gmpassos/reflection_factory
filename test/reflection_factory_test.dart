@@ -964,6 +964,49 @@ void main() {
       expect(TestEnumWithReflection$from('w'), isNull);
 
       expect(
+        TestEnumWithReflection$from(TestEnumWithReflection.x.toString()),
+        equals(TestEnumWithReflection.x),
+      );
+
+      expect(
+        TestEnumWithReflection$from(TestEnumWithReflection.Z.toString()),
+        equals(TestEnumWithReflection.Z),
+      );
+
+      expect(
+        TestEnumWithReflection$from('TestEnumWithReflection.y'),
+        equals(TestEnumWithReflection.y),
+      );
+
+      expect(
+        TestEnumWithReflection$from('"TestEnumWithReflection.y"'),
+        equals(TestEnumWithReflection.y),
+      );
+
+      expect(
+        TestEnumWithReflection$from(' testenumwithreflection.Y '),
+        equals(TestEnumWithReflection.y),
+      );
+
+      expect(
+        TestEnumWithReflection$from('TestEnumWithReflection.z'),
+        equals(TestEnumWithReflection.z),
+      );
+
+      expect(
+        TestEnumWithReflection$from('TestEnumWithReflection.Z'),
+        equals(TestEnumWithReflection.Z),
+      );
+
+      expect(TestEnumWithReflection$from('TestEnumWithReflection.w'), isNull);
+
+      expect(TestEnumWithReflection$from('OtherEnum.x'), isNull);
+
+      expect(TestEnumWithReflection$from('TestEnumWithReflection.'), isNull);
+
+      expect(TestEnumWithReflection$from('.x'), isNull);
+
+      expect(
         TestEnumWithReflection.x.reflection.enumName,
         equals('TestEnumWithReflection'),
       );
