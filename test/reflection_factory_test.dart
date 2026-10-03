@@ -2441,6 +2441,51 @@ void main() {
       expect(user, isNotNull);
       expect(user!.email, equals('joe@mail.com'));
     });
+
+    // The last lookup is memoized: alternating map shapes, and the same keys
+    // in another order, must still get the answer for their own shape.
+    test('alternating map shapes', () {
+      var reflection = TestUserWithReflection$reflection();
+
+      List<String> names(Map<String, Object?> m) => reflection
+          .getBestConstructorsForMap(m, allowOptionalOnlyConstructors: false)
+          .map((c) => c.name)
+          .toList();
+
+      var empty = <String, Object?>{};
+      var reordered = {
+        'passphrase': 'pass',
+        'email': 'joe@mail.com',
+        'name': 'joe',
+      };
+
+      var expectedFull = names(map);
+      var expectedEmpty = names(empty);
+      expect(expectedFull, equals(['fields']));
+      expect(expectedEmpty, isNot(equals(expectedFull)));
+
+      for (var i = 0; i < 3; ++i) {
+        expect(names(map), equals(expectedFull));
+        expect(names(empty), equals(expectedEmpty));
+        expect(names(reordered), equals(expectedFull));
+        expect(names(reordered), equals(expectedFull));
+        expect(names(map), equals(expectedFull));
+      }
+    });
+
+    test('disposeCache', () {
+      var reflection = TestUserWithReflection$reflection();
+
+      List<String> names() => reflection
+          .getBestConstructorsForMap(map, allowOptionalOnlyConstructors: false)
+          .map((c) => c.name)
+          .toList();
+
+      expect(names(), equals(['fields']));
+      reflection.disposeCache();
+      expect(names(), equals(['fields']));
+      expect(names(), equals(['fields']));
+    });
   });
 
   group('siblingReflectionFor', () {

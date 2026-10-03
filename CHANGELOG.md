@@ -1,3 +1,18 @@
+## 2.10.1
+
+- **Faster `ClassReflection.getBestConstructorsForMap`** (and so
+  `createInstanceFromMap`), for maps of a repeated shape — e.g. the rows of a
+  query, decoded into entities:
+  - The last lookup is memoized: a map with the same present fields, in the
+    same order, skips the cache key and its lookup.
+  - The cache key's `hashCode` covers the field names (unordered), not only
+    their count, so keys with the same number of fields no longer collide.
+  - `_resolveFieldsNames` no longer allocates closures and `MapEntry`s per
+    field.
+
+  The chosen constructors are unchanged. Measured in `bones_api`'s
+  `db_users` benchmark (SQLite): +10–15% on entity reads.
+
 ## 2.10.0
 
 - **`EnumReflection.from` now accepts a `String` derived from `Enum.toString`.**

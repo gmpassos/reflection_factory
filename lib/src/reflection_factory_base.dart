@@ -20,7 +20,7 @@ import 'reflection_factory_utils.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.10.0';
+  static const String VERSION = '2.10.1';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -2099,6 +2099,12 @@ abstract class ClassReflection<O> extends Reflection<O>
   Map<_KeyParametersNames, List<ConstructorReflection<O>>>?
   _getBestConstructorForMapCache;
 
+  /// The last [getBestConstructorsForMap] lookup: maps of the same shape
+  /// (e.g. rows of one query) repeat it, and a positional compare of its
+  /// parameters is cheaper than a [_getBestConstructorForMapCache] lookup.
+  _KeyParametersNames? _lastBestConstructorsForMapKey;
+  List<ConstructorReflection<O>>? _lastBestConstructorsForMap;
+
   /// Returns the best constructor to instantiate with [map] entries.
   ///
   /// See [getBestConstructorsForMap].
@@ -2144,14 +2150,34 @@ abstract class ClassReflection<O> extends Reflection<O>
       presentParameters = presentFields.toList();
     }
 
+    var staticInstance = getStaticInstance();
+
+    var lastKey = staticInstance._lastBestConstructorsForMapKey;
+    if (lastKey != null &&
+        lastKey.equalsInOrder(
+          presentParameters,
+          allowEmptyConstructors,
+          allowOptionalOnlyConstructors,
+        )) {
+      return staticInstance._lastBestConstructorsForMap!;
+    }
+
     var key = _KeyParametersNames(
       presentParameters,
       allowEmptyConstructors,
       allowOptionalOnlyConstructors,
     );
 
-    var cache = getStaticInstance()._getBestConstructorForMapCache ??=
+    var cache = staticInstance._getBestConstructorForMapCache ??=
         <_KeyParametersNames, List<ConstructorReflection<O>>>{};
+
+    // `putIfAbsent` may sort `key` (and so `presentParameters`), so the
+    // last lookup keeps its own copy, in the order the parameters came in:
+    var keyInOrder = _KeyParametersNames(
+      presentParameters.toList(growable: false),
+      allowEmptyConstructors,
+      allowOptionalOnlyConstructors,
+    );
 
     var constructors = cache.putIfAbsent(key, () {
       key.sort();
@@ -2185,6 +2211,9 @@ abstract class ClassReflection<O> extends Reflection<O>
           ? ListSortedByUsage<ConstructorReflection<O>>(list)
           : UnmodifiableListView(list);
     });
+
+    staticInstance._lastBestConstructorsForMapKey = keyInOrder;
+    staticInstance._lastBestConstructorsForMap = constructors;
 
     return constructors;
   }
@@ -2363,11 +2392,12 @@ abstract class ClassReflection<O> extends Reflection<O>
     FieldNameResolver fieldNameResolver,
     Map<String, Object?> map,
   ) {
-    var entries = fieldsNames.map((f) {
+    var resolved = <String, String>{};
+    for (var f in fieldsNames) {
       var f2 = fieldNameResolver(f, map);
-      return f2 != null ? MapEntry(f, f2) : null;
-    }).nonNulls;
-    return Map<String, String>.fromEntries(entries);
+      if (f2 != null) resolved[f] = f2;
+    }
+    return resolved;
   }
 
   @override
@@ -2386,8 +2416,10 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   /// Dispose internal caches.
   void disposeCache() {
-    var cache = getStaticInstance()._getBestConstructorForMapCache;
-    cache?.clear();
+    var staticInstance = getStaticInstance();
+    staticInstance._getBestConstructorForMapCache?.clear();
+    staticInstance._lastBestConstructorsForMapKey = null;
+    staticInstance._lastBestConstructorsForMap = null;
   }
 }
 
@@ -2407,6 +2439,30 @@ class _KeyParametersNames {
   void sort() {
     _fields.sort();
     _sorted = true;
+  }
+
+  /// `true` if [fields] are the same as this key's fields, in the same order.
+  bool equalsInOrder(
+    List<String> fields,
+    bool allowEmptyConstructors,
+    bool allowOptionalOnlyConstructors,
+  ) {
+    if (_allowEmptyConstructors != allowEmptyConstructors ||
+        _allowOptionalOnlyConstructors != allowOptionalOnlyConstructors) {
+      return false;
+    }
+
+    var myFields = _fields;
+    var length = myFields.length;
+    if (fields.length != length) return false;
+
+    for (var i = 0; i < length; ++i) {
+      var f1 = myFields[i];
+      var f2 = fields[i];
+      if (!identical(f1, f2) && f1 != f2) return false;
+    }
+
+    return true;
   }
 
   bool equalsFields(_KeyParametersNames other) {
@@ -2464,14 +2520,14 @@ class _KeyParametersNames {
               other._allowOptionalOnlyConstructors &&
           equalsFields(other);
 
-  // Uses `_fields.length` and not the field contents, since the fields can be
-  // sorted after the key is built (see [sort]): the hash has to stay stable
-  // and order independent.
+  // The fields can be sorted after the key is built (see [sort]), so the hash
+  // has to be order independent: an unordered hash of the field names, so
+  // keys with the same number of fields don't all collide.
   @override
   int get hashCode => Object.hash(
     _allowEmptyConstructors,
     _allowOptionalOnlyConstructors,
-    _fields.length,
+    Object.hashAllUnordered(_fields),
   );
 }
 
