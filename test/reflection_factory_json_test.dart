@@ -426,6 +426,226 @@ void main() {
     });
   });
 
+  group('JsonDecoder untyped collections', () {
+    // Regression: `_mapFromJsonMap` decoded the values of an untyped `Map`
+    // with the `Map` `TypeInfo` itself, and `_fromJsonImpl` used an untyped
+    // `List` as the type of its own elements. A nested JSON list was therefore
+    // cast lazily to `List<Map>` (or `List<List>`): it decoded without error,
+    // and threw on the first read of an element that was not a `Map` -- far
+    // from the `decode` call that produced it.
+    final sources = <String, String>{
+      'list of maps': '{"a":[{"x":1},{"y":2}]}',
+      'list of ints': '{"a":[1,2,3]}',
+      'list of strings': '{"a":["x","y"]}',
+      'list of doubles and bools': '{"a":[1.5,true,false]}',
+      'list with nulls': '{"a":[null,1,null]}',
+      'list of only null': '{"a":[null]}',
+      'mixed list': '{"a":[{"x":1},2,"s",null,[3],true]}',
+      'map first, then scalar': '{"a":[{"x":1},2]}',
+      'scalar first, then map': '{"a":[2,{"x":1}]}',
+      'list of lists': '{"a":[[1,2],[3]]}',
+      'list of lists of maps': '{"a":[[{"x":1}],[{"y":2}]]}',
+      'list of empty lists': '{"a":[[],[]]}',
+      'empty list': '{"a":[]}',
+      'list nested in a map': '{"a":{"b":[1,{"c":[2,"d"]}]}}',
+      'deep nesting': '{"a":[{"b":[{"c":[1,[2,[3,{"d":[4]}]]]}]}]}',
+      'list beside scalars': '{"n":1,"s":"x","l":[1,"y"],"m":{"k":[true]}}',
+      'list of maps of lists': '{"a":[{"x":[1,2]},{"y":["z"]}]}',
+      'date-like strings stay strings': '{"a":["2024-01-02T03:04:05Z","1:2"]}',
+      'empty map': '{}',
+      'empty nested map': '{"a":{}}',
+    };
+
+    final topLevelLists = <String, String>{
+      'list of maps with lists': '[{"a":[1,2]},{"b":["x",{"c":[null]}]}]',
+      'list of ints': '[1,2,3]',
+      'mixed list': '[1,"s",{"x":[2]},[3,{"y":4}],null]',
+      'list of lists': '[[1],[2,[3]]]',
+      'empty list': '[]',
+    };
+
+    final decoder = JsonDecoder.defaultDecoder;
+
+    Uint8List bytes(String s) => Uint8List.fromList(utf8.encode(s));
+
+    // `equals` iterates every nested collection, which is what made a lazily
+    // cast list throw.
+    void expectDecoded(Object? decoded, String src) =>
+        expect(decoded, equals(jsonDecode(src)), reason: 'source: $src');
+
+    for (var e in sources.entries) {
+      var src = e.value;
+
+      group(e.key, () {
+        test('decode<Map>', () {
+          expectDecoded(decoder.decode<Map>(src), src);
+        });
+
+        test('decodeAsync<Map>', () async {
+          expectDecoded(await decoder.decodeAsync<Map>(src), src);
+          expectDecoded(await decoder.decodeAsync<Map>(Future.value(src)), src);
+        });
+
+        test('decodeFromBytes<Map>', () async {
+          expectDecoded(decoder.decodeFromBytes<Map>(bytes(src)), src);
+          expectDecoded(
+            await decoder.decodeFromBytesAsync<Map>(bytes(src)),
+            src,
+          );
+        });
+
+        test('fromJson<Map> / fromJsonAsync<Map> / fromJsonMap<Map>', () async {
+          expectDecoded(decoder.fromJson<Map>(jsonDecode(src)), src);
+          expectDecoded(await decoder.fromJsonAsync<Map>(jsonDecode(src)), src);
+          expectDecoded(
+            decoder.fromJsonMap<Map>(jsonDecode(src) as Map<String, Object?>),
+            src,
+          );
+          expectDecoded(
+            await decoder.fromJsonMapAsync<Map>(
+              jsonDecode(src) as Map<String, Object?>,
+            ),
+            src,
+          );
+        });
+
+        test('decode with typeInfo Map<String, dynamic>', () async {
+          var typeInfo = TypeInfo.fromType(Map, [String, dynamic]);
+          expectDecoded(decoder.decode(src, typeInfo: typeInfo), src);
+          expectDecoded(
+            await decoder.decodeAsync(src, typeInfo: typeInfo),
+            src,
+          );
+        });
+
+        test('decode<dynamic> (unchanged fast path)', () {
+          expectDecoded(decoder.decode<dynamic>(src), src);
+        });
+      });
+    }
+
+    for (var e in topLevelLists.entries) {
+      var src = e.value;
+
+      group('top-level ${e.key}', () {
+        test('decode<List>', () {
+          expectDecoded(decoder.decode<List>(src), src);
+        });
+
+        test('decodeAsync<List>', () async {
+          expectDecoded(await decoder.decodeAsync<List>(src), src);
+        });
+
+        test('decodeFromBytes<List>', () async {
+          expectDecoded(decoder.decodeFromBytes<List>(bytes(src)), src);
+          expectDecoded(
+            await decoder.decodeFromBytesAsync<List>(bytes(src)),
+            src,
+          );
+        });
+
+        test('fromJson<List> / fromJsonAsync<List>', () async {
+          expectDecoded(decoder.fromJson<List>(jsonDecode(src)), src);
+          expectDecoded(
+            await decoder.fromJsonAsync<List>(jsonDecode(src)),
+            src,
+          );
+        });
+
+        test('decode with typeInfo List<dynamic>', () async {
+          var typeInfo = TypeInfo.fromType(List, [dynamic]);
+          expectDecoded(decoder.decode(src, typeInfo: typeInfo), src);
+          expectDecoded(
+            await decoder.decodeAsync(src, typeInfo: typeInfo),
+            src,
+          );
+        });
+      });
+    }
+
+    test('a nested list of maps accepts other elements', () async {
+      // Not only reads: a `List<Map>` view also rejects writes of non-maps.
+      for (var m in [
+        decoder.decode<Map>('{"a":[{"x":1}]}'),
+        await decoder.decodeAsync<Map>('{"a":[{"x":1}]}'),
+      ]) {
+        var list = m['a'] as List;
+        list.add(1);
+        list.add('s');
+        list.add([2]);
+        expect(
+          list,
+          equals([
+            {'x': 1},
+            1,
+            's',
+            [2],
+          ]),
+        );
+      }
+    });
+
+    test('elements of a nested list keep their own types', () {
+      var m = decoder.decode<Map>('{"a":[{"x":1},2,"s",[3],null]}');
+      var list = m['a'] as List;
+
+      expect(list[0], isA<Map>());
+      expect(list[1], isA<int>());
+      expect(list[2], isA<String>());
+      expect(list[3], isA<List>());
+      expect(list[4], isNull);
+    });
+
+    test('typed collections still decode their elements', () {
+      var m = decoder.decode(
+        '{"a":[1,2]}',
+        typeInfo: TypeInfo.fromType(Map, [
+          String,
+          TypeInfo.fromType(List, [int]),
+        ]),
+      ) as Map;
+
+      expect(m['a'], isA<List<int>>());
+      expect(m['a'], equals([1, 2]));
+
+      var l = decoder.decode(
+        '[["a"],["b","c"]]',
+        typeInfo: TypeInfo.fromType(List, [
+          TypeInfo.fromType(List, [String]),
+        ]),
+      ) as List;
+
+      // The outer list is not reified as `List<List<String>>` (a nested
+      // generic type cannot be built from a `TypeInfo`), but its elements are.
+      expect(l, everyElement(isA<List<String>>()));
+      expect(
+        l,
+        equals([
+          ['a'],
+          ['b', 'c'],
+        ]),
+      );
+    });
+
+    test('a list of entities nested in an untyped Map stays raw', () {
+      // The untyped `Map` gives no entity type, so the nested maps must come
+      // back as maps -- not be forced through any reflection.
+      TestUserWithReflection$reflection.boot();
+
+      var m = decoder.decode<Map>(
+        '{"users":[{"name":"a","email":"a@mail.com","passphrase":"p"}]}',
+      );
+
+      expect(
+        m['users'],
+        equals([
+          {'name': 'a', 'email': 'a@mail.com', 'passphrase': 'p'},
+        ]),
+      );
+      expect((m['users'] as List).single, isA<Map>());
+    });
+  });
+
   group('JsonEncoder field filters', () {
     final map = {'name': 'joe', 'pass': 'secret', 'nil': null};
 

@@ -1447,9 +1447,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
           : o.map((k, v) => MapEntry(k.toString(), v));
       return _fromJsonMapImpl(map, typeInfo, duplicatedEntitiesAsID);
     } else if (o is Iterable) {
-      var listType = typeInfo.isIterable && typeInfo.hasArguments
-          ? typeInfo.arguments[0]
-          : typeInfo;
+      var listType = _elementTypeInfo(typeInfo);
       return _fromJsonListImpl(o, listType, duplicatedEntitiesAsID) as O?;
     } else if (o is String) {
       return _entityFromJsonString(typeInfo, o, duplicatedEntitiesAsID);
@@ -1519,9 +1517,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       // collection type has to be narrowed to its argument first (same as
       // `_fromJsonImpl`). Otherwise every element is decoded as `List<E>`,
       // which is not a valid entity type, and comes back as a raw `Map`.
-      var listType = typeInfo.isIterable && typeInfo.hasArguments
-          ? typeInfo.arguments[0]
-          : typeInfo;
+      var listType = _elementTypeInfo(typeInfo);
       return _fromJsonListAsyncImpl(
         o,
         listType,
@@ -1532,6 +1528,23 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       return _entityFromJsonString(typeInfo, o, duplicatedEntitiesAsID);
     } else {
       return _entityFromJsonValue(typeInfo, o, duplicatedEntitiesAsID);
+    }
+  }
+
+  /// The [TypeInfo] to decode each element of a JSON list with, when that
+  /// list is decoded as [typeInfo].
+  ///
+  /// A collection type without arguments (`List`, `Set`, `Map`) says nothing
+  /// about the elements, so they are decoded as `dynamic`. Using the
+  /// collection type itself would cast the decoded list to `List<List>` or
+  /// `List<Map>`, which throws when a scalar element is read.
+  static TypeInfo _elementTypeInfo(TypeInfo typeInfo) {
+    if (typeInfo.isIterable && typeInfo.hasArguments) {
+      return typeInfo.arguments[0];
+    } else if (typeInfo.isCollection) {
+      return TypeInfo.tDynamic;
+    } else {
+      return typeInfo;
     }
   }
 
@@ -1908,8 +1921,12 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       return map;
     }
 
+    // A `Map` without arguments says nothing about its values: decode them as
+    // `dynamic`, not as `Map` (a nested list would become a `List<Map>`).
+    var valueType = typeInfo.isCollection ? TypeInfo.tDynamic : typeInfo;
+
     var map2 = map.map((k, v) {
-      var v2 = _fromJsonImpl(v, typeInfo, duplicatedEntitiesAsID);
+      var v2 = _fromJsonImpl(v, valueType, duplicatedEntitiesAsID);
       return MapEntry(k, v2);
     });
 
