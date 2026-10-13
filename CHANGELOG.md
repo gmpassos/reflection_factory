@@ -1,4 +1,17 @@
-## 2.10.2
+## 2.11.0
+
+- `dart_style`: `>=3.1.10 <3.1.11` → `>=3.1.13 <3.1.14`.
+  - Dart **3.13.2 bundles `dart_style` 3.1.13** (3.13.0 and 3.13.1 bundle
+    3.1.10), so on current SDKs the old pin selected a formatter other than
+    `dart format`'s — the mismatch the pin exists to prevent (see 2.9.0).
+  - Generated code is unchanged for this package's own inputs.
+
+- `environment.sdk`: `>=3.13.0 <4.0.0` → `>=3.13.2 <4.0.0`.
+  - Keeps the pin matched to the consumer's SDK: Dart 3.13.0–3.13.1 users
+    resolve 2.10.x, whose pin matches their bundled formatter.
+  - This narrows compatibility, hence the minor bump rather than a patch.
+
+- `analyzer`: `^13.0.0` → `^14.5.0` (allowed by `dart_style` 3.1.13).
 
 - **Fix: `JsonDecoder.decode<Map>` / `decodeAsync<Map>` returned nested JSON
   lists as lazily cast `List<Map>`s that threw when read.**
@@ -19,17 +32,14 @@
 
 - Dependencies:
   - `build`: ^4.0.11
-  - `analyzer`: ^13.3.0
   - `mime`: ^2.1.0
   - `pub_semver`: ^2.2.1
   - `yaml`: ^3.1.4
-  - `build_runner`: ^2.16.1
-  - `build_test`: ^3.5.20
+  - `build_runner`: ^2.16.2
+  - `build_test`: ^3.5.21
   - `pubspec_parse`: ^1.6.0
   - `data_serializer`: ^1.2.3
   - `test`: ^1.33.0
-  - `analyzer` 14 stays out of reach: it needs `dart_style` >= 3.1.11, and
-    `dart_style` remains pinned to 3.1.10.
 
 ## 2.10.1
 
