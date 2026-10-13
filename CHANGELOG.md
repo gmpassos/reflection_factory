@@ -1,3 +1,70 @@
+## 2.11.0
+
+- `dart_style`: `>=3.1.10 <3.1.11` → `>=3.1.13 <3.1.14`.
+  - Dart **3.13.2 bundles `dart_style` 3.1.13** (3.13.0 and 3.13.1 bundle
+    3.1.10), so on current SDKs the old pin selected a formatter other than
+    `dart format`'s — the mismatch the pin exists to prevent (see 2.9.0).
+  - The new formatter produces the same output for this package's generated
+    code: regenerated files differ only in the embedded builder version.
+
+- `environment.sdk`: `>=3.13.0 <4.0.0` → `>=3.13.2 <4.0.0`.
+  - Keeps the pin matched to the consumer's SDK: Dart 3.13.0–3.13.1 users
+    resolve 2.10.x, whose pin matches their bundled formatter.
+  - This narrows compatibility, hence the minor bump rather than a patch.
+
+- `analyzer`: `^13.0.0` → `^14.5.0` (allowed by `dart_style` 3.1.13).
+  - A major version of `analyzer`: a project that also depends on another
+    package still constrained to `analyzer` 13 will keep resolving
+    `reflection_factory` 2.10.x until that package moves to 14.
+
+- **Fix: `JsonDecoder.decode<Map>` / `decodeAsync<Map>` returned nested JSON
+  lists as lazily cast `List<Map>`s that threw when read.**
+
+  The values of an untyped `Map` were decoded with the `Map` `TypeInfo`
+  itself, so a nested list took `Map` as its element type and was wrapped by
+  `List.cast<Map>()`. Decoding succeeded; reading a non-`Map` element (an
+  `int`, a `String`, a nested list) — or adding one — threw a `TypeError` far
+  from the call that produced it. An untyped `List` had the same defect for
+  its elements (`List<List>`).
+
+  - A collection type without arguments (`Map`, `List`, `Set`, `Iterable`)
+    now decodes its values/elements as `dynamic`. The result matches
+    `dart:convert`'s `jsonDecode`.
+  - Applies to `decode`, `decodeAsync`, `decodeFromBytes(Async)`,
+    `fromJson(Async)`, `fromJsonMap(Async)` and `JsonCodec.decode*`.
+    Collections with arguments (`Map<String, int>`, `List<User>`) and entity
+    types are unchanged.
+  - Behavior changes for code that relied on the old typing:
+    - Nested lists come back as `List<dynamic>`, not as `List<Map>` /
+      `List<List>` views, so a cast like `as List<List>` on them now throws.
+    - A `JsonDecoder.registerTypeDecoder` or `jsonValueDecoderProvider`
+      keyed on `Map`/`List` is no longer called for the scalars nested under
+      an untyped collection: they are decoded as `dynamic`.
+
+- Tests:
+  - Untyped collections through every decode entry point, a non-standard
+    decoder, `JsonCodec`, `Set`/`Iterable`, deep and wide nesting, and
+    entity fields holding arbitrary JSON (new `TestPayloadWithReflection`).
+  - New `reflection_factory_json_paths_test.dart`: async decoding with
+    `Future` inputs/values, decoder and encoder hooks and their fallbacks,
+    scalar parsing, `callToJson`, `isStandard`, `MimeTypeResolverExtension`.
+  - New `reflection_factory_paths_test.dart`: `MethodInvocation`, optional
+    positional parameters, `JsonField` accessors, `EnumReflection`, static
+    field setters, constructor invocation errors.
+  - Line coverage: `reflection_factory_json.dart` 86.9% → 95.9%,
+    `reflection_factory_base.dart` 83.1% → 89.5%.
+
+- Dependencies:
+  - `build`: ^4.0.11
+  - `mime`: ^2.1.0
+  - `pub_semver`: ^2.2.1
+  - `yaml`: ^3.1.4
+  - `build_runner`: ^2.16.2
+  - `build_test`: ^3.5.21
+  - `pubspec_parse`: ^1.6.0
+  - `data_serializer`: ^1.2.3
+  - `test`: ^1.33.0
+
 ## 2.10.1
 
 - **Faster `ClassReflection.getBestConstructorsForMap`** (and so

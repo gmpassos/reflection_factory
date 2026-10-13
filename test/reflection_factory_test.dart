@@ -916,6 +916,7 @@ void main() {
           TestOpAWithReflection,
           TestOpBWithReflection,
           TestOpWithReflection,
+          TestPayloadWithReflection,
           TestTransactionWithReflection,
           TestUserWithReflection,
         ]),
@@ -937,6 +938,7 @@ void main() {
           TestCompanyWithReflection,
           TestOpBWithReflection,
           TestDomainWithReflection,
+          TestPayloadWithReflection,
           TestUserWithReflection,
         ]),
       );
