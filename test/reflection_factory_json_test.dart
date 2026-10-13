@@ -841,6 +841,32 @@ void main() {
         }
       });
 
+      test('a JSON map decoded as List<Entity> keeps non-list values', () {
+        // The values of a JSON map decoded with an iterable `TypeInfo` are
+        // decoded with that same `TypeInfo`, not with its element type: only
+        // list values become entities. Narrowing to the element type would
+        // turn map values into entities and scalars into `null` (`1`) or
+        // entities built from a string (`"x"`).
+        var m = decoder.fromJson(
+          {
+            'l': [
+              {'state': 'NY'},
+            ],
+            'm': {'state': 'CA'},
+            'n': 1,
+            's': 'x',
+            'z': null,
+          },
+          typeInfo: TypeInfo.fromType(List, [TestAddressWithReflection]),
+        ) as Map;
+
+        expect(m['l'], everyElement(isA<TestAddressWithReflection>()));
+        expect(m['m'], equals({'state': 'CA'}));
+        expect(m['n'], equals(1));
+        expect(m['s'], equals('x'));
+        expect(m['z'], isNull);
+      });
+
       test('an untyped Map nested in a typed one is still dynamic', () {
         var m = decoder.decode(
           '{"k":{"l":[1,"x",[2]]}}',
