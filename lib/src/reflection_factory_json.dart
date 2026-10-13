@@ -1533,20 +1533,27 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
 
   /// The [TypeInfo] to decode each element of a JSON list with, when that
   /// list is decoded as [typeInfo].
-  ///
-  /// A collection type without arguments (`List`, `Set`, `Map`) says nothing
-  /// about the elements, so they are decoded as `dynamic`. Using the
-  /// collection type itself would cast the decoded list to `List<List>` or
-  /// `List<Map>`, which throws when a scalar element is read.
   static TypeInfo _elementTypeInfo(TypeInfo typeInfo) {
     if (typeInfo.isIterable && typeInfo.hasArguments) {
       return typeInfo.arguments[0];
-    } else if (typeInfo.isCollection) {
-      return TypeInfo.tDynamic;
     } else {
-      return typeInfo;
+      return _untypedCollectionAsDynamic(typeInfo);
     }
   }
+
+  /// Returns `dynamic` if [typeInfo] is a collection type without arguments
+  /// (`List`, `Set`, `Map`), otherwise [typeInfo] itself.
+  ///
+  /// An untyped collection says nothing about its elements/values, so they
+  /// must be decoded as `dynamic`. Decoding them with the collection type
+  /// itself casts a nested JSON list to `List<Map>` or `List<List>`, which
+  /// throws when a scalar element is read. A collection *with* arguments
+  /// (`Map<String, int>`, `List<User>`) is kept: its arguments are the
+  /// decoding instructions.
+  static TypeInfo _untypedCollectionAsDynamic(TypeInfo typeInfo) =>
+      typeInfo.isCollection && !typeInfo.hasArguments
+      ? TypeInfo.tDynamic
+      : typeInfo;
 
   DateTime? _parseDateTime(Object? o) {
     if (o == null) return null;
@@ -1921,9 +1928,7 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
       return map;
     }
 
-    // A `Map` without arguments says nothing about its values: decode them as
-    // `dynamic`, not as `Map` (a nested list would become a `List<Map>`).
-    var valueType = typeInfo.isCollection ? TypeInfo.tDynamic : typeInfo;
+    var valueType = _untypedCollectionAsDynamic(typeInfo);
 
     var map2 = map.map((k, v) {
       var v2 = _fromJsonImpl(v, valueType, duplicatedEntitiesAsID);

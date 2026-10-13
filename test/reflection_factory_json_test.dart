@@ -778,6 +778,90 @@ void main() {
       );
     });
 
+    group('collections with arguments keep them', () {
+      // Regression (found in review of the fix above): only a collection
+      // *without* arguments may fall back to `dynamic`. Treating every
+      // collection that way dropped `Map<String, int>` / `Map<String, Entity>`
+      // / `List<Entity>` decoding instructions.
+      setUp(() {
+        TestAddressWithReflection$reflection.boot();
+      });
+
+      test('a JSON list decoded as Map<String, int>', () async {
+        const src = '[{"a":1},{"b":2}]';
+        var typeInfo = TypeInfo.fromType(Map, [String, int]);
+
+        for (var l in [
+          decoder.decode(src, typeInfo: typeInfo) as List,
+          await decoder.decodeAsync(src, typeInfo: typeInfo) as List,
+        ]) {
+          expect(l, everyElement(isA<Map<String, int>>()));
+          expect(l, equals(jsonDecode(src)));
+        }
+      });
+
+      test('a JSON list decoded as Map<String, Entity>', () async {
+        const src = '[{"x":{"state":"NY","city":"NYC"}}]';
+        var typeInfo = TypeInfo.fromType(Map, [
+          String,
+          TestAddressWithReflection,
+        ]);
+
+        for (var l in [
+          decoder.decode(src, typeInfo: typeInfo) as List,
+          await decoder.decodeAsync(src, typeInfo: typeInfo) as List,
+        ]) {
+          var a = (l.single as Map)['x'];
+          expect(a, isA<TestAddressWithReflection>());
+          expect((a as TestAddressWithReflection).city, equals('NYC'));
+        }
+      });
+
+      test('a JSON map whose values are decoded as List<Entity>', () async {
+        var json = {
+          'a': [
+            {'state': 'NY'},
+          ],
+          'b': [
+            {'state': 'CA'},
+            {'state': 'TX'},
+          ],
+        };
+        var typeInfo = TypeInfo.fromType(List, [TestAddressWithReflection]);
+
+        for (var m in [
+          decoder.fromJson(json, typeInfo: typeInfo) as Map,
+          await decoder.fromJsonAsync(json, typeInfo: typeInfo) as Map,
+        ]) {
+          expect(m['a'], everyElement(isA<TestAddressWithReflection>()));
+          expect(
+            (m['b'] as List).map((e) => (e as TestAddressWithReflection).state),
+            equals(['CA', 'TX']),
+          );
+        }
+      });
+
+      test('an untyped Map nested in a typed one is still dynamic', () {
+        var m = decoder.decode(
+          '{"k":{"l":[1,"x",[2]]}}',
+          typeInfo: TypeInfo.fromType(Map, [String, Map]),
+        ) as Map;
+
+        expect(
+          m,
+          equals({
+            'k': {
+              'l': [
+                1,
+                'x',
+                [2],
+              ],
+            },
+          }),
+        );
+      });
+    });
+
     test('a list of entities nested in an untyped Map stays raw', () {
       // The untyped `Map` gives no entity type, so the nested maps must come
       // back as maps -- not be forced through any reflection.
