@@ -30,6 +30,19 @@
     `fromJson(Async)` and `fromJsonMap(Async)`. Typed collections
     (`TypeInfo` with arguments) and entity types are unchanged.
 
+- Tests:
+  - Untyped collections through every decode entry point, a non-standard
+    decoder, `JsonCodec`, `Set`/`Iterable`, deep and wide nesting, and
+    entity fields holding arbitrary JSON (new `TestPayloadWithReflection`).
+  - New `reflection_factory_json_paths_test.dart`: async decoding with
+    `Future` inputs/values, decoder and encoder hooks and their fallbacks,
+    scalar parsing, `callToJson`, `isStandard`, `MimeTypeResolverExtension`.
+  - New `reflection_factory_paths_test.dart`: `MethodInvocation`, optional
+    positional parameters, `JsonField` accessors, `EnumReflection`, static
+    field setters, constructor invocation errors.
+  - Line coverage: `reflection_factory_json.dart` 86.9% → 95.9%,
+    `reflection_factory_base.dart` 83.1% → 89.5%.
+
 - Dependencies:
   - `build`: ^4.0.11
   - `mime`: ^2.1.0

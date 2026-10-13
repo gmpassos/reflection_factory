@@ -33,12 +33,16 @@ Symbol? _getSymbol(String? key) {
   if (key == null) return null;
 
   switch (key) {
+    case r"attributes":
+      return const Symbol(r"attributes");
     case r"axis":
       return const Symbol(r"axis");
     case r"branchesAddresses":
       return const Symbol(r"branchesAddresses");
     case r"city":
       return const Symbol(r"city");
+    case r"data":
+      return const Symbol(r"data");
     case r"def":
       return const Symbol(r"def");
     case r"domain":
@@ -47,6 +51,8 @@ Symbol? _getSymbol(String? key) {
       return const Symbol(r"domainFunction");
     case r"enabled":
       return const Symbol(r"enabled");
+    case r"extra":
+      return const Symbol(r"extra");
     case r"extraAddresses":
       return const Symbol(r"extraAddresses");
     case r"extraFunction":
@@ -55,10 +61,16 @@ Symbol? _getSymbol(String? key) {
       return const Symbol(r"extraNames");
     case r"id":
       return const Symbol(r"id");
+    case r"items":
+      return const Symbol(r"items");
     case r"level":
       return const Symbol(r"level");
+    case r"matrix":
+      return const Symbol(r"matrix");
     case r"name":
       return const Symbol(r"name");
+    case r"rows":
+      return const Symbol(r"rows");
     case r"suffix":
       return const Symbol(r"suffix");
     default:
@@ -157,6 +169,16 @@ TestOpWithReflection TestOpWithReflection$fromJson(Map<String, Object?> map) =>
 // ignore: non_constant_identifier_names
 TestOpWithReflection TestOpWithReflection$fromJsonEncoded(String jsonEncoded) =>
     TestOpWithReflection$reflection.staticInstance.fromJsonEncoded(jsonEncoded);
+// ignore: non_constant_identifier_names
+TestPayloadWithReflection TestPayloadWithReflection$fromJson(
+  Map<String, Object?> map,
+) => TestPayloadWithReflection$reflection.staticInstance.fromJson(map);
+// ignore: non_constant_identifier_names
+TestPayloadWithReflection TestPayloadWithReflection$fromJsonEncoded(
+  String jsonEncoded,
+) => TestPayloadWithReflection$reflection.staticInstance.fromJsonEncoded(
+  jsonEncoded,
+);
 // ignore: non_constant_identifier_names
 TestTransactionWithReflection TestTransactionWithReflection$fromJson(
   Map<String, Object?> map,
@@ -4145,6 +4167,503 @@ class TestOpWithReflection$reflection
   }
 }
 
+class TestPayloadWithReflection$reflection
+    extends ClassReflection<TestPayloadWithReflection>
+    with __ReflectionMixin {
+  static final Expando<TestPayloadWithReflection$reflection>
+  _objectReflections = Expando();
+
+  factory TestPayloadWithReflection$reflection([
+    TestPayloadWithReflection? object,
+  ]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??=
+        TestPayloadWithReflection$reflection._(object);
+  }
+
+  TestPayloadWithReflection$reflection._([TestPayloadWithReflection? object])
+    : super(TestPayloadWithReflection, r'TestPayloadWithReflection', object);
+
+  static bool _registered = false;
+  @override
+  void register() {
+    if (!_registered) {
+      _registered = true;
+      super.register();
+      _registerSiblingsReflection();
+    }
+  }
+
+  @override
+  Version get languageVersion => Version.parse('3.13.0');
+
+  @override
+  TestPayloadWithReflection$reflection withObject([
+    TestPayloadWithReflection? obj,
+  ]) => TestPayloadWithReflection$reflection(obj)..setupInternalsWith(this);
+
+  static TestPayloadWithReflection$reflection? _withoutObjectInstance;
+  @override
+  TestPayloadWithReflection$reflection withoutObjectInstance() =>
+      staticInstance;
+
+  @override
+  Symbol? getSymbol(String? key) => _getSymbol(key);
+
+  static TestPayloadWithReflection$reflection get staticInstance =>
+      _withoutObjectInstance ??= TestPayloadWithReflection$reflection._();
+
+  @override
+  TestPayloadWithReflection$reflection getStaticInstance() => staticInstance;
+
+  static bool _boot = false;
+  static void boot() {
+    if (_boot) return;
+    _boot = true;
+    TestPayloadWithReflection$reflection.staticInstance;
+  }
+
+  @override
+  bool get hasDefaultConstructor => false;
+  @override
+  TestPayloadWithReflection? createInstanceWithDefaultConstructor() => null;
+
+  @override
+  bool get hasEmptyConstructor => false;
+  @override
+  TestPayloadWithReflection? createInstanceWithEmptyConstructor() => null;
+  @override
+  bool get hasNoRequiredArgsConstructor => false;
+  @override
+  TestPayloadWithReflection? createInstanceWithNoRequiredArgsConstructor() =>
+      null;
+
+  static const List<String> _constructorsNames = const <String>[''];
+
+  @override
+  List<String> get constructorsNames => _constructorsNames;
+
+  static final Map<String, ConstructorReflection<TestPayloadWithReflection>>
+  _constructors = {};
+
+  @override
+  ConstructorReflection<TestPayloadWithReflection>? constructor(
+    String constructorName,
+  ) {
+    var c = _constructors[constructorName];
+    if (c != null) return c;
+    c = _constructorImpl(constructorName);
+    if (c == null) return null;
+    _constructors[constructorName] = c;
+    return c;
+  }
+
+  ConstructorReflection<TestPayloadWithReflection>? _constructorImpl(
+    String constructorName,
+  ) {
+    var lc = constructorName.trim().toLowerCase();
+
+    switch (lc) {
+      case '':
+        return ConstructorReflection<TestPayloadWithReflection>(
+          this,
+          TestPayloadWithReflection,
+          '',
+          () => TestPayloadWithReflection.new,
+          const <__PR>[__PR(__TR.tString, 'name', false, true)],
+          null,
+          const <String, __PR>{
+            'attributes': __PR(
+              __TR.tMapStringDynamic,
+              'attributes',
+              true,
+              false,
+            ),
+            'data': __PR(
+              __TR<Map<dynamic, dynamic>>(Map, <__TR>[
+                __TR.tDynamic,
+                __TR.tDynamic,
+              ]),
+              'data',
+              true,
+              false,
+            ),
+            'extra': __PR(__TR.tDynamic, 'extra', true, false),
+            'items': __PR(__TR.tListDynamic, 'items', true, false),
+            'matrix': __PR(
+              __TR<List<List>>(List, <__TR>[__TR.tListDynamic]),
+              'matrix',
+              true,
+              false,
+            ),
+            'rows': __PR(
+              __TR<List<Map>>(List, <__TR>[
+                __TR<Map<dynamic, dynamic>>(Map, <__TR>[
+                  __TR.tDynamic,
+                  __TR.tDynamic,
+                ]),
+              ]),
+              'rows',
+              true,
+              false,
+            ),
+          },
+          null,
+        );
+      default:
+        return null;
+    }
+  }
+
+  static const List<Object> _classAnnotations = <Object>[];
+
+  @override
+  List<Object> get classAnnotations => _classAnnotations;
+
+  static const List<Type> _supperTypes = const <Type>[];
+
+  @override
+  List<Type> get supperTypes => _supperTypes;
+
+  @override
+  bool get hasMethodToJson => true;
+
+  @override
+  Object? callMethodToJson([TestPayloadWithReflection? obj]) {
+    obj ??= object;
+    return obj?.toJson();
+  }
+
+  static const List<String> _fieldsNames = const <String>[
+    'attributes',
+    'data',
+    'extra',
+    'items',
+    'matrix',
+    'name',
+    'rows',
+  ];
+
+  @override
+  List<String> get fieldsNames => _fieldsNames;
+
+  static final Map<String, FieldReflection<TestPayloadWithReflection, dynamic>>
+  _fieldsNoObject = {};
+
+  final Map<String, FieldReflection<TestPayloadWithReflection, dynamic>>
+  _fieldsObject = {};
+
+  @override
+  FieldReflection<TestPayloadWithReflection, T>? field<T>(
+    String fieldName, [
+    TestPayloadWithReflection? obj,
+  ]) {
+    if (obj == null) {
+      if (object != null) {
+        return _fieldObjectImpl<T>(fieldName);
+      } else {
+        return _fieldNoObjectImpl<T>(fieldName);
+      }
+    } else if (identical(obj, object)) {
+      return _fieldObjectImpl<T>(fieldName);
+    }
+    return _fieldNoObjectImpl<T>(fieldName)?.withObject(obj);
+  }
+
+  FieldReflection<TestPayloadWithReflection, T>? _fieldNoObjectImpl<T>(
+    String fieldName,
+  ) {
+    final f = _fieldsNoObject[fieldName];
+    if (f != null) {
+      return f as FieldReflection<TestPayloadWithReflection, T>;
+    }
+    final f2 = _fieldImpl(fieldName, null);
+    if (f2 == null) return null;
+    _fieldsNoObject[fieldName] = f2;
+    return f2 as FieldReflection<TestPayloadWithReflection, T>;
+  }
+
+  FieldReflection<TestPayloadWithReflection, T>? _fieldObjectImpl<T>(
+    String fieldName,
+  ) {
+    final f = _fieldsObject[fieldName];
+    if (f != null) {
+      return f as FieldReflection<TestPayloadWithReflection, T>;
+    }
+    var f2 = _fieldNoObjectImpl<T>(fieldName);
+    if (f2 == null) return null;
+    f2 = f2.withObject(object!);
+    _fieldsObject[fieldName] = f2;
+    return f2;
+  }
+
+  FieldReflection<TestPayloadWithReflection, dynamic>? _fieldImpl(
+    String fieldName,
+    TestPayloadWithReflection? obj,
+  ) {
+    obj ??= object;
+
+    var lc = fieldName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'name':
+        return FieldReflection<TestPayloadWithReflection, String>(
+          this,
+          TestPayloadWithReflection,
+          __TR.tString,
+          'name',
+          false,
+          (o) =>
+              () => o!.name,
+          null,
+          obj,
+          true,
+        );
+      case 'data':
+        return FieldReflection<
+          TestPayloadWithReflection,
+          Map<dynamic, dynamic>
+        >(
+          this,
+          TestPayloadWithReflection,
+          const __TR<Map<dynamic, dynamic>>(Map, <__TR>[
+            __TR.tDynamic,
+            __TR.tDynamic,
+          ]),
+          'data',
+          false,
+          (o) =>
+              () => o!.data,
+          (o) =>
+              (v) => o!.data = v,
+          obj,
+          false,
+        );
+      case 'attributes':
+        return FieldReflection<TestPayloadWithReflection, Map<String, dynamic>>(
+          this,
+          TestPayloadWithReflection,
+          __TR.tMapStringDynamic,
+          'attributes',
+          false,
+          (o) =>
+              () => o!.attributes,
+          (o) =>
+              (v) => o!.attributes = v,
+          obj,
+          false,
+        );
+      case 'rows':
+        return FieldReflection<
+          TestPayloadWithReflection,
+          List<Map<dynamic, dynamic>>
+        >(
+          this,
+          TestPayloadWithReflection,
+          const __TR<List<Map>>(List, <__TR>[
+            __TR<Map<dynamic, dynamic>>(Map, <__TR>[
+              __TR.tDynamic,
+              __TR.tDynamic,
+            ]),
+          ]),
+          'rows',
+          false,
+          (o) =>
+              () => o!.rows,
+          (o) =>
+              (v) => o!.rows = v,
+          obj,
+          false,
+        );
+      case 'matrix':
+        return FieldReflection<TestPayloadWithReflection, List<List<dynamic>>>(
+          this,
+          TestPayloadWithReflection,
+          const __TR<List<List>>(List, <__TR>[__TR.tListDynamic]),
+          'matrix',
+          false,
+          (o) =>
+              () => o!.matrix,
+          (o) =>
+              (v) => o!.matrix = v,
+          obj,
+          false,
+        );
+      case 'items':
+        return FieldReflection<TestPayloadWithReflection, List<dynamic>>(
+          this,
+          TestPayloadWithReflection,
+          __TR.tListDynamic,
+          'items',
+          false,
+          (o) =>
+              () => o!.items,
+          (o) =>
+              (v) => o!.items = v,
+          obj,
+          false,
+        );
+      case 'extra':
+        return FieldReflection<TestPayloadWithReflection, dynamic>(
+          this,
+          TestPayloadWithReflection,
+          __TR.tDynamic,
+          'extra',
+          false,
+          (o) =>
+              () => o!.extra,
+          (o) =>
+              (v) => o!.extra = v,
+          obj,
+          false,
+        );
+      default:
+        return null;
+    }
+  }
+
+  @override
+  Map<String, dynamic> getFieldsValues(
+    TestPayloadWithReflection? obj, {
+    bool withHashCode = false,
+  }) {
+    obj ??= object;
+    return <String, dynamic>{
+      'name': obj?.name,
+      'data': obj?.data,
+      'attributes': obj?.attributes,
+      'rows': obj?.rows,
+      'matrix': obj?.matrix,
+      'items': obj?.items,
+      'extra': obj?.extra,
+      if (withHashCode) 'hashCode': obj?.hashCode,
+    };
+  }
+
+  static const List<String> _staticFieldsNames = const <String>[];
+
+  @override
+  List<String> get staticFieldsNames => _staticFieldsNames;
+
+  @override
+  StaticFieldReflection<TestPayloadWithReflection, T>? staticField<T>(
+    String fieldName,
+  ) => null;
+
+  static const List<String> _methodsNames = const <String>[
+    'toJson',
+    'toString',
+  ];
+
+  @override
+  List<String> get methodsNames => _methodsNames;
+
+  static final Map<String, MethodReflection<TestPayloadWithReflection, dynamic>>
+  _methodsNoObject = {};
+
+  final Map<String, MethodReflection<TestPayloadWithReflection, dynamic>>
+  _methodsObject = {};
+
+  @override
+  MethodReflection<TestPayloadWithReflection, R>? method<R>(
+    String methodName, [
+    TestPayloadWithReflection? obj,
+  ]) {
+    if (obj == null) {
+      if (object != null) {
+        return _methodObjectImpl<R>(methodName);
+      } else {
+        return _methodNoObjectImpl<R>(methodName);
+      }
+    } else if (identical(obj, object)) {
+      return _methodObjectImpl<R>(methodName);
+    }
+    return _methodNoObjectImpl<R>(methodName)?.withObject(obj);
+  }
+
+  MethodReflection<TestPayloadWithReflection, R>? _methodNoObjectImpl<R>(
+    String methodName,
+  ) {
+    final m = _methodsNoObject[methodName];
+    if (m != null) {
+      return m as MethodReflection<TestPayloadWithReflection, R>;
+    }
+    final m2 = _methodImpl(methodName, null);
+    if (m2 == null) return null;
+    _methodsNoObject[methodName] = m2;
+    return m2 as MethodReflection<TestPayloadWithReflection, R>;
+  }
+
+  MethodReflection<TestPayloadWithReflection, R>? _methodObjectImpl<R>(
+    String methodName,
+  ) {
+    final m = _methodsObject[methodName];
+    if (m != null) {
+      return m as MethodReflection<TestPayloadWithReflection, R>;
+    }
+    var m2 = _methodNoObjectImpl<R>(methodName);
+    if (m2 == null) return null;
+    m2 = m2.withObject(object!);
+    _methodsObject[methodName] = m2;
+    return m2;
+  }
+
+  MethodReflection<TestPayloadWithReflection, dynamic>? _methodImpl(
+    String methodName,
+    TestPayloadWithReflection? obj,
+  ) {
+    obj ??= object;
+
+    var lc = methodName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'tojson':
+        return MethodReflection<
+          TestPayloadWithReflection,
+          Map<String, dynamic>
+        >(
+          this,
+          TestPayloadWithReflection,
+          'toJson',
+          __TR.tMapStringDynamic,
+          false,
+          (o) => o!.toJson,
+          obj,
+          null,
+          null,
+          null,
+          null,
+        );
+      case 'tostring':
+        return MethodReflection<TestPayloadWithReflection, String>(
+          this,
+          TestPayloadWithReflection,
+          'toString',
+          __TR.tString,
+          false,
+          (o) => o!.toString,
+          obj,
+          null,
+          null,
+          null,
+          const [override],
+        );
+      default:
+        return null;
+    }
+  }
+
+  static const List<String> _staticMethodsNames = const <String>[];
+
+  @override
+  List<String> get staticMethodsNames => _staticMethodsNames;
+
+  @override
+  StaticMethodReflection<TestPayloadWithReflection, R>? staticMethod<R>(
+    String methodName,
+  ) => null;
+}
+
 class TestTransactionWithReflection$reflection
     extends ClassReflection<TestTransactionWithReflection>
     with __ReflectionMixin {
@@ -5405,6 +5924,30 @@ extension TestOpWithReflection$reflectionExtension on TestOpWithReflection {
       .toJsonFromFields(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 }
 
+extension TestPayloadWithReflection$reflectionExtension
+    on TestPayloadWithReflection {
+  /// Returns a [ClassReflection] for type [TestPayloadWithReflection]. (Generated by [ReflectionFactory])
+  ClassReflection<TestPayloadWithReflection> get reflection =>
+      TestPayloadWithReflection$reflection(this);
+
+  /// Returns a JSON [Map] for type [TestPayloadWithReflection]. (Generated by [ReflectionFactory])
+  Map<String, dynamic>? toJsonMap({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+
+  /// Returns an encoded JSON [String] for type [TestPayloadWithReflection]. (Generated by [ReflectionFactory])
+  String toJsonEncoded({
+    bool pretty = false,
+    bool duplicatedEntitiesAsID = false,
+  }) => reflection.toJsonEncoded(
+    pretty: pretty,
+    duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+  );
+
+  /// Returns a JSON for type [TestPayloadWithReflection] using the class fields. (Generated by [ReflectionFactory])
+  Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
+      .toJsonFromFields(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+}
+
 extension TestTransactionWithReflection$reflectionExtension
     on TestTransactionWithReflection {
   /// Returns a [ClassReflection] for type [TestTransactionWithReflection]. (Generated by [ReflectionFactory])
@@ -5472,6 +6015,7 @@ List<Reflection> _listSiblingsReflection() => <Reflection>[
   TestOpAWithReflection$reflection(),
   TestOpBWithReflection$reflection(),
   TestOpWithReflection$reflection(),
+  TestPayloadWithReflection$reflection(),
   TestTransactionWithReflection$reflection(),
   TestUserWithReflection$reflection(),
 ];

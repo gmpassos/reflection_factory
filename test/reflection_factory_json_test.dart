@@ -563,6 +563,157 @@ void main() {
       });
     }
 
+    test('untyped Set / Iterable decode their elements as dynamic', () async {
+      const src = '[1,"a",[2,{"b":[3]}],null]';
+
+      for (var type in [Set, Iterable]) {
+        var typeInfo = TypeInfo.fromType(type);
+        for (var v in [
+          decoder.decode(src, typeInfo: typeInfo),
+          await decoder.decodeAsync(src, typeInfo: typeInfo),
+        ]) {
+          expect(
+            (v as Iterable).toList(),
+            equals(jsonDecode(src)),
+            reason: 'type: $type',
+          );
+        }
+      }
+    });
+
+    test(
+      'a non-standard decoder (no raw fast path) decodes like jsonDecode',
+      () async {
+        // `decode<dynamic>` returns the raw `jsonDecode` result only for the
+        // standard decoder; any custom decoder goes through `fromJson`.
+        var custom = JsonDecoder(jsonValueDecoderProvider: (t, v, j) => null);
+        expect(custom.isStandard, isFalse);
+
+        for (var src in [...sources.values, ...topLevelLists.values]) {
+          expectDecoded(custom.decode<dynamic>(src), src);
+          expectDecoded(await custom.decodeAsync<dynamic>(src), src);
+          expectDecoded(custom.decode<Object>(src), src);
+        }
+
+        for (var src in sources.values) {
+          expectDecoded(custom.decode<Map>(src), src);
+          expectDecoded(await custom.decodeAsync<Map>(src), src);
+        }
+
+        for (var src in topLevelLists.values) {
+          expectDecoded(custom.decode<List>(src), src);
+          expectDecoded(await custom.decodeAsync<List>(src), src);
+        }
+      },
+    );
+
+    test('JsonCodec.decode<Map> / decode<List>', () async {
+      var codec = JsonCodec.defaultCodec;
+
+      for (var src in sources.values) {
+        expectDecoded(codec.decode<Map>(src), src);
+        expectDecoded(await codec.decodeAsync<Map>(src), src);
+      }
+
+      for (var src in topLevelLists.values) {
+        expectDecoded(codec.decode<List>(src), src);
+        expectDecoded(await codec.decodeAsync<List>(src), src);
+      }
+    });
+
+    test('round trip: encode -> decode<Map> / decode<List>', () async {
+      var map = {
+        'ints': [1, 2],
+        'mixed': [
+          1,
+          'two',
+          null,
+          3.5,
+          false,
+          {
+            'k': [4],
+          },
+          [
+            5,
+            [6],
+          ],
+        ],
+        'maps': [
+          {
+            'a': [1],
+          },
+          {
+            'b': [
+              'x',
+              {'c': []},
+            ],
+          },
+        ],
+        'empty': [],
+        'nested': {
+          'l': [
+            [],
+            [[]],
+            [{}],
+          ],
+        },
+      };
+      var list = [
+        map,
+        [map],
+        1,
+        'x',
+        null,
+      ];
+
+      var encodedMap = JsonEncoder.defaultEncoder.encode(map);
+      var encodedList = JsonEncoder.defaultEncoder.encode(list);
+
+      expect(decoder.decode<Map>(encodedMap), equals(map));
+      expect(await decoder.decodeAsync<Map>(encodedMap), equals(map));
+      expect(decoder.decode<List>(encodedList), equals(list));
+      expect(await decoder.decodeAsync<List>(encodedList), equals(list));
+    });
+
+    test('very deep nesting', () async {
+      // 200 levels of alternating lists and maps, with a scalar at each level.
+      var src = '1';
+      for (var i = 0; i < 200; i++) {
+        src = i.isEven ? '[$src,$i,"s$i"]' : '{"k$i":$src,"n":$i}';
+      }
+      src = '{"root":$src}';
+
+      // `equals` stops comparing at depth 100 by default.
+      var expected = equals(jsonDecode(src), 1000);
+
+      expect(decoder.decode<Map>(src), expected);
+      expect(await decoder.decodeAsync<Map>(src), expected);
+    });
+
+    test('a wide list of mixed elements', () async {
+      var elements = [
+        for (var i = 0; i < 1000; i++)
+          switch (i % 5) {
+            0 => '$i',
+            1 => '"s$i"',
+            2 => '{"i":[$i]}',
+            3 => '[$i,null]',
+            _ => 'null',
+          },
+      ];
+      var src = '{"a":[${elements.join(',')}]}';
+
+      expectDecoded(decoder.decode<Map>(src), src);
+      expectDecoded(await decoder.decodeAsync<Map>(src), src);
+    });
+
+    test('keys and strings are not reinterpreted', () {
+      const src =
+          '{"":[""],"ünï":["çödé","\\u0000"],"1":[1],"null":[null],'
+          '"[]":["[]"],"{}":["{}"]}';
+      expectDecoded(decoder.decode<Map>(src), src);
+    });
+
     test('a nested list of maps accepts other elements', () async {
       // Not only reads: a `List<Map>` view also rejects writes of non-maps.
       for (var m in [
@@ -643,6 +794,247 @@ void main() {
         ]),
       );
       expect((m['users'] as List).single, isA<Map>());
+    });
+  });
+
+  group('JsonDecoder untyped collections in entity fields', () {
+    // Integration: arbitrary JSON held by entity fields of untyped (or
+    // `dynamic`-argument) collections, through every decode entry point.
+    //
+    // Reflection records these field types with explicit `dynamic` arguments
+    // (`Map<dynamic, dynamic>`, `List<Map<dynamic, dynamic>>`), so they take
+    // the typed branches and were not hit by the bare-`Map` defect above;
+    // these tests pin that down, so a change to either path cannot regress it.
+    // Only an entity *nested in* a bare `Map` went through the broken path.
+    const src =
+        '{'
+        '"name":"p",'
+        '"data":{"l":[1,"s",null,[2,{"x":[3]}]],"m":{"k":[{"y":4},5]}},'
+        '"attributes":{"tags":["a","b"],"n":[1.5,true]},'
+        '"rows":[{"id":1,"vals":[10,20]},{"id":2,"vals":[],"sub":[[1],[2]]}],'
+        '"matrix":[[1,2],["a",null],[[3]],[]],'
+        '"items":[{"x":1},2,"s",[3],null],'
+        '"extra":{"deep":[[{"z":[1]}]]}'
+        '}';
+
+    final decoder = JsonDecoder.defaultDecoder;
+
+    setUp(() {
+      TestPayloadWithReflection$reflection.boot();
+    });
+
+    // `equals` walks every nested collection: a lazily cast list throws here.
+    void expectPayload(Object? decoded, [String json = src]) {
+      expect(decoded, isA<TestPayloadWithReflection>());
+      expect(
+        (decoded as TestPayloadWithReflection).toJson(),
+        equals(jsonDecode(json)),
+      );
+    }
+
+    test('decode<Entity>', () {
+      expectPayload(decoder.decode<TestPayloadWithReflection>(src));
+    });
+
+    test('decodeAsync<Entity>', () async {
+      expectPayload(await decoder.decodeAsync<TestPayloadWithReflection>(src));
+      expectPayload(
+        await decoder.decodeAsync<TestPayloadWithReflection>(Future.value(src)),
+      );
+    });
+
+    test('decodeFromBytes<Entity> / decodeFromBytesAsync<Entity>', () async {
+      var bytes = Uint8List.fromList(utf8.encode(src));
+      expectPayload(decoder.decodeFromBytes<TestPayloadWithReflection>(bytes));
+      expectPayload(
+        await decoder.decodeFromBytesAsync<TestPayloadWithReflection>(bytes),
+      );
+    });
+
+    test('fromJson<Entity> / fromJsonAsync<Entity>', () async {
+      expectPayload(
+        decoder.fromJson<TestPayloadWithReflection>(jsonDecode(src)),
+      );
+      expectPayload(
+        await decoder.fromJsonAsync<TestPayloadWithReflection>(jsonDecode(src)),
+      );
+    });
+
+    test('generated \$fromJson / \$fromJsonEncoded', () {
+      expectPayload(
+        TestPayloadWithReflection$fromJson(
+          jsonDecode(src) as Map<String, Object?>,
+        ),
+      );
+      expectPayload(TestPayloadWithReflection$fromJsonEncoded(src));
+    });
+
+    test('fields hold the decoded element types', () {
+      var p = decoder.decode<TestPayloadWithReflection>(src);
+
+      var vals = p.rows[0]['vals'] as List;
+      expect(vals, equals([10, 20]));
+      expect(vals.first, isA<int>());
+
+      expect(p.matrix[1], equals(['a', null]));
+      expect(p.matrix[2].single, isA<List>());
+
+      expect(p.items[1], isA<int>());
+      expect(p.items[2], isA<String>());
+
+      expect(
+        (p.data['l'] as List)[3],
+        equals([
+          2,
+          {
+            'x': [3],
+          },
+        ]),
+      );
+      expect((p.attributes['n'] as List).last, isTrue);
+    });
+
+    test('decoded nested lists accept new elements', () {
+      var p = decoder.decode<TestPayloadWithReflection>(src);
+
+      (p.rows[0]['vals'] as List).add('more');
+      p.matrix[0].add('x');
+      (p.data['l'] as List).add({'k': 1});
+      p.items.add(3.5);
+
+      expect(p.rows[0]['vals'], equals([10, 20, 'more']));
+      expect(p.matrix[0], equals([1, 2, 'x']));
+      expect((p.data['l'] as List).last, equals({'k': 1}));
+      expect(p.items.last, equals(3.5));
+    });
+
+    test('round trip: entity -> encode -> decode', () async {
+      var p = TestPayloadWithReflection(
+        'rt',
+        data: {
+          'l': [
+            1,
+            'two',
+            null,
+            [
+              3,
+              {
+                'four': [4],
+              },
+            ],
+          ],
+          'e': [],
+        },
+        attributes: {
+          'a': [true, 1.5],
+          'b': {
+            'c': [[]],
+          },
+        },
+        rows: [
+          {
+            'id': 1,
+            'vals': [1, 2, 3],
+          },
+          {
+            'nested': [
+              [1],
+              ['x'],
+            ],
+          },
+        ],
+        matrix: [
+          [1, 'a', null],
+          [
+            [2],
+            {
+              'm': [3],
+            },
+          ],
+        ],
+        items: [
+          {
+            'x': [1],
+          },
+          2,
+          'three',
+          null,
+        ],
+        extra: [
+          [
+            {
+              'deep': [
+                1,
+                [2],
+              ],
+            },
+          ],
+        ],
+      );
+
+      var encoded = JsonEncoder.defaultEncoder.encode(p);
+      expect(jsonDecode(encoded), equals(p.toJson()));
+
+      expectPayload(
+        decoder.decode<TestPayloadWithReflection>(encoded),
+        encoded,
+      );
+      expectPayload(
+        await decoder.decodeAsync<TestPayloadWithReflection>(encoded),
+        encoded,
+      );
+      expectPayload(
+        JsonCodec.defaultCodec.decode<TestPayloadWithReflection>(encoded),
+        encoded,
+      );
+      expectPayload(
+        TestPayloadWithReflection$fromJsonEncoded(encoded),
+        encoded,
+      );
+    });
+
+    test('a list of entities with untyped collection fields', () async {
+      var listJson = '[$src,{"name":"q","rows":[{"vals":["z",[1]]}]}]';
+      var typeInfo = TypeInfo.fromType(List, [
+        TypeInfo.fromType(TestPayloadWithReflection),
+      ]);
+
+      for (var l in [
+        decoder.decode(listJson, typeInfo: typeInfo) as List,
+        await decoder.decodeAsync(listJson, typeInfo: typeInfo) as List,
+      ]) {
+        expect(l, everyElement(isA<TestPayloadWithReflection>()));
+
+        var list = l.cast<TestPayloadWithReflection>();
+        expect(list[0].toJson(), equals(jsonDecode(src)));
+        expect(
+          list[1].rows.single['vals'],
+          equals([
+            'z',
+            [1],
+          ]),
+        );
+        expect(list[1].data, isEmpty);
+      }
+    });
+
+    test('an entity inside an untyped Map is not decoded', () {
+      var m = decoder.decode<Map>('{"payload":$src}');
+      expect(m['payload'], isA<Map>());
+      expect(m['payload'], equals(jsonDecode(src)));
+    });
+
+    test('empty and null untyped fields', () {
+      const json =
+          '{"name":"e","data":{},"attributes":{},"rows":[],'
+          '"matrix":[],"items":[],"extra":null}';
+      expectPayload(decoder.decode<TestPayloadWithReflection>(json), json);
+
+      var minimal = decoder.decode<TestPayloadWithReflection>('{"name":"m"}');
+      expect(minimal.name, equals('m'));
+      expect(minimal.rows, isEmpty);
+      expect(minimal.matrix, isEmpty);
+      expect(minimal.extra, isNull);
     });
   });
 

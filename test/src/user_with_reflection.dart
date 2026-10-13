@@ -418,3 +418,48 @@ class TestName {
 
 @EnableReflection()
 class TestEmpty {}
+
+/// Fields of untyped (or partially typed) collections, holding arbitrary JSON.
+@EnableReflection()
+class TestPayloadWithReflection {
+  final String name;
+
+  Map data;
+
+  Map<String, dynamic> attributes;
+
+  List<Map> rows;
+
+  List<List> matrix;
+
+  List items;
+
+  dynamic extra;
+
+  TestPayloadWithReflection(
+    this.name, {
+    Map? data,
+    Map<String, dynamic>? attributes,
+    List<Map>? rows,
+    List<List>? matrix,
+    List? items,
+    this.extra,
+  }) : data = data ?? {},
+       attributes = attributes ?? {},
+       rows = rows ?? [],
+       matrix = matrix ?? [],
+       items = items ?? [];
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'data': data,
+    'attributes': attributes,
+    'rows': rows,
+    'matrix': matrix,
+    'items': items,
+    'extra': extra,
+  };
+
+  @override
+  String toString() => 'TestPayloadWithReflection${toJson()}';
+}
