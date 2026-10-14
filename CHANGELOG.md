@@ -58,8 +58,13 @@
     (`Foo.defaultLimit`), in the `invoker` and in the parameters'
     `ParameterReflection`s.
   - A field with a function type that uses a class type parameter (e.g.
-    `T Function()? make`) is reflected as `dynamic`, like a `T` field. It
-    was emitted with `T`, which isn't in scope.
+    `T Function()? make`) was emitted with `T`, which isn't in scope. It's
+    now reflected with the type the generated code reads it as, through the
+    raw class (its type parameters as their bounds): `dynamic Function()?`,
+    or `Base Function(int, {String? label})?` for `T extends Base`. The
+    type's nullability (and its parameters' and return type's) is kept, and
+    its types are qualified (prefixed imports). A generic function type
+    (`R Function<R>()`) is reflected as `dynamic`.
   - The `supperTypes` of a class whose superclass comes from a prefixed
     import are emitted with the prefix.
 

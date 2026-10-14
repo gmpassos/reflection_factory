@@ -1271,7 +1271,10 @@ class TestGenericBoxWithReflection$reflection
           true,
         );
       case 'factory':
-        return FieldReflection<TestGenericBoxWithReflection, dynamic>(
+        return FieldReflection<
+          TestGenericBoxWithReflection,
+          dynamic Function()?
+        >(
           this,
           TestGenericBoxWithReflection,
           __TR.tFunction,

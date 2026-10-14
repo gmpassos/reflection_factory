@@ -299,8 +299,27 @@ class Sub extends o.Base {
 class Box<T> {
   final List<T> items;
   final T Function()? make;
+  // Settable, with the class type parameter: reflected through the raw
+  // receiver (`dynamic Function()?`), so its setter compiles (strict-casts).
+  T Function()? fallback;
 
-  Box(this.items, {this.make});
+  Box(this.items, {this.make, this.fallback});
+}
+
+// A bound from a prefixed import, and function parameters of every kind:
+// reflected as `o.Base Function(int, {required bool flag, String? label})?`
+// and `o.Base Function(int, [String?])?`.
+@EnableReflection()
+class Builder<T extends o.Base> {
+  T Function(int n, {required bool flag, String? label})? build;
+  T Function(int n, [String? label])? buildOptional;
+  // Nullability: a non-nullable function type, nullable return and parameter
+  // types, and a nullable function type as a parameter.
+  T Function() make;
+  T? Function(T? input)? maybe;
+  void Function(T Function()? inner)? nested;
+
+  Builder(this.make);
 }
 ''');
 
@@ -337,6 +356,28 @@ void main() {
     'items': [1, 2],
   })!;
   print('box: items=${box.items} invoker=${Box$reflection().constructor('')!.invoker == null ? 'none' : 'yes'}');
+
+  // The function-typed field, through its reflection:
+  var fallback = Box$reflection(box).field('fallback')!;
+  fallback.set(() => 3);
+  print('fallback: ${box.fallback!()} ${fallback.get()!()}');
+
+  var builder = Builder(() => Base(level: 1));
+  var builderReflection = Builder$reflection(builder);
+  builderReflection.field('maybe')!.set((Base? b) => b);
+  builderReflection.field('make')!.set(() => Base(level: 2));
+  print('nullability: ${builder.make().level} '
+      '${builder.maybe!(null) == null} '
+      '${builderReflection.field('nested')!.nullable} '
+      '${builderReflection.field('make')!.nullable}');
+  Builder$reflection(builder).field('build')!.set(
+    (int n, {required bool flag, String? label}) => Base(level: n),
+  );
+  Builder$reflection(builder).field('buildOptional')!.set(
+    (int n, [String? label]) => Base(level: n + 1),
+  );
+  print('build: ${builder.build!(7, flag: true).level} '
+      '${builder.buildOptional!(7).level}');
 }
 ''');
 
@@ -354,6 +395,23 @@ void main() {
       // Typed arguments:
       expect(code, contains('as String'));
       expect(code, contains('as Check?'));
+
+      // Function-typed fields with the class type parameter, through the raw
+      // receiver (the bound), with qualified types:
+      // (Compared without whitespace: `dart format` breaks them variously.)
+      String compact(String s) => s.replaceAll(RegExp(r'\s+'), '');
+      var codeCompact = compact(code);
+      for (var fieldType in [
+        'FieldReflection<Box, dynamic Function()?>',
+        'FieldReflection<Builder, o.Base Function(int, {required bool flag, String? label})?>',
+        'FieldReflection<Builder, o.Base Function(int, [String?])?>',
+        // Nullability as declared:
+        'FieldReflection<Builder, o.Base Function()>',
+        'FieldReflection<Builder, o.Base? Function(o.Base?)?>',
+        'FieldReflection<Builder, void Function(o.Base Function()?)?>',
+      ]) {
+        expect(codeCompact, contains(compact(fieldType)), reason: fieldType);
+      }
 
       // `lib/`: the generated code (`bin/` checks types on purpose).
       var analyze = await _run(
@@ -386,6 +444,9 @@ void main() {
           'given: price=1.5 check=true',
           'sub: level=4',
           'box: items=[1, 2] invoker=none',
+          'fallback: 3 3',
+          'nullability: 2 true true false',
+          'build: 7 8',
         ]),
       );
     }, timeout: Timeout(Duration(minutes: 5)));

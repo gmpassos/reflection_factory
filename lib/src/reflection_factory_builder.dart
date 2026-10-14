@@ -2272,7 +2272,10 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
 
       var declaringType = fieldDeclaringType.typeNameResolvable(typeAliasTable);
       var typeCode = field.typeAsCode(typeAliasTable);
-      var fullType = field.typeNameAsNullableCode(typeAliasTable);
+      var fullType = field.typeNameAsNullableCode(
+        typeAliasTable,
+        receiver: _classElement,
+      );
       var nullable = field.nullable ? 'true' : 'false';
       var isFinal = field.isFinal ? 'true' : 'false';
       var getter = '(o) => () => o!.$name';
@@ -2410,7 +2413,10 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
 
       var declaringType = fieldDeclaringType.typeNameResolvable(typeAliasTable);
       var typeCode = field.typeAsCode(typeAliasTable);
-      var fullType = field.typeNameAsNullableCode(typeAliasTable);
+      var fullType = field.typeNameAsNullableCode(
+        typeAliasTable,
+        receiver: _classElement,
+      );
       var nullable = field.nullable ? 'true' : 'false';
       var isFinal = field.isFinal ? 'true' : 'false';
       var getter = '() => () => $className.$name';
@@ -3595,12 +3601,38 @@ class _Field extends _Element {
   String typeNameAsCode(_TypeAliasTable typeAliasTable) =>
       fieldElement.type.typeNameAsCode(typeAliasTable);
 
-  String typeNameAsNullableCode(_TypeAliasTable typeAliasTable) {
+  /// The field type as code. [receiver] is the reflected class, through
+  /// which the generated code reads and writes the field.
+  String typeNameAsNullableCode(
+    _TypeAliasTable typeAliasTable, {
+    InterfaceElement? receiver,
+  }) {
     var type = fieldElement.type;
+
     // A function type with a class type parameter (e.g. `T Function()`):
-    // `T` isn't in scope in the generated code (as a `T` field is `dynamic`).
-    if (type is FunctionType && type.hasTypeParameter) return 'dynamic';
+    // `T` isn't in scope in the generated code. The generated code reads the
+    // field through a raw receiver (`Box`, i.e. `Box<dynamic>`, or
+    // `Box<Bound>`), so its type is the field type with `T` as its bound
+    // (`dynamic Function()`), which the generated setter can also assign.
+    if (type is FunctionType && type.hasTypeParameter) {
+      var rawType = receiver != null ? _typeThroughRawReceiver(receiver) : null;
+      if (rawType is FunctionType && !rawType.hasTypeParameter) {
+        return rawType.functionTypeAsCode(typeAliasTable) ?? 'dynamic';
+      }
+      return 'dynamic';
+    }
+
     return type.typeNameAsNullableCode(typeAliasTable);
+  }
+
+  /// This field's type read through [receiver] instantiated to bounds.
+  DartType? _typeThroughRawReceiver(InterfaceElement receiver) {
+    var library = receiver.library;
+    var rawReceiver = library.typeSystem.instantiateInterfaceToBounds(
+      element: receiver,
+      nullabilitySuffix: NullabilitySuffix.none,
+    );
+    return rawReceiver.lookUpGetter(name, library)?.returnType;
   }
 
   bool get isTypeWithReflection => fieldElement.type.isTypeWithReflection;
@@ -3684,6 +3716,49 @@ extension _DartTypeExtension on DartType {
   bool get isParameterType => this is TypeParameterType;
 
   bool get isResolvableType => !isParameterType;
+
+  /// This function type as code, built from its parts, so that each type in
+  /// it is qualified (`getDisplayString` isn't), e.g.
+  /// `o.Other Function(int, {String? name})?`.
+  ///
+  /// Returns `null` for a generic function type (`R Function<R>()`).
+  String? functionTypeAsCode(_TypeAliasTable typeAliasTable) {
+    final self = this;
+    if (self is! FunctionType || self.typeParameters.isNotEmpty) return null;
+
+    String? typeCode(DartType t) => t is FunctionType
+        ? t.functionTypeAsCode(typeAliasTable)
+        : t.typeNameAsNullableCode(typeAliasTable);
+
+    var returnType = typeCode(self.returnType);
+    if (returnType == null) return null;
+
+    var positional = <String>[];
+    var optional = <String>[];
+    var named = <String>[];
+
+    for (var p in self.formalParameters) {
+      var t = typeCode(p.type);
+      if (t == null) return null;
+
+      if (p.isNamed) {
+        named.add('${p.isRequiredNamed ? 'required ' : ''}$t ${p.name}');
+      } else if (p.isOptionalPositional) {
+        optional.add(t);
+      } else {
+        positional.add(t);
+      }
+    }
+
+    var params = [
+      ...positional,
+      if (optional.isNotEmpty) '[${optional.join(', ')}]',
+      if (named.isNotEmpty) '{${named.join(', ')}}',
+    ].join(', ');
+
+    var nullable = self.nullabilitySuffix == NullabilitySuffix.question;
+    return '$returnType Function($params)${nullable ? '?' : ''}';
+  }
 
   /// Whether this type is, or contains, a type parameter
   /// (e.g. `T`, `List<T>`, `T Function()`).
