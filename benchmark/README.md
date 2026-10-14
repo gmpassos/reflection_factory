@@ -8,7 +8,7 @@ which have 8 fields each:
 
 | Case | What runs |
 |---|---|
-| `account: constructor` | The main constructor (2 normal + 6 named parameters), default name and value resolution |
+| `account: constructor` | The main constructor (2 normal + 6 named parameters), with the default name resolution and no `fieldValueResolver`, so it's called straight from the map |
 | `account: constructor (valuesResolved, exactKeys)` | The same, for a map whose keys and values are already resolved (e.g. DB rows) |
 | `account: fromJson` | `ClassReflection.fromJson` of the same entity, with a `DateTime` as an ISO string |
 | `member: create + setters` | No constructor matches the map (`passwordOrHash` ≠ `passwordHash`), so it creates an instance without arguments and sets the fields |
