@@ -3625,7 +3625,7 @@ class TestOpBWithReflection$reflection
           true,
         );
       case 'value':
-        return FieldReflection<TestOpBWithReflection, dynamic>(
+        return FieldReflection<TestOpBWithReflection, double?>(
           this,
           WithValue,
           __TR.tDynamic,

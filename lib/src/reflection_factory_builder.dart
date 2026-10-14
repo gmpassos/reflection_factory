@@ -3615,42 +3615,55 @@ class _Field extends _Element {
   /// [receiver], or for a type it doesn't apply to, the field type is used as
   /// declared ([_DartTypeExtension.typeNameAsNullableCode]).
   ///
-  /// A function type with a class type parameter can't be written as
-  /// declared (`T` isn't in scope in the generated code), so it's written as
-  /// read through the raw [receiver], whose type parameters are their bounds
-  /// ([_typeThroughRawReceiver]):
+  /// A type with a class type parameter can't be written as declared (`T`
+  /// isn't in scope in the generated code), so it's written as read through
+  /// the raw [receiver], whose type parameters are their bounds, or the type
+  /// arguments a subclass gives them ([_typeThroughRawReceiver]):
   ///
-  /// | Declared in `class Box<T>`         | Generated `V`                        |
-  /// |------------------------------------|--------------------------------------|
-  /// | `String? name`                     | `String?`                            |
-  /// | `T Function()? make`               | `dynamic Function()?`                |
-  /// | `T Function() make`                | `dynamic Function()`                 |
-  /// | `T? Function(T? t)? f` (`T extends o.Base`) | `o.Base? Function(o.Base?)?` |
-  /// | `R Function<R>(T t)? g`            | `dynamic` (a generic function type)  |
+  /// | Declared in `class Box<T>`                  | Generated `V`                 |
+  /// |---------------------------------------------|-------------------------------|
+  /// | `String? name`                              | `String?`                     |
+  /// | `T? value`                                  | `dynamic`                     |
+  /// | `List<T> values`                            | `List<dynamic>`               |
+  /// | `T? value` (`T extends o.Base`)             | `o.Base?`                     |
+  /// | `Map<String, T> byName` (`T extends o.Base`) | `Map<String, o.Base>`        |
+  /// | `T Function()? make`                        | `dynamic Function()?`         |
+  /// | `T Function() make`                         | `dynamic Function()`          |
+  /// | `T? Function(T? t)? f` (`T extends o.Base`) | `o.Base? Function(o.Base?)?`  |
+  /// | `R Function<R>(T t)? g`                     | `dynamic` (generic function)  |
+  ///
+  /// And in `class IntBox extends Box<int>`: `T? value` is `int?`,
+  /// `List<T> values` is `List<int>`, and `T Function()? make` is
+  /// `int Function()?`.
   ///
   /// The setter then receives the exact type it assigns, so it compiles even
-  /// under `strict-casts` (unlike `dynamic`), and `Function` wouldn't do: a
-  /// `Function` can't be assigned to a `T Function()` field without a cast.
+  /// under `strict-casts` (with `dynamic`, only for an unbounded `T`), and
+  /// `Function` wouldn't do for a function type: a `Function` can't be
+  /// assigned to a `T Function()` field without a cast.
   ///
-  /// A plain `T` field (or `List<T>`) isn't changed here: the declared type
-  /// path already writes `T` as `dynamic`.
+  /// Only this `V` is affected: the field's `TypeReflection`
+  /// ([typeAsCode]), used at runtime (e.g. to decode JSON), is still built
+  /// from the declared type.
   String typeNameAsNullableCode(
     _TypeAliasTable typeAliasTable, {
     InterfaceElement? receiver,
   }) {
     var type = fieldElement.type;
 
-    // `T Function()`: `T` isn't in scope in the generated code. Read through
-    // the raw receiver (`Box` is `Box<dynamic>`, or `Box<Bound>`), it's
-    // `dynamic Function()`, a type the generated code can name. If it still
-    // has a type parameter (a generic function type, `R Function<R>()`), or
-    // can't be resolved, it's `dynamic`.
-    if (type is FunctionType && type.hasTypeParameter) {
+    // `T`, `List<T>`, `T Function()`: `T` isn't in scope in the generated
+    // code. Read through the raw receiver (`Box` is `Box<dynamic>`, or
+    // `Box<Bound>`; `IntBox extends Box<int>` has `int`), it's a type the
+    // generated code can name.
+    if (type.hasTypeParameter) {
       var rawType = receiver != null ? _typeThroughRawReceiver(receiver) : null;
-      if (rawType is FunctionType && !rawType.hasTypeParameter) {
-        return rawType.functionTypeAsCode(typeAliasTable) ?? 'dynamic';
+      if (rawType != null && !rawType.hasTypeParameter) {
+        var code = rawType.qualifiedTypeCode(typeAliasTable);
+        if (code != null) return code;
       }
-      return 'dynamic';
+
+      // Still with a type parameter (a generic function type,
+      // `R Function<R>()`), or not resolved: as before the raw receiver.
+      if (type is FunctionType) return 'dynamic';
     }
 
     return type.typeNameAsNullableCode(typeAliasTable);
@@ -3659,13 +3672,15 @@ class _Field extends _Element {
   /// This field's type as read through [receiver] instantiated to bounds:
   /// the static type of `o.field` for an `o` typed as the raw class.
   ///
-  /// For `class Box<T extends Base> { T Function()? make; }` the raw class is
-  /// `Box<Base>`, so this returns `Base Function()?`. With an unbounded `T` it's
-  /// `Box<dynamic>`, and `dynamic Function()?`.
+  /// For `class Box<T extends Base> { T? value; T Function()? make; }` the raw
+  /// class is `Box<Base>`, so `value` is `Base?` and `make` is
+  /// `Base Function()?`. With an unbounded `T` it's `Box<dynamic>`: `dynamic`
+  /// and `dynamic Function()?`.
   ///
   /// The field is looked up as a getter, so a field inherited from a generic
-  /// superclass is substituted with the reflected class's type arguments:
-  /// for `class IntBox extends Box<int>`, `make` is `int Function()?`.
+  /// superclass (or mixin) is substituted with the reflected class's type
+  /// arguments: for `class IntBox extends Box<int>`, `value` is `int?` and
+  /// `make` is `int Function()?`.
   ///
   /// Returns `null` if [receiver] has no such getter.
   DartType? _typeThroughRawReceiver(InterfaceElement receiver) {
@@ -3776,11 +3791,13 @@ extension _DartTypeExtension on DartType {
   /// | `void Function(int a, [String? b])`           | `void Function(int, [String?])`            |
   /// | `bool Function({required int a, String? b})`  | `bool Function({required int a, String? b})` |
   /// | `void Function(int Function()? f)?`           | `void Function(int Function()?)?`          |
+  /// | `void Function(Check c)` (`typedef Check`)    | `void Function(Check)`                     |
   ///
   /// - Positional parameters are written without their names; named ones
   ///   with theirs (they're part of the type).
-  /// - Parameter and return types that are function types are written by
-  ///   this method too, recursively (an alias isn't kept).
+  /// - Parameter and return types are written by [qualifiedTypeCode]: a
+  ///   function type in them by this method too, recursively, unless it's a
+  ///   non-generic `typedef`, which keeps its name.
   ///
   /// Returns `null` if this isn't a function type, or for a generic function
   /// type (`R Function<R>(R r)`), or one that contains one: its type
@@ -3789,9 +3806,7 @@ extension _DartTypeExtension on DartType {
     final self = this;
     if (self is! FunctionType || self.typeParameters.isNotEmpty) return null;
 
-    String? typeCode(DartType t) => t is FunctionType
-        ? t.functionTypeAsCode(typeAliasTable)
-        : t.typeNameAsNullableCode(typeAliasTable);
+    String? typeCode(DartType t) => t.qualifiedTypeCode(typeAliasTable);
 
     var returnType = typeCode(self.returnType);
     if (returnType == null) return null;
@@ -3822,6 +3837,47 @@ extension _DartTypeExtension on DartType {
     // The function type's own nullability (its parameters' and return type's
     // were written above):
     return '$returnType Function($params)${self.isNullable ? '?' : ''}';
+  }
+
+  /// This type as code, with its nullability, qualified throughout: like
+  /// [typeNameAsNullableCode], but the type arguments and function types in
+  /// it are written by this method too, so a function type in it is
+  /// qualified as well ([functionTypeAsCode]).
+  ///
+  /// | Type                                  | Code                                  |
+  /// |---------------------------------------|---------------------------------------|
+  /// | `o.Base?`                             | `o.Base?`                             |
+  /// | `List<o.Base>?`                       | `List<o.Base>?`                       |
+  /// | `Map<String, o.Base Function(int)?>`  | `Map<String, o.Base Function(int)?>`  |
+  /// | `Check?` (a non-generic `typedef`)    | `Check?`                              |
+  /// | `dynamic`                             | `dynamic`                             |
+  ///
+  /// Returns `null` if it contains a generic function type
+  /// (see [functionTypeAsCode]).
+  String? qualifiedTypeCode(_TypeAliasTable typeAliasTable) {
+    final self = this;
+
+    if (self is FunctionType) {
+      // A non-generic `typedef` keeps its name:
+      var alias = self.alias;
+      if (alias != null && alias.typeArguments.isEmpty) {
+        return self.typeNameAsNullableCode(typeAliasTable);
+      }
+      return self.functionTypeAsCode(typeAliasTable);
+    }
+
+    if (self is InterfaceType && self.typeArguments.isNotEmpty) {
+      var args = <String>[];
+      for (var a in self.typeArguments) {
+        var code = a.qualifiedTypeCode(typeAliasTable);
+        if (code == null) return null;
+        args.add(code);
+      }
+      var name = self.typeNameResolvable(typeAliasTable);
+      return '$name<${args.join(', ')}>${self.isNullable ? '?' : ''}';
+    }
+
+    return self.typeNameAsNullableCode(typeAliasTable);
   }
 
   /// Whether this type is, or contains, a type parameter: `T`, `T?`,

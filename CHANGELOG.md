@@ -58,13 +58,27 @@
     (`Foo.defaultLimit`), in the `invoker` and in the parameters'
     `ParameterReflection`s.
   - A field with a function type that uses a class type parameter (e.g.
-    `T Function()? make`) was emitted with `T`, which isn't in scope. It's
-    now reflected with the type the generated code reads it as, through the
-    raw class (its type parameters as their bounds): `dynamic Function()?`,
-    or `Base Function(int, {String? label})?` for `T extends Base`. The
-    type's nullability (and its parameters' and return type's) is kept, and
-    its types are qualified (prefixed imports). A generic function type
-    (`R Function<R>()`) is reflected as `dynamic`.
+    `T Function()? make`) was emitted with `T`, which isn't in scope.
+  - The `V` of `FieldReflection<O, V>` for a field whose type uses a class
+    type parameter is now the type the generated code reads it as, through
+    the raw class (type parameters as their bounds, or as the type arguments
+    of a subclass):
+
+    | Field (in `class Box<T>`)          | Before          | Now                            |
+    |------------------------------------|-----------------|--------------------------------|
+    | `T? value`                         | `dynamic`       | `dynamic`                      |
+    | `T? value` (`T extends Base`)      | `dynamic`       | `Base?`                        |
+    | `List<T> values` (`T extends Base`) | `List<dynamic>` | `List<Base>`                  |
+    | `T Function()? make`               | (didn't compile) | `dynamic Function()?`         |
+    | inherited by `IntBox extends Box<int>`: `T? value` | `dynamic` | `int?`              |
+    | inherited: `List<T> values`        | `List<dynamic>` | `List<int>`                    |
+
+    The setters of those fields then receive the type they assign, so they
+    compile under `strict-casts`, which they didn't for a bounded `T`. The
+    types are qualified (prefixed imports) and keep their nullability (and
+    their parameters' and return types'). A generic function type
+    (`R Function<R>()`) is reflected as `dynamic`. A field's
+    `TypeReflection` (used to decode JSON) is unchanged.
   - The `supperTypes` of a class whose superclass comes from a prefixed
     import are emitted with the prefix.
 

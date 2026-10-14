@@ -1560,7 +1560,7 @@ class TestIntBoxWithReflection$reflection
 
     switch (lc) {
       case 'items':
-        return FieldReflection<TestIntBoxWithReflection, List<dynamic>>(
+        return FieldReflection<TestIntBoxWithReflection, List<int>>(
           this,
           TestGenericBoxWithReflection,
           __TR.tListDynamic,

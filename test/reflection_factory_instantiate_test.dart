@@ -707,6 +707,27 @@ void main() {
       );
       expect(factory!.nullable, isTrue);
       expect(factory.get(), isNull);
+
+      // The inherited `List<T> items`, as `List<int>`:
+      var items = reflection.field('items', o);
+      expect(
+        items,
+        isA<FieldReflection<TestIntBoxWithReflection, List<int>>>(),
+      );
+      expect(items!.get(), equals([1, 2]));
+    });
+
+    test('a field from a generic mixin, with the type argument', () {
+      // `TestOpBWithReflection extends TestOpWithReflection<double>`, whose
+      // `T? value` comes from `WithValue<T>`: `double?`.
+      var o = TestOpBWithReflection(1.5);
+      var value = TestOpBWithReflection$reflection(o).field('value');
+      expect(value, isA<FieldReflection<TestOpBWithReflection, double?>>());
+      expect(value!.get(), equals(1.5));
+
+      value.set(2.5);
+      expect(o.value, equals(2.5));
+      expect(() => value.set('x' as dynamic), throwsA(isA<TypeError>()));
     });
   });
 

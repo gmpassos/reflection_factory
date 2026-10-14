@@ -302,8 +302,17 @@ class Box<T> {
   // Settable, with the class type parameter: reflected through the raw
   // receiver (`dynamic Function()?`), so its setter compiles (strict-casts).
   T Function()? fallback;
+  // Settable, unbounded `T`: `dynamic` and `List<dynamic>`.
+  T? value;
+  List<T> values = [];
 
   Box(this.items, {this.make, this.fallback});
+}
+
+// The type argument given: `int?`, `List<int>`, `int Function()?`.
+@EnableReflection()
+class IntBox extends Box<int> {
+  IntBox(super.items);
 }
 
 // A bound from a prefixed import, and function parameters of every kind:
@@ -318,12 +327,21 @@ class Builder<T extends o.Base> {
   T Function() make;
   T? Function(T? input)? maybe;
   void Function(T Function()? inner)? nested;
+  // Settable, with the bound: `o.Base?`, `List<o.Base>` and
+  // `Map<String, o.Base Function()?>` (setters that compile under
+  // strict-casts: they receive the type they assign).
+  T? current;
+  List<T> all = [];
+  Map<String, T Function()?> byName = {};
+  // A `typedef` in a parameter keeps its name: `void Function(Check, o.Base)?`.
+  void Function(Check c, T t)? withCheck;
 
   Builder(this.make);
 }
 ''');
 
       _write(tempDir, 'bin/main.dart', r'''
+import 'package:reflection_factory/reflection_factory.dart';
 import 'package:reflection_factory_e2e/foo.dart';
 import 'package:reflection_factory_e2e/other.dart';
 
@@ -378,6 +396,26 @@ void main() {
   );
   print('build: ${builder.build!(7, flag: true).level} '
       '${builder.buildOptional!(7).level}');
+
+  // `T` and `List<T>` fields, set through their reflection:
+  var boxReflection = Box$reflection(box);
+  boxReflection.field('value')!.set(9);
+  boxReflection.field('values')!.set([1, 2]);
+  builderReflection.field('current')!.set(Base(level: 3));
+  builderReflection.field('all')!.set([Base(level: 4)]);
+  builderReflection.field('byName')!.set({'a': () => Base(level: 5)});
+  print('typed: ${box.value} ${box.values} ${builder.current!.level} '
+      '${builder.all.map((b) => b.level).toList()} '
+      '${builder.byName['a']!().level} ${builder.byName.keys.single}');
+
+  var intBox = IntBox$reflection().createInstanceFromMap({
+    'items': [7],
+  })!;
+  var intBoxReflection = IntBox$reflection(intBox);
+  intBoxReflection.field('value')!.set(6);
+  intBoxReflection.field('values')!.set([8]);
+  print('int box: ${intBox.value} ${intBox.items} ${intBox.values} '
+      '${intBoxReflection.field('values') is FieldReflection<IntBox, List<int>>}');
 }
 ''');
 
@@ -409,6 +447,17 @@ void main() {
         'FieldReflection<Builder, o.Base Function()>',
         'FieldReflection<Builder, o.Base? Function(o.Base?)?>',
         'FieldReflection<Builder, void Function(o.Base Function()?)?>',
+        // `T` and `List<T>` fields, through the raw class:
+        'FieldReflection<Box, dynamic>',
+        'FieldReflection<Box, List<dynamic>>',
+        'FieldReflection<Builder, o.Base?>',
+        'FieldReflection<Builder, List<o.Base>>',
+        'FieldReflection<Builder, Map<String, o.Base Function()?>>',
+        'FieldReflection<Builder, void Function(Check, o.Base)?>',
+        // With the type argument (inherited fields):
+        'FieldReflection<IntBox, int?>',
+        'FieldReflection<IntBox, List<int>>',
+        'FieldReflection<IntBox, int Function()?>',
       ]) {
         expect(codeCompact, contains(compact(fieldType)), reason: fieldType);
       }
@@ -447,6 +496,8 @@ void main() {
           'fallback: 3 3',
           'nullability: 2 true true false',
           'build: 7 8',
+          'typed: 9 [1, 2] 3 [4] 5 a',
+          'int box: 6 [7] [8] true',
         ]),
       );
     }, timeout: Timeout(Duration(minutes: 5)));
