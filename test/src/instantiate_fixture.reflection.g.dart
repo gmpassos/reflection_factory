@@ -113,6 +113,16 @@ TestGenericBoxWithReflection TestGenericBoxWithReflection$fromJsonEncoded(
   jsonEncoded,
 );
 // ignore: non_constant_identifier_names
+TestIntBoxWithReflection TestIntBoxWithReflection$fromJson(
+  Map<String, Object?> map,
+) => TestIntBoxWithReflection$reflection.staticInstance.fromJson(map);
+// ignore: non_constant_identifier_names
+TestIntBoxWithReflection TestIntBoxWithReflection$fromJsonEncoded(
+  String jsonEncoded,
+) => TestIntBoxWithReflection$reflection.staticInstance.fromJsonEncoded(
+  jsonEncoded,
+);
+// ignore: non_constant_identifier_names
 TestMemberWithReflection TestMemberWithReflection$fromJson(
   Map<String, Object?> map,
 ) => TestMemberWithReflection$reflection.staticInstance.fromJson(map);
@@ -1345,6 +1355,295 @@ class TestGenericBoxWithReflection$reflection
 
   @override
   StaticMethodReflection<TestGenericBoxWithReflection, R>? staticMethod<R>(
+    String methodName,
+  ) => null;
+}
+
+class TestIntBoxWithReflection$reflection
+    extends ClassReflection<TestIntBoxWithReflection>
+    with __ReflectionMixin {
+  static final Expando<TestIntBoxWithReflection$reflection> _objectReflections =
+      Expando();
+
+  factory TestIntBoxWithReflection$reflection([
+    TestIntBoxWithReflection? object,
+  ]) {
+    if (object == null) return staticInstance;
+    return _objectReflections[object] ??= TestIntBoxWithReflection$reflection._(
+      object,
+    );
+  }
+
+  TestIntBoxWithReflection$reflection._([TestIntBoxWithReflection? object])
+    : super(TestIntBoxWithReflection, r'TestIntBoxWithReflection', object);
+
+  static bool _registered = false;
+  @override
+  void register() {
+    if (!_registered) {
+      _registered = true;
+      super.register();
+      _registerSiblingsReflection();
+    }
+  }
+
+  @override
+  Version get languageVersion => Version.parse('3.13.0');
+
+  @override
+  TestIntBoxWithReflection$reflection withObject([
+    TestIntBoxWithReflection? obj,
+  ]) => TestIntBoxWithReflection$reflection(obj)..setupInternalsWith(this);
+
+  static TestIntBoxWithReflection$reflection? _withoutObjectInstance;
+  @override
+  TestIntBoxWithReflection$reflection withoutObjectInstance() => staticInstance;
+
+  @override
+  Symbol? getSymbol(String? key) => _getSymbol(key);
+
+  static TestIntBoxWithReflection$reflection get staticInstance =>
+      _withoutObjectInstance ??= TestIntBoxWithReflection$reflection._();
+
+  @override
+  TestIntBoxWithReflection$reflection getStaticInstance() => staticInstance;
+
+  static bool _boot = false;
+  static void boot() {
+    if (_boot) return;
+    _boot = true;
+    TestIntBoxWithReflection$reflection.staticInstance;
+  }
+
+  @override
+  bool get hasDefaultConstructor => false;
+  @override
+  TestIntBoxWithReflection? createInstanceWithDefaultConstructor() => null;
+
+  @override
+  bool get hasEmptyConstructor => false;
+  @override
+  TestIntBoxWithReflection? createInstanceWithEmptyConstructor() => null;
+  @override
+  bool get hasNoRequiredArgsConstructor => false;
+  @override
+  TestIntBoxWithReflection? createInstanceWithNoRequiredArgsConstructor() =>
+      null;
+
+  static const List<String> _constructorsNames = const <String>[''];
+
+  @override
+  List<String> get constructorsNames => _constructorsNames;
+
+  static final Map<String, ConstructorReflection<TestIntBoxWithReflection>>
+  _constructors = {};
+
+  @override
+  ConstructorReflection<TestIntBoxWithReflection>? constructor(
+    String constructorName,
+  ) {
+    var c = _constructors[constructorName];
+    if (c != null) return c;
+    c = _constructorImpl(constructorName);
+    if (c == null) return null;
+    _constructors[constructorName] = c;
+    return c;
+  }
+
+  ConstructorReflection<TestIntBoxWithReflection>? _constructorImpl(
+    String constructorName,
+  ) {
+    var lc = constructorName.trim().toLowerCase();
+
+    switch (lc) {
+      case '':
+        return ConstructorReflection<TestIntBoxWithReflection>(
+          this,
+          TestIntBoxWithReflection,
+          '',
+          () => TestIntBoxWithReflection.new,
+          const <__PR>[__PR(__TR.tListInt, 'items', false, true)],
+          null,
+          null,
+          null,
+          invoker: (a) => TestIntBoxWithReflection(a[0] as List<int>),
+        );
+      default:
+        return null;
+    }
+  }
+
+  static const List<Object> _classAnnotations = <Object>[];
+
+  @override
+  List<Object> get classAnnotations => _classAnnotations;
+
+  static const List<Type> _supperTypes = const <Type>[
+    TestGenericBoxWithReflection,
+  ];
+
+  @override
+  List<Type> get supperTypes => _supperTypes;
+
+  @override
+  bool get hasMethodToJson => false;
+
+  @override
+  Object? callMethodToJson([TestIntBoxWithReflection? obj]) => null;
+
+  static const List<String> _fieldsNames = const <String>[
+    'factory',
+    'items',
+    'name',
+  ];
+
+  @override
+  List<String> get fieldsNames => _fieldsNames;
+
+  static final Map<String, FieldReflection<TestIntBoxWithReflection, dynamic>>
+  _fieldsNoObject = {};
+
+  final Map<String, FieldReflection<TestIntBoxWithReflection, dynamic>>
+  _fieldsObject = {};
+
+  @override
+  FieldReflection<TestIntBoxWithReflection, T>? field<T>(
+    String fieldName, [
+    TestIntBoxWithReflection? obj,
+  ]) {
+    if (obj == null) {
+      if (object != null) {
+        return _fieldObjectImpl<T>(fieldName);
+      } else {
+        return _fieldNoObjectImpl<T>(fieldName);
+      }
+    } else if (identical(obj, object)) {
+      return _fieldObjectImpl<T>(fieldName);
+    }
+    return _fieldNoObjectImpl<T>(fieldName)?.withObject(obj);
+  }
+
+  FieldReflection<TestIntBoxWithReflection, T>? _fieldNoObjectImpl<T>(
+    String fieldName,
+  ) {
+    final f = _fieldsNoObject[fieldName];
+    if (f != null) {
+      return f as FieldReflection<TestIntBoxWithReflection, T>;
+    }
+    final f2 = _fieldImpl(fieldName, null);
+    if (f2 == null) return null;
+    _fieldsNoObject[fieldName] = f2;
+    return f2 as FieldReflection<TestIntBoxWithReflection, T>;
+  }
+
+  FieldReflection<TestIntBoxWithReflection, T>? _fieldObjectImpl<T>(
+    String fieldName,
+  ) {
+    final f = _fieldsObject[fieldName];
+    if (f != null) {
+      return f as FieldReflection<TestIntBoxWithReflection, T>;
+    }
+    var f2 = _fieldNoObjectImpl<T>(fieldName);
+    if (f2 == null) return null;
+    f2 = f2.withObject(object!);
+    _fieldsObject[fieldName] = f2;
+    return f2;
+  }
+
+  FieldReflection<TestIntBoxWithReflection, dynamic>? _fieldImpl(
+    String fieldName,
+    TestIntBoxWithReflection? obj,
+  ) {
+    obj ??= object;
+
+    var lc = fieldName.trim().toLowerCase();
+
+    switch (lc) {
+      case 'items':
+        return FieldReflection<TestIntBoxWithReflection, List<dynamic>>(
+          this,
+          TestGenericBoxWithReflection,
+          __TR.tListDynamic,
+          'items',
+          false,
+          (o) =>
+              () => o!.items,
+          null,
+          obj,
+          true,
+        );
+      case 'factory':
+        return FieldReflection<TestIntBoxWithReflection, int Function()?>(
+          this,
+          TestGenericBoxWithReflection,
+          __TR.tFunction,
+          'factory',
+          true,
+          (o) =>
+              () => o!.factory,
+          null,
+          obj,
+          true,
+        );
+      case 'name':
+        return FieldReflection<TestIntBoxWithReflection, String>(
+          this,
+          TestGenericBoxWithReflection,
+          __TR.tString,
+          'name',
+          false,
+          (o) =>
+              () => o!.name,
+          null,
+          obj,
+          true,
+        );
+      default:
+        return null;
+    }
+  }
+
+  @override
+  Map<String, dynamic> getFieldsValues(
+    TestIntBoxWithReflection? obj, {
+    bool withHashCode = false,
+  }) {
+    obj ??= object;
+    return <String, dynamic>{
+      'items': obj?.items,
+      'factory': obj?.factory,
+      'name': obj?.name,
+      if (withHashCode) 'hashCode': obj?.hashCode,
+    };
+  }
+
+  static const List<String> _staticFieldsNames = const <String>[];
+
+  @override
+  List<String> get staticFieldsNames => _staticFieldsNames;
+
+  @override
+  StaticFieldReflection<TestIntBoxWithReflection, T>? staticField<T>(
+    String fieldName,
+  ) => null;
+
+  static const List<String> _methodsNames = const <String>[];
+
+  @override
+  List<String> get methodsNames => _methodsNames;
+
+  @override
+  MethodReflection<TestIntBoxWithReflection, R>? method<R>(
+    String methodName, [
+    TestIntBoxWithReflection? obj,
+  ]) => null;
+  static const List<String> _staticMethodsNames = const <String>[];
+
+  @override
+  List<String> get staticMethodsNames => _staticMethodsNames;
+
+  @override
+  StaticMethodReflection<TestIntBoxWithReflection, R>? staticMethod<R>(
     String methodName,
   ) => null;
 }
@@ -3481,6 +3780,34 @@ extension TestGenericBoxWithReflection$reflectionExtension
       .toJsonFromFields(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
 }
 
+extension TestIntBoxWithReflection$reflectionExtension
+    on TestIntBoxWithReflection {
+  /// Returns a [ClassReflection] for type [TestIntBoxWithReflection]. (Generated by [ReflectionFactory])
+  ClassReflection<TestIntBoxWithReflection> get reflection =>
+      TestIntBoxWithReflection$reflection(this);
+
+  /// Returns a JSON for type [TestIntBoxWithReflection]. (Generated by [ReflectionFactory])
+  Object? toJson({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJson(null, null, duplicatedEntitiesAsID);
+
+  /// Returns a JSON [Map] for type [TestIntBoxWithReflection]. (Generated by [ReflectionFactory])
+  Map<String, dynamic>? toJsonMap({bool duplicatedEntitiesAsID = false}) =>
+      reflection.toJsonMap(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+
+  /// Returns an encoded JSON [String] for type [TestIntBoxWithReflection]. (Generated by [ReflectionFactory])
+  String toJsonEncoded({
+    bool pretty = false,
+    bool duplicatedEntitiesAsID = false,
+  }) => reflection.toJsonEncoded(
+    pretty: pretty,
+    duplicatedEntitiesAsID: duplicatedEntitiesAsID,
+  );
+
+  /// Returns a JSON for type [TestIntBoxWithReflection] using the class fields. (Generated by [ReflectionFactory])
+  Object? toJsonFromFields({bool duplicatedEntitiesAsID = false}) => reflection
+      .toJsonFromFields(duplicatedEntitiesAsID: duplicatedEntitiesAsID);
+}
+
 extension TestMemberWithReflection$reflectionExtension
     on TestMemberWithReflection {
   /// Returns a [ClassReflection] for type [TestMemberWithReflection]. (Generated by [ReflectionFactory])
@@ -3653,6 +3980,7 @@ List<Reflection> _listSiblingsReflection() => <Reflection>[
   TestAccountWithReflection$reflection(),
   TestDefaultsWithReflection$reflection(),
   TestGenericBoxWithReflection$reflection(),
+  TestIntBoxWithReflection$reflection(),
   TestMemberWithReflection$reflection(),
   TestMoreDefaultsWithReflection$reflection(),
   TestOptPositionalWithReflection$reflection(),

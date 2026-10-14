@@ -164,6 +164,13 @@ class TestGenericBoxWithReflection<T> {
       factory = null;
 }
 
+/// Inherits `factory` (`T Function()?`) with `T` as `int`: reflected as
+/// `int Function()?`.
+@EnableReflection()
+class TestIntBoxWithReflection extends TestGenericBoxWithReflection<int> {
+  TestIntBoxWithReflection(super.items);
+}
+
 /// Counts its calls, and throws when [fail] is given.
 @EnableReflection()
 class TestThrowingWithReflection {

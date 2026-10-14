@@ -676,6 +676,37 @@ void main() {
       )!;
       expect(o2.name, equals('n'));
       expect(o2.items, isEmpty);
+
+      // `T Function()? factory`, through the raw `TestGenericBoxWithReflection`
+      // (`T` as `dynamic`):
+      expect(
+        reflection.field('factory'),
+        isA<
+          FieldReflection<TestGenericBoxWithReflection, dynamic Function()?>
+        >(),
+      );
+    });
+
+    test('a subclass with the type argument: invoker and field types', () {
+      var reflection = TestIntBoxWithReflection$reflection();
+
+      // `TestIntBoxWithReflection(super.items)`: `List<int>`.
+      var c = reflection.constructor('')!;
+      expect(c.invoker, isNotNull);
+
+      var o = reflection.createInstanceWithConstructor(c, {
+        'items': <int>[1, 2],
+      })!;
+      expect(o.items, equals([1, 2]));
+
+      // The inherited `T Function()? factory`, as `int Function()?`:
+      var factory = reflection.field('factory', o);
+      expect(
+        factory,
+        isA<FieldReflection<TestIntBoxWithReflection, int Function()?>>(),
+      );
+      expect(factory!.nullable, isTrue);
+      expect(factory.get(), isNull);
     });
   });
 
