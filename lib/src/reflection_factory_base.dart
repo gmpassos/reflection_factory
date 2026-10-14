@@ -1850,8 +1850,6 @@ abstract class ClassReflection<O> extends Reflection<O>
   ///   constructor due to unresolved parameters.
   /// - Throws any error thrown by a constructor invocation.
   ///
-  /// - [valuesResolved]: see [createInstanceFromMap].
-  ///
   /// See [createInstanceWithConstructors].
   O? createInstanceWithBestConstructor(
     Map<String, Object?> map, {
@@ -1859,7 +1857,6 @@ abstract class ClassReflection<O> extends Reflection<O>
     FieldValueResolver? fieldValueResolver,
     bool? allowEmptyConstructors,
     bool? allowOptionalOnlyConstructors,
-    bool valuesResolved = false,
   }) {
     allowOptionalOnlyConstructors ??= map.isEmpty;
     allowEmptyConstructors ??= map.isEmpty;
@@ -1877,7 +1874,6 @@ abstract class ClassReflection<O> extends Reflection<O>
       map,
       fieldNameResolver: fieldNameResolver,
       fieldValueResolver: fieldValueResolver,
-      valuesResolved: valuesResolved,
     );
   }
 
@@ -1886,7 +1882,6 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// - Throws [UnresolvedParameterError] when it's its impossible to call any
   ///   constructor due to unresolved parameters.
   /// - Throws any error thrown by a constructor invocation.
-  /// - [valuesResolved]: see [createInstanceFromMap].
   ///
   /// See [createInstanceWithBestConstructor].
   O? createInstanceWithConstructors(
@@ -1894,7 +1889,6 @@ abstract class ClassReflection<O> extends Reflection<O>
     Map<String, Object?> map, {
     FieldNameResolver? fieldNameResolver,
     FieldValueResolver? fieldValueResolver,
-    bool valuesResolved = false,
   }) {
     final length = constructors.length;
 
@@ -1906,7 +1900,6 @@ abstract class ClassReflection<O> extends Reflection<O>
         map,
         fieldNameResolver: fieldNameResolver,
         fieldValueResolver: fieldValueResolver,
-        valuesResolved: valuesResolved,
       );
     } else if (constructors is ListSortedByUsage<ConstructorReflection<O>>) {
       var sorted = constructors.sortedByUsage();
@@ -1915,7 +1908,6 @@ abstract class ClassReflection<O> extends Reflection<O>
         map,
         fieldNameResolver: fieldNameResolver,
         fieldValueResolver: fieldValueResolver,
-        valuesResolved: valuesResolved,
       );
       if (ret != null) {
         constructors.notifyUsage(ret.$1);
@@ -1928,7 +1920,6 @@ abstract class ClassReflection<O> extends Reflection<O>
         map,
         fieldNameResolver: fieldNameResolver,
         fieldValueResolver: fieldValueResolver,
-        valuesResolved: valuesResolved,
       );
       return ret?.$2;
     }
@@ -1939,7 +1930,6 @@ abstract class ClassReflection<O> extends Reflection<O>
     Map<String, Object?> map, {
     FieldNameResolver? fieldNameResolver,
     FieldValueResolver? fieldValueResolver,
-    required bool valuesResolved,
   }) {
     var invocationErrors = <List>[];
 
@@ -1959,7 +1949,6 @@ abstract class ClassReflection<O> extends Reflection<O>
         fieldNameResolver: fieldNameResolver,
         fieldValueResolver: fieldValueResolver,
         onInvocationError: catchInvokeError,
-        valuesResolved: valuesResolved,
       );
 
       if (o != null) {
@@ -1982,7 +1971,6 @@ abstract class ClassReflection<O> extends Reflection<O>
     Map<String, Object?> map, {
     FieldNameResolver? fieldNameResolver,
     FieldValueResolver? fieldValueResolver,
-    required bool valuesResolved,
   }) {
     if (constructors.isEmpty) return null;
 
@@ -2005,7 +1993,6 @@ abstract class ClassReflection<O> extends Reflection<O>
           fieldNameResolver: fieldNameResolver,
           fieldValueResolver: fieldValueResolver,
           onInvocationError: catchInvokeError,
-          valuesResolved: valuesResolved,
         );
 
         if (o != null) {
@@ -2061,33 +2048,40 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   /// Creates an instance with [constructor] using [map] entries as parameters.
   ///
-  /// - [valuesResolved]: see [createInstanceFromMap].
+  /// Without a [fieldValueResolver], the [map] values are passed as they are,
+  /// so a [ConstructorReflection.canInvokeFromResolvedMap] constructor is
+  /// called straight from [map] (see [ConstructorReflection.invoker]).
   O? createInstanceWithConstructor(
     ConstructorReflection<O> constructor,
     Map<String, Object?> map, {
     FieldNameResolver? fieldNameResolver,
     FieldValueResolver? fieldValueResolver,
     OnConstructorInvocationError? onInvocationError,
-    bool valuesResolved = false,
   }) {
-    if (valuesResolved) {
-      fieldValueResolver = null;
+    // The error of a direct call, and its stack trace:
+    (Object, StackTrace)? directError;
 
-      if (constructor.canInvokeFromResolvedMap) {
-        var args = constructor._resolvedMapArguments(
+    if (fieldValueResolver == null && constructor.canInvokeFromResolvedMap) {
+      List<dynamic>? args;
+      try {
+        args = constructor._resolvedMapArguments(
           map,
           identical(fieldNameResolver, _exactFieldNameResolver)
               ? null
               : fieldNameResolver,
         );
+      } catch (_) {
+        // An error of `fieldNameResolver`: left to the `MethodInvocation`
+        // path, which handles it as it always has.
+      }
 
-        if (args != null) {
-          try {
-            return constructor.invoker!(args);
-          } catch (_) {
-            // Falls through to the `MethodInvocation` path, which reports
-            // the error (or tries again) the same way it always has.
-          }
+      if (args != null) {
+        try {
+          return constructor.invoker!(args);
+        } catch (e, s) {
+          // Reported below, as the `MethodInvocation` path reports its first
+          // call, which would get the same arguments (it isn't called again).
+          directError = (e, s);
         }
       }
     }
@@ -2101,39 +2095,49 @@ abstract class ClassReflection<O> extends Reflection<O>
       jsonName: usesJsonNameAlias,
     );
 
-    try {
-      var o = constructor.invokeWith(methodInvocation);
-      return o;
-    } catch (e) {
-      // Tries a second parameter resolution if some value was resolved.
-      // This will allow use of the current cached entities in a `JsonEntityCache`
-      // (if used by `fieldValueResolver`).
-      var map2 = methodInvocation.parametersToMap();
+    Object error;
+    StackTrace stackTrace;
 
-      if (!DeepCollectionEquality().equals(map, map2)) {
-        var methodInvocation2 = constructor.methodInvocationFromMap(
-          map2,
-          reviver: fieldValueResolver,
-          nameResolver: fieldNameResolver,
-          jsonName: usesJsonNameAlias,
-        );
+    if (directError != null) {
+      (error, stackTrace) = directError;
+    } else {
+      try {
+        var o = constructor.invokeWith(methodInvocation);
+        return o;
+      } catch (e, s) {
+        error = e;
+        stackTrace = s;
+      }
+    }
 
-        try {
-          var o = constructor.invokeWith(methodInvocation2);
-          return o;
-        } catch (e2) {
-          if (onInvocationError != null) {
-            onInvocationError(constructor, methodInvocation2, map2, e2);
-          } else {
-            rethrow;
-          }
-        }
-      } else {
+    // Tries a second parameter resolution if some value was resolved.
+    // This will allow use of the current cached entities in a `JsonEntityCache`
+    // (if used by `fieldValueResolver`).
+    var map2 = methodInvocation.parametersToMap();
+
+    if (!DeepCollectionEquality().equals(map, map2)) {
+      var methodInvocation2 = constructor.methodInvocationFromMap(
+        map2,
+        reviver: fieldValueResolver,
+        nameResolver: fieldNameResolver,
+        jsonName: usesJsonNameAlias,
+      );
+
+      try {
+        var o = constructor.invokeWith(methodInvocation2);
+        return o;
+      } catch (e2) {
         if (onInvocationError != null) {
-          onInvocationError(constructor, methodInvocation, map, e);
+          onInvocationError(constructor, methodInvocation2, map2, e2);
         } else {
           rethrow;
         }
+      }
+    } else {
+      if (onInvocationError != null) {
+        onInvocationError(constructor, methodInvocation, map, error);
+      } else {
+        Error.throwWithStackTrace(error, stackTrace);
       }
     }
 
@@ -2329,8 +2333,9 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// - [fieldValueResolver]: resolves a [map] value to a field or parameter
   ///   type.
   /// - [valuesResolved]: when `true`, [map] values already have the types of
-  ///   their fields and parameters: [fieldValueResolver] is ignored, and
-  ///   constructors are called directly (when generated by `2.12.0`+).
+  ///   their fields and parameters, so [fieldValueResolver] is ignored. Without
+  ///   a [fieldValueResolver], constructors generated by `2.12.0`+ are called
+  ///   directly from [map] (see [ConstructorReflection.invoker]).
   /// - [exactKeys]: when `true`, [map] keys are the exact names of the fields
   ///   and parameters: [fieldNameResolver] is ignored, and keys that only
   ///   match ignoring case (or a leading `_`) aren't used.
@@ -2358,7 +2363,6 @@ abstract class ClassReflection<O> extends Reflection<O>
           map,
           fieldNameResolver: fieldNameResolver,
           fieldValueResolver: fieldValueResolver,
-          valuesResolved: valuesResolved,
         );
       } else {
         var o = createInstanceWithConstructors(
@@ -2366,7 +2370,6 @@ abstract class ClassReflection<O> extends Reflection<O>
           map,
           fieldNameResolver: fieldNameResolver,
           fieldValueResolver: fieldValueResolver,
-          valuesResolved: valuesResolved,
         );
         if (o != null) return o;
       }
@@ -2378,7 +2381,6 @@ abstract class ClassReflection<O> extends Reflection<O>
         fieldNameResolver: fieldNameResolver,
         fieldValueResolver: fieldValueResolver,
         allowOptionalOnlyConstructors: true,
-        valuesResolved: valuesResolved,
       );
       if (o != null) return o;
     } else {
@@ -2388,7 +2390,6 @@ abstract class ClassReflection<O> extends Reflection<O>
         fieldValueResolver: fieldValueResolver,
         allowEmptyConstructors: false,
         allowOptionalOnlyConstructors: true,
-        valuesResolved: valuesResolved,
       );
       if (o != null) return o;
     }
@@ -3682,6 +3683,21 @@ class _AbsentParameterValue extends _ParameterValue {
   String get type => 'absent_parameter';
 }
 
+extension _ParameterReflectionOmittable on ParameterReflection {
+  /// Whether a call can omit this parameter when its value is absent or
+  /// `null`, so it takes its default value (`null` without one): it isn't
+  /// [required], and it's [nullable] or has a default value.
+  bool get isOmittable => !required && (nullable || hasDefaultValue);
+}
+
+/// See [ConstructorReflection.absentArgument].
+class _AbsentArgument {
+  const _AbsentArgument();
+
+  @override
+  String toString() => 'absentArgument';
+}
+
 class _UnresolvedParameterValue extends _ParameterValue {
   const _UnresolvedParameterValue({super.required})
     : super(hashCode: required ? 11 : 12);
@@ -4273,9 +4289,7 @@ abstract class FunctionReflection<O, R> extends ElementReflection<O>
         var isAbsent =
             value.isAbsentParameterValue || value.isUnresolvedParameterValue;
 
-        if ((value == null || isAbsent) &&
-            (p.nullable || p.hasDefaultValue) &&
-            !p.required) {
+        if ((value == null || isAbsent) && p.isOmittable) {
           namedValues.remove(k);
         } else if (isAbsent) {
           throw StateError(
@@ -4491,12 +4505,17 @@ class ConstructorReflection<O> extends StaticFunctionReflection<O, O> {
 
   bool get isDefaultConstructor => name.isEmpty && hasNoParameters;
 
+  /// The [invoker] argument of an omitted optional or named parameter:
+  /// the generated [invoker] passes the parameter's default value instead,
+  /// written in its code, so it has the parameter's type (e.g. `0.0` for
+  /// `double x = 0`, not the `int` of [ParameterReflection.defaultValue]).
+  static const Object absentArgument = _AbsentArgument();
+
   /// Invokes this constructor with the parameters of [methodInvocation].
   ///
   /// Calls [invoker] when available, otherwise [constructor] through
   /// [Function.apply]. Omitted optional and named parameters are passed to
-  /// [invoker] as their [ParameterReflection.defaultValue], which is what
-  /// omitting them means.
+  /// [invoker] as [absentArgument], and take their default values.
   O invokeWith(MethodInvocation methodInvocation) {
     final invoker = this.invoker;
     if (invoker != null) {
@@ -4542,7 +4561,7 @@ class ConstructorReflection<O> extends StaticFunctionReflection<O, O> {
     for (var j = 0; j < optionalParameters.length; ++j) {
       args[i++] = j < optionalValues.length
           ? optionalValues[j]
-          : optionalParameters[j].defaultValue;
+          : absentArgument;
     }
 
     var namedFound = 0;
@@ -4551,8 +4570,11 @@ class ConstructorReflection<O> extends StaticFunctionReflection<O, O> {
       if (namedValues.containsKey(k)) {
         args[i++] = namedValues[k];
         ++namedFound;
+      } else if (e.value.required) {
+        // A missing `required` named parameter:
+        return null;
       } else {
-        args[i++] = e.value.defaultValue;
+        args[i++] = absentArgument;
       }
     }
 
@@ -4572,12 +4594,16 @@ class ConstructorReflection<O> extends StaticFunctionReflection<O, O> {
       optionalParameters.isEmpty &&
       !classReflection.hasJsonNameAlias;
 
-  /// Builds [invoker] arguments straight from [map], whose values already
-  /// have the parameters' types, giving the same values as
-  /// [methodInvocationFromMap] without a `reviver`.
+  /// Builds [invoker] arguments straight from [map], with the same values as
+  /// [methodInvocationFromMap] without a `reviver` (passed to [invokeWith]):
+  /// - A normal parameter takes its [map] value, `null` when absent (as
+  ///   [methodInvocation] passes an absent normal parameter).
+  /// - A named parameter that is absent or `null` is omitted when
+  ///   [ParameterReflection.isOmittable] (the same rule as
+  ///   [methodInvocation]); otherwise a `null` value is passed as it is.
   ///
-  /// Returns `null` when [map] lacks a required named parameter, leaving
-  /// the error to [methodInvocationFromMap].
+  /// Returns `null` when [map] lacks a named parameter that can't be omitted,
+  /// leaving the error to [methodInvocationFromMap].
   List<dynamic>? _resolvedMapArguments(
     Map<String, Object?> map,
     FieldNameResolver? nameResolver,
@@ -4610,8 +4636,8 @@ class ConstructorReflection<O> extends StaticFunctionReflection<O, O> {
       final val = map[pName];
       if (val != null) {
         args[i++] = val;
-      } else if (!p.required && (p.nullable || p.hasDefaultValue)) {
-        args[i++] = p.defaultValue;
+      } else if (p.isOmittable) {
+        args[i++] = absentArgument;
       } else if (map.containsKey(pName)) {
         args[i++] = null;
       } else {

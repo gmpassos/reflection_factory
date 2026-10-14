@@ -155,7 +155,7 @@ class TestAddress$reflection extends ClassReflection<TestAddress>
           null,
           null,
           null,
-          invoker: (a) => TestAddress(a[0], a[1]),
+          invoker: (a) => TestAddress(a[0] as String, a[1] as String),
         );
       default:
         return null;
@@ -503,7 +503,8 @@ class TestUserSimple$reflection extends ClassReflection<TestUserSimple>
           null,
           null,
           null,
-          invoker: (a) => TestUserSimple(a[0], a[1], a[2]),
+          invoker: (a) =>
+              TestUserSimple(a[0] as String, a[1] as String?, a[2] as String),
         );
       case 'empty':
         return ConstructorReflection<TestUserSimple>(

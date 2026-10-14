@@ -30,9 +30,14 @@ ConstructorReflection<O> _withoutInvoker<O>(ConstructorReflection<O> c) =>
       c.annotations,
     );
 
+/// A `fieldValueResolver` that keeps every value: it forces the
+/// `MethodInvocation` path, as a `fieldValueResolver` disables direct calls
+/// from the map.
+Object? _keepValue(String field, Object? value, TypeReflection type) => value;
+
 /// Checks that [constructor] gives the same outcome for each of [maps]
-/// through: `Function.apply` (no invoker), the invoker, and the
-/// `valuesResolved` fast path.
+/// through: `Function.apply` (no invoker), the invoker from a
+/// `MethodInvocation`, and the invoker called directly from the map.
 void _expectSameOutcomes<O>(
   ClassReflection<O> reflection,
   ConstructorReflection<O> constructor,
@@ -51,20 +56,20 @@ void _expectSameOutcomes<O>(
 
     var withInvoker = _outcome(
       reflection,
-      () => reflection.createInstanceWithConstructor(constructor, map),
-    );
-
-    var fast = _outcome(
-      reflection,
       () => reflection.createInstanceWithConstructor(
         constructor,
         map,
-        valuesResolved: true,
+        fieldValueResolver: _keepValue,
       ),
     );
 
+    var direct = _outcome(
+      reflection,
+      () => reflection.createInstanceWithConstructor(constructor, map),
+    );
+
     expect(withInvoker, equals(expected), reason: 'invoker: $map');
-    expect(fast, equals(expected), reason: 'valuesResolved: $map');
+    expect(direct, equals(expected), reason: 'direct: $map');
   }
 }
 
@@ -82,6 +87,27 @@ void main() {
           reason: 'constructor: $name',
         );
       }
+    });
+
+    test('not generated for parameters typed by a type parameter', () {
+      var opReflection = TestOpWithReflection$reflection();
+      // `TestOpWithReflection(String type, T? value)`:
+      expect(opReflection.constructor('')!.invoker, isNull);
+      // No parameters:
+      expect(opReflection.constructor('empty')!.invoker, isNotNull);
+
+      // `TestOpAWithReflection(int value)`:
+      expect(
+        TestOpAWithReflection$reflection().constructor('')!.invoker,
+        isNotNull,
+      );
+
+      var o = opReflection.createInstanceWithConstructor(
+        opReflection.constructor('')!,
+        {'type': 't', 'value': 10},
+      )!;
+      expect(o.type, equals('t'));
+      expect(o.value, equals(10));
     });
 
     test('invokeWith == Function.apply', () {
@@ -106,6 +132,26 @@ void main() {
       expect(o1.score, equals(0.5));
       expect(o1.active, isTrue);
       expect(o1.phone, isNull);
+    });
+
+    test('invokeWith: a missing required named parameter', () {
+      var reflection = TestRequiredNamedWithReflection$reflection();
+      var c = reflection.constructor('')!;
+
+      var mi = MethodInvocation<TestRequiredNamedWithReflection>(
+        reflection,
+        TestRequiredNamedWithReflection,
+        '',
+        [],
+        null,
+        {'b': 'y'},
+      );
+
+      // Left to `Function.apply`, which reports it as it always has:
+      expect(
+        _outcome(reflection, () => c.invokeWith(mi)),
+        equals(_outcome(reflection, () => _withoutInvoker(c).invokeWith(mi))),
+      );
     });
 
     test('account: named parameters with defaults', () {
@@ -150,6 +196,106 @@ void main() {
       ]);
     });
 
+    test('defaults typed by their parameters', () {
+      var reflection = TestDefaultsWithReflection$reflection();
+      var c = reflection.constructor('')!;
+
+      // The reflected defaults have other types than the parameters:
+      expect(c.namedParameters['score']!.defaultValue, isA<int>());
+      expect(
+        c.namedParameters['tags']!.defaultValue,
+        isNot(isA<List<String>>()),
+      );
+
+      bool check(int n) => n > 0;
+
+      _expectSameOutcomes(reflection, c, [
+        {},
+        {'score': 2.5},
+        {'score': null, 'tags': null, 'counts': null},
+        {
+          'tags': ['a'],
+          'counts': {'a': 1},
+        },
+        {'check': check},
+        {'score': 'x'},
+      ]);
+
+      for (var o in [
+        reflection.createInstanceWithConstructor(c, {})!,
+        reflection.createInstanceWithConstructor(
+          c,
+          {},
+          fieldValueResolver: _keepValue,
+        )!,
+        reflection.createInstanceFromMap({}, valuesResolved: true)!,
+      ]) {
+        expect(o.score, isA<double>());
+        expect(o.score, equals(0.0));
+        expect(o.tags, isA<List<String>>());
+        expect(o.tags, isEmpty);
+        expect(o.counts, isA<Map<String, int>>());
+        expect(o.check, isNull);
+      }
+
+      var withCheck = reflection.createInstanceWithConstructor(c, {
+        'check': check,
+      })!;
+      expect(withCheck.check!(1), isTrue);
+
+      var positional = reflection.constructor('positional')!;
+
+      _expectSameOutcomes(reflection, positional, [
+        {},
+        {'score': 2.0},
+        {
+          'score': 2.0,
+          'tags': ['y'],
+        },
+      ]);
+
+      var o = reflection.createInstanceWithConstructor(positional, {})!;
+      expect(o.score, isA<double>());
+      expect(o.score, equals(1.0));
+      expect(o.tags, equals(['x']));
+    });
+
+    test('a constructor that throws is called once per attempt', () {
+      var reflection = TestThrowingWithReflection$reflection();
+      var c = reflection.constructor('')!;
+      var legacy = _withoutInvoker(c);
+
+      int calls(ConstructorReflection<TestThrowingWithReflection> c, Map map) {
+        var before = TestThrowingWithReflection.calls;
+        try {
+          reflection.createInstanceWithConstructor(
+            c,
+            map.cast<String, Object?>(),
+          );
+        } on ArgumentError catch (_) {}
+        return TestThrowingWithReflection.calls - before;
+      }
+
+      for (var map in [
+        {'a': 'x'},
+        {'a': 'x', 'fail': 'boom'},
+        // Extra keys: the `MethodInvocation` path calls it a second time,
+        // with the parameters as a `Map`:
+        {'a': 'x', 'fail': 'boom', 'z': 1},
+      ]) {
+        expect(calls(c, map), equals(calls(legacy, map)), reason: '$map');
+      }
+
+      expect(calls(c, {'a': 'x', 'fail': 'boom'}), equals(1));
+
+      var errors = <Object?>[];
+      reflection.createInstanceWithConstructor(c, {
+        'a': 'x',
+        'fail': 'boom',
+      }, onInvocationError: (c, mi, map, e) => errors.add(e));
+      expect(errors, [isA<ArgumentError>()]);
+    });
+
     test('required named parameter', () {
       var reflection = TestRequiredNamedWithReflection$reflection();
 
@@ -165,7 +311,6 @@ void main() {
       var o = reflection.createInstanceWithConstructor(
         reflection.constructor('')!,
         {'a': 'x', 'b': null},
-        valuesResolved: true,
       )!;
 
       // A null value for a parameter with a default takes the default:
@@ -175,13 +320,12 @@ void main() {
         () => reflection.createInstanceWithConstructor(
           reflection.constructor('')!,
           {'b': 'y'},
-          valuesResolved: true,
         ),
         throwsStateError,
       );
     });
 
-    test('optional positional parameters (no fast path)', () {
+    test('optional positional parameters (no direct call)', () {
       var reflection = TestOptPositionalWithReflection$reflection();
       var c = reflection.constructor('')!;
 
@@ -215,14 +359,13 @@ void main() {
       var o = reflection.createInstanceWithConstructor(
         reflection.constructor('')!,
         {},
-        valuesResolved: true,
       )!;
 
       expect(o.x, equals(7));
       expect(o.y, equals('z'));
     });
 
-    test('class with JSON name aliases (no fast path)', () {
+    test('class with JSON name aliases (no direct call)', () {
       var reflection = TestUserWithReflection$reflection();
       expect(reflection.hasJsonNameAlias, isTrue);
 
@@ -259,14 +402,27 @@ void main() {
       ClassReflection<O> reflection,
       Map<String, Object?> map,
     ) {
+      // The `MethodInvocation` path:
       var expected = _outcome(
+        reflection,
+        () => reflection.createInstanceFromMap(
+          map,
+          fieldValueResolver: _keepValue,
+        ),
+      );
+
+      var direct = _outcome(
         reflection,
         () => reflection.createInstanceFromMap(map),
       );
 
       var resolved = _outcome(
         reflection,
-        () => reflection.createInstanceFromMap(map, valuesResolved: true),
+        () => reflection.createInstanceFromMap(
+          map,
+          fieldValueResolver: _keepValue,
+          valuesResolved: true,
+        ),
       );
 
       var resolvedExact = _outcome(
@@ -278,6 +434,7 @@ void main() {
         ),
       );
 
+      expect(direct, equals(expected), reason: 'direct: $map');
       expect(resolved, equals(expected), reason: 'valuesResolved: $map');
       expect(
         resolvedExact,
@@ -320,6 +477,27 @@ void main() {
       expectSameInAllModes(reflection, {...memberMap, 'createdAt': null});
       expectSameInAllModes(reflection, {...memberMap, 'age': 'x'});
       expectSameInAllModes(reflection, {'name': 'Ann'});
+    });
+
+    test('member: main constructor, int literal default of a double', () {
+      var reflection = TestMemberWithReflection$reflection();
+      var c = reflection.constructor('')!;
+
+      // `double score = 0`:
+      expect(c.namedParameters['score']!.defaultValue, isA<int>());
+
+      _expectSameOutcomes(reflection, c, [
+        {'name': 'n', 'email': 'e', 'passwordOrHash': 'h'},
+        {'name': 'n', 'email': 'e', 'passwordOrHash': 'h', 'score': null},
+      ]);
+
+      var o = reflection.createInstanceWithConstructor(c, {
+        'name': 'n',
+        'email': 'e',
+        'passwordOrHash': 'h',
+      })!;
+      expect(o.score, isA<double>());
+      expect(o.passwordHash, equals('h'));
     });
 
     test('member: reflection with an object', () {

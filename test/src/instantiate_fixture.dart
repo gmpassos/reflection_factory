@@ -96,6 +96,45 @@ class TestSuperParamsWithReflection extends TestBaseWithDefault {
   TestSuperParamsWithReflection({super.x, super.y = 'z'});
 }
 
+typedef TestCheck = bool Function(int n);
+
+/// Defaults whose reflected value (`ParameterReflection.defaultValue`) has
+/// another type than the parameter: `0` is an `int`, `const []` a
+/// `List<dynamic>`. A direct call must pass the parameter's own default.
+@EnableReflection()
+class TestDefaultsWithReflection {
+  final double score;
+  final List<String> tags;
+  final Map<String, int> counts;
+  final TestCheck? check;
+
+  TestDefaultsWithReflection({
+    this.score = 0,
+    this.tags = const [],
+    this.counts = const {},
+    this.check,
+  });
+
+  TestDefaultsWithReflection.positional([
+    this.score = 1,
+    this.tags = const ['x'],
+  ]) : counts = const {},
+       check = null;
+}
+
+/// Counts its calls, and throws when [fail] is given.
+@EnableReflection()
+class TestThrowingWithReflection {
+  static int calls = 0;
+
+  final String a;
+
+  TestThrowingWithReflection(this.a, {String? fail}) {
+    ++calls;
+    if (fail != null) throw ArgumentError(fail);
+  }
+}
+
 /// A constructor with a required named parameter, and a nullable named
 /// parameter with a non-null default.
 @EnableReflection()

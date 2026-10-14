@@ -132,7 +132,7 @@ class User$reflection extends ClassReflection<User> with __ReflectionMixin {
           null,
           null,
           null,
-          invoker: (a) => User(a[0], a[1]),
+          invoker: (a) => User(a[0] as String?, a[1] as String),
         );
       case 'empty':
         return ConstructorReflection<User>(

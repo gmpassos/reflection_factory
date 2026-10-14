@@ -403,15 +403,26 @@ void main() {
                 ),
               ),
               allOf(
+                // Arguments are cast to their parameter types; an omitted
+                // optional parameter takes the default written in the code:
                 matches(
                   RegExp(
-                    r'invoker:\s*\(a\)\s*=>\s*Domain\.positional\(\s*a\[0\],\s*a\[1\],\s*a\[2\],\s*a\[3\],?\s*\)',
+                    r'invoker:\s*\(a\)\s*=>\s*Domain\.positional\(\s*'
+                    r'a\[0\] as String,\s*'
+                    r'a\[1\] as String,\s*'
+                    r'identical\(a\[2\], ConstructorReflection\.absentArgument\)\s*\?\s*null\s*:\s*a\[2\] as Fx\?,\s*'
+                    r'identical\(a\[3\], ConstructorReflection\.absentArgument\)\s*\?\s*null\s*:\s*a\[3\] as bool Function\(\)\?,?\s*\)',
                   ),
                 ),
                 matches(
                   RegExp(
-                    // Named arguments follow the emitted `namedParameters` order:
-                    r'invoker:\s*\(a\)\s*=>\s*Domain\.named\(\s*extra:\s*a\[0\],\s*fx:\s*a\[1\],\s*name:\s*a\[2\],\s*suffix:\s*a\[3\],?\s*\)',
+                    // Named arguments follow the emitted `namedParameters`
+                    // order; a `required` one is never omitted:
+                    r'invoker:\s*\(a\)\s*=>\s*Domain\.named\(\s*'
+                    r'extra:\s*identical\(a\[0\], ConstructorReflection\.absentArgument\)\s*\?\s*null\s*:\s*a\[0\] as bool Function\(\)\?,\s*'
+                    r'fx:\s*identical\(a\[1\], ConstructorReflection\.absentArgument\)\s*\?\s*null\s*:\s*a\[1\] as Fx\?,\s*'
+                    r'name:\s*a\[2\] as String,\s*'
+                    r"suffix:\s*identical\(a\[3\], ConstructorReflection\.absentArgument\)\s*\?\s*'net'\s*:\s*a\[3\] as String,?\s*\)",
                   ),
                 ),
                 matches(RegExp(r'invoker:\s*\(a\)\s*=>\s*Domain\.empty\(\)')),

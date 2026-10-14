@@ -2072,14 +2072,15 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
         typeAliasTable,
       );
       var fullName = constructor.fullName;
+      var invoker = constructor.asInvokerCode(typeAliasTable);
 
       return "ConstructorReflection<$className>("
           "this, $declaringType, '$name', () => $fullName , "
           "${constructor.normalParametersAsCode} , "
           "${constructor.optionalParametersAsCode}, "
           "${constructor.namedParametersAsCode}, "
-          "${constructor.annotationsAsListCode}, "
-          "invoker: ${constructor.asInvokerCode}"
+          "${constructor.annotationsAsListCode}"
+          "${invoker != null ? ', invoker: $invoker' : ''}"
           ")";
     });
 
@@ -3340,23 +3341,63 @@ class _Constructor<T> extends _Element {
   /// Returns the code of a `ConstructorInvoker`: a closure that calls this
   /// constructor directly with one argument per parameter, in the order of
   /// the emitted parameters (normal, optional positional, then named), e.g.:
-  /// `(a) => Foo.withCity(a[0], city: a[1], id: a[2])`.
+  /// ```dart
+  /// (a) => Foo.withCity(
+  ///   a[0] as String,
+  ///   city: identical(a[1], ConstructorReflection.absentArgument)
+  ///       ? '' : a[1] as String,
+  ///   id: identical(a[2], ConstructorReflection.absentArgument)
+  ///       ? null : a[2] as int?,
+  /// )
+  /// ```
+  /// - Each argument is cast to its parameter type (no implicit `dynamic`
+  ///   downcasts, for `strict-casts`).
+  /// - An omitted optional or named (not `required`) parameter arrives as
+  ///   `ConstructorReflection.absentArgument` and is replaced by its default
+  ///   value, written here, in its parameter's type context (`double x = 0`
+  ///   passes `0.0`; `List<String> l = const []` a `List<String>`).
   ///
-  /// Each argument is a `dynamic` list element, so no type code is needed.
-  String get asInvokerCode {
+  /// Returns `null` (no invoker: `Function.apply` is used) when a parameter
+  /// type depends on a type parameter, which isn't in scope here.
+  String? asInvokerCode(_TypeAliasTable typeAliasTable) {
+    var allParameters = [
+      ...normalParameters,
+      ...optionalParameters,
+      ...namedParameters.values,
+    ];
+
+    if (allParameters.any((p) => p.type.hasTypeParameter)) {
+      return null;
+    }
+
     var args = <String>[];
     var i = 0;
 
-    for (var _ in normalParameters) {
-      args.add('a[${i++}]');
+    String cast(_Parameter p, int i) {
+      var type = p.type;
+      if (type is DynamicType) return 'a[$i]';
+      return 'a[$i] as ${type.typeNameAsNullableCode(typeAliasTable)}';
     }
 
-    for (var _ in optionalParameters) {
-      args.add('a[${i++}]');
+    String omittable(_Parameter p, int i) {
+      var defaultValue = p.hasDefaultValue ? p.defaultValue! : 'null';
+      return 'identical(a[$i], ConstructorReflection.absentArgument) '
+          '? $defaultValue : ${cast(p, i)}';
     }
 
-    for (var k in namedParameters.keys) {
-      args.add('$k: a[${i++}]');
+    for (var p in normalParameters) {
+      args.add(cast(p, i++));
+    }
+
+    for (var p in optionalParameters) {
+      args.add(omittable(p, i++));
+    }
+
+    for (var e in namedParameters.entries) {
+      var p = e.value;
+      // A `required` named parameter is never omitted:
+      var arg = p.required ? cast(p, i++) : omittable(p, i++);
+      args.add('${e.key}: $arg');
     }
 
     var callee = name.isEmpty ? classTree.className : fullName;
@@ -3558,6 +3599,22 @@ extension _DartTypeExtension on DartType {
   bool get isParameterType => this is TypeParameterType;
 
   bool get isResolvableType => !isParameterType;
+
+  /// Whether this type is, or contains, a type parameter
+  /// (e.g. `T`, `List<T>`, `T Function()`).
+  bool get hasTypeParameter {
+    final self = this;
+    if (self is TypeParameterType) return true;
+    if (self is FunctionType) {
+      return self.typeParameters.isNotEmpty ||
+          self.returnType.hasTypeParameter ||
+          self.formalParameters.any((p) => p.type.hasTypeParameter);
+    }
+    if (self is ParameterizedType) {
+      return self.typeArguments.any((t) => t.hasTypeParameter);
+    }
+    return false;
+  }
 
   String typeNameResolvable(_TypeAliasTable typeAliasTable) =>
       typeAliasTable.typeNameResolvableCache[this] ??= resolveTypeName(
