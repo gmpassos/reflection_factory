@@ -31,10 +31,14 @@
   arguments plus setting fields, no longer allocates a `FieldReflection` per
   field and instance (`setFor` / `setNullableFor` on the cached fields).
 
-- Micro-benchmark (`createInstanceFromMap`, a class with 8 fields; AOT):
-  - Constructor path: ~3.1µs → ~1.8µs, and ~0.46µs with
+- New `benchmark/create_instance_from_map.dart`, with its results in
+  `benchmark/HISTORY.md`. On an Apple M5 (JIT), for a class with 8 fields:
+  - Constructor path: 3110 → 1694 ns/op, and 393 ns/op with
     `valuesResolved` + `exactKeys`.
-  - Create + setters path: ~0.92µs → ~0.65µs.
+  - `fromJson`: 4454 → 3022 ns/op.
+  - Create + setters path: 1020 → 750 ns/op.
+  - `bones_api` SQLite `user/list`: +10.5% ops/sec as is, +34% with the
+    options.
 
 ## 2.11.0
 
