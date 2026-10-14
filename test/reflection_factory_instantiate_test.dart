@@ -564,22 +564,29 @@ void main() {
     test('valuesResolved: the values must already have their types', () {
       var reflection = TestDefaultsWithReflection$reflection();
 
-      // JSON values, resolved by `fromJson` (with a `fieldValueResolver`):
-      var json = <String, Object?>{
-        'score': 2,
-        'tags': ['a'],
-      };
+      // JSON values that don't have their parameters' types, on any platform
+      // (an `int` for a `double` would fit on the web: both are JS numbers):
+      for (var json in <Map<String, Object?>>[
+        {'score': '2.5'},
+        {
+          'tags': <dynamic>['a'],
+        },
+      ]) {
+        // Resolved by `fromJson` (with a `fieldValueResolver`):
+        var o = TestDefaultsWithReflection$fromJson(json);
+        if (json.containsKey('score')) expect(o.score, equals(2.5));
+        if (json.containsKey('tags')) {
+          expect(o.tags, isA<List<String>>());
+          expect(o.tags, equals(['a']));
+        }
 
-      var o = TestDefaultsWithReflection$fromJson(json);
-      expect(o.score, equals(2.0));
-      expect(o.tags, equals(['a']));
-
-      // The same values passed as resolved aren't converted: an `int` for a
-      // `double` and a `List<dynamic>` for a `List<String>` don't fit.
-      expect(
-        () => reflection.createInstanceFromMap(json, valuesResolved: true),
-        throwsA(isA<TypeError>()),
-      );
+        // Passed as resolved, they aren't converted, and don't fit:
+        expect(
+          () => reflection.createInstanceFromMap(json, valuesResolved: true),
+          throwsA(isA<TypeError>()),
+          reason: '$json',
+        );
+      }
     });
   });
 
