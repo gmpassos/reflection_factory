@@ -143,6 +143,9 @@ class Holder<T extends o.Other> {
   Map<String, o.Other>? byName;
   Map<PlainA, List<f.Deep>>? nested;
   T? bounded;
+  // A settable function type with the class type parameter: reflected as
+  // `dynamic` (`T` isn't in scope), so its generated setter compiles.
+  T Function()? maker;
 
   Holder(this.count, this.label);
 
