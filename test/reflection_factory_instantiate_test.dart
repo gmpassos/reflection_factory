@@ -560,5 +560,256 @@ void main() {
       )!;
       expect(o3.name, equals('Ann'));
     });
+
+    test('valuesResolved: the values must already have their types', () {
+      var reflection = TestDefaultsWithReflection$reflection();
+
+      // JSON values, resolved by `fromJson` (with a `fieldValueResolver`):
+      var json = <String, Object?>{
+        'score': 2,
+        'tags': ['a'],
+      };
+
+      var o = TestDefaultsWithReflection$fromJson(json);
+      expect(o.score, equals(2.0));
+      expect(o.tags, equals(['a']));
+
+      // The same values passed as resolved aren't converted: an `int` for a
+      // `double` and a `List<dynamic>` for a `List<String>` don't fit.
+      expect(
+        () => reflection.createInstanceFromMap(json, valuesResolved: true),
+        throwsA(isA<TypeError>()),
+      );
+    });
+  });
+
+  group('defaults in generated code', () {
+    test('more defaults typed by their parameters', () {
+      var reflection = TestMoreDefaultsWithReflection$reflection();
+      var c = reflection.constructor('')!;
+
+      // The reflected defaults lose their types:
+      expect(c.namedParameters['ids']!.defaultValue, isNot(isA<Set<int>>()));
+      expect(
+        c.namedParameters['groups']!.defaultValue,
+        isNot(isA<Map<String, List<int>>>()),
+      );
+
+      _expectSameOutcomes(reflection, c, [
+        {},
+        {
+          'ids': {1, 2},
+        },
+        {
+          'groups': {
+            'a': [1],
+          },
+        },
+        // A null value for a nullable parameter with a default takes the
+        // default (it's omitted), as through `Function.apply`:
+        {'label': null},
+        {'limit': 9, 'level': TestLevel.low},
+        {'timeout': 'x'},
+      ]);
+
+      for (var o in [
+        reflection.createInstanceWithConstructor(c, {})!,
+        reflection.createInstanceWithConstructor(
+          c,
+          {},
+          fieldValueResolver: _keepValue,
+        )!,
+        reflection.createInstanceFromMap({}, valuesResolved: true)!,
+      ]) {
+        expect(o.ids, isA<Set<int>>());
+        expect(o.ids, isEmpty);
+        expect(o.groups, isA<Map<String, List<int>>>());
+        expect(o.timeout, equals(const Duration(seconds: 1)));
+        expect(o.level, equals(TestLevel.high));
+        // `this.limit = defaultLimit`: a static const by its bare name.
+        expect(o.limit, equals(TestMoreDefaultsWithReflection.defaultLimit));
+        expect(o.label, equals('label'));
+      }
+    });
+
+    test('fromJson: omitted fields take typed defaults', () {
+      for (var o in [
+        TestDefaultsWithReflection$fromJson({}),
+        TestDefaultsWithReflection$fromJsonEncoded('{}'),
+      ]) {
+        expect(o.score, isA<double>());
+        expect(o.score, equals(0.0));
+        expect(o.tags, isA<List<String>>());
+        expect(o.counts, isA<Map<String, int>>());
+      }
+
+      var o = TestDefaultsWithReflection$fromJsonEncoded(
+        '{"score": 2.5, "tags": ["x", "y"], "counts": {"x": 1}}',
+      );
+      expect(o.score, equals(2.5));
+      expect(o.tags, equals(['x', 'y']));
+      expect(o.counts, equals({'x': 1}));
+    });
+
+    test('parameters typed by a type parameter: no invoker', () {
+      var reflection = TestGenericBoxWithReflection$reflection();
+
+      // `TestGenericBoxWithReflection(List<T> items, {T Function()? factory})`:
+      var c = reflection.constructor('')!;
+      expect(c.invoker, isNull);
+      expect(c.canInvokeFromResolvedMap, isFalse);
+
+      // `named(String name)`:
+      expect(reflection.constructor('named')!.invoker, isNotNull);
+
+      var o = reflection.createInstanceWithConstructor(c, {
+        'items': [1, 2],
+        'factory': () => 3,
+      })!;
+      expect(o.items, equals([1, 2]));
+      expect(o.factory!(), equals(3));
+      expect(o.name, equals('box'));
+
+      var o2 = reflection.createInstanceWithConstructor(
+        reflection.constructor('named')!,
+        {'name': 'n'},
+      )!;
+      expect(o2.name, equals('n'));
+      expect(o2.items, isEmpty);
+    });
+  });
+
+  group('direct call and the MethodInvocation path', () {
+    final account = <String, Object?>{'name': 'Joe', 'email': 'j@mail'};
+
+    test('a fieldNameResolver that throws', () {
+      var reflection = TestAccountWithReflection$reflection();
+      var c = reflection.constructor('')!;
+
+      String? throwing(String f, Map<String, Object?> m) =>
+          throw StateError('resolver: $f');
+
+      // The direct call leaves the error to the `MethodInvocation` path:
+      expect(
+        _outcome(
+          reflection,
+          () => reflection.createInstanceWithConstructor(
+            c,
+            account,
+            fieldNameResolver: throwing,
+          ),
+        ),
+        equals(
+          _outcome(
+            reflection,
+            () => reflection.createInstanceWithConstructor(
+              c,
+              account,
+              fieldNameResolver: throwing,
+              fieldValueResolver: _keepValue,
+            ),
+          ),
+        ),
+      );
+    });
+
+    test('keys matched by a fieldNameResolver', () {
+      var reflection = TestAccountWithReflection$reflection();
+      var c = reflection.constructor('')!;
+
+      String? ignoreCase(String f, Map<String, Object?> m) =>
+          m.keys.where((k) => k.toLowerCase() == f.toLowerCase()).firstOrNull;
+
+      var map = {'NAME': 'Joe', 'Email': 'j@mail', 'AGE': 40};
+
+      var direct = reflection.createInstanceWithConstructor(
+        c,
+        map,
+        fieldNameResolver: ignoreCase,
+      )!;
+      var viaMethodInvocation = reflection.createInstanceWithConstructor(
+        c,
+        map,
+        fieldNameResolver: ignoreCase,
+        fieldValueResolver: _keepValue,
+      )!;
+
+      expect(
+        reflection.getFieldsValues(direct),
+        equals(reflection.getFieldsValues(viaMethodInvocation)),
+      );
+      expect(direct.name, equals('Joe'));
+      expect(direct.age, equals(40));
+    });
+
+    test('invokeWith: parameters that don\'t fit the constructor', () {
+      var reflection = TestAccountWithReflection$reflection();
+      var c = reflection.constructor('')!;
+      var legacy = _withoutInvoker(c);
+
+      for (var mi in [
+        // An extra positional argument:
+        MethodInvocation<TestAccountWithReflection>(
+          reflection,
+          TestAccountWithReflection,
+          '',
+          ['Joe', 'j@mail', 'extra'],
+        ),
+        // A missing positional argument:
+        MethodInvocation<TestAccountWithReflection>(
+          reflection,
+          TestAccountWithReflection,
+          '',
+          ['Joe'],
+        ),
+        // An unknown named argument:
+        MethodInvocation<TestAccountWithReflection>(
+          reflection,
+          TestAccountWithReflection,
+          '',
+          ['Joe', 'j@mail'],
+          null,
+          {'unknown': 1},
+        ),
+      ]) {
+        var expected = _outcome(reflection, () => legacy.invokeWith(mi));
+        expect(expected, equals(NoSuchMethodError), reason: '$mi');
+        expect(
+          _outcome(reflection, () => c.invokeWith(mi)),
+          equals(expected),
+          reason: '$mi',
+        );
+      }
+
+      var opt = TestOptPositionalWithReflection$reflection();
+      var optC = opt.constructor('')!;
+      // Too many optional positional arguments:
+      var mi = MethodInvocation<TestOptPositionalWithReflection>(
+        opt,
+        TestOptPositionalWithReflection,
+        '',
+        ['a'],
+        ['b', 1, 'extra'],
+      );
+      expect(
+        _outcome(opt, () => optC.invokeWith(mi)),
+        equals(_outcome(opt, () => _withoutInvoker(optC).invokeWith(mi))),
+      );
+    });
+
+    test('absentArgument', () {
+      expect(
+        identical(
+          ConstructorReflection.absentArgument,
+          ConstructorReflection.absentArgument,
+        ),
+        isTrue,
+      );
+      expect(ConstructorReflection.absentArgument, isNot(isNull));
+      expect(
+        ConstructorReflection.absentArgument.toString(),
+        equals('absentArgument'),
+      );
+    });
   });
 }

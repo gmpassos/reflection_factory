@@ -211,6 +211,181 @@ class Holder<T extends o.Other> {
             '${analyze.stdout}\n${analyze.stderr}',
       );
     }, timeout: Timeout(Duration(minutes: 5)));
+
+    // The constructor `invoker`s: they cast their arguments (`strict-casts`,
+    // `avoid_dynamic_calls`) and write the default values of omitted
+    // parameters in their parameters' type context. A default can come from
+    // a prefixed import, from a static member referenced by its bare name, or
+    // be inherited by a super-parameter from another library.
+    test('constructor invokers: strict analysis and runtime', () async {
+      var packageRoot = _getPackageRootDirectory().path;
+
+      _write(tempDir, 'pubspec.yaml', '''
+name: reflection_factory_e2e
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+dependencies:
+  reflection_factory:
+    path: $packageRoot
+dev_dependencies:
+  build_runner: ^2.15.0
+''');
+
+      _write(tempDir, 'analysis_options.yaml', '''
+analyzer:
+  language:
+    strict-casts: true
+linter:
+  rules:
+    - avoid_dynamic_calls
+''');
+
+      _write(tempDir, 'lib/other.dart', '''
+enum Flavor { sweet, salty }
+
+const int kBonus = 5;
+
+class Base {
+  final int level;
+  Base({this.level = 4});
+}
+''');
+
+      _write(tempDir, 'lib/foo.dart', '''
+import 'package:reflection_factory/reflection_factory.dart';
+
+import 'other.dart' as o;
+
+part 'foo.reflection.g.dart';
+
+typedef Check = bool Function(int n);
+
+@EnableReflection()
+class Order {
+  static const int defaultQty = 2;
+
+  final String id;
+  final double price;
+  final int qty;
+  final List<String> tags;
+  final Map<String, int> counts;
+  final o.Flavor flavor;
+  final int bonus;
+  final Duration ttl;
+  final Check? check;
+
+  Order(
+    this.id, {
+    this.price = 0,
+    this.qty = defaultQty,
+    this.tags = const [],
+    this.counts = const {},
+    this.flavor = o.Flavor.sweet,
+    this.bonus = o.kBonus,
+    this.ttl = const Duration(seconds: 5),
+    this.check,
+  });
+}
+
+@EnableReflection()
+class Sub extends o.Base {
+  Sub({super.level});
+}
+
+@EnableReflection()
+class Box<T> {
+  final List<T> items;
+  final T Function()? make;
+
+  Box(this.items, {this.make});
+}
+''');
+
+      _write(tempDir, 'bin/main.dart', r'''
+import 'package:reflection_factory_e2e/foo.dart';
+import 'package:reflection_factory_e2e/other.dart';
+
+void main() {
+  void show(String path, Order o) {
+    print('$path: price=${o.price is double}:${o.price} qty=${o.qty} '
+        'tags=${o.tags is List<String>}:${o.tags} '
+        'counts=${o.counts is Map<String, int>} '
+        'flavor=${o.flavor == Flavor.sweet} bonus=${o.bonus} '
+        'ttl=${o.ttl.inSeconds} check=${o.check == null}');
+  }
+
+  var reflection = Order$reflection();
+
+  // Without a `fieldValueResolver`: called straight from the map.
+  show('direct', reflection.createInstanceFromMap({'id': 'a'})!);
+  // With one (JSON): through a `MethodInvocation` and `invokeWith`.
+  show('json', Order$fromJson({'id': 'a'}));
+
+  var o = reflection.createInstanceFromMap({
+    'id': 'b',
+    'price': 1.5,
+    'check': (int n) => n > 0,
+  })!;
+  print('given: price=${o.price} check=${o.check!(1)}');
+
+  print('sub: level=${Sub$reflection().createInstanceFromMap({})!.level}');
+
+  var box = Box$reflection().createInstanceFromMap({
+    'items': [1, 2],
+  })!;
+  print('box: items=${box.items} invoker=${Box$reflection().constructor('')!.invoker == null ? 'none' : 'yes'}');
+}
+''');
+
+      await _run('dart', ['pub', 'get'], tempDir);
+      await _run('dart', ['run', 'build_runner', 'build'], tempDir);
+
+      var code = File(
+        pack_path.join(tempDir.path, 'lib', 'foo.reflection.g.dart'),
+      ).readAsStringSync();
+
+      // Defaults as written, qualified where needed:
+      expect(code, contains('Order.defaultQty'));
+      expect(code, contains('o.Flavor.sweet'));
+      expect(code, contains('o.kBonus'));
+      // Typed arguments:
+      expect(code, contains('as String'));
+      expect(code, contains('as Check?'));
+
+      // `lib/`: the generated code (`bin/` checks types on purpose).
+      var analyze = await _run(
+        'dart',
+        ['analyze', '--fatal-infos', 'lib'],
+        tempDir,
+        expectSuccess: false,
+      );
+
+      expect(
+        analyze.exitCode,
+        equals(0),
+        reason:
+            'the generated code has issues under strict analysis:\n'
+            '${analyze.stdout}\n${analyze.stderr}',
+      );
+
+      var run = await _run('dart', ['run', 'bin/main.dart'], tempDir);
+      var output = '${run.stdout}'.trim().split('\n');
+
+      const defaults =
+          'price=true:0.0 qty=2 tags=true:[] counts=true flavor=true '
+          'bonus=5 ttl=5 check=true';
+
+      expect(
+        output,
+        equals([
+          'direct: $defaults',
+          'json: $defaults',
+          'given: price=1.5 check=true',
+          'sub: level=4',
+          'box: items=[1, 2] invoker=none',
+        ]),
+      );
+    }, timeout: Timeout(Duration(minutes: 5)));
   });
 }
 

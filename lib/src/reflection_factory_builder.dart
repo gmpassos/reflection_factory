@@ -2,6 +2,9 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 
+import 'package:analyzer/dart/ast/ast.dart' as ast;
+import 'package:analyzer/dart/ast/token.dart';
+import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
@@ -2001,7 +2004,7 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
     str.write('  List<Object> get classAnnotations => _classAnnotations;\n\n');
 
     str.write(
-      '  static const List<Type> _supperTypes = const <Type>[${supperTypes.map((e) => e.name).join(', ')}];\n\n',
+      '  static const List<Type> _supperTypes = const <Type>[${supperTypes.map((e) => typeAliasTable.qualifyTypeName('${e.name}', e)).join(', ')}];\n\n',
     );
 
     str.write('\n  @override\n');
@@ -3275,9 +3278,84 @@ class _Parameter extends _Element {
     return valCode != null && valCode.isNotEmpty;
   }
 
+  /// [defaultValue] as code that resolves in the generated code, outside the
+  /// declaring class: a static member referenced by its bare name (e.g.
+  /// `this.limit = defaultLimit`, valid only in its class) is qualified by
+  /// its class (`Foo.defaultLimit`).
+  String? defaultValueAsCode(_TypeAliasTable typeAliasTable) {
+    var code = defaultValue;
+    if (code == null || code.isEmpty) return code;
+
+    // ignore: deprecated_member_use
+    var expression = parameterElement.constantInitializer;
+    if (expression == null) return code;
+
+    var qualified = <Token, String>{};
+    expression.accept(_BareStaticMembersQualifier(typeAliasTable, qualified));
+    if (qualified.isEmpty) return code;
+
+    // Rebuilds the expression from its tokens, qualifying the bare names:
+    var s = StringBuffer();
+    Token? previous;
+    for (Token? t = expression.beginToken; t != null; t = t.next) {
+      if (previous != null && t.offset > previous.end) s.write(' ');
+      s.write(qualified[t] ?? t.lexeme);
+      if (identical(t, expression.endToken)) break;
+      previous = t;
+    }
+    return s.toString();
+  }
+
   @override
   String toString() {
     return '_Parameter{type: $type, name: $name, nullable: $nullable, required: $required, parameterElement: $parameterElement, parameterIndex: $parameterIndex}';
+  }
+}
+
+/// Collects the identifiers of an expression that reference a static member
+/// of a class by its bare name, with their qualified code.
+class _BareStaticMembersQualifier extends RecursiveAstVisitor<void> {
+  final _TypeAliasTable typeAliasTable;
+  final Map<Token, String> qualified;
+
+  _BareStaticMembersQualifier(this.typeAliasTable, this.qualified);
+
+  @override
+  void visitSimpleIdentifier(ast.SimpleIdentifier node) {
+    super.visitSimpleIdentifier(node);
+
+    // Already qualified (`Foo.x`, `prefix.x`, `a.b.x`, `a.m()`):
+    var parent = node.parent;
+    if (parent is ast.PrefixedIdentifier &&
+        identical(parent.identifier, node)) {
+      return;
+    }
+    if (parent is ast.PropertyAccess && identical(parent.propertyName, node)) {
+      return;
+    }
+    if (parent is ast.MethodInvocation &&
+        identical(parent.methodName, node) &&
+        parent.target != null) {
+      return;
+    }
+
+    var element = node.element;
+    var isStatic = switch (element) {
+      FieldElement() => element.isStatic,
+      PropertyAccessorElement() => element.isStatic,
+      MethodElement() => element.isStatic,
+      _ => false,
+    };
+    if (!isStatic) return;
+
+    var enclosing = element!.enclosingElement;
+    if (enclosing is! InterfaceElement) return;
+
+    var className = enclosing.name;
+    if (className == null) return;
+
+    qualified[node.token] =
+        '${typeAliasTable.qualifyTypeName(className, enclosing)}.${node.name}';
   }
 }
 
@@ -3380,7 +3458,9 @@ class _Constructor<T> extends _Element {
     }
 
     String omittable(_Parameter p, int i) {
-      var defaultValue = p.hasDefaultValue ? p.defaultValue! : 'null';
+      var defaultValue = p.hasDefaultValue
+          ? p.defaultValueAsCode(typeAliasTable)!
+          : 'null';
       return 'identical(a[$i], ConstructorReflection.absentArgument) '
           '? $defaultValue : ${cast(p, i)}';
     }
@@ -3515,8 +3595,13 @@ class _Field extends _Element {
   String typeNameAsCode(_TypeAliasTable typeAliasTable) =>
       fieldElement.type.typeNameAsCode(typeAliasTable);
 
-  String typeNameAsNullableCode(_TypeAliasTable typeAliasTable) =>
-      fieldElement.type.typeNameAsNullableCode(typeAliasTable);
+  String typeNameAsNullableCode(_TypeAliasTable typeAliasTable) {
+    var type = fieldElement.type;
+    // A function type with a class type parameter (e.g. `T Function()`):
+    // `T` isn't in scope in the generated code (as a `T` field is `dynamic`).
+    if (type is FunctionType && type.hasTypeParameter) return 'dynamic';
+    return type.typeNameAsNullableCode(typeAliasTable);
+  }
 
   bool get isTypeWithReflection => fieldElement.type.isTypeWithReflection;
 
@@ -4262,7 +4347,7 @@ String _buildParameterReflectionList(
   } else {
     var parameters = o
         .map((e) {
-          var defaultValue = e.defaultValue ?? 'null';
+          var defaultValue = e.defaultValueAsCode(typeAliasTable) ?? 'null';
           var annotationsAsListCode = e.annotationsAsListCode;
 
           return "$pr( "
@@ -4294,7 +4379,8 @@ String _buildNamedParameterReflectionMap(
         .map((e) {
           var key = e.key;
           var value = e.value;
-          var defaultValue = e.value.defaultValue ?? 'null';
+          var defaultValue =
+              e.value.defaultValueAsCode(typeAliasTable) ?? 'null';
           var annotationsAsListCode = e.value.annotationsAsListCode;
 
           return "'$key': $pr( "

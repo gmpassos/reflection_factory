@@ -122,6 +122,48 @@ class TestDefaultsWithReflection {
        check = null;
 }
 
+enum TestLevel { low, high }
+
+/// More defaults that only have their parameter's type in a typed context
+/// (`ParameterReflection.defaultValue` is a `Set<dynamic>`, a
+/// `Map<dynamic, dynamic>`, ...), and a nullable parameter with a non-null
+/// default.
+@EnableReflection()
+class TestMoreDefaultsWithReflection {
+  static const int defaultLimit = 3;
+
+  final Set<int> ids;
+  final Map<String, List<int>> groups;
+  final Duration timeout;
+  final TestLevel level;
+  final int limit;
+  final String? label;
+
+  TestMoreDefaultsWithReflection({
+    this.ids = const {},
+    this.groups = const {},
+    this.timeout = const Duration(seconds: 1),
+    this.level = TestLevel.high,
+    this.limit = defaultLimit,
+    this.label = 'label',
+  });
+}
+
+/// Parameters typed by the class type parameter: no `invoker` (the type
+/// parameter isn't in scope in generated code), so `Function.apply` is used.
+@EnableReflection()
+class TestGenericBoxWithReflection<T> {
+  final List<T> items;
+  final T Function()? factory;
+  final String name;
+
+  TestGenericBoxWithReflection(this.items, {this.factory, this.name = 'box'});
+
+  TestGenericBoxWithReflection.named(this.name)
+    : items = const [],
+      factory = null;
+}
+
 /// Counts its calls, and throws when [fail] is given.
 @EnableReflection()
 class TestThrowingWithReflection {

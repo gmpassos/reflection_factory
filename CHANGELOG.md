@@ -39,7 +39,9 @@
   resolved (e.g. DB rows in `bones_api`):
   - `valuesResolved`: values already have their fields' and parameters'
     types, so `fieldValueResolver` is ignored and constructors are called
-    straight from the map.
+    straight from the map. Nothing is converted: JSON values (an `int` for
+    a `double`, a `List<dynamic>` for a `List<String>`, an enum name) don't
+    fit, so use it only for values resolved by their exact types.
   - `exactKeys`: keys are the exact field and parameter names.
     `fieldNameResolver` is ignored, and keys matching only ignoring case (or
     without a leading `_`) aren't used.
@@ -49,6 +51,17 @@
 - `createInstanceFromMap`, when it falls back to an instance created without
   arguments plus setting fields, no longer allocates a `FieldReflection` per
   field and instance (`setFor` / `setNullableFor` on the cached fields).
+
+- Generator fixes. In each case the generated code didn't compile:
+  - A default value that references a static member of its class by its
+    bare name (e.g. `this.limit = defaultLimit`) is qualified by its class
+    (`Foo.defaultLimit`), in the `invoker` and in the parameters'
+    `ParameterReflection`s.
+  - A field with a function type that uses a class type parameter (e.g.
+    `T Function()? make`) is reflected as `dynamic`, like a `T` field. It
+    was emitted with `T`, which isn't in scope.
+  - The `supperTypes` of a class whose superclass comes from a prefixed
+    import are emitted with the prefix.
 
 - New `benchmark/create_instance_from_map.dart`, with its results in
   `benchmark/HISTORY.md`. On an Apple M5 (JIT), for a class with 8 fields:
