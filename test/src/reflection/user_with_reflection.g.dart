@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.11.0
+// BUILDER: reflection_factory/2.12.0
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -22,7 +22,7 @@ typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.11.0');
+  static final Version _version = Version.parse('2.12.0');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -304,6 +304,7 @@ class TestAddressWithReflection$reflection
           null,
           const <String, __PR>{'id': __PR(__TR.tInt, 'id', true, false)},
           null,
+          invoker: (a) => TestAddressWithReflection.simple(a[0], id: a[1]),
         );
       case 'withcity':
         return ConstructorReflection<TestAddressWithReflection>(
@@ -318,6 +319,8 @@ class TestAddressWithReflection$reflection
             'id': __PR(__TR.tInt, 'id', true, false),
           },
           const [JsonConstructor(mandatory: true)],
+          invoker: (a) =>
+              TestAddressWithReflection.withCity(a[0], city: a[1], id: a[2]),
         );
       case 'empty':
         return ConstructorReflection<TestAddressWithReflection>(
@@ -329,6 +332,7 @@ class TestAddressWithReflection$reflection
           null,
           null,
           null,
+          invoker: (a) => TestAddressWithReflection.empty(),
         );
       default:
         return null;
@@ -764,6 +768,13 @@ class TestCompanyWithReflection$reflection
             ),
           },
           null,
+          invoker: (a) => TestCompanyWithReflection(
+            a[0],
+            a[1],
+            branchesAddresses: a[2],
+            extraAddresses: a[3],
+            extraNames: a[4],
+          ),
         );
       case 'nobranches':
         return ConstructorReflection<TestCompanyWithReflection>(
@@ -800,6 +811,12 @@ class TestCompanyWithReflection$reflection
             ),
           },
           null,
+          invoker: (a) => TestCompanyWithReflection.noBranches(
+            a[0],
+            a[1],
+            extraAddresses: a[2],
+            extraNames: a[3],
+          ),
         );
       default:
         return null;
@@ -1260,6 +1277,8 @@ class TestDataWithReflection$reflection
             'id': __PR(__TR.tBigInt, 'id', true, false),
           },
           null,
+          invoker: (a) =>
+              TestDataWithReflection(a[0], a[1], domain: a[2], id: a[3]),
         );
       default:
         return null;
@@ -1597,6 +1616,7 @@ class TestDomainWithReflection$reflection
           ],
           null,
           null,
+          invoker: (a) => TestDomainWithReflection(a[0], a[1], a[2], a[3]),
         );
       case 'named':
         return ConstructorReflection<TestDomainWithReflection>(
@@ -1618,6 +1638,12 @@ class TestDomainWithReflection$reflection
             'suffix': __PR(__TR.tString, 'suffix', false, false, 'net'),
           },
           null,
+          invoker: (a) => TestDomainWithReflection.named(
+            domainFunction: a[0],
+            extraFunction: a[1],
+            name: a[2],
+            suffix: a[3],
+          ),
         );
       case 'parse':
         return ConstructorReflection<TestDomainWithReflection>(
@@ -1629,6 +1655,7 @@ class TestDomainWithReflection$reflection
           null,
           null,
           null,
+          invoker: (a) => TestDomainWithReflection.parse(a[0]),
         );
       default:
         return null;
@@ -2050,6 +2077,7 @@ class TestEmpty$reflection extends ClassReflection<TestEmpty>
           null,
           null,
           null,
+          invoker: (a) => TestEmpty(),
         );
       default:
         return null;
@@ -2326,6 +2354,7 @@ class TestFranchiseWithReflection$reflection
           null,
           null,
           null,
+          invoker: (a) => TestFranchiseWithReflection(a[0], a[1]),
         );
       default:
         return null;
@@ -2685,6 +2714,7 @@ class TestName$reflection extends ClassReflection<TestName>
           null,
           null,
           null,
+          invoker: (a) => TestName(),
         );
       default:
         return null;
@@ -3021,6 +3051,7 @@ class TestOpAWithReflection$reflection
           null,
           null,
           null,
+          invoker: (a) => TestOpAWithReflection(a[0]),
         );
       default:
         return null;
@@ -3420,6 +3451,7 @@ class TestOpBWithReflection$reflection
           null,
           null,
           null,
+          invoker: (a) => TestOpBWithReflection(a[0]),
         );
       default:
         return null;
@@ -3843,6 +3875,7 @@ class TestOpWithReflection$reflection
           null,
           null,
           null,
+          invoker: (a) => TestOpWithReflection(a[0], a[1]),
         );
       case 'empty':
         return ConstructorReflection<TestOpWithReflection>(
@@ -3854,6 +3887,7 @@ class TestOpWithReflection$reflection
           null,
           null,
           null,
+          invoker: (a) => TestOpWithReflection.empty(),
         );
       default:
         return null;
@@ -4309,6 +4343,15 @@ class TestPayloadWithReflection$reflection
             ),
           },
           null,
+          invoker: (a) => TestPayloadWithReflection(
+            a[0],
+            attributes: a[1],
+            data: a[2],
+            extra: a[3],
+            items: a[4],
+            matrix: a[5],
+            rows: a[6],
+          ),
         );
       default:
         return null;
@@ -4791,6 +4834,8 @@ class TestTransactionWithReflection$reflection
           null,
           null,
           null,
+          invoker: (a) =>
+              TestTransactionWithReflection.fromTo(a[0], a[1], a[2]),
         );
       default:
         return null;
@@ -5100,6 +5145,15 @@ class TestUserWithReflection$reflection
             'level': __PR(__TR.tInt, 'level', true, false),
           },
           null,
+          invoker: (a) => TestUserWithReflection.fields(
+            a[0],
+            a[1],
+            a[2],
+            axis: a[3],
+            enabled: a[4],
+            id: a[5],
+            level: a[6],
+          ),
         );
       case '':
         return ConstructorReflection<TestUserWithReflection>(
@@ -5111,6 +5165,7 @@ class TestUserWithReflection$reflection
           null,
           null,
           null,
+          invoker: (a) => TestUserWithReflection(),
         );
       default:
         return null;

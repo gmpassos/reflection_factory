@@ -2078,7 +2078,8 @@ class _ClassTree<T> extends RecursiveElementVisitor2<T> {
           "${constructor.normalParametersAsCode} , "
           "${constructor.optionalParametersAsCode}, "
           "${constructor.namedParametersAsCode}, "
-          "${constructor.annotationsAsListCode}"
+          "${constructor.annotationsAsListCode}, "
+          "invoker: ${constructor.asInvokerCode}"
           ")";
     });
 
@@ -3336,112 +3337,31 @@ class _Constructor<T> extends _Element {
     return '$className.$constructorName';
   }
 
-  // Currently unused, but kept in sync with the prefixed type naming so it
-  // can't reintroduce unqualified names if it is used again.
-  String asCallerCode(_TypeAliasTable typeAliasTable) {
-    var s = StringBuffer();
+  /// Returns the code of a `ConstructorInvoker`: a closure that calls this
+  /// constructor directly with one argument per parameter, in the order of
+  /// the emitted parameters (normal, optional positional, then named), e.g.:
+  /// `(a) => Foo.withCity(a[0], city: a[1], id: a[2])`.
+  ///
+  /// Each argument is a `dynamic` list element, so no type code is needed.
+  String get asInvokerCode {
+    var args = <String>[];
+    var i = 0;
 
-    var normalParameters = constructorElement.normalParameters;
-    var optionalParameters = constructorElement.optionalParameters;
-    var namedParameters = constructorElement.namedParameters;
-
-    s.write('(');
-
-    for (var i = 0; i < normalParameters.length; ++i) {
-      var p = normalParameters[i];
-      if (i > 0) s.write(', ');
-
-      s.write(p.type.typeNameAsNullableCode(typeAliasTable));
-      s.write(' ');
-      s.write(p.name);
+    for (var _ in normalParameters) {
+      args.add('a[${i++}]');
     }
 
-    if (optionalParameters.isNotEmpty) {
-      if (normalParameters.isNotEmpty) s.write(', ');
-
-      s.write('[');
-
-      for (var i = 0; i < optionalParameters.length; ++i) {
-        var p = optionalParameters[i];
-        if (i > 0) s.write(',');
-        s.write(p.type.typeNameAsNullableCode(typeAliasTable));
-        s.write(' ');
-        s.write(p.name);
-        var defVal = p.defaultValue;
-        if (defVal != null) {
-          s.write(' = ');
-          s.write(defVal);
-        }
-      }
-      s.write(']');
-    } else if (namedParameters.isNotEmpty) {
-      if (normalParameters.isNotEmpty) s.write(', ');
-
-      s.write('{');
-      var i = 0;
-      for (var e in namedParameters.entries) {
-        var p = e.value;
-        if (i > 0) s.write(', ');
-
-        if (p.required) {
-          s.write('required ');
-        }
-
-        s.write(p.type.typeNameAsNullableCode(typeAliasTable));
-        s.write(' ');
-        s.write(p.name);
-        var defVal = p.defaultValue;
-        if (defVal != null) {
-          s.write(' = ');
-          s.write(defVal);
-        }
-        i++;
-      }
-      s.write('}');
+    for (var _ in optionalParameters) {
+      args.add('a[${i++}]');
     }
 
-    s.write(') => ');
-
-    s.write(classTree.className);
-    if (name.isNotEmpty) {
-      s.write('.');
-      s.write(name);
+    for (var k in namedParameters.keys) {
+      args.add('$k: a[${i++}]');
     }
 
-    s.write('(');
+    var callee = name.isEmpty ? classTree.className : fullName;
 
-    for (var i = 0; i < normalParameters.length; ++i) {
-      var p = normalParameters[i];
-      if (i > 0) s.write(',');
-      s.write(p.name);
-    }
-
-    if (optionalParameters.isNotEmpty) {
-      if (normalParameters.isNotEmpty) s.write(', ');
-
-      for (var i = 0; i < optionalParameters.length; ++i) {
-        var p = optionalParameters[i];
-        if (i > 0) s.write(',');
-        s.write(p.name);
-      }
-    } else if (namedParameters.isNotEmpty) {
-      if (normalParameters.isNotEmpty) s.write(', ');
-
-      var i = 0;
-      for (var e in namedParameters.entries) {
-        var k = e.key;
-        var p = e.value;
-        if (i > 0) s.write(',');
-        s.write(k);
-        s.write(': ');
-        s.write(p.name);
-        i++;
-      }
-    }
-
-    s.write(') ');
-
-    return s.toString();
+    return '(a) => $callee(${args.join(', ')})';
   }
 
   @override

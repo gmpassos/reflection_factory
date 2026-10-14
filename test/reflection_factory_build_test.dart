@@ -405,6 +405,21 @@ void main() {
               allOf(
                 matches(
                   RegExp(
+                    r'invoker:\s*\(a\)\s*=>\s*Domain\.positional\(\s*a\[0\],\s*a\[1\],\s*a\[2\],\s*a\[3\],?\s*\)',
+                  ),
+                ),
+                matches(
+                  RegExp(
+                    // Named arguments follow the emitted `namedParameters` order:
+                    r'invoker:\s*\(a\)\s*=>\s*Domain\.named\(\s*extra:\s*a\[0\],\s*fx:\s*a\[1\],\s*name:\s*a\[2\],\s*suffix:\s*a\[3\],?\s*\)',
+                  ),
+                ),
+                matches(RegExp(r'invoker:\s*\(a\)\s*=>\s*Domain\.empty\(\)')),
+                matches(RegExp(r'invoker:\s*\(a\)\s*=>\s*Domain\(\)')),
+              ),
+              allOf(
+                matches(
+                  RegExp(
                     r"case 'callfx':.*?const <__PR>\[\s*__PR\(\s*__TR<Fx>\(Fx\), 'f', true, false\)\s*\]",
                     dotAll: true,
                   ),
