@@ -1,6 +1,7 @@
 import 'package:benchmark/benchmark.dart';
 import 'package:reflection_factory/builder.dart';
 
+import '../test/src/instantiate_fixture.dart';
 import '../test/src/user_with_reflection.dart';
 
 void main() {
@@ -177,6 +178,84 @@ void main() {
         franchiseReflection.fromJson(franchiseJson);
       },
       iterations: 10,
+      duration: Duration(seconds: 5),
+    );
+  });
+
+  group('reflection.createInstanceFromMap', () {
+    late ClassReflection<TestAccountWithReflection> accountReflection;
+    late ClassReflection<TestMemberWithReflection> memberReflection;
+
+    final createdAt = DateTime.utc(2026, 1, 2, 3, 4, 5);
+
+    final accountMap = <String, Object?>{
+      'id': 101,
+      'name': 'Joe',
+      'email': 'joe@mail.com',
+      'phone': '+1 555 0101',
+      'age': 33,
+      'score': 9.5,
+      'active': true,
+      'createdAt': createdAt,
+    };
+
+    final memberMap = <String, Object?>{
+      'id': 102,
+      'name': 'Ann',
+      'email': 'ann@mail.com',
+      'passwordHash': 'hash:abc',
+      'age': 41,
+      'score': 7.25,
+      'active': false,
+      'createdAt': createdAt,
+    };
+
+    setUpEach(() {
+      accountReflection = TestAccountWithReflection$reflection();
+      memberReflection = TestMemberWithReflection$reflection();
+    });
+
+    benchmark(
+      'account (constructor)',
+      () {
+        accountReflection.createInstanceFromMap(accountMap);
+      },
+      iterations: 1000000,
+      duration: Duration(seconds: 5),
+    );
+
+    benchmark(
+      'member (create + setters)',
+      () {
+        memberReflection.createInstanceFromMap(memberMap);
+      },
+      iterations: 1000000,
+      duration: Duration(seconds: 5),
+    );
+
+    benchmark(
+      'account (constructor; valuesResolved, exactKeys)',
+      () {
+        accountReflection.createInstanceFromMap(
+          accountMap,
+          valuesResolved: true,
+          exactKeys: true,
+        );
+      },
+      iterations: 1000000,
+      duration: Duration(seconds: 5),
+    );
+
+    benchmark(
+      'member (create + setters; valuesResolved, exactKeys)',
+      () {
+        memberReflection.createInstanceFromMap(
+          memberMap,
+          valuesResolved: true,
+          exactKeys: true,
+        );
+      },
+      iterations: 1000000,
       duration: Duration(seconds: 5),
     );
   });
