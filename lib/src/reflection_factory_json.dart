@@ -1442,7 +1442,8 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     }
 
     if (o is Map) {
-      var map = o is Map<String, Object>
+      // A decoded JSON object (`Map<String, dynamic>`) is used as it is:
+      var map = o is Map<String, Object?>
           ? o
           : o.map((k, v) => MapEntry(k.toString(), v));
       return _fromJsonMapImpl(map, typeInfo, duplicatedEntitiesAsID);
@@ -1504,7 +1505,8 @@ class _JsonDecoder extends dart_convert.Converter<String, Object?>
     } else if (type == BigInt) {
       return _parseBigInt(o) as O?;
     } else if (o is Map) {
-      var map = o is Map<String, Object>
+      // A decoded JSON object (`Map<String, dynamic>`) is used as it is:
+      var map = o is Map<String, Object?>
           ? o
           : o.map((k, v) => MapEntry(k.toString(), v));
       // Call the internal implementation (like `_fromJsonImpl` does), NOT the
@@ -2794,20 +2796,32 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
     type ??= object.runtimeType;
 
+    var fieldID = _idFields[type] ?? _resolveIDField(type);
+    return fieldID?.getFor(object);
+  }
+
+  /// The ID field of each type, found by [_resolveIDField].
+  static final Map<Type, FieldReflection> _idFields = {};
+
+  /// Finds the ID field of [type]: the field named `id` (ignoring case),
+  /// otherwise its first `int` field. Not kept while [type] has no
+  /// registered [ClassReflection] (it may be registered later).
+  static FieldReflection? _resolveIDField(Type type) {
     var classReflection = ReflectionFactory().getRegisterClassReflection(type);
+    if (classReflection == null) return null;
 
-    if (classReflection != null) {
-      var fieldID = classReflection
-          .fieldsWhere((f) => f.name.toLowerCase() == 'id')
-          .firstOrNull;
-      fieldID ??= classReflection
-          .fieldsWhere((f) => f.type.isIntType)
-          .firstOrNull;
+    var fieldID = classReflection
+        .fieldsWhere((f) => f.name.toLowerCase() == 'id')
+        .firstOrNull;
+    fieldID ??= classReflection
+        .fieldsWhere((f) => f.type.isIntType)
+        .firstOrNull;
 
-      return fieldID?.withObject(object).get();
+    if (fieldID != null) {
+      _idFields[type] = fieldID;
     }
 
-    return null;
+    return fieldID;
   }
 
   Map<Type, Map<Object, Object>>? _entities;
@@ -3128,10 +3142,10 @@ class JsonEntityCacheSimple implements JsonEntityCache {
 
   @override
   void cacheEntity<O>(O entity, [dynamic Function(O o)? idGetter]) {
-    var id = getEntityID<O>(entity, idGetter: idGetter);
-    if (id == null) return;
-
     var type = entity.runtimeType;
+
+    var id = getEntityID<O>(entity, type: type, idGetter: idGetter);
+    if (id == null) return;
 
     var entities = _entities ??= {};
 

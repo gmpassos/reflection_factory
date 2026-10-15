@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.12.2
+// BUILDER: reflection_factory/2.13.0
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -27,7 +27,7 @@ typedef __RCD1 = (int, String);
 typedef __RCD2 = ({int x, int y});
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.12.2');
+  static final Version _version = Version.parse('2.13.0');
 
   Version get reflectionFactoryVersion => _version;
 
