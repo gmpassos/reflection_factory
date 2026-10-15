@@ -473,7 +473,7 @@ void main() {
       expect(code, contains('o.kBonus'));
       // Typed arguments:
       expect(code, contains('as String'));
-      expect(code, contains('as Check?'));
+      expect(code, contains(r'__argOr$<Check?>('));
       expect(code, contains('as o.Ref<o.Base>'));
       expect(code, contains('as (int, o.Flavor)'));
       expect(code, contains('Shapes.identity'));
