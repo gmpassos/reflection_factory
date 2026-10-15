@@ -274,6 +274,31 @@ class InputAnalyzerResolved {
     return (library, classAssetId);
   }
 
+  /// The classes of the [resolver] libraries, by name.
+  ///
+  /// Each library is indexed once, when first seen: a build step with many
+  /// `ClassProxy`s (one call of [findCandidateClassElements] each) would
+  /// otherwise collect the classes of every resolver library (thousands, the
+  /// SDK and all the packages included) again for each of them.
+  final Map<String, Set<ClassElement>> _resolverClassesByName = {};
+  final Set<LibraryElement> _resolverLibrariesIndexed = {};
+
+  /// The classes named [className] in the libraries the [resolver] has now
+  /// (it gets more as more libraries are resolved).
+  Future<Set<ClassElement>> _resolverClassesNamed(String className) async {
+    await for (var library in resolver.libraries) {
+      if (!_resolverLibrariesIndexed.add(library)) continue;
+
+      for (var c in [library].allUsedClasses) {
+        var name = c.name;
+        if (name == null) continue;
+        (_resolverClassesByName[name] ??= {}).add(c);
+      }
+    }
+
+    return {...?_resolverClassesByName[className]};
+  }
+
   Future<List<ClassElement>> findCandidateClassElements(
     String className,
     String libraryName,
@@ -282,7 +307,7 @@ class InputAnalyzerResolved {
     var inputLibrary = await this.inputLibrary;
 
     var mainLibraries = <LibraryElement>[inputLibrary];
-    var resolverLibraries = await resolver.libraries.toList();
+    var resolverClasses = await _resolverClassesNamed(className);
 
     if (libraryPath.isNotEmpty) {
       libraryPath = libraryPath
@@ -316,15 +341,13 @@ class InputAnalyzerResolved {
         .expand((e) => e.exportedLibraries)
         .toList();
 
-    var allLibraries = <LibraryElement>{
-      ...mainLibraries,
-      ...resolverLibraries,
-      ...mainLibrariesExported,
+    var candidateClasses = <ClassElement>{
+      ...[
+        ...mainLibraries,
+        ...mainLibrariesExported,
+      ].allUsedClasses.where((c) => c.name == className),
+      ...resolverClasses,
     }.toList();
-
-    var candidateClasses = allLibraries.allUsedClasses
-        .where((c) => c.name == className)
-        .toList();
 
     if (candidateClasses.length > 1) {
       if (libraryName.isNotEmpty) {

@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.12.1
+// BUILDER: reflection_factory/2.12.2
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -24,7 +24,7 @@ typedef __PR = ParameterReflection;
 T __argOr$<T>(Object? a, T d) => ConstructorReflection.argOrDefault<T>(a, d);
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.12.1');
+  static final Version _version = Version.parse('2.12.2');
 
   Version get reflectionFactoryVersion => _version;
 
