@@ -1068,6 +1068,140 @@ void main() {
       );
     });
 
+    test('a revived value for an absent parameter', () {
+      var reflection = TestAccountWithReflection$reflection();
+      var c = reflection.constructor('')!;
+
+      // A `fieldValueResolver` can give a value for a parameter absent from
+      // the map (the `MethodInvocation` path uses it too):
+      Object? withDefaults(String f, Object? v, TypeReflection t) =>
+          v ??
+          switch (f) {
+            'age' => 77,
+            'phone' => '+0',
+            _ => null,
+          };
+
+      for (var map in <Map<String, Object?>>[
+        {'name': 'Joe', 'email': 'j@mail'},
+        {'name': 'Joe', 'email': 'j@mail', 'age': null},
+        {'name': 'Joe', 'email': 'j@mail', 'age': 5, 'phone': null},
+      ]) {
+        expect(
+          _outcome(
+            reflection,
+            () => reflection.createInstanceWithConstructor(
+              c,
+              map,
+              fieldValueResolver: withDefaults,
+            ),
+          ),
+          equals(
+            _outcome(
+              reflection,
+              () => reflection.createInstanceWithConstructor(
+                _withoutInvoker(c),
+                map,
+                fieldValueResolver: withDefaults,
+              ),
+            ),
+          ),
+          reason: '$map',
+        );
+      }
+
+      var o = reflection.createInstanceWithConstructor(c, {
+        'name': 'Joe',
+        'email': 'j@mail',
+      }, fieldValueResolver: withDefaults)!;
+      expect(o.age, equals(77));
+      expect(o.phone, equals('+0'));
+    });
+
+    test('an entity list with a null: unresolved', () {
+      var reflection = TestOrderWithReflection$reflection();
+      var c = reflection.constructor('')!;
+      expect(c.canInvokeFromResolvedMap, isTrue);
+
+      var joe = TestAccountWithReflection('Joe', 'j@mail');
+
+      var calls = 0;
+      Object? reviver(String f, Object? v, TypeReflection t) {
+        ++calls;
+        if (f == 'items') {
+          // The second element can't be resolved:
+          return [joe, null];
+        } else if (f == 'account') {
+          return TestRef(joe);
+        }
+        return v;
+      }
+
+      var map = <String, Object?>{
+        'account': {'name': 'Joe'},
+        'items': [
+          {'id': 1},
+          {'id': 2},
+        ],
+      };
+
+      var expected = _outcome(
+        reflection,
+        () => reflection.createInstanceWithConstructor(
+          _withoutInvoker(c),
+          map,
+          fieldValueResolver: reviver,
+        ),
+      );
+
+      calls = 0;
+      var outcome = _outcome(
+        reflection,
+        () => reflection.createInstanceWithConstructor(
+          c,
+          map,
+          fieldValueResolver: reviver,
+        ),
+      );
+
+      expect(outcome, equals(expected));
+      // The direct attempt (one per parameter), then the `MethodInvocation`
+      // path:
+      expect(calls, greaterThan(c.allParameters.length));
+    });
+
+    test('unresolved values: the arguments are built once directly', () {
+      var reflection = TestRequiredNamedWithReflection$reflection();
+      reflection.disposeCache();
+
+      var calls = <String>[];
+      Object? unresolvedB(String f, Object? v, TypeReflection t) {
+        calls.add(f);
+        return f == 'b' ? null : v;
+      }
+
+      int create() {
+        calls.clear();
+        var o = reflection.createInstanceFromMap({
+          'a': 'x',
+          'b': 'y',
+        }, fieldValueResolver: unresolvedB)!;
+        expect(o.a, equals('x'));
+        expect(o.b, equals('B'));
+        return calls.length;
+      }
+
+      // The first map (not cached) and the next ones (the shape cached):
+      // the same calls, a direct attempt and the `MethodInvocation` path.
+      var first = create();
+      expect(create(), equals(first));
+      expect(create(), equals(first));
+
+      // One direct attempt (2 parameters), and the `MethodInvocation` path
+      // resolving them, then again the named ones (one is unresolved):
+      expect(first, equals(2 + 2 + 2));
+    });
+
     test('a constructor that throws is called once', () {
       var reflection = TestThrowingWithReflection$reflection();
       var c = reflection.constructor('')!;
@@ -1169,6 +1303,102 @@ void main() {
       }
     });
 
+    test('the same class created inside a fieldValueResolver', () {
+      // A nested map of the same class (e.g. a tree of entities) is created
+      // while the outer one is: it replaces the cached shape in the middle
+      // of the outer creation.
+      var reflection = TestAccountWithReflection$reflection();
+      reflection.disposeCache();
+
+      var nested = <String, Object?>{'email': 'n@mail', 'name': 'nested'};
+
+      Object? reviver(String f, Object? v, TypeReflection t) {
+        if (f == 'name' && v == 'parent') {
+          var o = reflection.createInstanceFromMap(nested)!;
+          return '${o.name}-parent';
+        }
+        return v;
+      }
+
+      for (var i = 0; i < 3; ++i) {
+        var parent = reflection.createInstanceFromMap({
+          'name': 'parent',
+          'email': 'p@mail',
+          'age': i,
+        }, fieldValueResolver: reviver)!;
+        expect(parent.name, equals('nested-parent'));
+        expect(parent.age, equals(i));
+
+        var sibling = reflection.createInstanceFromMap({
+          'name': 'sibling',
+          'email': 's@mail',
+          'age': i,
+        }, fieldValueResolver: reviver)!;
+        expect(sibling.name, equals('sibling'));
+        expect(sibling.email, equals('s@mail'));
+      }
+    });
+
+    test('disposeCache between maps of the same shape', () {
+      var reflection = TestAccountWithReflection$reflection();
+
+      for (var i = 0; i < 4; ++i) {
+        if (i.isEven) reflection.disposeCache();
+        var o = reflection.createInstanceFromMap({
+          'name': 'n$i',
+          'email': 'e$i',
+          'age': i,
+        })!;
+        expect(o.name, equals('n$i'));
+        expect(o.age, equals(i));
+      }
+    });
+
+    test('getBestConstructorsForMap with other options in between', () {
+      var reflection = TestMemberWithReflection$reflection();
+      reflection.disposeCache();
+
+      var map = {'name': 'a', 'email': 'e'};
+
+      List<String> best(bool allowEmpty, bool allowOptionalOnly) => reflection
+          .getBestConstructorsForMap(
+            map,
+            allowEmptyConstructors: allowEmpty,
+            allowOptionalOnlyConstructors: allowOptionalOnly,
+          )
+          .map((c) => c.name)
+          .toList();
+
+      List<String> alone(bool allowEmpty, bool allowOptionalOnly) {
+        reflection.disposeCache();
+        return best(allowEmpty, allowOptionalOnly);
+      }
+
+      var options = [
+        (true, true),
+        (false, true),
+        (true, false),
+        (false, false),
+      ];
+      var expected = [for (var (e, o) in options) alone(e, o)];
+
+      reflection.disposeCache();
+      for (var round = 0; round < 2; ++round) {
+        for (var i = 0; i < options.length; ++i) {
+          var (e, o) = options[i];
+          expect(best(e, o), equals(expected[i]), reason: '$e, $o');
+
+          // `createInstanceFromMap` in between, with its own options:
+          var member = reflection.createInstanceFromMap({
+            'name': 'm',
+            'email': 'x',
+            'passwordHash': 'h',
+          });
+          expect(member?.passwordHash, equals('h'));
+        }
+      }
+    });
+
     test('a constructor that throws is called once per map', () {
       var reflection = TestThrowingWithReflection$reflection();
       reflection.disposeCache();
@@ -1210,6 +1440,73 @@ void main() {
     });
   });
 
+  group('JsonDecoder: entities from maps', () {
+    test('a JSON object (Map<String, dynamic>), not modified', () {
+      TestAccountWithReflection$reflection();
+
+      var json = <String, dynamic>{
+        'name': 'Joe',
+        'email': 'j@mail',
+        'age': 30,
+        'createdAt': '2026-01-02T03:04:05.000Z',
+      };
+      var copy = Map<String, dynamic>.of(json);
+
+      for (var i = 0; i < 2; ++i) {
+        var o = JsonDecoder.defaultDecoder.fromJson<TestAccountWithReflection>(
+          json,
+        )!;
+        expect(o.name, equals('Joe'));
+        expect(o.age, equals(30));
+        expect(o.createdAt, equals(DateTime.utc(2026, 1, 2, 3, 4, 5)));
+      }
+
+      expect(json, equals(copy));
+      expect(json['createdAt'], isA<String>());
+    });
+
+    test('maps with other key types (converted to String keys)', () {
+      TestAccountWithReflection$reflection();
+
+      for (var map in <Map>[
+        <dynamic, dynamic>{'name': 'Joe', 'email': 'j@mail'},
+        <Object, Object>{'name': 'Joe', 'email': 'j@mail'},
+        <String, Object>{'name': 'Joe', 'email': 'j@mail'},
+        <String, String>{'name': 'Joe', 'email': 'j@mail'},
+      ]) {
+        var o = JsonDecoder.defaultDecoder.fromJson<TestAccountWithReflection>(
+          map,
+        )!;
+        expect(o.name, equals('Joe'), reason: '${map.runtimeType}');
+        expect(o.email, equals('j@mail'), reason: '${map.runtimeType}');
+      }
+    });
+
+    test('a list of maps of the same shape, with nulls and other shapes', () {
+      TestAccountWithReflection$reflection();
+
+      var list = <Object?>[
+        {'name': 'a', 'email': 'a@mail', 'age': 1},
+        {'name': 'b', 'email': 'b@mail', 'age': 2},
+        null,
+        {'email': 'c@mail', 'name': 'c'},
+        {'name': 'd', 'email': 'd@mail', 'age': 4},
+        {'name': 'e', 'email': 'e@mail', 'age': null},
+      ];
+
+      var decoded = JsonDecoder.defaultDecoder
+          .fromJsonList<TestAccountWithReflection>(
+            list,
+            type: TestAccountWithReflection,
+          );
+
+      expect(
+        decoded.map((o) => o == null ? null : (o.name, o.age)).toList(),
+        equals([('a', 1), ('b', 2), null, ('c', 18), ('d', 4), ('e', 18)]),
+      );
+    });
+  });
+
   group('JsonEntityCacheSimple', () {
     test('getEntityID and cacheEntity: by the ID field of each type', () {
       // Registers the reflection:
@@ -1240,6 +1537,33 @@ void main() {
 
       // A type without a registered reflection has no ID:
       expect(cache.getEntityID(Object()), isNull);
+
+      // Without an `id` field: its first `int` field.
+      var wideReflection = TestWideWithReflection$reflection();
+      var wide = TestWideWithReflection(
+        'a',
+        'b',
+        'c',
+        mid: 'm',
+        n1: 11,
+        n2: 22,
+      );
+      var firstIntField = wideReflection
+          .fieldsWhere((f) => f.type.isIntType)
+          .first
+          .name;
+      expect(
+        cache.getEntityID(wide),
+        equals(wideReflection.getField(firstIntField, wide)),
+      );
+      expect(cache.getEntityID(wide), isIn([11, 22]));
+
+      // Without an `id` or an `int` field: no ID (and not cached).
+      TestRequiredNamedWithReflection$reflection();
+      var named = TestRequiredNamedWithReflection(a: 'x');
+      expect(cache.getEntityID(named), isNull);
+      cache.cacheEntity(named);
+      expect(cache.cachedEntitiesLength, equals(2));
     });
   });
 

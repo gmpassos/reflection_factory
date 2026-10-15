@@ -1932,14 +1932,18 @@ abstract class ClassReflection<O> extends Reflection<O>
     }
   }
 
-  /// [directError]: the error of a direct call of [constructor] (see
-  /// [_createInstanceFromMapDirect]), reported without calling it again.
+  /// The direct call of [constructor] already tried (see
+  /// [_createInstanceFromMapDirect]):
+  /// - [directError]: its error, reported without calling it again.
+  /// - [directUnresolved]: its arguments couldn't be built: the
+  ///   `MethodInvocation` path is taken (without building them again).
   O? _createInstanceWithConstructorImpl(
     ConstructorReflection<O> constructor,
     Map<String, Object?> map, {
     FieldNameResolver? fieldNameResolver,
     FieldValueResolver? fieldValueResolver,
     (Object, StackTrace)? directError,
+    bool directUnresolved = false,
   }) {
     // Created only on an error:
     List<List>? invocationErrors;
@@ -1966,6 +1970,7 @@ abstract class ClassReflection<O> extends Reflection<O>
         fieldValueResolver,
         catchInvokeError,
         directError,
+        directUnresolved,
       );
 
       if (o != null) {
@@ -2084,12 +2089,17 @@ abstract class ClassReflection<O> extends Reflection<O>
     fieldValueResolver,
     onInvocationError,
     null,
+    false,
   );
 
-  /// [createInstanceWithConstructor] with [directError]: the error of a
-  /// direct call of [constructor] with these arguments, already made (see
-  /// [_createInstanceFromMapDirect]). It's reported as the error of a direct
-  /// call made here, without calling [constructor] again.
+  /// [createInstanceWithConstructor], with the direct call of [constructor]
+  /// already tried (see [_createInstanceFromMapDirect]):
+  /// - [directError]: the error of that call, with these arguments. It's
+  ///   reported as the error of a direct call made here, without calling
+  ///   [constructor] again.
+  /// - [directUnresolved]: its arguments couldn't be built (e.g. an
+  ///   unresolved value): the `MethodInvocation` path is taken, without
+  ///   building them (and calling a `fieldValueResolver`) again.
   O? _createInstanceWithConstructor(
     ConstructorReflection<O> constructor,
     Map<String, Object?> map,
@@ -2097,8 +2107,11 @@ abstract class ClassReflection<O> extends Reflection<O>
     FieldValueResolver? fieldValueResolver,
     OnConstructorInvocationError? onInvocationError,
     (Object, StackTrace)? directError,
+    bool directUnresolved,
   ) {
-    if (directError == null && constructor.canInvokeFromResolvedMap) {
+    if (directError == null &&
+        !directUnresolved &&
+        constructor.canInvokeFromResolvedMap) {
       var args = ConstructorReflection._directArguments(
         constructor,
         map,
@@ -2559,7 +2572,9 @@ abstract class ClassReflection<O> extends Reflection<O>
   /// It's the same as [createInstanceWithBestConstructor] (with
   /// `allowOptionalOnlyConstructors`), and returns [_notDirect] for anything
   /// else (left to it). A constructor error is reported as that path reports
-  /// it (without calling the constructor again).
+  /// it (without calling the constructor again), and arguments that can't be
+  /// built directly (e.g. an unresolved value) take its `MethodInvocation`
+  /// path (without building them again).
   ///
   /// Static (and its helpers): compiled to JavaScript, a static function
   /// doesn't check its parameters types on each call, as an instance method
@@ -2602,7 +2617,18 @@ abstract class ClassReflection<O> extends Reflection<O>
       fieldNameResolver,
       fieldValueResolver,
     );
-    if (args == null) return _notDirect;
+
+    if (args == null) {
+      // The `MethodInvocation` path, as `createInstanceWithBestConstructor`
+      // would take it, without building the arguments again:
+      return classReflection._createInstanceWithConstructorImpl(
+        constructor,
+        map,
+        fieldNameResolver: fieldNameResolver,
+        fieldValueResolver: fieldValueResolver,
+        directUnresolved: true,
+      );
+    }
 
     try {
       return constructor.invoker!(args);
