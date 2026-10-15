@@ -1,3 +1,48 @@
+## 2.13.0
+
+Faster instantiation from a `Map` (e.g. decoding JSON into entities),
+especially compiled to JavaScript. The created instances are the same.
+
+- **Direct calls with a `fieldValueResolver`.** A constructor that can be
+  called directly (`ConstructorReflection.canInvokeFromResolvedMap`) is now
+  also called with the values revived by a `fieldValueResolver`, once per
+  parameter, instead of through `MethodInvocation`. An unresolved value (a
+  non-null value revived to `null`, or an entity list with a `null`) and a
+  resolver that throws still take the `MethodInvocation` path, which
+  resolves them again and reports them as before.
+- **Maps of the same shape.** The resolution of the fields to the map keys
+  (by the `FieldNameResolver`), the best constructors and the fields to set
+  are kept for the last map shape (the same keys, in the same order, and the
+  same resolver) of each class, and reused for the next maps of that shape:
+  e.g. the JSON objects of one entity type.
+  - `FieldNameResolver`: documented that the key it resolves must depend only
+    on the field name and the map keys (not on the values).
+- `createInstanceFromMap`: for a map of the last shape with a single
+  constructor, the constructor is called with fewer calls in between. A
+  constructor error is reported as before, without calling it again.
+- The helpers of these paths are static: compiled to JavaScript (without
+  `--omit-implicit-checks`), static functions don't check their parameter
+  types on each call, as instance methods do.
+- `JsonDecoder`: a decoded JSON object (`Map<String, dynamic>`) is no longer
+  copied before decoding it (`is Map<String, Object>` was `false` for it).
+- `JsonEntityCacheSimple.getEntityID` (used by `cacheEntity`): the ID field
+  of each type is found once, and read for each entity.
+- `ClassReflection.getField(name, obj)`: reads the field (without an object)
+  for `obj`, without creating a `FieldReflection` for `obj`.
+- Benchmark (`bones_api`): decoding a JSON list of 1000 users (each with an
+  address and 2 roles) into entities, µs per user:
+  - JavaScript (dart2js `-O1 --minify`): 27.4 → 11.8 (−57%).
+  - Wasm (dart2wasm `-O2 --minify`): 6.5 → 3.7 (−42%).
+  - VM: 7.5 → 3.9 (−48%).
+- Tests: revived values (once per parameter, unresolved values, entity
+  lists with a `null`, values for absent parameters, resolvers that throw,
+  constructor errors, the resolver calls on the unresolved path), maps of
+  the same shape in sequence (with resolvers, keys in other orders, the same
+  class created inside a resolver, `disposeCache`, other
+  `getBestConstructorsForMap` options in between), `JsonDecoder` with JSON
+  objects (not modified) and maps with other key types,
+  `getField` of another object and `JsonEntityCacheSimple.getEntityID`.
+
 ## 2.12.2
 
 - **Generator: faster `ClassProxy` generation.** Finding the target class of

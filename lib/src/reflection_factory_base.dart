@@ -20,7 +20,7 @@ import 'reflection_factory_utils.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.12.2';
+  static const String VERSION = '2.13.0';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -1539,6 +1539,13 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   /// Returns the field value for [fieldName].
   T? getField<T>(String fieldName, [O? obj]) {
+    if (obj != null && !identical(obj, object)) {
+      // The field without an object (cached) read for [obj]: no
+      // `FieldReflection` is allocated for [obj] (see `withObject`).
+      var field = getStaticInstance().field<T>(fieldName);
+      return field?.getFor(obj);
+    }
+
     var field = this.field<T>(fieldName, obj);
     return field?.get();
   }
@@ -1925,13 +1932,21 @@ abstract class ClassReflection<O> extends Reflection<O>
     }
   }
 
+  /// The direct call of [constructor] already tried (see
+  /// [_createInstanceFromMapDirect]):
+  /// - [directError]: its error, reported without calling it again.
+  /// - [directUnresolved]: its arguments couldn't be built: the
+  ///   `MethodInvocation` path is taken (without building them again).
   O? _createInstanceWithConstructorImpl(
     ConstructorReflection<O> constructor,
     Map<String, Object?> map, {
     FieldNameResolver? fieldNameResolver,
     FieldValueResolver? fieldValueResolver,
+    (Object, StackTrace)? directError,
+    bool directUnresolved = false,
   }) {
-    var invocationErrors = <List>[];
+    // Created only on an error:
+    List<List>? invocationErrors;
 
     void catchInvokeError(
       ConstructorReflection constructor,
@@ -1939,16 +1954,23 @@ abstract class ClassReflection<O> extends Reflection<O>
       Map<String, dynamic> map,
       Object? error,
     ) {
-      invocationErrors.add([constructor, methodInvocation, map, error]);
+      (invocationErrors ??= <List>[]).add([
+        constructor,
+        methodInvocation,
+        map,
+        error,
+      ]);
     }
 
     try {
-      var o = createInstanceWithConstructor(
+      var o = _createInstanceWithConstructor(
         constructor,
         map,
-        fieldNameResolver: fieldNameResolver,
-        fieldValueResolver: fieldValueResolver,
-        onInvocationError: catchInvokeError,
+        fieldNameResolver,
+        fieldValueResolver,
+        catchInvokeError,
+        directError,
+        directUnresolved,
       );
 
       if (o != null) {
@@ -1959,8 +1981,9 @@ abstract class ClassReflection<O> extends Reflection<O>
       rethrow;
     }
 
-    if (invocationErrors.isNotEmpty) {
-      _throwInvocationError(invocationErrors);
+    var errors = invocationErrors;
+    if (errors != null && errors.isNotEmpty) {
+      _throwInvocationError(errors);
     }
 
     return null;
@@ -2048,32 +2071,53 @@ abstract class ClassReflection<O> extends Reflection<O>
 
   /// Creates an instance with [constructor] using [map] entries as parameters.
   ///
-  /// Without a [fieldValueResolver], the [map] values are passed as they are,
-  /// so a [ConstructorReflection.canInvokeFromResolvedMap] constructor is
-  /// called straight from [map] (see [ConstructorReflection.invoker]).
+  /// A [ConstructorReflection.canInvokeFromResolvedMap] constructor is called
+  /// straight from [map] (see [ConstructorReflection.invoker]): with the
+  /// [map] values as they are, or revived by [fieldValueResolver]. Values the
+  /// [fieldValueResolver] can't resolve take the [MethodInvocation] path,
+  /// which resolves them again (e.g. with entities cached meanwhile).
   O? createInstanceWithConstructor(
     ConstructorReflection<O> constructor,
     Map<String, Object?> map, {
     FieldNameResolver? fieldNameResolver,
     FieldValueResolver? fieldValueResolver,
     OnConstructorInvocationError? onInvocationError,
-  }) {
-    // The error of a direct call, and its stack trace:
-    (Object, StackTrace)? directError;
+  }) => _createInstanceWithConstructor(
+    constructor,
+    map,
+    fieldNameResolver,
+    fieldValueResolver,
+    onInvocationError,
+    null,
+    false,
+  );
 
-    if (fieldValueResolver == null && constructor.canInvokeFromResolvedMap) {
-      List<dynamic>? args;
-      try {
-        args = constructor._resolvedMapArguments(
-          map,
-          identical(fieldNameResolver, _exactFieldNameResolver)
-              ? null
-              : fieldNameResolver,
-        );
-      } catch (_) {
-        // An error of `fieldNameResolver`: left to the `MethodInvocation`
-        // path, which handles it as it always has.
-      }
+  /// [createInstanceWithConstructor], with the direct call of [constructor]
+  /// already tried (see [_createInstanceFromMapDirect]):
+  /// - [directError]: the error of that call, with these arguments. It's
+  ///   reported as the error of a direct call made here, without calling
+  ///   [constructor] again.
+  /// - [directUnresolved]: its arguments couldn't be built (e.g. an
+  ///   unresolved value): the `MethodInvocation` path is taken, without
+  ///   building them (and calling a `fieldValueResolver`) again.
+  O? _createInstanceWithConstructor(
+    ConstructorReflection<O> constructor,
+    Map<String, Object?> map,
+    FieldNameResolver? fieldNameResolver,
+    FieldValueResolver? fieldValueResolver,
+    OnConstructorInvocationError? onInvocationError,
+    (Object, StackTrace)? directError,
+    bool directUnresolved,
+  ) {
+    if (directError == null &&
+        !directUnresolved &&
+        constructor.canInvokeFromResolvedMap) {
+      var args = ConstructorReflection._directArguments(
+        constructor,
+        map,
+        fieldNameResolver,
+        fieldValueResolver,
+      );
 
       if (args != null) {
         try {
@@ -2153,6 +2197,11 @@ abstract class ClassReflection<O> extends Reflection<O>
   _KeyParametersNames? _lastBestConstructorsForMapKey;
   List<ConstructorReflection<O>>? _lastBestConstructorsForMap;
 
+  /// The map shape of the last [getBestConstructorsForMap] lookup: the same
+  /// shape again (see [_resolveFieldsNamesShape]) skips comparing its
+  /// parameters.
+  _MapFieldsNames? _lastBestConstructorsForMapShape;
+
   /// Returns the best constructor to instantiate with [map] entries.
   ///
   /// See [getBestConstructorsForMap].
@@ -2183,22 +2232,24 @@ abstract class ClassReflection<O> extends Reflection<O>
   }) {
     fieldNameResolver ??= _defaultFieldNameResolver;
 
-    var fieldsResolved = _resolveFieldsNames(fieldNameResolver, map);
-
-    var presentFields = fieldsResolved.keys;
-
-    List<String> presentParameters;
-
-    if (map.length > fieldsResolved.length) {
-      var mapUsedKeys = fieldsResolved.values.toList();
-      var mapUnusedKeys = map.keys.where((k) => !mapUsedKeys.contains(k));
-
-      presentParameters = <String>[...presentFields, ...mapUnusedKeys];
-    } else {
-      presentParameters = presentFields.toList();
-    }
+    var resolution = _resolveFieldsNamesShape(fieldNameResolver, map);
 
     var staticInstance = getStaticInstance();
+
+    // The same shape as the last lookup: the same constructors.
+    if (identical(
+          resolution,
+          staticInstance._lastBestConstructorsForMapShape,
+        ) &&
+        staticInstance._lastBestConstructorsForMapKey!.equalsOptions(
+          allowEmptyConstructors,
+          allowOptionalOnlyConstructors,
+        )) {
+      return staticInstance._lastBestConstructorsForMap!;
+    }
+
+    // Not modified: `key` below gets a copy, as `putIfAbsent` may sort it.
+    var presentParameters = resolution.presentParameters;
 
     var lastKey = staticInstance._lastBestConstructorsForMapKey;
     if (lastKey != null &&
@@ -2207,11 +2258,13 @@ abstract class ClassReflection<O> extends Reflection<O>
           allowEmptyConstructors,
           allowOptionalOnlyConstructors,
         )) {
+      staticInstance._lastBestConstructorsForMapShape = resolution;
       return staticInstance._lastBestConstructorsForMap!;
     }
 
+    // `putIfAbsent` may sort `key`, so it has its own copy:
     var key = _KeyParametersNames(
-      presentParameters,
+      presentParameters.toList(),
       allowEmptyConstructors,
       allowOptionalOnlyConstructors,
     );
@@ -2219,10 +2272,9 @@ abstract class ClassReflection<O> extends Reflection<O>
     var cache = staticInstance._getBestConstructorForMapCache ??=
         <_KeyParametersNames, List<ConstructorReflection<O>>>{};
 
-    // `putIfAbsent` may sort `key` (and so `presentParameters`), so the
-    // last lookup keeps its own copy, in the order the parameters came in:
+    // The last lookup keeps the parameters in the order they came in:
     var keyInOrder = _KeyParametersNames(
-      presentParameters.toList(growable: false),
+      presentParameters,
       allowEmptyConstructors,
       allowOptionalOnlyConstructors,
     );
@@ -2230,17 +2282,20 @@ abstract class ClassReflection<O> extends Reflection<O>
     var constructors = cache.putIfAbsent(key, () {
       key.sort();
 
+      // Sorted, as `key`:
+      var sortedParameters = key._fields;
+
       List<ConstructorReflection<O>> list;
       if (hasJsonNameAlias) {
         list = _getBestConstructorsForMapImpl(
-          presentParameters,
+          sortedParameters,
           allowEmptyConstructors,
           allowOptionalOnlyConstructors,
           true,
         );
         if (list.isEmpty) {
           list = _getBestConstructorsForMapImpl(
-            presentParameters,
+            sortedParameters,
             allowEmptyConstructors,
             allowOptionalOnlyConstructors,
             false,
@@ -2248,7 +2303,7 @@ abstract class ClassReflection<O> extends Reflection<O>
         }
       } else {
         list = _getBestConstructorsForMapImpl(
-          presentParameters,
+          sortedParameters,
           allowEmptyConstructors,
           allowOptionalOnlyConstructors,
           false,
@@ -2262,6 +2317,7 @@ abstract class ClassReflection<O> extends Reflection<O>
 
     staticInstance._lastBestConstructorsForMapKey = keyInOrder;
     staticInstance._lastBestConstructorsForMap = constructors;
+    staticInstance._lastBestConstructorsForMapShape = resolution;
 
     return constructors;
   }
@@ -2375,29 +2431,36 @@ abstract class ClassReflection<O> extends Reflection<O>
       }
     }
 
-    if (hasFieldWithoutSetter || !canCreateInstanceWithoutArguments) {
-      var o = createInstanceWithBestConstructor(
+    // Empty constructors only when the fields can't be set (and only for an
+    // empty `map`): otherwise the fields are set below.
+    final allowEmptyConstructors =
+        (hasFieldWithoutSetter || !canCreateInstanceWithoutArguments) &&
+        map.isEmpty;
+
+    var constructed = _createInstanceFromMapDirect(
+      this,
+      map,
+      fieldNameResolver,
+      fieldValueResolver,
+      allowEmptyConstructors,
+    );
+
+    if (identical(constructed, _notDirect)) {
+      constructed = createInstanceWithBestConstructor(
         map,
         fieldNameResolver: fieldNameResolver,
         fieldValueResolver: fieldValueResolver,
+        allowEmptyConstructors: allowEmptyConstructors,
         allowOptionalOnlyConstructors: true,
       );
-      if (o != null) return o;
-    } else {
-      var o = createInstanceWithBestConstructor(
-        map,
-        fieldNameResolver: fieldNameResolver,
-        fieldValueResolver: fieldValueResolver,
-        allowEmptyConstructors: false,
-        allowOptionalOnlyConstructors: true,
-      );
-      if (o != null) return o;
     }
 
-    // `class.field` to `map.key`:
-    var fieldsResolved = _resolveFieldsNames(fieldNameResolver, map);
+    if (constructed != null) return constructed as O;
 
-    var hasUnusedFieldInMap = fieldsResolved.length < map.length;
+    // `class.field` to `map.key`:
+    var shape = _resolveFieldsNamesShape(fieldNameResolver, map);
+
+    var hasUnusedFieldInMap = shape.fields.length < map.length;
 
     // In some fields won't be used by the constructor it indicates that
     // this is not a complete constructor for the data:
@@ -2408,15 +2471,16 @@ abstract class ClassReflection<O> extends Reflection<O>
     var o = createInstance();
     if (o == null) return null;
 
-    // The fields without an object are cached, and set with `setFor`,
-    // so no `FieldReflection` is allocated per field and instance:
-    var staticInstance = getStaticInstance();
+    // The fields without an object, set with `setFor`, so no
+    // `FieldReflection` is allocated per field and instance. Kept with the
+    // [map] shape, as their keys:
+    var fieldsToSet = shape.fieldsToSet(this);
+    var keysToSet = shape.keysToSet!;
 
-    for (var f in fieldsNames) {
-      var key = fieldsResolved[f];
-      if (key == null) continue;
-
-      var field = staticInstance.field(f)!;
+    for (var i = 0; i < fieldsToSet.length; ++i) {
+      var field = fieldsToSet[i];
+      var key = keysToSet[i];
+      var f = field.name;
 
       var val = map[key];
 
@@ -2455,17 +2519,128 @@ abstract class ClassReflection<O> extends Reflection<O>
     return true;
   }
 
-  /// Returns a mapping from [fieldsNames] to [map] keys.
-  Map<String, String> _resolveFieldsNames(
+  /// The last [_resolveFieldsNamesShape] result.
+  _MapFieldsNames? _lastFieldsNames;
+
+  /// Resolves [fieldsNames] to [map] keys with [fieldNameResolver].
+  ///
+  /// A [FieldNameResolver] resolves a field from the [map] keys, so maps with
+  /// the same keys, in the same order (e.g. the JSON objects of one entity
+  /// type), resolve the same: the last resolution is reused for them, while
+  /// the same [fieldNameResolver] is used.
+  _MapFieldsNames _resolveFieldsNamesShape(
+    FieldNameResolver fieldNameResolver,
+    Map<String, Object?> map,
+  ) => _fieldsNamesShape(this, fieldNameResolver, map);
+
+  /// [_resolveFieldsNamesShape] of [classReflection]. Static, as the other
+  /// helpers of [_createInstanceFromMapDirect].
+  static _MapFieldsNames _fieldsNamesShape(
+    ClassReflection classReflection,
     FieldNameResolver fieldNameResolver,
     Map<String, Object?> map,
   ) {
+    var staticInstance = classReflection.getStaticInstance();
+
+    var last = staticInstance._lastFieldsNames;
+    if (last != null &&
+        _MapFieldsNames._isSameShape(last, fieldNameResolver, map)) {
+      return last;
+    }
+
     var resolved = <String, String>{};
-    for (var f in fieldsNames) {
+    for (var f in classReflection.fieldsNames) {
       var f2 = fieldNameResolver(f, map);
       if (f2 != null) resolved[f] = f2;
     }
-    return resolved;
+
+    return staticInstance._lastFieldsNames = _MapFieldsNames(
+      fieldNameResolver,
+      map.keys.toList(growable: false),
+      resolved,
+    );
+  }
+
+  /// Not handled by [_createInstanceFromMapDirect].
+  static final Object _notDirect = Object();
+
+  /// The common path of [createInstanceFromMap], with fewer calls: when
+  /// [map] has the shape of the last [getBestConstructorsForMap] lookup (with
+  /// the same options), its constructors are reused, and a single
+  /// [ConstructorReflection.canInvokeFromResolvedMap] one is called directly.
+  ///
+  /// It's the same as [createInstanceWithBestConstructor] (with
+  /// `allowOptionalOnlyConstructors`), and returns [_notDirect] for anything
+  /// else (left to it). A constructor error is reported as that path reports
+  /// it (without calling the constructor again), and arguments that can't be
+  /// built directly (e.g. an unresolved value) take its `MethodInvocation`
+  /// path (without building them again).
+  ///
+  /// Static (and its helpers): compiled to JavaScript, a static function
+  /// doesn't check its parameters types on each call, as an instance method
+  /// does (without `--omit-implicit-checks`).
+  static Object? _createInstanceFromMapDirect<O>(
+    ClassReflection<O> classReflection,
+    Map<String, Object?> map,
+    FieldNameResolver fieldNameResolver,
+    FieldValueResolver? fieldValueResolver,
+    bool allowEmptyConstructors,
+  ) {
+    final staticInstance = classReflection.getStaticInstance();
+
+    final shape = staticInstance._lastBestConstructorsForMapShape;
+    if (shape == null ||
+        !staticInstance._lastBestConstructorsForMapKey!.equalsOptions(
+          allowEmptyConstructors,
+          true,
+        ) ||
+        !_MapFieldsNames._isSameShape(shape, fieldNameResolver, map)) {
+      return _notDirect;
+    }
+
+    final constructors = staticInstance._lastBestConstructorsForMap!;
+
+    final length = constructors.length;
+    if (length == 0) {
+      // As `createInstanceWithConstructors`:
+      return null;
+    } else if (length > 1) {
+      return _notDirect;
+    }
+
+    final constructor = constructors.first;
+    if (!constructor.canInvokeFromResolvedMap) return _notDirect;
+
+    final args = ConstructorReflection._directArguments(
+      constructor,
+      map,
+      fieldNameResolver,
+      fieldValueResolver,
+    );
+
+    if (args == null) {
+      // The `MethodInvocation` path, as `createInstanceWithBestConstructor`
+      // would take it, without building the arguments again:
+      return classReflection._createInstanceWithConstructorImpl(
+        constructor,
+        map,
+        fieldNameResolver: fieldNameResolver,
+        fieldValueResolver: fieldValueResolver,
+        directUnresolved: true,
+      );
+    }
+
+    try {
+      return constructor.invoker!(args);
+    } catch (e, s) {
+      return classReflection._createInstanceWithConstructorImpl(
+        constructor,
+        map,
+        fieldNameResolver: fieldNameResolver,
+        fieldValueResolver: fieldValueResolver,
+        directError: (e, s),
+      );
+    }
   }
 
   @override
@@ -2488,6 +2663,94 @@ abstract class ClassReflection<O> extends Reflection<O>
     staticInstance._getBestConstructorForMapCache?.clear();
     staticInstance._lastBestConstructorsForMapKey = null;
     staticInstance._lastBestConstructorsForMap = null;
+    staticInstance._lastBestConstructorsForMapShape = null;
+    staticInstance._lastFieldsNames = null;
+  }
+}
+
+/// The fields of a class resolved to the keys of a map (by a
+/// [FieldNameResolver]), for maps of the same shape: the same [keys], in the
+/// same order.
+class _MapFieldsNames {
+  final FieldNameResolver resolver;
+
+  /// The map keys, in order.
+  final List<String> keys;
+
+  /// Field name to map key. Shared: must not be modified.
+  final Map<String, String> fields;
+
+  _MapFieldsNames(this.resolver, this.keys, this.fields);
+
+  /// `true` if [map] has the same [keys] of [shape], in the same order, and
+  /// the same [resolver]. Static (see
+  /// [ClassReflection._createInstanceFromMapDirect]).
+  static bool _isSameShape(
+    _MapFieldsNames shape,
+    FieldNameResolver resolver,
+    Map<String, Object?> map,
+  ) {
+    if (!identical(resolver, shape.resolver)) return false;
+
+    final keys = shape.keys;
+    final length = keys.length;
+    if (map.length != length) return false;
+
+    var i = 0;
+    for (final k in map.keys) {
+      final k2 = keys[i++];
+      if (!identical(k, k2) && k != k2) return false;
+    }
+
+    return true;
+  }
+
+  List<FieldReflection>? _fieldsToSet;
+  List<String>? _keysToSet;
+
+  /// The fields (without an object) of [classReflection] — the class of
+  /// this shape — present in [fields], in [ClassReflection.fieldsNames] order.
+  /// Their map keys are in [keysToSet], at the same indexes.
+  List<FieldReflection> fieldsToSet(ClassReflection classReflection) {
+    var fieldsToSet = _fieldsToSet;
+    if (fieldsToSet != null) return fieldsToSet;
+
+    var staticInstance = classReflection.getStaticInstance();
+
+    var list = <FieldReflection>[];
+    var keys = <String>[];
+
+    for (var f in classReflection.fieldsNames) {
+      var key = fields[f];
+      if (key == null) continue;
+      list.add(staticInstance.field(f)!);
+      keys.add(key);
+    }
+
+    _keysToSet = List<String>.unmodifiable(keys);
+    return _fieldsToSet = List<FieldReflection>.unmodifiable(list);
+  }
+
+  /// The map keys of [fieldsToSet] (set by it).
+  List<String>? get keysToSet => _keysToSet;
+
+  List<String>? _presentParameters;
+
+  /// The resolved fields, then the map keys that resolve to no field.
+  /// Shared: must not be modified.
+  List<String> get presentParameters =>
+      _presentParameters ??= _computePresentParameters();
+
+  List<String> _computePresentParameters() {
+    var presentFields = fields.keys;
+
+    if (keys.length > fields.length) {
+      var mapUsedKeys = fields.values.toList();
+      var mapUnusedKeys = keys.where((k) => !mapUsedKeys.contains(k));
+      return List<String>.unmodifiable([...presentFields, ...mapUnusedKeys]);
+    } else {
+      return List<String>.unmodifiable(presentFields);
+    }
   }
 }
 
@@ -2508,6 +2771,14 @@ class _KeyParametersNames {
     _fields.sort();
     _sorted = true;
   }
+
+  /// `true` if this key has the same constructor options.
+  bool equalsOptions(
+    bool allowEmptyConstructors,
+    bool allowOptionalOnlyConstructors,
+  ) =>
+      _allowEmptyConstructors == allowEmptyConstructors &&
+      _allowOptionalOnlyConstructors == allowOptionalOnlyConstructors;
 
   /// `true` if [fields] are the same as this key's fields, in the same order.
   bool equalsInOrder(
@@ -3252,6 +3523,13 @@ class TypeReflection<T> {
 typedef FieldGetter<T> = T Function();
 typedef FieldSetter<T> = void Function(T v);
 
+/// Resolves a [field] (or parameter) name to a key of [map], or `null` when
+/// [map] has none for it.
+///
+/// The key must depend only on [field] and the keys of [map] (their order
+/// included), not on its values: [ClassReflection.createInstanceFromMap]
+/// reuses a resolution for maps with the same keys, in the same order, while
+/// the same resolver (`identical`) is used.
 typedef FieldNameResolver = String? Function(
   String field,
   Map<String, Object?> map,
@@ -4604,8 +4882,41 @@ class ConstructorReflection<O> extends StaticFunctionReflection<O, O> {
       optionalParameters.isEmpty &&
       !classReflection.hasJsonNameAlias;
 
-  /// Builds [invoker] arguments straight from [map], with the same values as
-  /// [methodInvocationFromMap] without a `reviver` (passed to [invokeWith]):
+  /// The [invoker] arguments of constructor [c] (a
+  /// [canInvokeFromResolvedMap] one) from [map]: by [_resolvedMapArguments],
+  /// or by [_revivedMapArguments] with a [fieldValueResolver].
+  ///
+  /// Returns `null` when they can't be built, leaving them to
+  /// [methodInvocationFromMap], including when [fieldNameResolver] or
+  /// [fieldValueResolver] throws (the [MethodInvocation] path handles it as
+  /// it always has).
+  ///
+  /// The helpers of this direct path are static: compiled to JavaScript, a
+  /// static function doesn't check its parameters types on each call, as an
+  /// instance method does (without `--omit-implicit-checks`).
+  static List<dynamic>? _directArguments(
+    ConstructorReflection c,
+    Map<String, Object?> map,
+    FieldNameResolver? fieldNameResolver,
+    FieldValueResolver? fieldValueResolver,
+  ) {
+    final nameResolver =
+        identical(fieldNameResolver, ClassReflection._exactFieldNameResolver)
+        ? null
+        : fieldNameResolver;
+
+    try {
+      return fieldValueResolver == null
+          ? _resolvedMapArguments(c, map, nameResolver)
+          : _revivedMapArguments(c, map, nameResolver, fieldValueResolver);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Builds [invoker] arguments of [c] straight from [map], with the same
+  /// values as [methodInvocationFromMap] without a `reviver` (passed to
+  /// [invokeWith]):
   /// - A normal parameter takes its [map] value, `null` when absent (as
   ///   [methodInvocation] passes an absent normal parameter).
   /// - A named parameter that is absent or `null` is omitted when
@@ -4614,12 +4925,13 @@ class ConstructorReflection<O> extends StaticFunctionReflection<O, O> {
   ///
   /// Returns `null` when [map] lacks a named parameter that can't be omitted,
   /// leaving the error to [methodInvocationFromMap].
-  List<dynamic>? _resolvedMapArguments(
+  static List<dynamic>? _resolvedMapArguments(
+    ConstructorReflection c,
     Map<String, Object?> map,
     FieldNameResolver? nameResolver,
   ) {
-    final normalParameters = this.normalParameters;
-    final namedParameters = this.namedParameters;
+    final normalParameters = c.normalParameters;
+    final namedParameters = c.namedParameters;
 
     final args = List<dynamic>.filled(
       normalParameters.length + namedParameters.length,
@@ -4657,6 +4969,104 @@ class ConstructorReflection<O> extends StaticFunctionReflection<O, O> {
 
     return args;
   }
+
+  /// Builds [invoker] arguments from [map] values revived by [reviver], with
+  /// the same values as [methodInvocationFromMap] with that `reviver`
+  /// (passed to [invokeWith]). The [reviver] is called once per parameter,
+  /// with the parameter's name, its [map] value and its type.
+  ///
+  /// Returns `null`, leaving the parameters to [methodInvocationFromMap], when
+  /// a value is unresolved: a non-null [map] value the [reviver] resolves to
+  /// `null`, or an entity list with a `null` element (the [MethodInvocation]
+  /// path resolves them again, then reports them), and when [map] lacks a
+  /// named parameter that can't be omitted.
+  static List<dynamic>? _revivedMapArguments(
+    ConstructorReflection c,
+    Map<String, Object?> map,
+    FieldNameResolver? nameResolver,
+    FieldValueResolver reviver,
+  ) {
+    final normalParameters = c.normalParameters;
+    final namedParameters = c.namedParameters;
+
+    final args = List<dynamic>.filled(
+      normalParameters.length + namedParameters.length,
+      null,
+    );
+
+    var i = 0;
+
+    for (final p in normalParameters) {
+      final val = _revivedValue(p, map, nameResolver, reviver);
+      if (identical(val, _unresolvedRevivedValue)) return null;
+      // An absent or `null` normal parameter is passed as `null`:
+      args[i++] = identical(val, _absentRevivedValue) ? null : val;
+    }
+
+    for (final p in namedParameters.values) {
+      final val = _revivedValue(p, map, nameResolver, reviver);
+      if (identical(val, _unresolvedRevivedValue)) return null;
+
+      final absent = identical(val, _absentRevivedValue);
+
+      if (val != null && !absent) {
+        args[i++] = val;
+      } else if (p.isOmittable) {
+        args[i++] = absentArgument;
+      } else if (absent) {
+        return null;
+      } else {
+        args[i++] = null;
+      }
+    }
+
+    return args;
+  }
+
+  /// The value of parameter [p] for [_revivedMapArguments]:
+  /// - [_unresolvedRevivedValue] when it's unresolved.
+  /// - [_absentRevivedValue] when [map] lacks it (and [reviver] gives `null`).
+  /// - Otherwise the revived value, `null` included.
+  static Object? _revivedValue(
+    ParameterReflection p,
+    Map<String, Object?> map,
+    FieldNameResolver? nameResolver,
+    FieldValueResolver reviver,
+  ) {
+    final name = p.name;
+
+    var key = name;
+    if (nameResolver != null) {
+      key = nameResolver(key, map) ?? key;
+    }
+
+    final contains = map.containsKey(key);
+    final val = contains ? map[key] : null;
+
+    final type = p.type;
+    final valRevived = reviver(name, val, type);
+
+    if (valRevived != null) {
+      if (valRevived is List &&
+          type.isListEntity &&
+          valRevived.any((e) => e == null)) {
+        return _unresolvedRevivedValue;
+      }
+      return valRevived;
+    }
+
+    if (!contains) {
+      return _absentRevivedValue;
+    } else if (val != null) {
+      return _unresolvedRevivedValue;
+    } else {
+      return null;
+    }
+  }
+
+  // Private sentinels, so no value a `reviver` returns is taken for them:
+  static final Object _unresolvedRevivedValue = Object();
+  static final Object _absentRevivedValue = Object();
 
   /// Returns the [JsonAnnotation] of this constructor.
   ///
