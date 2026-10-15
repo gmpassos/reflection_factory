@@ -44,8 +44,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -76,8 +75,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       var res = await testBuilder(
         builder,
@@ -131,8 +129,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       var res = await testBuilder(
         builder,
@@ -250,8 +247,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -361,8 +357,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -487,8 +482,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       var logs = <LogRecord>[];
 
@@ -548,8 +542,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -643,8 +636,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -735,8 +727,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -808,8 +799,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -878,8 +868,7 @@ void main() {
         ''',
         };
 
-        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-        await readerWriter.testing.loadIsolateSources();
+        final readerWriter = await _newReaderWriter();
 
         await testBuilder(
           builder,
@@ -948,8 +937,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -995,8 +983,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -1059,8 +1046,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -1134,8 +1120,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -1236,8 +1221,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -1334,8 +1318,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -1450,8 +1433,7 @@ void main() {
         ''',
         };
 
-        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-        await readerWriter.testing.loadIsolateSources();
+        final readerWriter = await _newReaderWriter();
 
         await testBuilder(
           builder,
@@ -1547,8 +1529,7 @@ void main() {
         ''',
         };
 
-        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-        await readerWriter.testing.loadIsolateSources();
+        final readerWriter = await _newReaderWriter();
 
         await testBuilder(
           builder,
@@ -1605,8 +1586,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -1680,8 +1660,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -1740,8 +1719,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -1861,8 +1839,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -2068,8 +2045,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -2156,8 +2132,7 @@ void main() {
         ''',
         };
 
-        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-        await readerWriter.testing.loadIsolateSources();
+        final readerWriter = await _newReaderWriter();
 
         await testBuilder(
           builder,
@@ -2211,8 +2186,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -2269,8 +2243,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -2324,8 +2297,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -2378,8 +2350,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -2445,8 +2416,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -2530,8 +2500,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -2604,8 +2573,7 @@ void main() {
         ''',
       };
 
-      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-      await readerWriter.testing.loadIsolateSources();
+      final readerWriter = await _newReaderWriter();
 
       await testBuilder(
         builder,
@@ -2679,8 +2647,7 @@ void main() {
         ''',
         };
 
-        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-        await readerWriter.testing.loadIsolateSources();
+        final readerWriter = await _newReaderWriter();
 
         await testBuilder(
           builder,
@@ -2733,8 +2700,7 @@ void main() {
         ''',
         };
 
-        final readerWriter = TestReaderWriter(rootPackage: _pkgName);
-        await readerWriter.testing.loadIsolateSources();
+        final readerWriter = await _newReaderWriter();
 
         await testBuilder(
           builder,
@@ -2776,3 +2742,26 @@ int _pkgCacheCount = 1;
 
 // Ensure every test gets its own unique package name
 String get _pkgName => 'pkg$_pkgCacheCount';
+
+/// The sources visible to this isolate, read from disk once, instead of for
+/// each test (`loadIsolateSources`: about a quarter of this file's time).
+Map<AssetId, List<int>>? _isolateSources;
+
+/// A [TestReaderWriter] for [_pkgName], with the sources of this isolate.
+Future<TestReaderWriter> _newReaderWriter() async {
+  var sources = _isolateSources ??= await _loadIsolateSources();
+
+  final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+  for (var e in sources.entries) {
+    readerWriter.testing.writeBytes(e.key, e.value);
+  }
+  return readerWriter;
+}
+
+Future<Map<AssetId, List<int>>> _loadIsolateSources() async {
+  final readerWriter = TestReaderWriter();
+  await readerWriter.testing.loadIsolateSources();
+
+  var testing = readerWriter.testing;
+  return {for (var id in testing.assets) id: testing.readBytes(id)};
+}

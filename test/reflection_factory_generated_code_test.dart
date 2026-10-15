@@ -18,21 +18,17 @@ import 'package:test/test.dart';
 /// So this builds a throwaway package with `reflection_factory` as a path
 /// dependency, runs the real builder over it, and runs `dart analyze` on the
 /// result.
+///
+/// Every fixture lives in that one package, in its own `lib/` directory:
+/// `dart pub get` and `build_runner` (which compiles the builder first) run
+/// once for all the tests -- they are most of the time of this file.
 void main() {
   group('generated code compiles', () {
     late Directory tempDir;
 
-    setUp(() {
+    setUpAll(() async {
       tempDir = Directory.systemTemp.createTempSync('reflection_factory_e2e_');
-    });
 
-    tearDown(() {
-      if (tempDir.existsSync()) {
-        tempDir.deleteSync(recursive: true);
-      }
-    });
-
-    test('with every kind of import', () async {
       var packageRoot = _getPackageRootDirectory().path;
 
       _write(tempDir, 'pubspec.yaml', '''
@@ -47,7 +43,180 @@ dev_dependencies:
   build_runner: ^2.15.0
 ''');
 
-      _write(tempDir, 'lib/plain.dart', '''
+      _writeImportsFixture(tempDir);
+      _writeInvokersFixture(tempDir);
+
+      await _run('dart', ['pub', 'get'], tempDir);
+      await _run('dart', ['run', 'build_runner', 'build'], tempDir);
+    });
+
+    tearDownAll(() {
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
+
+    test('with every kind of import', () async {
+      var generated = File(
+        pack_path.join(tempDir.path, 'lib', 'imports', 'foo.reflection.g.dart'),
+      );
+      expect(generated.existsSync(), isTrue, reason: 'no generated output');
+
+      var code = generated.readAsStringSync();
+
+      // Asserted explicitly as well as compiled, so a failure says *what* went
+      // wrong instead of only that analysis failed.
+      for (var qualified in [
+        'o.Other',
+        'o.Flavor',
+        'f.Deep',
+        'f.Facade',
+        'mime.MimeTypeResolver',
+      ]) {
+        expect(code, contains(qualified), reason: 'missing $qualified');
+      }
+
+      for (var unqualified in [
+        'PlainA',
+        'PlainB',
+        'ShownOnly',
+        'Local',
+        'Hidden',
+      ]) {
+        expect(code, contains(unqualified), reason: 'missing $unqualified');
+      }
+
+      // Nothing reachable unprefixed may pick up a prefix.
+      for (var wrong in [
+        'o.PlainA',
+        'o.Hidden',
+        'o.Local',
+        'f.PlainA',
+        'o.int',
+        'o.String',
+        'mime.int',
+      ]) {
+        expect(code, isNot(contains(wrong)), reason: 'wrongly emitted $wrong');
+      }
+
+      var analyze = await _run(
+        'dart',
+        ['analyze', 'lib/imports'],
+        tempDir,
+        expectSuccess: false,
+      );
+
+      expect(
+        analyze.exitCode,
+        equals(0),
+        reason:
+            'the generated code does not compile:\n'
+            '${analyze.stdout}\n${analyze.stderr}',
+      );
+    });
+
+    // The constructor `invoker`s: they cast their arguments (`strict-casts`,
+    // `avoid_dynamic_calls`) and write the default values of omitted
+    // parameters in their parameters' type context. A default can come from
+    // a prefixed import, from a static member referenced by its bare name, or
+    // be inherited by a super-parameter from another library.
+    test('constructor invokers: strict analysis and runtime', () async {
+      var code = File(
+        pack_path.join(
+          tempDir.path,
+          'lib',
+          'invokers',
+          'foo.reflection.g.dart',
+        ),
+      ).readAsStringSync();
+
+      // Defaults as written, qualified where needed:
+      expect(code, contains('Order.defaultQty'));
+      expect(code, contains('o.Flavor.sweet'));
+      expect(code, contains('o.kBonus'));
+      // Typed arguments:
+      expect(code, contains('as String'));
+      expect(code, contains(r'__argOr$<Check?>('));
+      expect(code, contains('as o.Ref<o.Base>'));
+      expect(code, contains('as (int, o.Flavor)'));
+      expect(code, contains('Shapes.identity'));
+      expect(code, contains('o.triple'));
+
+      // Function-typed fields with the class type parameter, through the raw
+      // receiver (the bound), with qualified types:
+      // (Compared without whitespace: `dart format` breaks them variously.)
+      String compact(String s) => s.replaceAll(RegExp(r'\s+'), '');
+      var codeCompact = compact(code);
+      for (var fieldType in [
+        'FieldReflection<Box, dynamic Function()?>',
+        'FieldReflection<Builder, o.Base Function(int, {required bool flag, String? label})?>',
+        'FieldReflection<Builder, o.Base Function(int, [String?])?>',
+        // Nullability as declared:
+        'FieldReflection<Builder, o.Base Function()>',
+        'FieldReflection<Builder, o.Base? Function(o.Base?)?>',
+        'FieldReflection<Builder, void Function(o.Base Function()?)?>',
+        // `T` and `List<T>` fields, through the raw class:
+        'FieldReflection<Box, dynamic>',
+        'FieldReflection<Box, List<dynamic>>',
+        'FieldReflection<Builder, o.Base?>',
+        'FieldReflection<Builder, List<o.Base>>',
+        'FieldReflection<Builder, Map<String, o.Base Function()?>>',
+        'FieldReflection<Builder, void Function(Check, o.Base)?>',
+        // With the type argument (inherited fields):
+        'FieldReflection<IntBox, int?>',
+        'FieldReflection<IntBox, List<int>>',
+        'FieldReflection<IntBox, int Function()?>',
+      ]) {
+        expect(codeCompact, contains(compact(fieldType)), reason: fieldType);
+      }
+
+      // `lib/invokers`: the generated code, under its strict
+      // `analysis_options.yaml` (`bin/` checks types on purpose).
+      var analyze = await _run(
+        'dart',
+        ['analyze', '--fatal-infos', 'lib/invokers'],
+        tempDir,
+        expectSuccess: false,
+      );
+
+      expect(
+        analyze.exitCode,
+        equals(0),
+        reason:
+            'the generated code has issues under strict analysis:\n'
+            '${analyze.stdout}\n${analyze.stderr}',
+      );
+
+      var run = await _run('dart', ['run', 'bin/main.dart'], tempDir);
+      var output = '${run.stdout}'.trim().split('\n');
+
+      const defaults =
+          'price=true:0.0 qty=2 tags=true:[] counts=true flavor=true '
+          'bonus=5 ttl=5 check=true';
+
+      expect(
+        output,
+        equals([
+          'direct: $defaults',
+          'json: $defaults',
+          'given: price=1.5 check=true',
+          'sub: level=4',
+          'box: items=[1, 2] invoker=none',
+          'fallback: 3 3',
+          'nullability: 2 true true false',
+          'build: 7 8',
+          'typed: 9 [1, 2] 3 [4] 5 a',
+          'int box: 6 [7] [8] true',
+          'shapes: 6 (1, Flavor.salty) null 2 6 1',
+        ]),
+      );
+    });
+  }, timeout: Timeout(Duration(minutes: 5)));
+}
+
+/// `lib/imports/`: every way a type can be reached from the input library.
+void _writeImportsFixture(Directory root) {
+  _write(root, 'lib/imports/plain.dart', '''
 class PlainA {
   int a;
   PlainA(this.a);
@@ -59,7 +228,7 @@ class PlainB {
 }
 ''');
 
-      _write(tempDir, 'lib/shown.dart', '''
+  _write(root, 'lib/imports/shown.dart', '''
 class ShownOnly {
   int s;
   ShownOnly(this.s);
@@ -71,14 +240,14 @@ class NotShown {
 }
 ''');
 
-      _write(tempDir, 'lib/deep.dart', '''
+  _write(root, 'lib/imports/deep.dart', '''
 class Deep {
   int d;
   Deep(this.d);
 }
 ''');
 
-      _write(tempDir, 'lib/facade.dart', '''
+  _write(root, 'lib/imports/facade.dart', '''
 export 'deep.dart';
 
 class Facade {
@@ -87,7 +256,7 @@ class Facade {
 }
 ''');
 
-      _write(tempDir, 'lib/other.dart', '''
+  _write(root, 'lib/imports/other.dart', '''
 class Other {
   int v;
   Other(this.v);
@@ -101,12 +270,12 @@ class Hidden {
 enum Flavor { sweet, salty }
 ''');
 
-      // Every way a type can be reached from the input library:
-      //   unprefixed  -> `plain.dart`, `shown.dart` (show), `other.dart` (hide)
-      //   declared    -> `Local`
-      //   prefixed    -> `other.dart` (o), `facade.dart` (f), `package:mime`
-      //   re-exported -> `Deep`, reached through the prefixed `facade.dart`
-      _write(tempDir, 'lib/foo.dart', '''
+  // Every way a type can be reached from the input library:
+  //   unprefixed  -> `plain.dart`, `shown.dart` (show), `other.dart` (hide)
+  //   declared    -> `Local`
+  //   prefixed    -> `other.dart` (o), `facade.dart` (f), `package:mime`
+  //   re-exported -> `Deep`, reached through the prefixed `facade.dart`
+  _write(root, 'lib/imports/foo.dart', '''
 import 'package:reflection_factory/reflection_factory.dart';
 import 'package:mime/mime.dart' as mime;
 
@@ -152,89 +321,12 @@ class Holder<T extends o.Other> {
   o.Other? echo(o.Other? v, PlainA? p) => v;
 }
 ''');
+}
 
-      await _run('dart', ['pub', 'get'], tempDir);
-
-      await _run('dart', ['run', 'build_runner', 'build'], tempDir);
-
-      var generated = File(
-        pack_path.join(tempDir.path, 'lib', 'foo.reflection.g.dart'),
-      );
-      expect(generated.existsSync(), isTrue, reason: 'no generated output');
-
-      var code = generated.readAsStringSync();
-
-      // Asserted explicitly as well as compiled, so a failure says *what* went
-      // wrong instead of only that analysis failed.
-      for (var qualified in [
-        'o.Other',
-        'o.Flavor',
-        'f.Deep',
-        'f.Facade',
-        'mime.MimeTypeResolver',
-      ]) {
-        expect(code, contains(qualified), reason: 'missing $qualified');
-      }
-
-      for (var unqualified in [
-        'PlainA',
-        'PlainB',
-        'ShownOnly',
-        'Local',
-        'Hidden',
-      ]) {
-        expect(code, contains(unqualified), reason: 'missing $unqualified');
-      }
-
-      // Nothing reachable unprefixed may pick up a prefix.
-      for (var wrong in [
-        'o.PlainA',
-        'o.Hidden',
-        'o.Local',
-        'f.PlainA',
-        'o.int',
-        'o.String',
-        'mime.int',
-      ]) {
-        expect(code, isNot(contains(wrong)), reason: 'wrongly emitted $wrong');
-      }
-
-      var analyze = await _run(
-        'dart',
-        ['analyze'],
-        tempDir,
-        expectSuccess: false,
-      );
-
-      expect(
-        analyze.exitCode,
-        equals(0),
-        reason:
-            'the generated code does not compile:\n'
-            '${analyze.stdout}\n${analyze.stderr}',
-      );
-    }, timeout: Timeout(Duration(minutes: 5)));
-
-    // The constructor `invoker`s: they cast their arguments (`strict-casts`,
-    // `avoid_dynamic_calls`) and write the default values of omitted
-    // parameters in their parameters' type context. A default can come from
-    // a prefixed import, from a static member referenced by its bare name, or
-    // be inherited by a super-parameter from another library.
-    test('constructor invokers: strict analysis and runtime', () async {
-      var packageRoot = _getPackageRootDirectory().path;
-
-      _write(tempDir, 'pubspec.yaml', '''
-name: reflection_factory_e2e
-environment:
-  sdk: '>=3.10.0 <4.0.0'
-dependencies:
-  reflection_factory:
-    path: $packageRoot
-dev_dependencies:
-  build_runner: ^2.15.0
-''');
-
-      _write(tempDir, 'analysis_options.yaml', '''
+/// `lib/invokers/` (analyzed strictly, by its own `analysis_options.yaml`)
+/// and `bin/main.dart`, which runs them.
+void _writeInvokersFixture(Directory root) {
+  _write(root, 'lib/invokers/analysis_options.yaml', '''
 analyzer:
   language:
     strict-casts: true
@@ -243,7 +335,7 @@ linter:
     - avoid_dynamic_calls
 ''');
 
-      _write(tempDir, 'lib/other.dart', '''
+  _write(root, 'lib/invokers/other.dart', '''
 enum Flavor { sweet, salty }
 
 const int kBonus = 5;
@@ -261,7 +353,7 @@ class Ref<T> {
 int triple(int n) => n * 3;
 ''');
 
-      _write(tempDir, 'lib/foo.dart', '''
+  _write(root, 'lib/invokers/foo.dart', '''
 import 'package:reflection_factory/reflection_factory.dart';
 
 import 'other.dart' as o;
@@ -373,10 +465,10 @@ class Shapes {
 }
 ''');
 
-      _write(tempDir, 'bin/main.dart', r'''
+  _write(root, 'bin/main.dart', r'''
 import 'package:reflection_factory/reflection_factory.dart';
-import 'package:reflection_factory_e2e/foo.dart';
-import 'package:reflection_factory_e2e/other.dart';
+import 'package:reflection_factory_e2e/invokers/foo.dart';
+import 'package:reflection_factory_e2e/invokers/other.dart';
 
 void main() {
   void show(String path, Order o) {
@@ -459,95 +551,6 @@ void main() {
       '${shapes.constRef.value}');
 }
 ''');
-
-      await _run('dart', ['pub', 'get'], tempDir);
-      await _run('dart', ['run', 'build_runner', 'build'], tempDir);
-
-      var code = File(
-        pack_path.join(tempDir.path, 'lib', 'foo.reflection.g.dart'),
-      ).readAsStringSync();
-
-      // Defaults as written, qualified where needed:
-      expect(code, contains('Order.defaultQty'));
-      expect(code, contains('o.Flavor.sweet'));
-      expect(code, contains('o.kBonus'));
-      // Typed arguments:
-      expect(code, contains('as String'));
-      expect(code, contains(r'__argOr$<Check?>('));
-      expect(code, contains('as o.Ref<o.Base>'));
-      expect(code, contains('as (int, o.Flavor)'));
-      expect(code, contains('Shapes.identity'));
-      expect(code, contains('o.triple'));
-
-      // Function-typed fields with the class type parameter, through the raw
-      // receiver (the bound), with qualified types:
-      // (Compared without whitespace: `dart format` breaks them variously.)
-      String compact(String s) => s.replaceAll(RegExp(r'\s+'), '');
-      var codeCompact = compact(code);
-      for (var fieldType in [
-        'FieldReflection<Box, dynamic Function()?>',
-        'FieldReflection<Builder, o.Base Function(int, {required bool flag, String? label})?>',
-        'FieldReflection<Builder, o.Base Function(int, [String?])?>',
-        // Nullability as declared:
-        'FieldReflection<Builder, o.Base Function()>',
-        'FieldReflection<Builder, o.Base? Function(o.Base?)?>',
-        'FieldReflection<Builder, void Function(o.Base Function()?)?>',
-        // `T` and `List<T>` fields, through the raw class:
-        'FieldReflection<Box, dynamic>',
-        'FieldReflection<Box, List<dynamic>>',
-        'FieldReflection<Builder, o.Base?>',
-        'FieldReflection<Builder, List<o.Base>>',
-        'FieldReflection<Builder, Map<String, o.Base Function()?>>',
-        'FieldReflection<Builder, void Function(Check, o.Base)?>',
-        // With the type argument (inherited fields):
-        'FieldReflection<IntBox, int?>',
-        'FieldReflection<IntBox, List<int>>',
-        'FieldReflection<IntBox, int Function()?>',
-      ]) {
-        expect(codeCompact, contains(compact(fieldType)), reason: fieldType);
-      }
-
-      // `lib/`: the generated code (`bin/` checks types on purpose).
-      var analyze = await _run(
-        'dart',
-        ['analyze', '--fatal-infos', 'lib'],
-        tempDir,
-        expectSuccess: false,
-      );
-
-      expect(
-        analyze.exitCode,
-        equals(0),
-        reason:
-            'the generated code has issues under strict analysis:\n'
-            '${analyze.stdout}\n${analyze.stderr}',
-      );
-
-      var run = await _run('dart', ['run', 'bin/main.dart'], tempDir);
-      var output = '${run.stdout}'.trim().split('\n');
-
-      const defaults =
-          'price=true:0.0 qty=2 tags=true:[] counts=true flavor=true '
-          'bonus=5 ttl=5 check=true';
-
-      expect(
-        output,
-        equals([
-          'direct: $defaults',
-          'json: $defaults',
-          'given: price=1.5 check=true',
-          'sub: level=4',
-          'box: items=[1, 2] invoker=none',
-          'fallback: 3 3',
-          'nullability: 2 true true false',
-          'build: 7 8',
-          'typed: 9 [1, 2] 3 [4] 5 a',
-          'int box: 6 [7] [8] true',
-          'shapes: 6 (1, Flavor.salty) null 2 6 1',
-        ]),
-      );
-    }, timeout: Timeout(Duration(minutes: 5)));
-  });
 }
 
 void _write(Directory root, String relativePath, String content) {

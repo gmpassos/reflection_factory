@@ -1,3 +1,15 @@
+## 2.12.2
+
+- Faster tests (no changes to the library or the generator):
+  - The end-to-end tests (`reflection_factory_generated_code_test.dart`)
+    share one throwaway package, so `dart pub get` and `build_runner` run
+    once instead of once per test.
+  - `reflection_factory_build_test.dart` reads the isolate's sources from
+    disk once, instead of for each test.
+  - Locally, `dart test` went from ~36s to ~20s.
+- CI: the `e2e` tests run in their own job (`test_vm_e2e`), in parallel with
+  the other VM tests (`dart test -x e2e`, with coverage).
+
 ## 2.12.1
 
 - **Generator: fix a build-time regression of 2.12.0.** The inline

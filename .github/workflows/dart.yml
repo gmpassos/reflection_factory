@@ -54,8 +54,10 @@ jobs:
         run: dart pub get
       - name: Upgrade dependencies
         run: dart pub upgrade
+      # The `e2e` tests run in their own job, in parallel (they run the
+      # builder in a sub process, so they add no coverage).
       - name: Run tests (VM)
-        run: dart test --platform vm --coverage=./coverage
+        run: dart test --platform vm --exclude-tags e2e --coverage=./coverage
       - name: Generate coverage report
         run: |
           dart pub global activate coverage
@@ -70,6 +72,27 @@ jobs:
           env_vars: OS,DART
           fail_ci_if_error: true
           verbose: true
+
+
+  # End-to-end: generate into a throwaway package, analyze and run it.
+  test_vm_e2e:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_VERSION }}
+      - name: Dart version
+        run: |
+          dart --version
+          uname -a
+      - name: Install dependencies
+        run: dart pub get
+      - name: Upgrade dependencies
+        run: dart pub upgrade
+      - name: Run tests (VM, e2e)
+        run: dart test --platform vm --tags e2e
 
 
   test_chrome:
