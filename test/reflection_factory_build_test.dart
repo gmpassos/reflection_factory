@@ -2769,6 +2769,60 @@ void main() {
         );
       },
     );
+
+    // Many `ClassProxy`s in one library share the index of the resolver's
+    // classes: the second one, with a `libraryPath`, resolves libraries that
+    // weren't indexed by the first one.
+    test('ClassProxy: many proxies in one library', () async {
+      var builder = ReflectionBuilder(verbose: true);
+
+      var sourceAssets = {
+        '$_pkgName|lib/foo.dart': '''
+
+          import 'package:reflection_factory/reflection_factory.dart';
+
+          part 'foo.reflection.g.dart';
+
+          @ClassProxy('LocalAPI')
+          class LocalAPIProxy implements ClassProxyListener {
+          }
+
+          @ClassProxy('MimeTypeResolver', libraryPath: 'package:mime/mime.dart')
+          class MimeTypeResolverProxy implements ClassProxyListener {
+          }
+
+          class LocalAPI {
+            int compute(int a) => a;
+          }
+
+        ''',
+      };
+
+      final readerWriter = TestReaderWriter(rootPackage: _pkgName);
+      await readerWriter.testing.loadIsolateSources();
+
+      await testBuilder(
+        builder,
+        sourceAssets,
+        readerWriter: readerWriter,
+        generateFor: {'$_pkgName|lib/foo.dart'},
+        outputs: {
+          '$_pkgName|lib/foo.reflection.g.dart': decodedMatches(
+            allOf(
+              contains('LocalAPIProxy\$reflectionProxy'),
+              contains('int compute(int a) {'),
+              contains('MimeTypeResolverProxy\$reflectionProxy'),
+              contains(
+                'String? lookup(String path, {List<int>? headerBytes}) {',
+              ),
+            ),
+          ),
+        },
+        onLog: (msg) {
+          _printToConsole(msg);
+        },
+      );
+    });
   });
 }
 

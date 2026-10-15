@@ -1,10 +1,24 @@
+## 2.12.2
+
+- **Generator: faster `ClassProxy` generation.** Finding the target class of
+  each `ClassProxy` collected the classes of every library known to the
+  resolver (thousands: the SDK and all the packages), again for each
+  `ClassProxy`. They are now indexed by name once per build step, each
+  library when first seen, so a library with many `ClassProxy`s no longer
+  repeats that work. The generated code is the same.
+  - In a project with 69 `ClassProxy`s in one library (and 225
+    `@EnableReflection` classes), the builder's "building" time went from 7s
+    to 4s, and a clean `build_runner build` from 23s to 20s.
+- Test: many `ClassProxy`s in one library.
+
 ## 2.12.1
 
 - **Generator: fix a build-time regression of 2.12.0.** The inline
   `identical(a[i], ConstructorReflection.absentArgument) ? default : a[i] as T`
   of each omittable invoker argument made `dart_style` very slow on classes
-  with large constructors (e.g. in `menu_ici_api`, formatting went from ~1s to
-  64s, and a full build from 6s to 69s). Each one is now a short call:
+  with large constructors (in a project with many large entity classes,
+  formatting went from ~1s to 64s, and a full build from 6s to 69s). Each one
+  is now a short call:
   ```dart
   invoker: (a) => Foo.named(
     a[0] as String,
