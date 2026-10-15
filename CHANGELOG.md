@@ -3,8 +3,9 @@
 - **Generator: fix a build-time regression of 2.12.0.** The inline
   `identical(a[i], ConstructorReflection.absentArgument) ? default : a[i] as T`
   of each omittable invoker argument made `dart_style` very slow on classes
-  with large constructors (e.g. in `menu_ici_api`, formatting went from ~1s to
-  64s, and a full build from 6s to 69s). Each one is now a short call:
+  with large constructors (in a project with many large entity classes,
+  formatting went from ~1s to 64s, and a full build from 6s to 69s). Each one
+  is now a short call:
   ```dart
   invoker: (a) => Foo.named(
     a[0] as String,
