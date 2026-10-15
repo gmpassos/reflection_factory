@@ -886,6 +886,32 @@ void main() {
         equals('absentArgument'),
       );
     });
+
+    test('argOrDefault', () {
+      const absent = ConstructorReflection.absentArgument;
+
+      // The default is typed in `T`'s context:
+      var d = ConstructorReflection.argOrDefault<double>(absent, 0);
+      expect(d, isA<double>());
+      expect(d, equals(0.0));
+
+      var l = ConstructorReflection.argOrDefault<List<String>>(
+        absent,
+        const [],
+      );
+      expect(l, isA<List<String>>());
+
+      expect(ConstructorReflection.argOrDefault<int?>(absent, null), isNull);
+
+      // A passed argument wins, even `null`:
+      expect(ConstructorReflection.argOrDefault<int>(7, 1), equals(7));
+      expect(ConstructorReflection.argOrDefault<int?>(null, 1), isNull);
+
+      expect(
+        () => ConstructorReflection.argOrDefault<int>('x', 1),
+        throwsA(isA<TypeError>()),
+      );
+    });
   });
 
   group('parameter shapes', () {

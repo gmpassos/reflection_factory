@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.12.0
+// BUILDER: reflection_factory/2.12.1
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -21,11 +21,13 @@ typedef __TR<T> = TypeReflection<T>;
 typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
+T __argOr$<T>(Object? a, T d) => ConstructorReflection.argOrDefault<T>(a, d);
+
 typedef __RCD1 = (int, String);
 typedef __RCD2 = ({int x, int y});
 
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.12.0');
+  static final Version _version = Version.parse('2.12.1');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -452,24 +454,12 @@ class TestAccountWithReflection$reflection
           invoker: (a) => TestAccountWithReflection(
             a[0] as String,
             a[1] as String,
-            active: identical(a[2], ConstructorReflection.absentArgument)
-                ? true
-                : a[2] as bool,
-            age: identical(a[3], ConstructorReflection.absentArgument)
-                ? 18
-                : a[3] as int,
-            createdAt: identical(a[4], ConstructorReflection.absentArgument)
-                ? null
-                : a[4] as DateTime?,
-            id: identical(a[5], ConstructorReflection.absentArgument)
-                ? null
-                : a[5] as int?,
-            phone: identical(a[6], ConstructorReflection.absentArgument)
-                ? null
-                : a[6] as String?,
-            score: identical(a[7], ConstructorReflection.absentArgument)
-                ? 0.5
-                : a[7] as double,
+            active: __argOr$<bool>(a[2], true),
+            age: __argOr$<int>(a[3], 18),
+            createdAt: __argOr$<DateTime?>(a[4], null),
+            id: __argOr$<int?>(a[5], null),
+            phone: __argOr$<String?>(a[6], null),
+            score: __argOr$<double>(a[7], 0.5),
           ),
         );
       case 'basic':
@@ -953,9 +943,7 @@ class TestCtorKindsWithReflection$reflection
           null,
           invoker: (a) => TestCtorKindsWithReflection(
             a[0] as String,
-            n: identical(a[1], ConstructorReflection.absentArgument)
-                ? 0
-                : a[1] as int,
+            n: __argOr$<int>(a[1], 0),
           ),
         );
       case 'parse':
@@ -1322,18 +1310,10 @@ class TestDefaultsWithReflection$reflection
           },
           null,
           invoker: (a) => TestDefaultsWithReflection(
-            check: identical(a[0], ConstructorReflection.absentArgument)
-                ? null
-                : a[0] as TestCheck?,
-            counts: identical(a[1], ConstructorReflection.absentArgument)
-                ? const {}
-                : a[1] as Map<String, int>,
-            score: identical(a[2], ConstructorReflection.absentArgument)
-                ? 0
-                : a[2] as double,
-            tags: identical(a[3], ConstructorReflection.absentArgument)
-                ? const []
-                : a[3] as List<String>,
+            check: __argOr$<TestCheck?>(a[0], null),
+            counts: __argOr$<Map<String, int>>(a[1], const {}),
+            score: __argOr$<double>(a[2], 0),
+            tags: __argOr$<List<String>>(a[3], const []),
           ),
         );
       case 'positional':
@@ -1350,12 +1330,8 @@ class TestDefaultsWithReflection$reflection
           null,
           null,
           invoker: (a) => TestDefaultsWithReflection.positional(
-            identical(a[0], ConstructorReflection.absentArgument)
-                ? 1
-                : a[0] as double,
-            identical(a[1], ConstructorReflection.absentArgument)
-                ? const ['x']
-                : a[1] as List<String>,
+            __argOr$<double>(a[0], 1),
+            __argOr$<List<String>>(a[1], const ['x']),
           ),
         );
       default:
@@ -1720,32 +1696,22 @@ class TestEdgeDefaultsWithReflection$reflection
           },
           null,
           invoker: (a) => TestEdgeDefaultsWithReflection(
-            byLevel: identical(a[0], ConstructorReflection.absentArgument)
-                ? const {
-                    TestLevel.low: ['x'],
-                  }
-                : a[0] as Map<TestLevel, List<String>>,
-            levels: identical(a[1], ConstructorReflection.absentArgument)
-                ? const [TestLevel.low, TestLevel.high]
-                : a[1] as List<TestLevel>,
-            mapper: identical(a[2], ConstructorReflection.absentArgument)
-                ? TestEdgeDefaultsWithReflection.identity
-                : a[2] as int Function(int),
-            mapper2: identical(a[3], ConstructorReflection.absentArgument)
-                ? testTriple
-                : a[3] as int Function(int),
-            neg: identical(a[4], ConstructorReflection.absentArgument)
-                ? testNegative
-                : a[4] as int,
-            negD: identical(a[5], ConstructorReflection.absentArgument)
-                ? -1
-                : a[5] as double,
-            ref: identical(a[6], ConstructorReflection.absentArgument)
-                ? const TestRef(1)
-                : a[6] as TestRef<int>,
-            text: identical(a[7], ConstructorReflection.absentArgument)
-                ? 'a\$b "q" \'s\' \\n'
-                : a[7] as String,
+            byLevel: __argOr$<Map<TestLevel, List<String>>>(a[0], const {
+              TestLevel.low: ['x'],
+            }),
+            levels: __argOr$<List<TestLevel>>(a[1], const [
+              TestLevel.low,
+              TestLevel.high,
+            ]),
+            mapper: __argOr$<int Function(int)>(
+              a[2],
+              TestEdgeDefaultsWithReflection.identity,
+            ),
+            mapper2: __argOr$<int Function(int)>(a[3], testTriple),
+            neg: __argOr$<int>(a[4], testNegative),
+            negD: __argOr$<double>(a[5], -1),
+            ref: __argOr$<TestRef<int>>(a[6], const TestRef(1)),
+            text: __argOr$<String>(a[7], 'a\$b "q" \'s\' \\n'),
           ),
         );
       default:
@@ -2767,12 +2733,8 @@ class TestJsonCtorWithReflection$reflection
           const [JsonConstructor()],
           invoker: (a) => TestJsonCtorWithReflection(
             a[0] as String,
-            note: identical(a[1], ConstructorReflection.absentArgument)
-                ? null
-                : a[1] as String?,
-            qty: identical(a[2], ConstructorReflection.absentArgument)
-                ? 1
-                : a[2] as int,
+            note: __argOr$<String?>(a[1], null),
+            qty: __argOr$<int>(a[2], 1),
           ),
         );
       case 'full':
@@ -3100,21 +3062,11 @@ class TestMemberWithReflection$reflection
             a[0] as String,
             a[1] as String,
             a[2] as String,
-            active: identical(a[3], ConstructorReflection.absentArgument)
-                ? true
-                : a[3] as bool,
-            age: identical(a[4], ConstructorReflection.absentArgument)
-                ? 0
-                : a[4] as int,
-            createdAt: identical(a[5], ConstructorReflection.absentArgument)
-                ? null
-                : a[5] as DateTime?,
-            id: identical(a[6], ConstructorReflection.absentArgument)
-                ? null
-                : a[6] as int?,
-            score: identical(a[7], ConstructorReflection.absentArgument)
-                ? 0
-                : a[7] as double,
+            active: __argOr$<bool>(a[3], true),
+            age: __argOr$<int>(a[4], 0),
+            createdAt: __argOr$<DateTime?>(a[5], null),
+            id: __argOr$<int?>(a[6], null),
+            score: __argOr$<double>(a[7], 0),
           ),
         );
       case 'create':
@@ -3543,24 +3495,15 @@ class TestMoreDefaultsWithReflection$reflection
           },
           null,
           invoker: (a) => TestMoreDefaultsWithReflection(
-            groups: identical(a[0], ConstructorReflection.absentArgument)
-                ? const {}
-                : a[0] as Map<String, List<int>>,
-            ids: identical(a[1], ConstructorReflection.absentArgument)
-                ? const {}
-                : a[1] as Set<int>,
-            label: identical(a[2], ConstructorReflection.absentArgument)
-                ? 'label'
-                : a[2] as String?,
-            level: identical(a[3], ConstructorReflection.absentArgument)
-                ? TestLevel.high
-                : a[3] as TestLevel,
-            limit: identical(a[4], ConstructorReflection.absentArgument)
-                ? TestMoreDefaultsWithReflection.defaultLimit
-                : a[4] as int,
-            timeout: identical(a[5], ConstructorReflection.absentArgument)
-                ? const Duration(seconds: 1)
-                : a[5] as Duration,
+            groups: __argOr$<Map<String, List<int>>>(a[0], const {}),
+            ids: __argOr$<Set<int>>(a[1], const {}),
+            label: __argOr$<String?>(a[2], 'label'),
+            level: __argOr$<TestLevel>(a[3], TestLevel.high),
+            limit: __argOr$<int>(
+              a[4],
+              TestMoreDefaultsWithReflection.defaultLimit,
+            ),
+            timeout: __argOr$<Duration>(a[5], const Duration(seconds: 1)),
           ),
         );
       default:
@@ -4249,12 +4192,8 @@ class TestOptPositionalWithReflection$reflection
           null,
           invoker: (a) => TestOptPositionalWithReflection(
             a[0] as String,
-            identical(a[1], ConstructorReflection.absentArgument)
-                ? 'b'
-                : a[1] as String,
-            identical(a[2], ConstructorReflection.absentArgument)
-                ? null
-                : a[2] as int?,
+            __argOr$<String>(a[1], 'b'),
+            __argOr$<int?>(a[2], null),
           ),
         );
       default:
@@ -4575,36 +4514,16 @@ class TestOrderWithReflection$reflection
           null,
           invoker: (a) => TestOrderWithReflection(
             a[0] as TestRef<TestAccountWithReflection>,
-            any: identical(a[1], ConstructorReflection.absentArgument)
-                ? null
-                : a[1] as Object?,
-            date: identical(a[2], ConstructorReflection.absentArgument)
-                ? null
-                : a[2] as DateTime?,
-            extra: identical(a[3], ConstructorReflection.absentArgument)
-                ? null
-                : a[3] as Map<String, dynamic>?,
-            id: identical(a[4], ConstructorReflection.absentArgument)
-                ? null
-                : a[4] as int?,
-            items: identical(a[5], ConstructorReflection.absentArgument)
-                ? null
-                : a[5] as List<TestAccountWithReflection>?,
-            level: identical(a[6], ConstructorReflection.absentArgument)
-                ? null
-                : a[6] as TestLevel?,
-            matrix: identical(a[7], ConstructorReflection.absentArgument)
-                ? null
-                : a[7] as List<List<int>>?,
-            meta: identical(a[8], ConstructorReflection.absentArgument)
-                ? null
-                : a[8] as Map<String, dynamic>?,
-            notes: identical(a[9], ConstructorReflection.absentArgument)
-                ? const []
-                : a[9] as List<String?>,
-            raw: identical(a[10], ConstructorReflection.absentArgument)
-                ? null
-                : a[10],
+            any: __argOr$<Object?>(a[1], null),
+            date: __argOr$<DateTime?>(a[2], null),
+            extra: __argOr$<Map<String, dynamic>?>(a[3], null),
+            id: __argOr$<int?>(a[4], null),
+            items: __argOr$<List<TestAccountWithReflection>?>(a[5], null),
+            level: __argOr$<TestLevel?>(a[6], null),
+            matrix: __argOr$<List<List<int>>?>(a[7], null),
+            meta: __argOr$<Map<String, dynamic>?>(a[8], null),
+            notes: __argOr$<List<String?>>(a[9], const []),
+            raw: __argOr$<dynamic>(a[10], null),
           ),
         );
       default:
@@ -5026,9 +4945,7 @@ class TestRecordWithReflection$reflection
           null,
           invoker: (a) => TestRecordWithReflection(
             a[0] as (int, String),
-            point: identical(a[1], ConstructorReflection.absentArgument)
-                ? null
-                : a[1] as ({int x, int y})?,
+            point: __argOr$<({int x, int y})?>(a[1], null),
           ),
         );
       default:
@@ -5314,9 +5231,7 @@ class TestRequiredNamedWithReflection$reflection
           null,
           invoker: (a) => TestRequiredNamedWithReflection(
             a: a[0] as String,
-            b: identical(a[1], ConstructorReflection.absentArgument)
-                ? 'B'
-                : a[1] as String?,
+            b: __argOr$<String?>(a[1], 'B'),
           ),
         );
       default:
@@ -5906,12 +5821,8 @@ class TestSuperParamsWithReflection$reflection
           },
           null,
           invoker: (a) => TestSuperParamsWithReflection(
-            x: identical(a[0], ConstructorReflection.absentArgument)
-                ? 7
-                : a[0] as int,
-            y: identical(a[1], ConstructorReflection.absentArgument)
-                ? 'z'
-                : a[1] as String,
+            x: __argOr$<int>(a[0], 7),
+            y: __argOr$<String>(a[1], 'z'),
           ),
         );
       default:
@@ -6186,9 +6097,7 @@ class TestThrowingWithReflection$reflection
           null,
           invoker: (a) => TestThrowingWithReflection(
             a[0] as String,
-            fail: identical(a[1], ConstructorReflection.absentArgument)
-                ? null
-                : a[1] as String?,
+            fail: __argOr$<String?>(a[1], null),
           ),
         );
       default:
@@ -6497,28 +6406,14 @@ class TestWideWithReflection$reflection
             a[0] as String,
             a[1] as String,
             a[2] as String,
-            alpha: identical(a[3], ConstructorReflection.absentArgument)
-                ? null
-                : a[3] as String?,
-            beta: identical(a[4], ConstructorReflection.absentArgument)
-                ? 'B'
-                : a[4] as String,
+            alpha: __argOr$<String?>(a[3], null),
+            beta: __argOr$<String>(a[4], 'B'),
             mid: a[5] as String,
-            n1: identical(a[6], ConstructorReflection.absentArgument)
-                ? 1
-                : a[6] as int,
-            n2: identical(a[7], ConstructorReflection.absentArgument)
-                ? 2
-                : a[7] as int,
-            n3: identical(a[8], ConstructorReflection.absentArgument)
-                ? null
-                : a[8] as int?,
-            omega: identical(a[9], ConstructorReflection.absentArgument)
-                ? null
-                : a[9] as String?,
-            zeta: identical(a[10], ConstructorReflection.absentArgument)
-                ? 'Z'
-                : a[10] as String,
+            n1: __argOr$<int>(a[6], 1),
+            n2: __argOr$<int>(a[7], 2),
+            n3: __argOr$<int?>(a[8], null),
+            omega: __argOr$<String?>(a[9], null),
+            zeta: __argOr$<String>(a[10], 'Z'),
           ),
         );
       default:

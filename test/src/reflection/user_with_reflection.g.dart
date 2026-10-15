@@ -1,6 +1,6 @@
 //
 // GENERATED CODE - DO NOT MODIFY BY HAND!
-// BUILDER: reflection_factory/2.12.0
+// BUILDER: reflection_factory/2.12.1
 // BUILD COMMAND: dart run build_runner build
 //
 
@@ -21,8 +21,10 @@ typedef __TR<T> = TypeReflection<T>;
 typedef __TI<T> = TypeInfo<T>;
 typedef __PR = ParameterReflection;
 
+T __argOr$<T>(Object? a, T d) => ConstructorReflection.argOrDefault<T>(a, d);
+
 mixin __ReflectionMixin {
-  static final Version _version = Version.parse('2.12.0');
+  static final Version _version = Version.parse('2.12.1');
 
   Version get reflectionFactoryVersion => _version;
 
@@ -306,9 +308,7 @@ class TestAddressWithReflection$reflection
           null,
           invoker: (a) => TestAddressWithReflection.simple(
             a[0] as String,
-            id: identical(a[1], ConstructorReflection.absentArgument)
-                ? null
-                : a[1] as int?,
+            id: __argOr$<int?>(a[1], null),
           ),
         );
       case 'withcity':
@@ -326,12 +326,8 @@ class TestAddressWithReflection$reflection
           const [JsonConstructor(mandatory: true)],
           invoker: (a) => TestAddressWithReflection.withCity(
             a[0] as String,
-            city: identical(a[1], ConstructorReflection.absentArgument)
-                ? ''
-                : a[1] as String,
-            id: identical(a[2], ConstructorReflection.absentArgument)
-                ? null
-                : a[2] as int?,
+            city: __argOr$<String>(a[1], ''),
+            id: __argOr$<int?>(a[2], null),
           ),
         );
       case 'empty':
@@ -783,17 +779,15 @@ class TestCompanyWithReflection$reflection
           invoker: (a) => TestCompanyWithReflection(
             a[0] as String,
             a[1] as TestAddressWithReflection?,
-            branchesAddresses:
-                identical(a[2], ConstructorReflection.absentArgument)
-                ? const <TestAddressWithReflection>[]
-                : a[2] as List<TestAddressWithReflection>,
-            extraAddresses:
-                identical(a[3], ConstructorReflection.absentArgument)
-                ? const <TestAddressWithReflection>[]
-                : a[3] as List<TestAddressWithReflection>,
-            extraNames: identical(a[4], ConstructorReflection.absentArgument)
-                ? const <String>[]
-                : a[4] as List<String>,
+            branchesAddresses: __argOr$<List<TestAddressWithReflection>>(
+              a[2],
+              const <TestAddressWithReflection>[],
+            ),
+            extraAddresses: __argOr$<List<TestAddressWithReflection>>(
+              a[3],
+              const <TestAddressWithReflection>[],
+            ),
+            extraNames: __argOr$<List<String>>(a[4], const <String>[]),
           ),
         );
       case 'nobranches':
@@ -834,13 +828,11 @@ class TestCompanyWithReflection$reflection
           invoker: (a) => TestCompanyWithReflection.noBranches(
             a[0] as String,
             a[1] as TestAddressWithReflection?,
-            extraAddresses:
-                identical(a[2], ConstructorReflection.absentArgument)
-                ? const <TestAddressWithReflection>[]
-                : a[2] as List<TestAddressWithReflection>,
-            extraNames: identical(a[3], ConstructorReflection.absentArgument)
-                ? const <String>[]
-                : a[3] as List<String>,
+            extraAddresses: __argOr$<List<TestAddressWithReflection>>(
+              a[2],
+              const <TestAddressWithReflection>[],
+            ),
+            extraNames: __argOr$<List<String>>(a[3], const <String>[]),
           ),
         );
       default:
@@ -1305,12 +1297,8 @@ class TestDataWithReflection$reflection
           invoker: (a) => TestDataWithReflection(
             a[0] as String,
             a[1] as Uint8List,
-            domain: identical(a[2], ConstructorReflection.absentArgument)
-                ? null
-                : a[2] as TestDomainWithReflection?,
-            id: identical(a[3], ConstructorReflection.absentArgument)
-                ? null
-                : a[3] as BigInt?,
+            domain: __argOr$<TestDomainWithReflection?>(a[2], null),
+            id: __argOr$<BigInt?>(a[3], null),
           ),
         );
       default:
@@ -1652,12 +1640,8 @@ class TestDomainWithReflection$reflection
           invoker: (a) => TestDomainWithReflection(
             a[0] as String,
             a[1] as String,
-            identical(a[2], ConstructorReflection.absentArgument)
-                ? null
-                : a[2] as DomainFunction?,
-            identical(a[3], ConstructorReflection.absentArgument)
-                ? null
-                : a[3] as bool Function()?,
+            __argOr$<DomainFunction?>(a[2], null),
+            __argOr$<bool Function()?>(a[3], null),
           ),
         );
       case 'named':
@@ -1681,17 +1665,10 @@ class TestDomainWithReflection$reflection
           },
           null,
           invoker: (a) => TestDomainWithReflection.named(
-            domainFunction:
-                identical(a[0], ConstructorReflection.absentArgument)
-                ? null
-                : a[0] as DomainFunction?,
-            extraFunction: identical(a[1], ConstructorReflection.absentArgument)
-                ? null
-                : a[1] as bool Function()?,
+            domainFunction: __argOr$<DomainFunction?>(a[0], null),
+            extraFunction: __argOr$<bool Function()?>(a[1], null),
             name: a[2] as String,
-            suffix: identical(a[3], ConstructorReflection.absentArgument)
-                ? 'net'
-                : a[3] as String,
+            suffix: __argOr$<String>(a[3], 'net'),
           ),
         );
       case 'parse':
@@ -4396,24 +4373,12 @@ class TestPayloadWithReflection$reflection
           null,
           invoker: (a) => TestPayloadWithReflection(
             a[0] as String,
-            attributes: identical(a[1], ConstructorReflection.absentArgument)
-                ? null
-                : a[1] as Map<String, dynamic>?,
-            data: identical(a[2], ConstructorReflection.absentArgument)
-                ? null
-                : a[2] as Map<dynamic, dynamic>?,
-            extra: identical(a[3], ConstructorReflection.absentArgument)
-                ? null
-                : a[3],
-            items: identical(a[4], ConstructorReflection.absentArgument)
-                ? null
-                : a[4] as List<dynamic>?,
-            matrix: identical(a[5], ConstructorReflection.absentArgument)
-                ? null
-                : a[5] as List<List<dynamic>>?,
-            rows: identical(a[6], ConstructorReflection.absentArgument)
-                ? null
-                : a[6] as List<Map<dynamic, dynamic>>?,
+            attributes: __argOr$<Map<String, dynamic>?>(a[1], null),
+            data: __argOr$<Map<dynamic, dynamic>?>(a[2], null),
+            extra: __argOr$<dynamic>(a[3], null),
+            items: __argOr$<List<dynamic>?>(a[4], null),
+            matrix: __argOr$<List<List<dynamic>>?>(a[5], null),
+            rows: __argOr$<List<Map<dynamic, dynamic>>?>(a[6], null),
           ),
         );
       default:
@@ -5215,18 +5180,13 @@ class TestUserWithReflection$reflection
             a[0] as String,
             a[1] as String?,
             a[2] as String?,
-            axis: identical(a[3], ConstructorReflection.absentArgument)
-                ? TestEnumWithReflection.x
-                : a[3] as TestEnumWithReflection,
-            enabled: identical(a[4], ConstructorReflection.absentArgument)
-                ? true
-                : a[4] as bool,
-            id: identical(a[5], ConstructorReflection.absentArgument)
-                ? null
-                : a[5] as int?,
-            level: identical(a[6], ConstructorReflection.absentArgument)
-                ? null
-                : a[6] as int?,
+            axis: __argOr$<TestEnumWithReflection>(
+              a[3],
+              TestEnumWithReflection.x,
+            ),
+            enabled: __argOr$<bool>(a[4], true),
+            id: __argOr$<int?>(a[5], null),
+            level: __argOr$<int?>(a[6], null),
           ),
         );
       case '':

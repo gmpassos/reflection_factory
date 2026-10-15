@@ -20,7 +20,7 @@ import 'reflection_factory_utils.dart';
 /// Class with all registered reflections ([ClassReflection]).
 class ReflectionFactory {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.12.0';
+  static const String VERSION = '2.12.1';
 
   static final ReflectionFactory _instance = ReflectionFactory._();
 
@@ -4510,6 +4510,16 @@ class ConstructorReflection<O> extends StaticFunctionReflection<O, O> {
   /// written in its code, so it has the parameter's type (e.g. `0.0` for
   /// `double x = 0`, not the `int` of [ParameterReflection.defaultValue]).
   static const Object absentArgument = _AbsentArgument();
+
+  /// The [invoker] value of an omittable parameter: [defaultValue] when [arg]
+  /// is [absentArgument], otherwise [arg] cast to [T].
+  ///
+  /// The generated [invoker] calls it with the parameter's type as [T], so the
+  /// default value written in its code is typed in that context (`0.0` for
+  /// `double x = 0`). A call, rather than an inline conditional expression,
+  /// keeps the generated code cheap to format.
+  static T argOrDefault<T>(Object? arg, T defaultValue) =>
+      identical(arg, absentArgument) ? defaultValue : arg as T;
 
   /// Invokes this constructor with the parameters of [methodInvocation].
   ///

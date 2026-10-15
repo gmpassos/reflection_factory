@@ -1152,6 +1152,22 @@ class _TypeAliasTable {
     return alias;
   }
 
+  String? _argOrDefaultName;
+
+  /// The name of a short function for `ConstructorReflection.argOrDefault`,
+  /// declared on first use: a constructor invoker calls it for each omittable
+  /// parameter, and the long qualified name made the code very slow to
+  /// format.
+  String get argOrDefaultName => _argOrDefaultName ??= _declareArgOrDefault();
+
+  String _declareArgOrDefault() {
+    var name = _buildAliasName('__argOr\$', privateNames);
+    code.write(
+      'T $name<T>(Object? a, T d) => ConstructorReflection.argOrDefault<T>(a, d);\n\n',
+    );
+    return name;
+  }
+
   String _buildAliasName(String prefix, Iterable<String> usedNames) {
     if (!usedNames.contains(prefix)) return prefix;
 
@@ -3428,10 +3444,8 @@ class _Constructor<T> extends _Element {
   /// ```dart
   /// (a) => Foo.withCity(
   ///   a[0] as String,
-  ///   city: identical(a[1], ConstructorReflection.absentArgument)
-  ///       ? '' : a[1] as String,
-  ///   id: identical(a[2], ConstructorReflection.absentArgument)
-  ///       ? null : a[2] as int?,
+  ///   city: __argOr$<String>(a[1], ''),
+  ///   id: __argOr$<int?>(a[2], null),
   /// )
   /// ```
   /// - Each argument is cast to its parameter type (no implicit `dynamic`
@@ -3439,7 +3453,8 @@ class _Constructor<T> extends _Element {
   /// - An omitted optional or named (not `required`) parameter arrives as
   ///   `ConstructorReflection.absentArgument` and is replaced by its default
   ///   value, written here, in its parameter's type context (`double x = 0`
-  ///   passes `0.0`; `List<String> l = const []` a `List<String>`).
+  ///   passes `0.0`; `List<String> l = const []` a `List<String>`), through
+  ///   [_TypeAliasTable.argOrDefaultName] (`ConstructorReflection.argOrDefault`).
   ///
   /// Returns `null` (no invoker: `Function.apply` is used) when a parameter
   /// type depends on a type parameter, which isn't in scope here.
@@ -3463,12 +3478,14 @@ class _Constructor<T> extends _Element {
       return 'a[$i] as ${type.typeNameAsNullableCode(typeAliasTable)}';
     }
 
+    // A short call, not an inline `identical(...) ? default : a[i] as T`:
+    // the formatter is very slow on long argument lists of long arguments.
     String omittable(_Parameter p, int i) {
       var defaultValue = p.hasDefaultValue
           ? p.defaultValueAsCode(typeAliasTable)!
           : 'null';
-      return 'identical(a[$i], ConstructorReflection.absentArgument) '
-          '? $defaultValue : ${cast(p, i)}';
+      var type = p.type.typeNameAsNullableCode(typeAliasTable);
+      return '${typeAliasTable.argOrDefaultName}<$type>(a[$i], $defaultValue)';
     }
 
     for (var p in normalParameters) {
