@@ -73,6 +73,67 @@ void _expectSameOutcomes<O>(
   }
 }
 
+/// Checks that `createInstanceFromMap` gives the same outcome for [map]
+/// through the `MethodInvocation` path (with a `fieldValueResolver`), and
+/// called directly from the map: as it is, with `valuesResolved`, and with
+/// `valuesResolved` and `exactKeys`. Returns the outcome.
+Object? _expectSameInAllModes<O>(
+  ClassReflection<O> reflection,
+  Map<String, Object?> map, {
+  FieldNameResolver? fieldNameResolver,
+}) {
+  // The `MethodInvocation` path:
+  var expected = _outcome(
+    reflection,
+    () => reflection.createInstanceFromMap(
+      map,
+      fieldNameResolver: fieldNameResolver,
+      fieldValueResolver: _keepValue,
+    ),
+  );
+
+  var direct = _outcome(
+    reflection,
+    () => reflection.createInstanceFromMap(
+      map,
+      fieldNameResolver: fieldNameResolver,
+    ),
+  );
+
+  var resolved = _outcome(
+    reflection,
+    () => reflection.createInstanceFromMap(
+      map,
+      fieldNameResolver: fieldNameResolver,
+      fieldValueResolver: _keepValue,
+      valuesResolved: true,
+    ),
+  );
+
+  expect(direct, equals(expected), reason: 'direct: $map');
+  expect(resolved, equals(expected), reason: 'valuesResolved: $map');
+
+  // `exactKeys` ignores `fieldNameResolver`: only for maps with exact keys.
+  if (fieldNameResolver == null) {
+    var resolvedExact = _outcome(
+      reflection,
+      () => reflection.createInstanceFromMap(
+        map,
+        valuesResolved: true,
+        exactKeys: true,
+      ),
+    );
+
+    expect(
+      resolvedExact,
+      equals(expected),
+      reason: 'valuesResolved + exactKeys: $map',
+    );
+  }
+
+  return expected;
+}
+
 void main() {
   final createdAt = DateTime.utc(2026, 1, 2, 3, 4, 5);
 
@@ -398,51 +459,6 @@ void main() {
       'createdAt': createdAt,
     };
 
-    void expectSameInAllModes<O>(
-      ClassReflection<O> reflection,
-      Map<String, Object?> map,
-    ) {
-      // The `MethodInvocation` path:
-      var expected = _outcome(
-        reflection,
-        () => reflection.createInstanceFromMap(
-          map,
-          fieldValueResolver: _keepValue,
-        ),
-      );
-
-      var direct = _outcome(
-        reflection,
-        () => reflection.createInstanceFromMap(map),
-      );
-
-      var resolved = _outcome(
-        reflection,
-        () => reflection.createInstanceFromMap(
-          map,
-          fieldValueResolver: _keepValue,
-          valuesResolved: true,
-        ),
-      );
-
-      var resolvedExact = _outcome(
-        reflection,
-        () => reflection.createInstanceFromMap(
-          map,
-          valuesResolved: true,
-          exactKeys: true,
-        ),
-      );
-
-      expect(direct, equals(expected), reason: 'direct: $map');
-      expect(resolved, equals(expected), reason: 'valuesResolved: $map');
-      expect(
-        resolvedExact,
-        equals(expected),
-        reason: 'valuesResolved + exactKeys: $map',
-      );
-    }
-
     test('account (constructor)', () {
       var reflection = TestAccountWithReflection$reflection();
 
@@ -454,12 +470,12 @@ void main() {
 
       expect(reflection.getFieldsValues(o), equals(accountMap));
 
-      expectSameInAllModes(reflection, accountMap);
-      expectSameInAllModes(reflection, {'name': 'Joe', 'email': 'j@mail'});
-      expectSameInAllModes(reflection, {...accountMap, 'age': null});
-      expectSameInAllModes(reflection, {...accountMap, 'age': 'x'});
-      expectSameInAllModes(reflection, {...accountMap, 'foo': 1});
-      expectSameInAllModes(reflection, {});
+      _expectSameInAllModes(reflection, accountMap);
+      _expectSameInAllModes(reflection, {'name': 'Joe', 'email': 'j@mail'});
+      _expectSameInAllModes(reflection, {...accountMap, 'age': null});
+      _expectSameInAllModes(reflection, {...accountMap, 'age': 'x'});
+      _expectSameInAllModes(reflection, {...accountMap, 'foo': 1});
+      _expectSameInAllModes(reflection, {});
     });
 
     test('member (create + setters)', () {
@@ -473,10 +489,10 @@ void main() {
 
       expect(reflection.getFieldsValues(o), equals(memberMap));
 
-      expectSameInAllModes(reflection, memberMap);
-      expectSameInAllModes(reflection, {...memberMap, 'createdAt': null});
-      expectSameInAllModes(reflection, {...memberMap, 'age': 'x'});
-      expectSameInAllModes(reflection, {'name': 'Ann'});
+      _expectSameInAllModes(reflection, memberMap);
+      _expectSameInAllModes(reflection, {...memberMap, 'createdAt': null});
+      _expectSameInAllModes(reflection, {...memberMap, 'age': 'x'});
+      _expectSameInAllModes(reflection, {'name': 'Ann'});
     });
 
     test('member: main constructor, int literal default of a double', () {
@@ -868,6 +884,588 @@ void main() {
       expect(
         ConstructorReflection.absentArgument.toString(),
         equals('absentArgument'),
+      );
+    });
+  });
+
+  group('parameter shapes', () {
+    test('many parameters of the same type: each in its position', () {
+      var reflection = TestWideWithReflection$reflection();
+      var c = reflection.constructor('')!;
+
+      final full = <String, Object?>{
+        'a': 'A',
+        'b': 'B.',
+        'c': 'C',
+        'zeta': 'z',
+        'alpha': 'al',
+        'mid': 'm',
+        'beta': 'be',
+        'omega': 'om',
+        'n1': 10,
+        'n2': 20,
+        'n3': 30,
+      };
+
+      // A value in the wrong position would fit (same type), so the values
+      // are checked field by field, on every path:
+      for (var o in [
+        reflection.createInstanceWithConstructor(c, full)!,
+        reflection.createInstanceWithConstructor(
+          c,
+          full,
+          fieldValueResolver: _keepValue,
+        )!,
+        reflection.createInstanceWithConstructor(_withoutInvoker(c), full)!,
+        reflection.createInstanceFromMap(full)!,
+        reflection.createInstanceFromMap(
+          full,
+          valuesResolved: true,
+          exactKeys: true,
+        )!,
+        TestWideWithReflection$fromJson(full),
+      ]) {
+        expect(reflection.getFieldsValues(o), equals(full));
+      }
+
+      // Omitted named parameters, each with its own default:
+      var o = reflection.createInstanceFromMap({
+        'a': 'A',
+        'b': 'B.',
+        'c': 'C',
+        'mid': 'm',
+      }, valuesResolved: true)!;
+      expect(
+        reflection.getFieldsValues(o),
+        equals({
+          'a': 'A',
+          'b': 'B.',
+          'c': 'C',
+          'zeta': 'Z',
+          'alpha': null,
+          'mid': 'm',
+          'beta': 'B',
+          'omega': null,
+          'n1': 1,
+          'n2': 2,
+          'n3': null,
+        }),
+      );
+
+      _expectSameOutcomes(reflection, c, [
+        full,
+        {'a': 'A', 'b': 'B.', 'c': 'C', 'mid': 'm'},
+        {'a': 'A', 'b': 'B.', 'c': 'C', 'mid': 'm', 'n2': 5},
+        {'a': 'A', 'b': 'B.', 'c': 'C', 'mid': 'm', 'zeta': null},
+        // The required named parameter missing:
+        {'a': 'A', 'b': 'B.', 'c': 'C'},
+        // Swapped types:
+        {...full, 'n1': 'x', 'zeta': 1},
+      ]);
+
+      // Named parameters in any order in a `MethodInvocation`:
+      var mi = MethodInvocation<TestWideWithReflection>(
+        reflection,
+        TestWideWithReflection,
+        '',
+        ['A', 'B.', 'C'],
+        null,
+        {'n3': 30, 'omega': 'om', 'mid': 'm', 'alpha': 'al', 'n1': 10},
+      );
+      expect(
+        reflection.getFieldsValues(c.invokeWith(mi)),
+        equals(reflection.getFieldsValues(_withoutInvoker(c).invokeWith(mi))),
+      );
+      expect(c.invokeWith(mi).n2, equals(2));
+      expect(c.invokeWith(mi).zeta, equals('Z'));
+    });
+
+    test('generic classes, collections, enums, `Object?` and `dynamic`', () {
+      var reflection = TestOrderWithReflection$reflection();
+      var c = reflection.constructor('')!;
+
+      var account = TestAccountWithReflection('Joe', 'joe@mail.com');
+      var ref = TestRef<TestAccountWithReflection>(account);
+
+      final full = <String, Object?>{
+        'account': ref,
+        'id': 1,
+        'items': [account],
+        'extra': {'a': 1},
+        'meta': <String, dynamic>{'m': true},
+        'notes': ['x', null],
+        'matrix': [
+          [1, 2],
+          [3],
+        ],
+        'level': TestLevel.low,
+        'date': createdAt,
+        'any': 1,
+        'raw': 'r',
+      };
+
+      _expectSameOutcomes(reflection, c, [
+        {'account': ref},
+        full,
+        {...full, 'notes': null, 'level': null, 'raw': null},
+        // Type arguments that don't fit:
+        {'account': TestRef<Object?>(account)},
+        {
+          'account': ref,
+          'items': <dynamic>[account],
+        },
+        {
+          'account': ref,
+          'extra': <dynamic, dynamic>{'a': 1},
+        },
+        {
+          'account': ref,
+          'matrix': [<dynamic>[]],
+        },
+        {'account': null},
+        {},
+      ]);
+
+      _expectSameInAllModes(reflection, full);
+      _expectSameInAllModes(reflection, {'account': ref});
+      _expectSameInAllModes(reflection, {
+        'account': ref,
+        'items': <dynamic>[account],
+      });
+
+      // Values passed as they are (not copied):
+      var o = reflection.createInstanceFromMap(full, valuesResolved: true)!;
+      expect(identical(o.account, ref), isTrue);
+      expect(identical(o.items, full['items']), isTrue);
+      expect(o.notes, equals(['x', null]));
+      expect(o.level, equals(TestLevel.low));
+
+      // Omitted: `const []` typed as `List<String?>`:
+      var o2 = reflection.createInstanceFromMap({
+        'account': ref,
+      }, valuesResolved: true)!;
+      expect(o2.notes, isA<List<String?>>());
+      expect(o2.notes, isEmpty);
+    });
+
+    test('record types', () {
+      var reflection = TestRecordWithReflection$reflection();
+      var c = reflection.constructor('')!;
+      expect(c.invoker, isNotNull);
+
+      _expectSameOutcomes(reflection, c, [
+        {'pair': (1, 'a')},
+        {'pair': (1, 'a'), 'point': (x: 1, y: 2)},
+        {'pair': (1, 'a'), 'point': null},
+        {'pair': (1, 2)},
+        {'pair': (1, 'a'), 'point': (1, 2)},
+        {'pair': null},
+      ]);
+
+      var o = reflection.createInstanceFromMap({
+        'pair': (2, 'b'),
+        'point': (x: 3, y: 4),
+      }, valuesResolved: true)!;
+      expect(o.pair, equals((2, 'b')));
+      expect(o.point!.y, equals(4));
+    });
+
+    test('defaults: tear-offs, negatives, escapes, const instances', () {
+      var reflection = TestEdgeDefaultsWithReflection$reflection();
+      var c = reflection.constructor('')!;
+
+      expect(
+        c.namedParameters['mapper']!.defaultValue,
+        equals(TestEdgeDefaultsWithReflection.identity),
+      );
+
+      var expected = TestEdgeDefaultsWithReflection();
+
+      for (var o in [
+        reflection.createInstanceFromMap({})!,
+        reflection.createInstanceFromMap({}, valuesResolved: true)!,
+        reflection.createInstanceWithConstructor(
+          c,
+          {},
+          fieldValueResolver: _keepValue,
+        )!,
+        reflection.createInstanceWithConstructor(_withoutInvoker(c), {})!,
+        TestEdgeDefaultsWithReflection$fromJson({}),
+      ]) {
+        expect(o.mapper(2), equals(2));
+        expect(o.mapper2(2), equals(6));
+        expect(o.neg, equals(-3));
+        expect(o.negD, isA<double>());
+        expect(o.negD, equals(-1.0));
+        expect(o.text, equals(expected.text));
+        expect(o.text, equals('a\$b "q" \'s\' \\n'));
+        expect(o.levels, equals([TestLevel.low, TestLevel.high]));
+        expect(o.levels, isA<List<TestLevel>>());
+        expect(o.byLevel, isA<Map<TestLevel, List<String>>>());
+        expect(o.byLevel, equals(expected.byLevel));
+        expect(o.ref, isA<TestRef<int>>());
+        expect(o.ref, equals(const TestRef(1)));
+      }
+
+      int negate(int n) => -n;
+
+      var o = reflection.createInstanceFromMap({
+        'mapper': negate,
+        'neg': 5,
+      }, valuesResolved: true)!;
+      expect(o.mapper(2), equals(-2));
+      expect(o.neg, equals(5));
+      expect(o.mapper2(1), equals(3));
+    });
+
+    test('constructor kinds: const, factory, redirecting', () {
+      var reflection = TestCtorKindsWithReflection$reflection();
+
+      expect(
+        reflection.constructorsNames,
+        containsAll(['', 'parse', 'redirect', 'redirectingFactory']),
+      );
+
+      for (var name in reflection.constructorsNames) {
+        expect(
+          reflection.constructor(name)!.invoker,
+          isNotNull,
+          reason: 'constructor: $name',
+        );
+      }
+
+      _expectSameOutcomes(reflection, reflection.constructor('')!, [
+        {'kind': 'k', 'n': 2},
+        {'kind': 'k'},
+        {'n': 2},
+      ]);
+      _expectSameOutcomes(reflection, reflection.constructor('parse')!, [
+        {'s': '5'},
+        // A `FormatException` thrown by the factory:
+        {'s': 'x'},
+        {'s': 5},
+      ]);
+      _expectSameOutcomes(reflection, reflection.constructor('redirect')!, [
+        {'n': 3},
+        {'n': null},
+      ]);
+      _expectSameOutcomes(
+        reflection,
+        reflection.constructor('redirectingFactory')!,
+        [
+          {'n': 4},
+        ],
+      );
+
+      var o = reflection.createInstanceWithConstructor(
+        reflection.constructor('redirectingFactory')!,
+        {'n': 4},
+      )!;
+      expect(o.kind, equals('private'));
+      expect(o.n, equals(4));
+      expect(
+        reflection.getFieldsValues(o),
+        equals(
+          reflection.getFieldsValues(TestCtorKindsWithReflection.privateOf(4)),
+        ),
+      );
+
+      var parsed = reflection.createInstanceWithConstructor(
+        reflection.constructor('parse')!,
+        {'s': '7'},
+      )!;
+      expect(parsed.kind, equals('parsed'));
+      expect(parsed.n, equals(7));
+    });
+  });
+
+  group('constructor choice', () {
+    test('the first constructor that fits the value', () {
+      var reflection = TestMultiCtorWithReflection$reflection();
+
+      // Alternating, so the constructors sorted by usage change order:
+      for (var i = 0; i < 3; ++i) {
+        for (var (value, kind) in [(1, 'int'), ('x', 'string')]) {
+          var outcome = _expectSameInAllModes(reflection, {'value': value});
+          expect(outcome, equals({'value': value, 'kind': kind}));
+        }
+      }
+
+      // No constructor fits: the same error on every path.
+      var outcome = _expectSameInAllModes(reflection, {'value': true});
+      expect(outcome, isNot(isA<Map>()));
+    });
+
+    test('@JsonConstructor (not mandatory)', () {
+      var reflection = TestJsonCtorWithReflection$reflection();
+      expect(reflection.hasJsonConstructor, isTrue);
+
+      for (var map in <Map<String, Object?>>[
+        {'name': 'n'},
+        {'name': 'n', 'qty': 2, 'note': 'x'},
+        {'name': 'n', 'qty': null},
+        {'name': 'n', 'qty': 'x'},
+        {'qty': 2},
+        {},
+      ]) {
+        _expectSameInAllModes(reflection, map);
+      }
+
+      var o = reflection.createInstanceFromMap({
+        'name': 'n',
+      }, valuesResolved: true)!;
+      expect(o.qty, equals(1));
+      expect(o.note, isNull);
+
+      // A JSON round trip:
+      var o2 = TestJsonCtorWithReflection.full('a', 3, 'b');
+      var json = reflection.withObject(o2).toJsonMap();
+      var o3 = TestJsonCtorWithReflection$fromJson(json!);
+      expect(
+        reflection.getFieldsValues(o3),
+        equals(reflection.getFieldsValues(o2)),
+      );
+      expect(
+        reflection.getFieldsValues(
+          TestJsonCtorWithReflection$fromJson({'name': 'n'}),
+        ),
+        equals({'name': 'n', 'qty': 1, 'note': null}),
+      );
+    });
+
+    test('JSON name aliases (MethodInvocation path in every mode)', () {
+      var reflection = TestUserWithReflection$reflection();
+
+      for (var map in <Map<String, Object?>>[
+        {
+          'name': 'Joe',
+          'email': 'joe@mail.com',
+          'passphrase': ' 123 ',
+          'level': 2,
+          'id': 7,
+        },
+        {
+          'name': 'Joe',
+          'email': 'joe@mail.com',
+          'password': ' 123 ',
+          'theLevel': 2,
+        },
+        {'name': 'Joe', 'email': null, 'password': null},
+      ]) {
+        _expectSameInAllModes(reflection, map);
+      }
+    });
+  });
+
+  group('field setters (create + set fields)', () {
+    test('final, nullable with an initial value, and lists', () {
+      var reflection = TestSettersWithReflection$reflection();
+
+      var outcome = _expectSameInAllModes(reflection, {
+        'phone': null,
+        'count': 2,
+        'tags': ['a'],
+      });
+      // A `null` value sets a nullable field to `null`:
+      expect(
+        outcome,
+        equals({
+          'code': 'c',
+          'phone': null,
+          'count': 2,
+          'tags': ['a'],
+        }),
+      );
+
+      // A `null` value for a non-nullable field is ignored:
+      outcome = _expectSameInAllModes(reflection, {'count': null});
+      expect(outcome, containsPair('count', 0));
+      expect(outcome, containsPair('phone', 'initial'));
+
+      // A final field can't be set:
+      outcome = _expectSameInAllModes(reflection, {'code': 'x', 'count': 1});
+      var (errorType, message) = outcome as (Type, String);
+      expect(errorType, equals(StateError));
+      expect(message, contains('final field `code`'));
+
+      _expectSameInAllModes(reflection, {'phone': 'p'});
+      _expectSameInAllModes(reflection, {'count': 'x'});
+
+      // Resolved by `fromJson` (with a `fieldValueResolver`), but not when
+      // passed as resolved:
+      var json = <String, Object?>{
+        'tags': <dynamic>['a'],
+      };
+      expect(TestSettersWithReflection$fromJson(json).tags, equals(['a']));
+      expect(
+        () => reflection.createInstanceFromMap(json, valuesResolved: true),
+        throwsA(isA<TypeError>()),
+      );
+    });
+  });
+
+  group('usage patterns', () {
+    // A `fieldNameResolver` as an ORM gives one: exact keys first, then
+    // ignoring case and `_` (`created_at` -> `createdAt`).
+    String? simpleNames(String field, Map<String, Object?> map) {
+      if (map.containsKey(field)) return field;
+      String simple(String s) => s.replaceAll('_', '').toLowerCase();
+      var f = simple(field);
+      for (var k in map.keys) {
+        if (simple(k) == f) return k;
+      }
+      return null;
+    }
+
+    test('valuesResolved with a fieldNameResolver', () {
+      var account = TestAccountWithReflection$reflection();
+
+      final row = <String, Object?>{
+        'id': 1,
+        'NAME': 'Joe',
+        'email': 'joe@mail.com',
+        'Phone': null,
+        'age': 30,
+        'score': 1.5,
+        'ACTIVE': false,
+        'created_at': createdAt,
+      };
+
+      var outcome = _expectSameInAllModes(
+        account,
+        row,
+        fieldNameResolver: simpleNames,
+      );
+      expect(
+        outcome,
+        equals({
+          'id': 1,
+          'name': 'Joe',
+          'email': 'joe@mail.com',
+          'phone': null,
+          'age': 30,
+          'score': 1.5,
+          'active': false,
+          'createdAt': createdAt,
+        }),
+      );
+
+      // Set through the fields (`create()` + setters):
+      var member = TestMemberWithReflection$reflection();
+      outcome = _expectSameInAllModes(member, {
+        'id': 2,
+        'name': 'Ann',
+        'email': 'ann@mail.com',
+        'password_hash': 'h',
+        'age': 41,
+        'score': 7.25,
+        'active': true,
+        'created_at': createdAt,
+      }, fieldNameResolver: simpleNames);
+      expect(outcome, containsPair('passwordHash', 'h'));
+      expect(outcome, containsPair('createdAt', createdAt));
+    });
+
+    test('alternating key shapes and modes on one reflection', () {
+      var reflection = TestAccountWithReflection$reflection();
+      var member = TestMemberWithReflection$reflection();
+
+      final cases = <(ClassReflection, Map<String, Object?>, bool)>[
+        (reflection, {'name': 'a', 'email': 'e'}, false),
+        (reflection, {'name': 'a', 'email': 'e'}, true),
+        (reflection, {'NAME': 'a', 'email': 'e'}, false),
+        (reflection, {'NAME': 'a', 'email': 'e'}, true),
+        (reflection, {'name': 'a', 'email': 'e', 'age': 3}, true),
+        (reflection, {'name': 'a', 'email': 'e', 'age': 'x'}, false),
+        (reflection, {'email': 'e'}, true),
+        (member, {'name': 'a', 'email': 'e', 'passwordHash': 'h'}, true),
+        (member, {'name': 'a', 'email': 'e', 'passwordOrHash': 'h'}, true),
+        (member, {'NAME': 'a', 'passwordHash': 'h'}, false),
+      ];
+
+      Object? run((ClassReflection, Map<String, Object?>, bool) c) {
+        var (r, map, resolved) = c;
+        return _outcome(
+          r,
+          () => r.createInstanceFromMap(
+            map,
+            valuesResolved: resolved,
+            exactKeys: resolved,
+          ),
+        );
+      }
+
+      // The same outcomes in any order (the constructors are cached by the
+      // map shape, and the last lookup is reused):
+      var forward = cases.map(run).toList();
+      var backward = cases.reversed.map(run).toList().reversed.toList();
+      var again = cases.map(run).toList();
+
+      expect(backward, equals(forward));
+      expect(again, equals(forward));
+
+      // Keys only matched ignoring case aren't used with `exactKeys`:
+      expect(forward[2], isA<Map>());
+      expect(forward[3], isNull);
+    });
+
+    test('a reflection from the ReflectionFactory registry', () {
+      TestOrderWithReflection$reflection();
+
+      var reflection = ReflectionFactory()
+          .getRegisterClassReflection<TestOrderWithReflection>(
+            TestOrderWithReflection,
+          )!;
+
+      expect(reflection.constructor('')!.invoker, isNotNull);
+
+      var account = TestAccountWithReflection('Joe', 'joe@mail.com');
+      var o = reflection.createInstanceFromMap({
+        'account': TestRef(account),
+        'id': 3,
+      }, valuesResolved: true)!;
+      expect(o.id, equals(3));
+      expect(o.account.value, same(account));
+    });
+
+    test('parameters named as fields have the fields\' types', () {
+      // An ORM can resolve values by field type before instantiating (and
+      // pass them with `valuesResolved`) when each constructor parameter
+      // named as a field has that field's type:
+      for (var reflection in <ClassReflection>[
+        TestAccountWithReflection$reflection(),
+        TestOrderWithReflection$reflection(),
+        TestWideWithReflection$reflection(),
+        TestRecordWithReflection$reflection(),
+      ]) {
+        for (var c in reflection.allConstructors()) {
+          for (var p in c.allParameters) {
+            var field = reflection.field(p.name);
+            if (field == null) continue;
+            expect(
+              p.type.typeInfo,
+              equals(field.type.typeInfo),
+              reason: '${reflection.className}.${c.name}(${p.name})',
+            );
+          }
+        }
+      }
+
+      // Not for a field inherited with a type argument (as in `2.11.0`): the
+      // field's `TypeReflection` is its declared type (`List<T>` as
+      // `List<dynamic>`), and the parameter's is `List<int>`. Such classes
+      // keep resolving values per parameter (a `fieldValueResolver`).
+      var intBox = TestIntBoxWithReflection$reflection();
+      expect(
+        intBox.constructor('')!.normalParameters.single.type.typeInfo,
+        equals(TypeReflection.tListInt.typeInfo),
+      );
+      var items = intBox.field('items')!;
+      expect(items.type.typeInfo, equals(TypeReflection.tListDynamic.typeInfo));
+      // While the `FieldReflection` itself has the type argument:
+      expect(
+        items,
+        isA<FieldReflection<TestIntBoxWithReflection, List<int>>>(),
       );
     });
   });

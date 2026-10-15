@@ -252,6 +252,13 @@ class Base {
   final int level;
   Base({this.level = 4});
 }
+
+class Ref<T> {
+  final T? value;
+  const Ref(this.value);
+}
+
+int triple(int n) => n * 3;
 ''');
 
       _write(tempDir, 'lib/foo.dart', '''
@@ -338,6 +345,32 @@ class Builder<T extends o.Base> {
 
   Builder(this.make);
 }
+
+// Parameters typed by a generic class from a prefixed import with a type
+// argument (as an entity reference), records, and function defaults: a
+// static method by its bare name and a prefixed top-level function.
+@EnableReflection()
+class Shapes {
+  static int identity(int n) => n;
+
+  final o.Ref<o.Base> ref;
+  final (int, o.Flavor) pair;
+  final List<o.Base>? bases;
+  final Map<String, dynamic>? extra;
+  final int Function(int) mapper;
+  final int Function(int) mapper2;
+  final o.Ref<int> constRef;
+
+  Shapes(
+    this.ref,
+    this.pair, {
+    this.bases,
+    this.extra,
+    this.mapper = identity,
+    this.mapper2 = o.triple,
+    this.constRef = const o.Ref(1),
+  });
+}
 ''');
 
       _write(tempDir, 'bin/main.dart', r'''
@@ -416,6 +449,14 @@ void main() {
   intBoxReflection.field('values')!.set([8]);
   print('int box: ${intBox.value} ${intBox.items} ${intBox.values} '
       '${intBoxReflection.field('values') is FieldReflection<IntBox, List<int>>}');
+
+  var shapes = Shapes$reflection().createInstanceFromMap({
+    'ref': Ref<Base>(Base(level: 6)),
+    'pair': (1, Flavor.salty),
+  }, valuesResolved: true)!;
+  print('shapes: ${shapes.ref.value!.level} ${shapes.pair} '
+      '${shapes.bases} ${shapes.mapper(2)} ${shapes.mapper2(2)} '
+      '${shapes.constRef.value}');
 }
 ''');
 
@@ -433,6 +474,10 @@ void main() {
       // Typed arguments:
       expect(code, contains('as String'));
       expect(code, contains('as Check?'));
+      expect(code, contains('as o.Ref<o.Base>'));
+      expect(code, contains('as (int, o.Flavor)'));
+      expect(code, contains('Shapes.identity'));
+      expect(code, contains('o.triple'));
 
       // Function-typed fields with the class type parameter, through the raw
       // receiver (the bound), with qualified types:
@@ -498,6 +543,7 @@ void main() {
           'build: 7 8',
           'typed: 9 [1, 2] 3 [4] 5 a',
           'int box: 6 [7] [8] true',
+          'shapes: 6 (1, Flavor.salty) null 2 6 1',
         ]),
       );
     }, timeout: Timeout(Duration(minutes: 5)));

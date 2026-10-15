@@ -193,3 +193,192 @@ class TestRequiredNamedWithReflection {
 
   TestRequiredNamedWithReflection({required this.a, this.b = 'B'});
 }
+
+/// Many parameters of the same type: an argument in the wrong position
+/// would go unnoticed (no `TypeError`). The named parameters aren't declared
+/// in alphabetical order, and mix required, defaults and nullables.
+@EnableReflection()
+class TestWideWithReflection {
+  final String a;
+  final String b;
+  final String c;
+  final String zeta;
+  final String? alpha;
+  final String mid;
+  final String beta;
+  final String? omega;
+  final int n1;
+  final int n2;
+  final int? n3;
+
+  TestWideWithReflection(
+    this.a,
+    this.b,
+    this.c, {
+    this.zeta = 'Z',
+    this.alpha,
+    required this.mid,
+    this.beta = 'B',
+    this.omega,
+    this.n2 = 2,
+    this.n1 = 1,
+    this.n3,
+  });
+}
+
+/// A generic wrapper from outside the reflected classes, as an entity
+/// reference: parameters typed `TestRef<TestAccountWithReflection>`.
+class TestRef<T> {
+  final T? value;
+
+  const TestRef(this.value);
+
+  @override
+  bool operator ==(Object other) =>
+      other is TestRef &&
+      other.runtimeType == runtimeType &&
+      other.value == value;
+
+  @override
+  int get hashCode => value.hashCode;
+
+  @override
+  String toString() => 'TestRef<$T>($value)';
+}
+
+typedef TestJsonMap = Map<String, dynamic>;
+
+/// Parameters typed by generic classes with type arguments (entity
+/// references and lists), maps, a `typedef` of a map, nullable elements,
+/// an enum, `Object?` and `dynamic`.
+@EnableReflection()
+class TestOrderWithReflection {
+  final int? id;
+  final TestRef<TestAccountWithReflection> account;
+  final List<TestAccountWithReflection>? items;
+  final Map<String, dynamic>? extra;
+  final TestJsonMap? meta;
+  final List<String?> notes;
+  final List<List<int>>? matrix;
+  final TestLevel? level;
+  final DateTime? date;
+  final Object? any;
+  final dynamic raw;
+
+  TestOrderWithReflection(
+    this.account, {
+    this.id,
+    this.items,
+    this.extra,
+    this.meta,
+    this.notes = const [],
+    this.matrix,
+    this.level,
+    this.date,
+    this.any,
+    this.raw,
+  });
+}
+
+/// Record types as parameters.
+@EnableReflection()
+class TestRecordWithReflection {
+  final (int, String) pair;
+  final ({int x, int y})? point;
+
+  TestRecordWithReflection(this.pair, {this.point});
+}
+
+/// Two constructors with a parameter of the same name and different types:
+/// the first one that fits the value is used.
+@EnableReflection()
+class TestMultiCtorWithReflection {
+  final Object value;
+  final String kind;
+
+  TestMultiCtorWithReflection.fromInt(int this.value) : kind = 'int';
+
+  TestMultiCtorWithReflection.fromString(String this.value) : kind = 'string';
+}
+
+/// A (non-mandatory) `@JsonConstructor`, and another constructor.
+@EnableReflection()
+class TestJsonCtorWithReflection {
+  final String name;
+  final int qty;
+  final String? note;
+
+  @JsonConstructor()
+  TestJsonCtorWithReflection(this.name, {this.qty = 1, this.note});
+
+  TestJsonCtorWithReflection.full(this.name, this.qty, this.note);
+}
+
+/// Instantiated with `create()` plus setters: a final field (only set by a
+/// constructor) and a nullable field with a non-null initial value.
+@EnableReflection()
+class TestSettersWithReflection {
+  final String code;
+  String? phone = 'initial';
+  int count = 0;
+  List<String> tags = [];
+
+  TestSettersWithReflection.create() : code = 'c';
+}
+
+int testTriple(int n) => n * 3;
+
+const testNegative = -3;
+
+/// Defaults that are function tear-offs (a static method by its bare name and
+/// a top-level function), negative numbers, a string with escapes, const
+/// collections of enums, and a const instance of a generic class.
+@EnableReflection()
+class TestEdgeDefaultsWithReflection {
+  static int identity(int n) => n;
+
+  final int Function(int) mapper;
+  final int Function(int) mapper2;
+  final int neg;
+  final double negD;
+  final String text;
+  final List<TestLevel> levels;
+  final Map<TestLevel, List<String>> byLevel;
+  final TestRef<int> ref;
+
+  TestEdgeDefaultsWithReflection({
+    this.mapper = identity,
+    this.mapper2 = testTriple,
+    this.neg = testNegative,
+    this.negD = -1,
+    this.text = 'a\$b "q" \'s\' \\n',
+    this.levels = const [TestLevel.low, TestLevel.high],
+    this.byLevel = const {
+      TestLevel.low: ['x'],
+    },
+    this.ref = const TestRef(1),
+  });
+}
+
+/// Every kind of constructor: `const`, private, `factory`, redirecting, and
+/// redirecting `factory`.
+@EnableReflection()
+class TestCtorKindsWithReflection {
+  final String kind;
+  final int n;
+
+  const TestCtorKindsWithReflection(this.kind, {this.n = 0});
+
+  const TestCtorKindsWithReflection._private(this.n) : kind = 'private';
+
+  factory TestCtorKindsWithReflection.parse(String s) =>
+      TestCtorKindsWithReflection('parsed', n: int.parse(s));
+
+  const TestCtorKindsWithReflection.redirect(int n) : this('redirect', n: n);
+
+  const factory TestCtorKindsWithReflection.redirectingFactory(int n) =
+      TestCtorKindsWithReflection._private;
+
+  static TestCtorKindsWithReflection privateOf(int n) =>
+      TestCtorKindsWithReflection._private(n);
+}
