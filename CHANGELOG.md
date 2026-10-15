@@ -34,8 +34,13 @@ especially compiled to JavaScript. The created instances are the same.
   - JavaScript (dart2js `-O1 --minify`): 27.4 → 11.8 (−57%).
   - Wasm (dart2wasm `-O2 --minify`): 6.5 → 3.7 (−42%).
   - VM: 7.5 → 3.9 (−48%).
-- Tests: revived values (once per parameter, unresolved values, resolvers
-  that throw, constructor errors), maps of the same shape in sequence,
+- Tests: revived values (once per parameter, unresolved values, entity
+  lists with a `null`, values for absent parameters, resolvers that throw,
+  constructor errors, the resolver calls on the unresolved path), maps of
+  the same shape in sequence (with resolvers, keys in other orders, the same
+  class created inside a resolver, `disposeCache`, other
+  `getBestConstructorsForMap` options in between), `JsonDecoder` with JSON
+  objects (not modified) and maps with other key types,
   `getField` of another object and `JsonEntityCacheSimple.getEntityID`.
 
 ## 2.12.2
